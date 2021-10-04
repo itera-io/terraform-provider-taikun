@@ -1,4 +1,4 @@
-module github.com/hashicorp/terraform-provider-scaffolding
+module github.com/itera-io/terraform-provider-taikun
 
 go 1.15
 
