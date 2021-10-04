@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient/client"
 )
 
 func init() {
@@ -23,31 +24,49 @@ func init() {
 	// }
 }
 
-func New(version string) func() *schema.Provider {
-	return func() *schema.Provider {
-		p := &schema.Provider{
-			DataSourcesMap: map[string]*schema.Resource{},
-			ResourcesMap:   map[string]*schema.Resource{},
-		}
-
-		p.ConfigureContextFunc = configure(version, p)
-
-		return p
+func Provider() *schema.Provider {
+	return &schema.Provider{
+		DataSourcesMap: map[string]*schema.Resource{},
+		ResourcesMap:   map[string]*schema.Resource{},
+		Schema: map[string]*schema.Schema{
+			"email": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("TAIKUN_EMAIL", nil),
+			},
+			"password": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				DefaultFunc: schema.EnvDefaultFunc("TAIKUN_PASSWORD", nil),
+			},
+		},
+		ConfigureContextFunc: configureContextFunc,
 	}
 }
 
 type apiClient struct {
-	// Add whatever fields, client or connection info, etc. here
-	// you would need to setup to communicate with the upstream
-	// API.
+	Client *client.Taikungoclient
+
+	email    string
+	password string
+
+	token        string
+	refreshToken string
 }
 
-func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		// Setup a User-Agent for your API client (replace the provider name for yours):
-		// userAgent := p.UserAgent("terraform-provider-scaffolding", version)
-		// TODO: myClient.UserAgent = userAgent
+func configureContextFunc(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
-		return &apiClient{}, nil
+	email := data.Get("email").(string)
+	password := data.Get("password").(string)
+
+	if email == "" || password == "" {
+		return nil, diag.Errorf("You must define an email and a password")
 	}
+
+	return &apiClient{
+		Client:   client.Default,
+		email:    email,
+		password: password,
+	}, nil
 }

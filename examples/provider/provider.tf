@@ -1,3 +1,4 @@
 provider "taikun" {
-  # example configuration here
+  email    = "user@itera.io"
+  password = "userpassword"
 }
