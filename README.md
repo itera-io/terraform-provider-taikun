@@ -30,9 +30,12 @@ $ go install
 
 ## Using the provider
 
-[//] # (TODO add link to documentation on https://registry.terraform.io, once up)
+<!---
+ 
+  TODO add link to documentation on https://registry.terraform.io, once up.
+  See the [Taikun Provider documentation](https://registry.terraform.io/providers/itera-io/taikun/latest/docs) to get started using the Taikun provider.
 
-See the [Taikun Provider documentation](https://registry.terraform.io/providers/) to get started using the Taikun provider.
+-->
 
 ## Developing the Provider
 
