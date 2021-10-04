@@ -1,49 +1,41 @@
-# Terraform Provider Scaffolding
+# Terraform Provider for Taikun
 
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
+- Website: https://www.terraform.io
+- Forum: https://discuss.hashicorp.com
+- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
+- Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
- - A resource, and a data source (`internal/provider/`),
- - Examples (`examples/`) and generated documentation (`docs/`),
- - Miscellaneous meta files.
- 
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. A full guide to creating Terraform providers can be found at [Writing Custom Providers](https://www.terraform.io/docs/extend/writing-custom-providers.html).
-
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
-
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://www.terraform.io/docs/registry/providers/publishing.html) so that others can use it.
-
+<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
 
 ## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) >= 0.13.x
--	[Go](https://golang.org/doc/install) >= 1.15
+-	[Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
+-	[Go](https://golang.org/doc/install) >= 1.17
 
 ## Building The Provider
 
-1. Clone the repository
-1. Enter the repository directory
-1. Build the provider using the Go `install` command: 
+Clone repository to: `$GOPATH/src/github.com/itera-io/terraform-provider-taikun`
+
 ```sh
+$ mkdir -p $GOPATH/src/github.com/itera-io; cd $GOPATH/src/github.com/itera-io
+$ git clone git@github.com:itera-io/terraform-provider-taikun
+```
+
+Enter the provider directory and build the provider
+
+```sh
+$ cd $GOPATH/src/github.com/itera-io/terraform-provider-taikun
 $ go install
 ```
 
-## Adding Dependencies
-
-This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
-Please see the Go documentation for the most up to date information about using Go modules.
-
-To add a new dependency `github.com/author/dependency` to your Terraform provider:
-
-```
-go get github.com/author/dependency
-go mod tidy
-```
-
-Then commit the changes to `go.mod` and `go.sum`.
-
 ## Using the provider
 
-Fill this in for each provider
+<!---
+ 
+  TODO add link to documentation on https://registry.terraform.io, once up.
+  See the [Taikun Provider documentation](https://registry.terraform.io/providers/itera-io/taikun/latest/docs) to get started using the Taikun provider.
+
+-->
 
 ## Developing the Provider
 
