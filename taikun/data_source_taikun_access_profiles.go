@@ -1,7 +1,12 @@
 package taikun
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/itera-io/taikungoclient/client/access_profiles"
+	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunAccessProfiles() *schema.Resource {
@@ -108,4 +113,39 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 			},
 		},
 	}
+}
+
+func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+
+	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
+	organizationID, organizationIDProvided := data.GetOk("organization_id")
+	if organizationIDProvided {
+		params = params.WithOrganizationID(organizationID)
+	}
+
+	accessProfilesList := []models.AccessProfilesListDto{}
+	for {
+		response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, &apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		accessProfilesList = append(accessProfilesList, response.GetPayload().Data...)
+		if len(accessProfilesList) == payload.TotalCount {
+			break
+		}
+		params = params.WithOffset(len(accessProfilesList))
+	}
+
+	if err := data.Set("access_profiles", accessProfilesList); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if organizationIDProvided {
+		data.SetId(organizationID)
+	} else {
+		data.SetId(-1)
+	}
+
+	return nil
 }
