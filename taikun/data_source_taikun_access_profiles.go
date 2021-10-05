@@ -120,7 +120,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
 	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
-	organizationID := organizationIDData.(int32)
+	organizationID := int32(organizationIDData.(int))
 	if organizationIDProvided {
 		params = params.WithOrganizationID(&organizationID)
 	}
