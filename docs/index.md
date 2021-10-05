@@ -24,5 +24,7 @@ provider "taikun" {
 
 ### Optional
 
-- **email** (String)
-- **password** (String, Sensitive)
+- **email** (String) Taikun email. Conflicts with:`keycloak_email`. Required with:`password`.
+- **keycloak_email** (String) Taikun keycloak email. Conflicts with:`email`. Required with:`keycloak_password`.
+- **keycloak_password** (String, Sensitive) Taikun keycloak password. Conflicts with:`password`. Required with:`keycloak_email`.
+- **password** (String, Sensitive) Taikun password. Conflicts with:`keycloak_password`. Required with:`email`.

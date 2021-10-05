@@ -8,6 +8,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/taikungoclient/client/auth"
+	"github.com/itera-io/taikungoclient/client/keycloak"
 	"github.com/itera-io/taikungoclient/models"
 	"strings"
 	"time"
@@ -16,8 +17,9 @@ import (
 type apiClient struct {
 	client *client.Taikungoclient
 
-	email    string
-	password string
+	email               string
+	password            string
+	useKeycloakEndpoint bool
 
 	token        string
 	refreshToken string
@@ -37,17 +39,30 @@ func (apiClient *apiClient) AuthenticateRequest(c runtime.ClientRequest, _ strfm
 
 	if len(apiClient.token) == 0 {
 
-		loginResult, err := apiClient.client.Auth.AuthLogin(
-			auth.NewAuthLoginParams().WithV(ApiVersion).WithBody(
-				&models.LoginCommand{Email: apiClient.email, Password: apiClient.password},
-			), nil,
-		)
-		if err != nil {
-			return err
+		if !apiClient.useKeycloakEndpoint {
+			loginResult, err := apiClient.client.Auth.AuthLogin(
+				auth.NewAuthLoginParams().WithV(ApiVersion).WithBody(
+					&models.LoginCommand{Email: apiClient.email, Password: apiClient.password},
+				), nil,
+			)
+			if err != nil {
+				return err
+			}
+			apiClient.token = loginResult.Payload.Token
+			apiClient.refreshToken = loginResult.Payload.RefreshToken
+		} else {
+			loginResult, err := apiClient.client.Keycloak.KeycloakLogin(
+				keycloak.NewKeycloakLoginParams().WithV(ApiVersion).WithBody(
+					&models.LoginWithKeycloakCommand{Email: apiClient.email, Password: apiClient.password},
+				), nil,
+			)
+			if err != nil {
+				return err
+			}
+			apiClient.token = loginResult.Payload.Token
+			apiClient.refreshToken = loginResult.Payload.RefreshToken
 		}
 
-		apiClient.token = loginResult.Payload.Token
-		apiClient.refreshToken = loginResult.Payload.RefreshToken
 		fmt.Println(apiClient.token)
 	}
 
