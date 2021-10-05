@@ -87,8 +87,9 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Computed: true,
 						},
 						"projects": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Description: "List of associated projects",
+							Type:        schema.TypeList,
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": {
