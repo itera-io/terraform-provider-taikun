@@ -3,8 +3,8 @@ package taikun
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -119,22 +119,24 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 	apiClient := meta.(*apiClient)
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
-	organizationID, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationID := organizationIDData.(int32)
 	if organizationIDProvided {
-		params = params.WithOrganizationID(organizationID)
+		params = params.WithOrganizationID(&organizationID)
 	}
 
-	accessProfilesList := []models.AccessProfilesListDto{}
+	accessProfilesList := []*models.AccessProfilesListDto{}
 	for {
-		response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, &apiClient)
+		response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		accessProfilesList = append(accessProfilesList, response.GetPayload().Data...)
-		if len(accessProfilesList) == payload.TotalCount {
+		if len(accessProfilesList) == int(response.GetPayload().TotalCount) {
 			break
 		}
-		params = params.WithOffset(len(accessProfilesList))
+		offset := int32(len(accessProfilesList))
+		params = params.WithOffset(&offset)
 	}
 
 	if err := data.Set("access_profiles", accessProfilesList); err != nil {
@@ -142,9 +144,9 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 	}
 
 	if organizationIDProvided {
-		data.SetId(organizationID)
+		data.SetId(string(organizationID))
 	} else {
-		data.SetId(-1)
+		data.SetId("-1")
 	}
 
 	return nil
