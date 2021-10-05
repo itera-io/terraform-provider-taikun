@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -97,12 +98,12 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"address": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
 									"id": {
 										Type:     schema.TypeInt,
+										Computed: true,
+									},
+									"name": {
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
@@ -139,15 +140,62 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 		params = params.WithOffset(&offset)
 	}
 
-	if err := data.Set("access_profiles", accessProfilesList); err != nil {
+	flattenedAccessProfilesList := flattenDatasourceTaikunAccessProfilesList(accessProfilesList)
+	if err := data.Set("access_profiles", flattenedAccessProfilesList); err != nil {
 		return diag.FromErr(err)
 	}
 
 	if organizationIDProvided {
-		data.SetId(string(organizationID))
+		data.SetId(strconv.Itoa(int(organizationID)))
 	} else {
 		data.SetId("-1")
 	}
 
 	return nil
+}
+
+func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.AccessProfilesListDto) []map[string]interface{} {
+	accessProfiles := make([]map[string]interface{}, 0, len(rawAccessProfiles))
+	for _, rawAccessProfile := range rawAccessProfiles {
+
+		DNSServers := make([]map[string]interface{}, 0, len(rawAccessProfile.DNSServers))
+		for _, rawDNSServer := range rawAccessProfile.DNSServers {
+			DNSServers = append(DNSServers, map[string]interface{}{
+				"address": rawDNSServer.Address,
+				"id":      rawDNSServer.ID,
+			})
+		}
+
+		NTPServers := make([]map[string]interface{}, 0, len(rawAccessProfile.NtpServers))
+		for _, rawNTPServer := range rawAccessProfile.NtpServers {
+			NTPServers = append(NTPServers, map[string]interface{}{
+				"address": rawNTPServer.Address,
+				"id":      rawNTPServer.ID,
+			})
+		}
+
+		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
+		for _, rawProject := range rawAccessProfile.Projects {
+			projects = append(projects, map[string]interface{}{
+				"id":   rawProject.ID,
+				"name": rawProject.Name,
+			})
+		}
+
+		accessProfiles = append(accessProfiles, map[string]interface{}{
+			"created_by":        rawAccessProfile.CreatedBy,
+			"dns_servers":       DNSServers,
+			"http_proxy":        rawAccessProfile.HTTPProxy,
+			"id":                rawAccessProfile.ID,
+			"is_locked":         rawAccessProfile.IsLocked,
+			"last_modified":     rawAccessProfile.LastModified,
+			"last_modified_by":  rawAccessProfile.LastModifiedBy,
+			"name":              rawAccessProfile.Name,
+			"ntp_servers":       NTPServers,
+			"organization_id":   rawAccessProfile.OrganizationID,
+			"organization_name": rawAccessProfile.OrganizationName,
+			"projects":          projects,
+		})
+	}
+	return accessProfiles
 }
