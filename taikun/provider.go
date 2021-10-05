@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client"
@@ -23,6 +22,8 @@ func init() {
 	// 	return strings.TrimSpace(desc)
 	// }
 }
+
+var ApiVersion = "1"
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
@@ -45,16 +46,6 @@ func Provider() *schema.Provider {
 	}
 }
 
-type apiClient struct {
-	Client *client.Taikungoclient
-
-	email    string
-	password string
-
-	token        string
-	refreshToken string
-}
-
 func configureContextFunc(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
 	email := data.Get("email").(string)
@@ -65,7 +56,7 @@ func configureContextFunc(_ context.Context, data *schema.ResourceData) (interfa
 	}
 
 	return &apiClient{
-		Client:   client.Default,
+		client:   client.Default,
 		email:    email,
 		password: password,
 	}, nil
