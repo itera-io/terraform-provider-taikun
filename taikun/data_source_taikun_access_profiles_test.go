@@ -37,6 +37,6 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 func testAccCheckTaikunAccessProfilesConfig() string {
 	return fmt.Sprintln(`
 data "taikun_access_profiles" "all" {
-  organization_id=441
+  # organization_id="441"
 }`)
 }

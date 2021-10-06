@@ -16,7 +16,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 		ReadContext: dataSourceTaikunAccessProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"access_profiles": {
@@ -49,7 +49,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Computed: true,
 						},
 						"id": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"is_locked": {
@@ -78,14 +78,14 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 										Computed: true,
 									},
 									"id": {
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
 							},
 						},
 						"organization_id": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"organization_name": {
@@ -99,7 +99,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"name": {
@@ -121,7 +121,11 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
 	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
-	organizationID := int32(organizationIDData.(int))
+	organizationID, err := atoi32(organizationIDData.(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if organizationIDProvided {
 		params = params.WithOrganizationID(&organizationID)
 	}
@@ -146,7 +150,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 	}
 
 	if organizationIDProvided {
-		data.SetId(strconv.Itoa(int(organizationID)))
+		data.SetId(i32toa(organizationID))
 	} else {
 		data.SetId("-1")
 	}
@@ -162,7 +166,7 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 		for _, rawDNSServer := range rawAccessProfile.DNSServers {
 			DNSServers = append(DNSServers, map[string]interface{}{
 				"address": rawDNSServer.Address,
-				"id":      rawDNSServer.ID,
+				"id":      strconv.Itoa(int(rawDNSServer.ID)),
 			})
 		}
 
@@ -170,14 +174,14 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 		for _, rawNTPServer := range rawAccessProfile.NtpServers {
 			NTPServers = append(NTPServers, map[string]interface{}{
 				"address": rawNTPServer.Address,
-				"id":      rawNTPServer.ID,
+				"id":      strconv.Itoa(int(rawNTPServer.ID)),
 			})
 		}
 
 		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
 		for _, rawProject := range rawAccessProfile.Projects {
 			projects = append(projects, map[string]interface{}{
-				"id":   rawProject.ID,
+				"id":   strconv.Itoa(int(rawProject.ID)),
 				"name": rawProject.Name,
 			})
 		}
@@ -186,13 +190,13 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 			"created_by":        rawAccessProfile.CreatedBy,
 			"dns_servers":       DNSServers,
 			"http_proxy":        rawAccessProfile.HTTPProxy,
-			"id":                rawAccessProfile.ID,
+			"id":                strconv.Itoa(int(rawAccessProfile.ID)),
 			"is_locked":         rawAccessProfile.IsLocked,
 			"last_modified":     rawAccessProfile.LastModified,
 			"last_modified_by":  rawAccessProfile.LastModifiedBy,
 			"name":              rawAccessProfile.Name,
 			"ntp_servers":       NTPServers,
-			"organization_id":   rawAccessProfile.OrganizationID,
+			"organization_id":   strconv.Itoa(int(rawAccessProfile.OrganizationID)),
 			"organization_name": rawAccessProfile.OrganizationName,
 			"projects":          projects,
 		})
