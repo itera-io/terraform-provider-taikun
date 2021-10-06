@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
@@ -16,10 +15,6 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 			{
 				Config: testAccCheckTaikunAccessProfilesConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					func(state *terraform.State) error {
-						fmt.Print(state.String())
-						return nil
-					},
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.created_by"),
