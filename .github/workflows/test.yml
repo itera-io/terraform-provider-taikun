@@ -65,10 +65,8 @@ jobs:
           TF_ACC: "1"
           TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
 
-          # Set whatever additional acceptance test env vars here. You can
-          # optionally use data from your repository secrets using the
-          # following syntax:
-          # SOME_VAR: ${{ secrets.SOME_VAR }}
+          TAIKUN_EMAIL: ${{ secrets.TAIKUN_EMAIL }}
+          TAIKUN_PASSWORD: ${{ secrets.TAIKUN_PASSWORD }}
 
         run: |
           go test -v -cover ./taikun
