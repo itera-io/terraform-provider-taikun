@@ -38,7 +38,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 										Computed: true,
 									},
 									"id": {
-										Type:     schema.TypeInt,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 								},
