@@ -133,8 +133,8 @@ func resourceTaikunAccessProfile() *schema.Resource {
 func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id, err := atoi32(data.Id())
+	data.SetId("")
 	if err != nil {
-		data.SetId("")
 		return diag.FromErr(err)
 	}
 
@@ -225,9 +225,6 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		}
 
 		data.SetId(i32toa(id))
-	} else {
-		// Not Found
-		data.SetId("")
 	}
 
 	return nil
