@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
+	"github.com/itera-io/taikungoclient/client/ssh_users"
 	"github.com/itera-io/taikungoclient/models"
 	"strconv"
 )
@@ -137,9 +138,12 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
+	response, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
+	sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,6 +172,15 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 			projects = append(projects, map[string]interface{}{
 				"id":   strconv.Itoa(int(rawProject.ID)),
 				"name": rawProject.Name,
+			})
+		}
+
+		SSHUsers := make([]map[string]interface{}, 0, len(sshResponse.Payload))
+		for _, rawSSHUser := range sshResponse.Payload {
+			SSHUsers = append(SSHUsers, map[string]interface{}{
+				"id":         strconv.Itoa(int(rawSSHUser.ID)),
+				"name":       rawSSHUser.Name,
+				"public_key": rawSSHUser.SSHPublicKey,
 			})
 		}
 
@@ -205,6 +218,9 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 		if err := data.Set("projects", projects); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := data.Set("ssh_user", SSHUsers); err != nil {
 			return diag.FromErr(err)
 		}
 
