@@ -15,7 +15,7 @@ data "taikun_access_profile" "foo" {
 
 func TestAccDataSourceAccessProfile(t *testing.T) {
 
-	resource.UnitTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
