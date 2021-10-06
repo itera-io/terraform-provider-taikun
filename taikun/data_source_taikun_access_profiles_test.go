@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+// TODO add test with organization_ID set
+
 func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -16,8 +18,7 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 				Config: testAccCheckTaikunAccessProfilesConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
-					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.created_by"),
+					// resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.dns_servers.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.is_locked"),

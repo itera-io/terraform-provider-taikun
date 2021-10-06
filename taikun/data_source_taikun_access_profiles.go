@@ -119,13 +119,14 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 	apiClient := meta.(*apiClient)
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
-	organizationID, err := atoi32(organizationIDData.(string))
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
+	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	var organizationID int32 = -1
 	if organizationIDProvided {
+		organizationID, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		params = params.WithOrganizationID(&organizationID)
 	}
 
@@ -148,11 +149,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	if organizationIDProvided {
-		data.SetId(i32toa(organizationID))
-	} else {
-		data.SetId("-1")
-	}
+	data.SetId(i32toa(organizationID))
 
 	return nil
 }
