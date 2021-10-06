@@ -55,7 +55,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 					},
 				},
 			},
-			"dns_servers": {
+			"dns_server": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -71,7 +71,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 					},
 				},
 			},
-			"ssh_users": {
+			"ssh_user": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -174,7 +174,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		if err := data.Set("created_by", rawAccessProfile.CreatedBy); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("dns_servers", DNSServers); err != nil {
+		if err := data.Set("dns_server", DNSServers); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("http_proxy", rawAccessProfile.HTTPProxy); err != nil {
@@ -234,7 +234,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 		body.HTTPProxy = proxy.(string)
 	}
 
-	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_users"); isSSHUsersSet {
+	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_user"); isSSHUsersSet {
 		rawSSHUsersList := SSHUsers.([]interface{})
 		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList), len(rawSSHUsersList))
 		for i, e := range rawSSHUsersList {
@@ -259,7 +259,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 		body.NtpServers = NTPServersList
 	}
 
-	if DNSServers, isDNSServersSet := data.GetOk("dns_servers"); isDNSServersSet {
+	if DNSServers, isDNSServersSet := data.GetOk("dns_server"); isDNSServersSet {
 		rawDNSServersList := DNSServers.([]interface{})
 		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList), len(rawDNSServersList))
 		for i, e := range rawDNSServersList {

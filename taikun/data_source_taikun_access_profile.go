@@ -20,7 +20,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"dns_servers": {
+			"dns_server": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
