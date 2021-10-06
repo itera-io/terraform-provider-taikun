@@ -131,14 +131,13 @@ func resourceTaikunAccessProfile() *schema.Resource {
 
 func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := strconv.Atoi(data.Id())
+	id, err := atoi32(data.Id())
 	if err != nil {
 		data.SetId("")
 		return diag.FromErr(err)
 	}
-	id32 := int32(id)
 
-	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id32)
+	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
 
 	response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
 	if err != nil {
@@ -209,7 +208,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		data.SetId(strconv.Itoa(id))
+		data.SetId(i32toa(id))
 	} else {
 		// Not Found
 		data.SetId("")
@@ -221,14 +220,14 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	organizationId, err := strconv.Atoi(data.Get("organization_id").(string))
+	organizationId, err := atoi32(data.Get("organization_id").(string))
 	if err != nil {
 		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
 	}
 
 	body := &models.UpsertAccessProfileCommand{
 		Name:           data.Get("name").(string),
-		OrganizationID: int32(organizationId),
+		OrganizationID: organizationId,
 	}
 
 	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
@@ -289,12 +288,12 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 
 func resourceTaikunAccessProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := strconv.Atoi(data.Id())
+	id, err := atoi32(data.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(int32(id))
+	params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(id)
 	_, _, err = apiClient.client.AccessProfiles.AccessProfilesDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
