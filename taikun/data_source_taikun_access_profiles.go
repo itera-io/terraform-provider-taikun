@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -166,7 +165,7 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 		for _, rawDNSServer := range rawAccessProfile.DNSServers {
 			DNSServers = append(DNSServers, map[string]interface{}{
 				"address": rawDNSServer.Address,
-				"id":      strconv.Itoa(int(rawDNSServer.ID)),
+				"id":      i32toa(rawDNSServer.ID),
 			})
 		}
 
@@ -174,14 +173,14 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 		for _, rawNTPServer := range rawAccessProfile.NtpServers {
 			NTPServers = append(NTPServers, map[string]interface{}{
 				"address": rawNTPServer.Address,
-				"id":      strconv.Itoa(int(rawNTPServer.ID)),
+				"id":      i32toa(rawNTPServer.ID),
 			})
 		}
 
 		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
 		for _, rawProject := range rawAccessProfile.Projects {
 			projects = append(projects, map[string]interface{}{
-				"id":   strconv.Itoa(int(rawProject.ID)),
+				"id":   i32toa(rawProject.ID),
 				"name": rawProject.Name,
 			})
 		}
@@ -190,13 +189,13 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 			"created_by":        rawAccessProfile.CreatedBy,
 			"dns_servers":       DNSServers,
 			"http_proxy":        rawAccessProfile.HTTPProxy,
-			"id":                strconv.Itoa(int(rawAccessProfile.ID)),
+			"id":                i32toa(rawAccessProfile.ID),
 			"is_locked":         rawAccessProfile.IsLocked,
 			"last_modified":     rawAccessProfile.LastModified,
 			"last_modified_by":  rawAccessProfile.LastModifiedBy,
 			"name":              rawAccessProfile.Name,
 			"ntp_servers":       NTPServers,
-			"organization_id":   strconv.Itoa(int(rawAccessProfile.OrganizationID)),
+			"organization_id":   i32toa(rawAccessProfile.OrganizationID),
 			"organization_name": rawAccessProfile.OrganizationName,
 			"projects":          projects,
 		})
