@@ -27,7 +27,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"dns_servers": {
+						"dns_server": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -67,7 +67,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"ntp_servers": {
+						"ntp_server": {
 							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
@@ -91,7 +91,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"projects": {
+						"project": {
 							Description: "List of associated projects",
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -184,17 +184,17 @@ func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.Acces
 
 		accessProfiles = append(accessProfiles, map[string]interface{}{
 			"created_by":        rawAccessProfile.CreatedBy,
-			"dns_servers":       DNSServers,
+			"dns_server":        DNSServers,
 			"http_proxy":        rawAccessProfile.HTTPProxy,
 			"id":                i32toa(rawAccessProfile.ID),
 			"is_locked":         rawAccessProfile.IsLocked,
 			"last_modified":     rawAccessProfile.LastModified,
 			"last_modified_by":  rawAccessProfile.LastModifiedBy,
 			"name":              rawAccessProfile.Name,
-			"ntp_servers":       NTPServers,
+			"ntp_server":        NTPServers,
 			"organization_id":   i32toa(rawAccessProfile.OrganizationID),
 			"organization_name": rawAccessProfile.OrganizationName,
-			"projects":          projects,
+			"project":           projects,
 		})
 	}
 	return accessProfiles
