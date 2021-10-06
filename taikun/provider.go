@@ -55,6 +55,7 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
 			"taikun_access_profiles": dataSourceTaikunAccessProfiles(),
+			"taikun_access_profile":  dataSourceTaikunAccessProfile(),
 		},
 		ResourcesMap: map[string]*schema.Resource{},
 		Schema: map[string]*schema.Schema{
