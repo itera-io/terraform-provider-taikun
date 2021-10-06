@@ -12,8 +12,9 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 		ReadContext: dataSourceTaikunAccessProfileRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: StringIsInt,
 			},
 			"created_by": {
 				Type:     schema.TypeString,
@@ -55,7 +56,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"ntp_servers": {
+			"ntp_server": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{

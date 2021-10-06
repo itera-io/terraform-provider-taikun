@@ -26,9 +26,10 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Required: true,
 			},
 			"organization_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: StringIsInt,
 			},
 			"organization_name": {
 				Type:     schema.TypeString,
@@ -38,7 +39,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"ntp_servers": {
+			"ntp_server": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
@@ -151,7 +152,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		for _, rawDNSServer := range rawAccessProfile.DNSServers {
 			DNSServers = append(DNSServers, map[string]interface{}{
 				"address": rawDNSServer.Address,
-				"id":      rawDNSServer.ID,
+				"id":      strconv.Itoa(int(rawDNSServer.ID)),
 			})
 		}
 
@@ -159,14 +160,14 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		for _, rawNTPServer := range rawAccessProfile.NtpServers {
 			NTPServers = append(NTPServers, map[string]interface{}{
 				"address": rawNTPServer.Address,
-				"id":      rawNTPServer.ID,
+				"id":      strconv.Itoa(int(rawNTPServer.ID)),
 			})
 		}
 
 		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
 		for _, rawProject := range rawAccessProfile.Projects {
 			projects = append(projects, map[string]interface{}{
-				"id":   rawProject.ID,
+				"id":   strconv.Itoa(int(rawProject.ID)),
 				"name": rawProject.Name,
 			})
 		}
@@ -195,7 +196,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		if err := data.Set("name", rawAccessProfile.Name); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("ntp_servers", NTPServers); err != nil {
+		if err := data.Set("ntp_server", NTPServers); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("organization_id", strconv.Itoa(int(rawAccessProfile.OrganizationID))); err != nil {
@@ -222,7 +223,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 
 	organizationId, err := strconv.Atoi(data.Get("organization_id").(string))
 	if err != nil {
-		return diag.Errorf("OrganizationId provider isn't valid: %s", data.Get("organization_id").(string))
+		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
 	}
 
 	body := &models.UpsertAccessProfileCommand{
@@ -235,34 +236,37 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 	}
 
 	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_users"); isSSHUsersSet {
-		rawSSHUsersList := SSHUsers.([]map[string]interface{})
-		SSHUsersList := make([]*models.SSHUserCreateDto, 0, len(rawSSHUsersList))
+		rawSSHUsersList := SSHUsers.([]interface{})
+		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList), len(rawSSHUsersList))
 		for i, e := range rawSSHUsersList {
+			rawSSHUser := e.(map[string]interface{})
 			SSHUsersList[i] = &models.SSHUserCreateDto{
-				Name:         e["name"].(string),
-				SSHPublicKey: e["public_key"].(string),
+				Name:         rawSSHUser["name"].(string),
+				SSHPublicKey: rawSSHUser["public_key"].(string),
 			}
 		}
 		body.SSHUsers = SSHUsersList
 	}
 
-	if NtpServers, isNTPServersSet := data.GetOk("ntp_servers"); isNTPServersSet {
-		rawNtpServersList := NtpServers.([]map[string]interface{})
-		NTPServersList := make([]*models.NtpServerListDto, 0, len(rawNtpServersList))
+	if NtpServers, isNTPServersSet := data.GetOk("ntp_server"); isNTPServersSet {
+		rawNtpServersList := NtpServers.([]interface{})
+		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList), len(rawNtpServersList))
 		for i, e := range rawNtpServersList {
+			rawNtpServer := e.(map[string]interface{})
 			NTPServersList[i] = &models.NtpServerListDto{
-				Address: e["address"].(string),
+				Address: rawNtpServer["address"].(string),
 			}
 		}
 		body.NtpServers = NTPServersList
 	}
 
 	if DNSServers, isDNSServersSet := data.GetOk("dns_servers"); isDNSServersSet {
-		rawDNSServersList := DNSServers.([]map[string]interface{})
-		DNSServersList := make([]*models.DNSServerListDto, 0, len(rawDNSServersList))
+		rawDNSServersList := DNSServers.([]interface{})
+		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList), len(rawDNSServersList))
 		for i, e := range rawDNSServersList {
+			rawDNSServer := e.(map[string]interface{})
 			DNSServersList[i] = &models.DNSServerListDto{
-				Address: e["address"].(string),
+				Address: rawDNSServer["address"].(string),
 			}
 		}
 		body.DNSServers = DNSServersList
