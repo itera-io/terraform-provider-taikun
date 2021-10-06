@@ -22,8 +22,8 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if err := os.Getenv("TAIKUN_USERNAME"); err == "" {
-		t.Fatal("TAIKUN_USERNAME must be set for acceptance tests")
+	if err := os.Getenv("TAIKUN_EMAIL"); err == "" {
+		t.Fatal("TAIKUN_EMAIL must be set for acceptance tests")
 	}
 	if err := os.Getenv("TAIKUN_PASSWORD"); err == "" {
 		t.Fatal("TAIKUN_PASSWORD must be set for acceptance tests")
