@@ -2,11 +2,8 @@ package taikun
 
 import (
 	"context"
-	"strconv"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client/access_profiles"
 )
 
 func dataSourceTaikunAccessProfile() *schema.Resource {
@@ -15,7 +12,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 		ReadContext: dataSourceTaikunAccessProfileRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Required: true,
 			},
 			"created_by": {
@@ -32,7 +29,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 							Computed: true,
 						},
 						"id": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
@@ -68,14 +65,14 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 							Computed: true,
 						},
 						"id": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 					},
 				},
 			},
 			"organization_id": {
-				Type:     schema.TypeInt,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"organization_name": {
@@ -89,7 +86,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"name": {
@@ -103,87 +100,8 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 	}
 }
 
-//TODO Should be moved to the AccessProfile Resource
-func dataSourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id := int32(data.Get("id").(int))
+func dataSourceTaikunAccessProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	data.SetId(data.Get("id").(string))
 
-	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
-
-	response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if response.Payload.TotalCount == 1 {
-		rawAccessProfile := response.GetPayload().Data[0]
-
-		DNSServers := make([]map[string]interface{}, 0, len(rawAccessProfile.DNSServers))
-		for _, rawDNSServer := range rawAccessProfile.DNSServers {
-			DNSServers = append(DNSServers, map[string]interface{}{
-				"address": rawDNSServer.Address,
-				"id":      rawDNSServer.ID,
-			})
-		}
-
-		NTPServers := make([]map[string]interface{}, 0, len(rawAccessProfile.NtpServers))
-		for _, rawNTPServer := range rawAccessProfile.NtpServers {
-			NTPServers = append(NTPServers, map[string]interface{}{
-				"address": rawNTPServer.Address,
-				"id":      rawNTPServer.ID,
-			})
-		}
-
-		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
-		for _, rawProject := range rawAccessProfile.Projects {
-			projects = append(projects, map[string]interface{}{
-				"id":   rawProject.ID,
-				"name": rawProject.Name,
-			})
-		}
-
-		if err := data.Set("created_by", rawAccessProfile.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("dns_servers", DNSServers); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("http_proxy", rawAccessProfile.HTTPProxy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", rawAccessProfile.ID); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawAccessProfile.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawAccessProfile.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawAccessProfile.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawAccessProfile.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("ntp_servers", NTPServers); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", rawAccessProfile.OrganizationID); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawAccessProfile.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("projects", projects); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(strconv.Itoa(int(id)))
-	} else {
-		// Not Found
-		data.SetId("")
-	}
-
-	return nil
+	return resourceTaikunAccessProfileRead(ctx, data, meta)
 }

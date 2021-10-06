@@ -57,7 +57,9 @@ func Provider() *schema.Provider {
 			"taikun_access_profiles": dataSourceTaikunAccessProfiles(),
 			"taikun_access_profile":  dataSourceTaikunAccessProfile(),
 		},
-		ResourcesMap: map[string]*schema.Resource{},
+		ResourcesMap: map[string]*schema.Resource{
+			"taikun_access_profile": resourceTaikunAccessProfile(),
+		},
 		Schema: map[string]*schema.Schema{
 			"email": {
 				Type:          schema.TypeString,
