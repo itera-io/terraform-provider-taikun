@@ -67,7 +67,8 @@ func resourceTaikunOrganization() *schema.Resource {
 			},
 			"is_locked": {
 				Type:     schema.TypeBool,
-				Computed: true,
+				Optional: true,
+				Default:  false,
 			},
 			"is_read_only": {
 				Type:     schema.TypeBool,
@@ -244,6 +245,30 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 	}
 
 	data.SetId(createResult.GetPayload().ID)
+
+	if isLocked, isLockedIsSet := data.GetOk("is_locked"); isLockedIsSet {
+		id, _ := atoi32(createResult.GetPayload().ID)
+		updateLockBody := &models.UpdateOrganizationCommand{
+			Address:                      body.Address,
+			BillingEmail:                 body.BillingEmail,
+			City:                         body.City,
+			Country:                      body.Country,
+			DiscountRate:                 body.DiscountRate,
+			Email:                        body.Email,
+			FullName:                     body.FullName,
+			ID:                           id,
+			IsEligibleUpdateSubscription: body.IsEligibleUpdateSubscription,
+			IsLocked:                     isLocked.(bool),
+			Name:                         body.Name,
+			Phone:                        body.Phone,
+			VatNumber:                    body.VatNumber,
+		}
+		updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(updateLockBody)
+		_, err := apiClient.client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	return resourceTaikunOrganizationRead(ctx, data, meta)
 }
