@@ -13,7 +13,7 @@ data "taikun_access_profile" "foo" {
 }
 `
 
-func TestAccDataSourceAccessProfile(t *testing.T) {
+func TestAccDataSourceTaikunAccessProfile(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
