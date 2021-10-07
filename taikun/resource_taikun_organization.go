@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/organizations"
+	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunOrganization() *schema.Resource {
@@ -196,7 +197,55 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 }
 
 func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	apiClient := meta.(*apiClient)
+
+	body := &models.OrganizationCreateCommand{
+		Name:         data.Get("name").(string),
+		FullName:     data.Get("full_name").(string),
+		DiscountRate: data.Get("discount_rate").(float64),
+	}
+
+	if address, addressIsSet := data.GetOk("address"); addressIsSet {
+		body.Address = address.(string)
+	}
+
+	if billingEmail, billingEmailIsSet := data.GetOk("billing_email"); billingEmailIsSet {
+		body.BillingEmail = billingEmail.(string)
+	}
+
+	if city, cityIsSet := data.GetOk("city"); cityIsSet {
+		body.City = city.(string)
+	}
+
+	if country, countryIsSet := data.GetOk("country"); countryIsSet {
+		body.Country = country.(string)
+	}
+
+	if email, emailIsSet := data.GetOk("email"); emailIsSet {
+		body.Email = email.(string)
+	}
+
+	if letManagersChangeSubscription, letManagersChangeSubscriptionIsSet := data.GetOk("let_managers_change_subscription"); letManagersChangeSubscriptionIsSet {
+		body.IsEligibleUpdateSubscription = letManagersChangeSubscription.(bool)
+	}
+
+	if phone, phoneIsSet := data.GetOk("phone"); phoneIsSet {
+		body.Phone = phone.(string)
+	}
+
+	if vatNumber, vatNumberIsSet := data.GetOk("vat_number"); vatNumberIsSet {
+		body.VatNumber = vatNumber.(string)
+	}
+
+	params := organizations.NewOrganizationsCreateParams().WithV(ApiVersion).WithBody(body)
+	createResult, err := apiClient.client.Organizations.OrganizationsCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(createResult.GetPayload().ID)
+
+	return resourceTaikunAccessProfileRead(ctx, data, meta)
 }
 
 func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
