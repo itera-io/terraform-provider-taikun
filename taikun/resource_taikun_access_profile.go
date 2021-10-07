@@ -2,12 +2,13 @@ package taikun
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/ssh_users"
 	"github.com/itera-io/taikungoclient/models"
-	"strconv"
 )
 
 func resourceTaikunAccessProfile() *schema.Resource {

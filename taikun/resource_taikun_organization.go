@@ -253,5 +253,18 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 }
 
 func resourceTaikunOrganizationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(id)
+	_, _, err = apiClient.client.Organizations.OrganizationsDelete(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId("")
 	return nil
 }
