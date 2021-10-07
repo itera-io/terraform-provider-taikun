@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
+	"github.com/itera-io/taikungoclient/models"
 	"strings"
 	"testing"
 )
@@ -14,14 +15,30 @@ func init() {
 		Name: "taikun_access_profile",
 		F: func(r string) error {
 
-			apiClient := testAccProvider.Meta().(*apiClient)
-
-			list, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion), apiClient)
+			meta, err := sharedConfig()
 			if err != nil {
 				return err
 			}
+			apiClient := meta.(*apiClient)
 
-			for _, e := range list.Payload.Data {
+			params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
+
+			var accessProfilesList []*models.AccessProfilesListDto
+
+			for {
+				response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
+				if err != nil {
+					return err
+				}
+				accessProfilesList = append(accessProfilesList, response.GetPayload().Data...)
+				if len(accessProfilesList) == int(response.GetPayload().TotalCount) {
+					break
+				}
+				offset := int32(len(accessProfilesList))
+				params = params.WithOffset(&offset)
+			}
+
+			for _, e := range accessProfilesList {
 				if strings.HasPrefix(e.Name, testNamePrefix) {
 					params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.AccessProfiles.AccessProfilesDelete(params, apiClient)
