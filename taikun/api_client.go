@@ -4,14 +4,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 	"github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/taikungoclient/client/auth"
 	"github.com/itera-io/taikungoclient/client/keycloak"
 	"github.com/itera-io/taikungoclient/models"
-	"strings"
-	"time"
 )
 
 type apiClient struct {
@@ -63,7 +64,6 @@ func (apiClient *apiClient) AuthenticateRequest(c runtime.ClientRequest, _ strfm
 			apiClient.refreshToken = loginResult.Payload.RefreshToken
 		}
 
-		fmt.Println(apiClient.token)
 	}
 
 	if apiClient.hasTokenExpired() {
