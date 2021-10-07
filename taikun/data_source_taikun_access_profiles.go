@@ -11,10 +11,11 @@ import (
 
 func dataSourceTaikunAccessProfiles() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of access profiles, optionally filtered by organization",
+		Description: "Get the list of access profiles, optionally filtered by organization.",
 		ReadContext: dataSourceTaikunAccessProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
+				Description:  "Organization id filter.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: stringIsInt,
@@ -25,86 +26,103 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"created_by": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The creator of the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"dns_server": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Description: "List of DNS servers.",
+							Type:        schema.TypeList,
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "Address of DNS server.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "Id of DNS server.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 								},
 							},
 						},
 						"http_proxy": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "HTTP Proxy of the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The id of the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"is_locked": {
-							Type:     schema.TypeBool,
-							Computed: true,
+							Description: "Indicates whether the access profile is locked or not.",
+							Type:        schema.TypeBool,
+							Computed:    true,
 						},
 						"last_modified": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "Time of last modification.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"last_modified_by": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The last user who modified the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The name of the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"ntp_server": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Description: "List of NTP servers.",
+							Type:        schema.TypeList,
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"address": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "Address of NTP server.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "Id of NTP server.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 								},
 							},
 						},
 						"organization_id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The id of the organization which owns the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"organization_name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Description: "The name of the organization which owns the access profile.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"project": {
-							Description: "List of associated projects",
+							Description: "List of associated projects.",
 							Type:        schema.TypeList,
 							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "Id of associated project.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 									"name": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Description: "Name of associated project.",
+										Type:        schema.TypeString,
+										Computed:    true,
 									},
 								},
 							},
