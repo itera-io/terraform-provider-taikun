@@ -95,7 +95,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"projects": {
+			"project": {
 				Description: "List of associated projects.",
 				Type:        schema.TypeList,
 				Computed:    true,

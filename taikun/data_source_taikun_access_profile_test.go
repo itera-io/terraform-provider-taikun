@@ -37,7 +37,7 @@ func TestAccDataSourceTaikunAccessProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "last_modified_by"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "dns_server.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "ntp_server.#"),
-					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "projects.#"),
+					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "project.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "ssh_user.#"),
 				),
 			},

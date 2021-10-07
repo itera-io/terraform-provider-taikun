@@ -130,7 +130,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-			"projects": {
+			"project": {
 				Description: "List of associated projects.",
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -240,7 +240,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		if err := data.Set("organization_name", rawAccessProfile.OrganizationName); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("projects", projects); err != nil {
+		if err := data.Set("project", projects); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("ssh_user", SSHUsers); err != nil {
