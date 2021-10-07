@@ -106,4 +106,11 @@ Read-Only:
 - **id** (String)
 - **name** (String)
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import with Taikun ID
+terraform import taikun_access_profile.myaccessprofile 42
+```
