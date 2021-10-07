@@ -14,7 +14,7 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 			"id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: StringIsInt,
+				ValidateFunc: stringIsInt,
 			},
 			"created_by": {
 				Type:     schema.TypeString,

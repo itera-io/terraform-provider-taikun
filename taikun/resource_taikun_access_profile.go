@@ -30,7 +30,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: StringIsInt,
+				ValidateFunc: stringIsInt,
 			},
 			"organization_name": {
 				Type:     schema.TypeString,

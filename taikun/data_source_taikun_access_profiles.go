@@ -15,8 +15,9 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 		ReadContext: dataSourceTaikunAccessProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: stringIsInt,
 			},
 			"access_profiles": {
 				Type:     schema.TypeList,

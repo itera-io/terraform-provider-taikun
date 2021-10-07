@@ -17,7 +17,7 @@ func i32toa(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
 }
 
-func StringIsInt(i interface{}, k string) ([]string, []error) {
+func stringIsInt(i interface{}, k string) ([]string, []error) {
 	v, ok := i.(string)
 	if !ok {
 		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
