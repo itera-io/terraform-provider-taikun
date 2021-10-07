@@ -121,7 +121,7 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if response.GetPayload().TotalCount != 1 {
+	if len(response.GetPayload().Data) != 1 {
 		return nil
 	}
 
