@@ -245,7 +245,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(createResult.GetPayload().ID)
 
-	return resourceTaikunAccessProfileRead(ctx, data, meta)
+	return resourceTaikunOrganizationRead(ctx, data, meta)
 }
 
 func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
