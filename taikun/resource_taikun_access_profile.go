@@ -174,37 +174,37 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 	if response.Payload.TotalCount == 1 {
 		rawAccessProfile := response.GetPayload().Data[0]
 
-		DNSServers := make([]map[string]interface{}, 0, len(rawAccessProfile.DNSServers))
-		for _, rawDNSServer := range rawAccessProfile.DNSServers {
-			DNSServers = append(DNSServers, map[string]interface{}{
+		DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers), len(rawAccessProfile.DNSServers))
+		for i, rawDNSServer := range rawAccessProfile.DNSServers {
+			DNSServers[i] = map[string]interface{}{
 				"address": rawDNSServer.Address,
-				"id":      strconv.Itoa(int(rawDNSServer.ID)),
-			})
+				"id":      i32toa(rawDNSServer.ID),
+			}
 		}
 
-		NTPServers := make([]map[string]interface{}, 0, len(rawAccessProfile.NtpServers))
-		for _, rawNTPServer := range rawAccessProfile.NtpServers {
-			NTPServers = append(NTPServers, map[string]interface{}{
+		NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers), len(rawAccessProfile.NtpServers))
+		for i, rawNTPServer := range rawAccessProfile.NtpServers {
+			NTPServers[i] = map[string]interface{}{
 				"address": rawNTPServer.Address,
-				"id":      strconv.Itoa(int(rawNTPServer.ID)),
-			})
+				"id":      i32toa(rawNTPServer.ID),
+			}
 		}
 
-		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
-		for _, rawProject := range rawAccessProfile.Projects {
-			projects = append(projects, map[string]interface{}{
-				"id":   strconv.Itoa(int(rawProject.ID)),
+		projects := make([]map[string]interface{}, len(rawAccessProfile.Projects), len(rawAccessProfile.Projects))
+		for i, rawProject := range rawAccessProfile.Projects {
+			projects[i] = map[string]interface{}{
+				"id":   i32toa(rawProject.ID),
 				"name": rawProject.Name,
-			})
+			}
 		}
 
-		SSHUsers := make([]map[string]interface{}, 0, len(sshResponse.Payload))
-		for _, rawSSHUser := range sshResponse.Payload {
-			SSHUsers = append(SSHUsers, map[string]interface{}{
+		SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload), len(sshResponse.Payload))
+		for i, rawSSHUser := range sshResponse.Payload {
+			SSHUsers[i] = map[string]interface{}{
 				"id":         strconv.Itoa(int(rawSSHUser.ID)),
 				"name":       rawSSHUser.Name,
 				"public_key": rawSSHUser.SSHPublicKey,
-			})
+			}
 		}
 
 		if err := data.Set("created_by", rawAccessProfile.CreatedBy); err != nil {

@@ -2,6 +2,9 @@ package taikun
 
 import (
 	"context"
+	"fmt"
+	"github.com/itera-io/taikungoclient/client/ssh_users"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -127,6 +130,30 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 								},
 							},
 						},
+						"ssh_user": {
+							Description: "List of SSH Users.",
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"name": {
+										Description: "Name of SSH User.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"public_key": {
+										Description: "Public key of SSH User.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"id": {
+										Description: "Id of SSH User.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -134,7 +161,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
@@ -149,7 +176,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 		params = params.WithOrganizationID(&organizationID)
 	}
 
-	accessProfilesList := []*models.AccessProfilesListDto{}
+	var accessProfilesList []*models.AccessProfilesListDto
 	for {
 		response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
 		if err != nil {
@@ -163,8 +190,19 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 		params = params.WithOffset(&offset)
 	}
 
-	flattenedAccessProfilesList := flattenDatasourceTaikunAccessProfilesList(accessProfilesList)
-	if err := data.Set("access_profiles", flattenedAccessProfilesList); err != nil {
+	accessProfiles := make([]map[string]interface{}, len(accessProfilesList), len(accessProfilesList))
+	for i, rawAccessProfile := range accessProfilesList {
+
+		sshParams := ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(rawAccessProfile.ID)
+		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(sshParams, apiClient)
+		if err != nil {
+			fmt.Println(rawAccessProfile.ID)
+			return diag.FromErr(err)
+		}
+
+		accessProfiles[i] = flattenDatasourceTaikunAccessProfilesItem(rawAccessProfile, sshResponse)
+	}
+	if err := data.Set("access_profiles", accessProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -173,48 +211,54 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, data *schema.Resour
 	return nil
 }
 
-func flattenDatasourceTaikunAccessProfilesList(rawAccessProfiles []*models.AccessProfilesListDto) []map[string]interface{} {
-	accessProfiles := make([]map[string]interface{}, 0, len(rawAccessProfiles))
-	for _, rawAccessProfile := range rawAccessProfiles {
+func flattenDatasourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
 
-		DNSServers := make([]map[string]interface{}, 0, len(rawAccessProfile.DNSServers))
-		for _, rawDNSServer := range rawAccessProfile.DNSServers {
-			DNSServers = append(DNSServers, map[string]interface{}{
-				"address": rawDNSServer.Address,
-				"id":      i32toa(rawDNSServer.ID),
-			})
+	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers), len(rawAccessProfile.DNSServers))
+	for i, rawDNSServer := range rawAccessProfile.DNSServers {
+		DNSServers[i] = map[string]interface{}{
+			"address": rawDNSServer.Address,
+			"id":      i32toa(rawDNSServer.ID),
 		}
-
-		NTPServers := make([]map[string]interface{}, 0, len(rawAccessProfile.NtpServers))
-		for _, rawNTPServer := range rawAccessProfile.NtpServers {
-			NTPServers = append(NTPServers, map[string]interface{}{
-				"address": rawNTPServer.Address,
-				"id":      i32toa(rawNTPServer.ID),
-			})
-		}
-
-		projects := make([]map[string]interface{}, 0, len(rawAccessProfile.Projects))
-		for _, rawProject := range rawAccessProfile.Projects {
-			projects = append(projects, map[string]interface{}{
-				"id":   i32toa(rawProject.ID),
-				"name": rawProject.Name,
-			})
-		}
-
-		accessProfiles = append(accessProfiles, map[string]interface{}{
-			"created_by":        rawAccessProfile.CreatedBy,
-			"dns_server":        DNSServers,
-			"http_proxy":        rawAccessProfile.HTTPProxy,
-			"id":                i32toa(rawAccessProfile.ID),
-			"is_locked":         rawAccessProfile.IsLocked,
-			"last_modified":     rawAccessProfile.LastModified,
-			"last_modified_by":  rawAccessProfile.LastModifiedBy,
-			"name":              rawAccessProfile.Name,
-			"ntp_server":        NTPServers,
-			"organization_id":   i32toa(rawAccessProfile.OrganizationID),
-			"organization_name": rawAccessProfile.OrganizationName,
-			"project":           projects,
-		})
 	}
-	return accessProfiles
+
+	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers), len(rawAccessProfile.NtpServers))
+	for i, rawNTPServer := range rawAccessProfile.NtpServers {
+		NTPServers[i] = map[string]interface{}{
+			"address": rawNTPServer.Address,
+			"id":      i32toa(rawNTPServer.ID),
+		}
+	}
+
+	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects), len(rawAccessProfile.Projects))
+	for i, rawProject := range rawAccessProfile.Projects {
+		projects[i] = map[string]interface{}{
+			"id":   i32toa(rawProject.ID),
+			"name": rawProject.Name,
+		}
+	}
+
+	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload), len(sshResponse.Payload))
+	for i, rawSSHUser := range sshResponse.Payload {
+		SSHUsers[i] = map[string]interface{}{
+			"id":         strconv.Itoa(int(rawSSHUser.ID)),
+			"name":       rawSSHUser.Name,
+			"public_key": rawSSHUser.SSHPublicKey,
+		}
+	}
+
+	return map[string]interface{}{
+		"created_by":        rawAccessProfile.CreatedBy,
+		"dns_server":        DNSServers,
+		"http_proxy":        rawAccessProfile.HTTPProxy,
+		"id":                i32toa(rawAccessProfile.ID),
+		"is_locked":         rawAccessProfile.IsLocked,
+		"last_modified":     rawAccessProfile.LastModified,
+		"last_modified_by":  rawAccessProfile.LastModifiedBy,
+		"name":              rawAccessProfile.Name,
+		"ntp_server":        NTPServers,
+		"organization_id":   i32toa(rawAccessProfile.OrganizationID),
+		"organization_name": rawAccessProfile.OrganizationName,
+		"project":           projects,
+		"ssh_user":          SSHUsers,
+	}
 }

@@ -30,6 +30,7 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.project.#"),
+					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.ssh_user.#"),
 				),
 			},
 		},
@@ -39,6 +40,6 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 func testAccCheckTaikunAccessProfilesConfig() string {
 	return fmt.Sprintln(`
 data "taikun_access_profiles" "all" {
-  # organization_id="441"
+    organization_id="441"
 }`)
 }
