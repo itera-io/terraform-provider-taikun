@@ -12,7 +12,7 @@ const testAccResourceTaikunAccessProfile = `
 resource "taikun_access_profile" "foo" {
   name            = "%s"
   organization_id = "441"
-  #is_locked       = %t
+  is_locked       = %t
 
   ssh_user {
     name       = "oui oui"
@@ -50,7 +50,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
-					//resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "organization_id", "441"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
@@ -67,7 +67,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 	})
 }
 
-func TestAccResourceTaikunAccessProfileRename(t *testing.T) {
+func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 	firstName := randomTestName()
 	secondName := randomTestName()
 
@@ -81,7 +81,7 @@ func TestAccResourceTaikunAccessProfileRename(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
-					//resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "organization_id", "441"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
@@ -95,11 +95,11 @@ func TestAccResourceTaikunAccessProfileRename(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfile, secondName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfile, secondName, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
-					//resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "true"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "organization_id", "441"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),

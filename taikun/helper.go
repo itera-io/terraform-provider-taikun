@@ -41,3 +41,10 @@ func randomTestName() string {
 func randomName(prefix string, length int) string {
 	return fmt.Sprintf("%s%s", prefix, acctest.RandString(length))
 }
+
+func getLockMode(locked bool) string {
+	if locked {
+		return "lock"
+	}
+	return "unlock"
+}

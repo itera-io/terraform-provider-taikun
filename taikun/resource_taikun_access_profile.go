@@ -292,6 +292,23 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	locked := data.Get("is_locked").(bool)
+	if locked {
+		id, err := atoi32(createResult.Payload.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		lockBody := models.AccessProfilesLockManagementCommand{
+			ID:   id,
+			Mode: getLockMode(locked),
+		}
+		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	data.SetId(createResult.Payload.ID)
 
 	return resourceTaikunAccessProfileRead(ctx, data, meta)
@@ -321,6 +338,18 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if data.HasChange("is_locked") {
+		lockBody := models.AccessProfilesLockManagementCommand{
+			ID:   id,
+			Mode: getLockMode(data.Get("is_locked").(bool)),
+		}
+		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	data.SetId(createResult.Payload.ID)
