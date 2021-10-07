@@ -66,7 +66,7 @@ func resourceTaikunOrganization() *schema.Resource {
 				Default:  true,
 			},
 			"is_locked": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"is_read_only": {
