@@ -114,7 +114,6 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 	id := data.Id()
 	data.SetId("")
 
-	// TODO use Organizations/Details endpoint instead
 	var limit int32 = 1
 	response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&id).WithLimit(&limit), apiClient)
 	if err != nil {
