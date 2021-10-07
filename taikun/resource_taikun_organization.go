@@ -169,7 +169,7 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 	if err := data.Set("name", rawOrganization.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("partner_id", rawOrganization.PartnerID); err != nil {
+	if err := data.Set("partner_id", i32toa(rawOrganization.PartnerID)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("partner_name", rawOrganization.PartnerName); err != nil {
