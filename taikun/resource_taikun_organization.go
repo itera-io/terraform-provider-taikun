@@ -274,7 +274,53 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 }
 
 func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if !data.HasChanges(
+		"address",
+		"billing_email",
+		"city",
+		"country",
+		"discount_rate",
+		"email",
+		"full_name",
+		"let_managers_change_subscription",
+		"is_locked",
+		"name",
+		"phone",
+		"vat_number",
+	) {
+		return resourceTaikunOrganizationRead(ctx, data, meta)
+	}
+
+	body := &models.UpdateOrganizationCommand{
+		Address:                      data.Get("address").(string),
+		BillingEmail:                 data.Get("billing_email").(string),
+		City:                         data.Get("city").(string),
+		Country:                      data.Get("country").(string),
+		DiscountRate:                 data.Get("discount_rate").(float64),
+		Email:                        data.Get("email").(string),
+		FullName:                     data.Get("full_name").(string),
+		ID:                           id,
+		IsEligibleUpdateSubscription: data.Get("let_managers_change_subscription").(bool),
+		IsLocked:                     data.Get("is_locked").(bool),
+		Name:                         data.Get("name").(string),
+		Phone:                        data.Get("phone").(string),
+		VatNumber:                    data.Get("vat_number").(string),
+	}
+
+	updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(body)
+	_, err = apiClient.client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceTaikunOrganizationRead(ctx, data, meta)
 }
 
 func resourceTaikunOrganizationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
