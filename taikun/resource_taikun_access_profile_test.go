@@ -56,7 +56,7 @@ func init() {
 const testAccResourceTaikunAccessProfile = `
 resource "taikun_access_profile" "foo" {
   name            = "%s"
-  organization_id = "441"
+  organization_id = "638"
   is_locked       = %t
 
   ssh_user {

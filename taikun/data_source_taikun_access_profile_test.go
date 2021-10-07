@@ -9,7 +9,7 @@ import (
 //TODO We should not use a hardcoded id
 const testAccDataSourceAccessProfile = `
 data "taikun_access_profile" "foo" {
-  id = "333"
+  id = "716"
 }
 `
 
