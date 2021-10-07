@@ -1,8 +1,6 @@
 package taikun
 
 import (
-	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -24,10 +22,6 @@ func TestAccDataSourceTaikunAccessProfile(t *testing.T) {
 			{
 				Config: testAccDataSourceAccessProfile,
 				Check: resource.ComposeTestCheckFunc(
-					func(state *terraform.State) error {
-						fmt.Println(state)
-						return nil
-					},
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "name"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "organization_name"),
