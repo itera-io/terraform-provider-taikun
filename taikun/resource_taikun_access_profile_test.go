@@ -5,8 +5,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
+	"strings"
 	"testing"
 )
+
+func init() {
+	resource.AddTestSweepers("taikun_access_profile", &resource.Sweeper{
+		Name: "taikun_access_profile",
+		F: func(r string) error {
+
+			apiClient := testAccProvider.Meta().(*apiClient)
+
+			list, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion), apiClient)
+			if err != nil {
+				return err
+			}
+
+			for _, e := range list.Payload.Data {
+				if strings.HasPrefix(e.Name, testNamePrefix) {
+					params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(e.ID)
+					_, _, err = apiClient.client.AccessProfiles.AccessProfilesDelete(params, apiClient)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			return nil
+		},
+	})
+}
 
 const testAccResourceTaikunAccessProfile = `
 resource "taikun_access_profile" "foo" {
