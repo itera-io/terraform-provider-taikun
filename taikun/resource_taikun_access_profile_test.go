@@ -129,7 +129,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 
 		response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("access profile doesn't exists")
+			return fmt.Errorf("access profile doesn't exist")
 		}
 	}
 
