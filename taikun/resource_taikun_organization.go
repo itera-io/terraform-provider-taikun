@@ -201,41 +201,17 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 	apiClient := meta.(*apiClient)
 
 	body := &models.OrganizationCreateCommand{
-		Name:         data.Get("name").(string),
-		FullName:     data.Get("full_name").(string),
-		DiscountRate: data.Get("discount_rate").(float64),
-	}
-
-	if address, addressIsSet := data.GetOk("address"); addressIsSet {
-		body.Address = address.(string)
-	}
-
-	if billingEmail, billingEmailIsSet := data.GetOk("billing_email"); billingEmailIsSet {
-		body.BillingEmail = billingEmail.(string)
-	}
-
-	if city, cityIsSet := data.GetOk("city"); cityIsSet {
-		body.City = city.(string)
-	}
-
-	if country, countryIsSet := data.GetOk("country"); countryIsSet {
-		body.Country = country.(string)
-	}
-
-	if email, emailIsSet := data.GetOk("email"); emailIsSet {
-		body.Email = email.(string)
-	}
-
-	if letManagersChangeSubscription, letManagersChangeSubscriptionIsSet := data.GetOk("let_managers_change_subscription"); letManagersChangeSubscriptionIsSet {
-		body.IsEligibleUpdateSubscription = letManagersChangeSubscription.(bool)
-	}
-
-	if phone, phoneIsSet := data.GetOk("phone"); phoneIsSet {
-		body.Phone = phone.(string)
-	}
-
-	if vatNumber, vatNumberIsSet := data.GetOk("vat_number"); vatNumberIsSet {
-		body.VatNumber = vatNumber.(string)
+		Address:                      data.Get("address").(string),
+		BillingEmail:                 data.Get("billing_email").(string),
+		City:                         data.Get("city").(string),
+		Country:                      data.Get("country").(string),
+		DiscountRate:                 data.Get("discount_rate").(float64),
+		Email:                        data.Get("email").(string),
+		FullName:                     data.Get("full_name").(string),
+		IsEligibleUpdateSubscription: data.Get("let_managers_change_subscription").(bool),
+		Name:                         data.Get("name").(string),
+		Phone:                        data.Get("phone").(string),
+		VatNumber:                    data.Get("vat_number").(string),
 	}
 
 	params := organizations.NewOrganizationsCreateParams().WithV(ApiVersion).WithBody(body)
