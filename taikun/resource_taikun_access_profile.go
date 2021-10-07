@@ -29,7 +29,6 @@ func resourceTaikunAccessProfile() *schema.Resource {
 			"organization_id": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: stringIsInt,
 			},
 			"organization_name": {
@@ -43,6 +42,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 			"ntp_server": {
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -59,6 +59,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 			"dns_server": {
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -75,6 +76,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 			"ssh_user": {
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -296,7 +298,34 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 }
 
 func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+
+	organizationId, err := atoi32(data.Get("organization_id").(string))
+	if err != nil {
+		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+	}
+
+	body := &models.UpsertAccessProfileCommand{
+		ID:             id,
+		Name:           data.Get("name").(string),
+		OrganizationID: organizationId,
+	}
+
+	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
+		body.HTTPProxy = proxy.(string)
+	}
+
+	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
+	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(createResult.Payload.ID)
+
+	return resourceTaikunAccessProfileRead(ctx, data, meta)
 }
 
 func resourceTaikunAccessProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
