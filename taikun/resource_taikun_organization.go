@@ -111,18 +111,21 @@ func resourceTaikunOrganization() *schema.Resource {
 
 func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id := data.Id()
 	data.SetId("")
+
+	// TODO use Organizations/Details endpoint instead
+	var limit int32 = 1
+	response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&id).WithLimit(&limit), apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	response, err := apiClient.client.Organizations.OrganizationsDetails(organizations.NewOrganizationsDetailsParams().WithV(ApiVersion).WithOrganizationID(id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
+	if response.GetPayload().TotalCount != 1 {
+		return nil
 	}
 
-	rawOrganization := response.GetPayload().Data
+	rawOrganization := response.GetPayload().Data[0]
 
 	if err := data.Set("address", rawOrganization.Address); err != nil {
 		return diag.FromErr(err)
@@ -188,7 +191,7 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(id))
+	data.SetId(id)
 
 	return nil
 }
