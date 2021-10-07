@@ -2,8 +2,11 @@ package taikun
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"strconv"
 )
+
+const testNamePrefix = "tf-acc-test-"
 
 func atoi32(str string) (int32, error) {
 	res, err := strconv.ParseInt(str, 10, 32)
@@ -29,4 +32,12 @@ func stringIsInt(i interface{}, k string) ([]string, []error) {
 	}
 
 	return nil, nil
+}
+
+func randomTestName() string {
+	return randomName(testNamePrefix, 10)
+}
+
+func randomName(prefix string, length int) string {
+	return fmt.Sprintf("%s%s", prefix, acctest.RandString(length))
 }
