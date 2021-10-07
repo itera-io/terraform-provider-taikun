@@ -6,13 +6,20 @@ import (
 	"testing"
 )
 
-// providerFactories are used to instantiate a provider during acceptance testing.
-// The factory function will be invoked for every Terraform CLI command executed
-// to create a provider server to which the CLI can reattach.
-var providerFactories = map[string]func() (*schema.Provider, error){
-	"taikun": func() (*schema.Provider, error) {
-		return Provider(), nil
-	},
+var testAccProvider *schema.Provider
+var testAccProviders map[string]*schema.Provider
+var testAccProviderFactories map[string]func() (*schema.Provider, error)
+
+func init() {
+	testAccProvider = Provider()
+	testAccProviders = map[string]*schema.Provider{
+		"taikun": testAccProvider,
+	}
+	testAccProviderFactories = map[string]func() (*schema.Provider, error){
+		"taikun": func() (*schema.Provider, error) {
+			return testAccProvider, nil
+		},
+	}
 }
 
 func TestProvider(t *testing.T) {

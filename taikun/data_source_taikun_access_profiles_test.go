@@ -14,7 +14,7 @@ import (
 func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckTaikunAccessProfilesConfig(),
