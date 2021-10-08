@@ -68,5 +68,9 @@ jobs:
           TAIKUN_EMAIL: ${{ secrets.TAIKUN_EMAIL }}
           TAIKUN_PASSWORD: ${{ secrets.TAIKUN_PASSWORD }}
 
+          PROMETHEUS_PASSWORD: ${{ secrets.PROMETHEUS_PASSWORD }}
+          PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
+          PROMETHEUS_USERNAME: ${{ secrets.PROMETHEUS_USERNAME }}
+
         run: |
           go test -v -cover ./taikun
