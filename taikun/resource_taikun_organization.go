@@ -114,6 +114,7 @@ func resourceTaikunOrganization() *schema.Resource {
 func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id := data.Id()
+	id32, _ := atoi32(data.Id())
 	data.SetId("")
 
 	var limit int32 = 1
@@ -121,9 +122,8 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.GetPayload().Data) != 1 {
-		return nil
+	if len(response.GetPayload().Data) != 1 || response.Payload.Data[0].ID != id32 {
+		return diag.Errorf("Organization with ID %s not found", id)
 	}
 
 	rawOrganization := response.GetPayload().Data[0]
