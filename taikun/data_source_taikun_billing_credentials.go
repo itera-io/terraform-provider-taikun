@@ -64,6 +64,11 @@ func dataSourceTaikunBillingCredentials() *schema.Resource {
 							Type:        schema.TypeBool,
 							Computed:    true,
 						},
+						"is_default": {
+							Description: "Indicates whether the billing credential is the organization's default or not.",
+							Type:        schema.TypeBool,
+							Computed:    true,
+						},
 						"created_by": {
 							Description: "The creator of the billing credential.",
 							Type:        schema.TypeString,
@@ -134,6 +139,7 @@ func flattenDatasourceTaikunBillingCredentialItem(rawOperationCredential *models
 		"created_by":          rawOperationCredential.CreatedBy,
 		"id":                  i32toa(rawOperationCredential.ID),
 		"is_locked":           rawOperationCredential.IsLocked,
+		"is_default":          rawOperationCredential.IsDefault,
 		"last_modified":       rawOperationCredential.LastModified,
 		"last_modified_by":    rawOperationCredential.LastModifiedBy,
 		"name":                rawOperationCredential.Name,

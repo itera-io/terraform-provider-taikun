@@ -52,6 +52,11 @@ func dataSourceTaikunBillingCredential() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
+			"is_default": {
+				Description: "Indicates whether the billing credential is the organization's default or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
 			"created_by": {
 				Description: "The creator of the billing credential.",
 				Type:        schema.TypeString,

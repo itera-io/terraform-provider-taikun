@@ -27,6 +27,7 @@ func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "created_by"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "is_locked"),
+					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "is_default"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "prometheus_url"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credential.foo", "prometheus_username"),
