@@ -54,3 +54,10 @@ func getLockMode(locked bool) string {
 	}
 	return "unlock"
 }
+
+func getPrometheusType(typeS string) int32 {
+	if typeS == "Count" {
+		return 100
+	}
+	return 200
+}
