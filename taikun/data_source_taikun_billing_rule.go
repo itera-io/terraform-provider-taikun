@@ -27,7 +27,7 @@ func dataSourceTaikunBillingRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"labels": {
+			"label": {
 				Description: "Labels linked to this billing rule.",
 				Type:        schema.TypeList,
 				Computed:    true,

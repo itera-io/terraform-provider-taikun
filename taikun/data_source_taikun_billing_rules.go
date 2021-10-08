@@ -34,7 +34,7 @@ func dataSourceTaikunBillingRules() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"labels": {
+						"label": {
 							Description: "Labels linked to this billing rule.",
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -142,7 +142,7 @@ func flattenDatasourceTaikunBillingRuleItem(rawBillingRule *models.PrometheusRul
 		"billing_credential_id": i32toa(rawBillingRule.OperationCredential.OperationCredentialID),
 		"created_by":            rawBillingRule.CreatedBy,
 		"id":                    i32toa(rawBillingRule.ID),
-		"labels":                labels,
+		"label":                labels,
 		"last_modified":         rawBillingRule.LastModified,
 		"last_modified_by":      rawBillingRule.LastModifiedBy,
 		"name":                  rawBillingRule.Name,
