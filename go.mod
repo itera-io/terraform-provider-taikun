@@ -7,7 +7,7 @@ require (
 	github.com/go-openapi/strfmt v0.20.2
 	github.com/hashicorp/terraform-plugin-docs v0.5.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.8.0
-	github.com/itera-io/taikungoclient v0.0.0-20211006130713-30563bf9e18e
+	github.com/itera-io/taikungoclient v0.0.0-20211008130218-32c89e13bb5f
 )
 
 require (
