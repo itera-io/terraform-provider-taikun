@@ -32,19 +32,11 @@ jobs:
         run: |
           go build -v .
 
-  # run acceptance tests in a matrix with Terraform core versions
   test:
-    name: Matrix Test
+    name: Acceptance Tests
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        # list whatever Terraform versions here you would like to support
-        terraform:
-          - '0.14.0'
-          - '1.0.8'
     steps:
 
       - name: Set up Go
@@ -63,10 +55,14 @@ jobs:
         timeout-minutes: 10
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+          TF_ACC_TERRAFORM_VERSION: "1.0.8"
 
           TAIKUN_EMAIL: ${{ secrets.TAIKUN_EMAIL }}
           TAIKUN_PASSWORD: ${{ secrets.TAIKUN_PASSWORD }}
+
+          PROMETHEUS_PASSWORD: ${{ secrets.PROMETHEUS_PASSWORD }}
+          PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
+          PROMETHEUS_USERNAME: ${{ secrets.PROMETHEUS_USERNAME }}
 
         run: |
           go test -v -cover ./taikun

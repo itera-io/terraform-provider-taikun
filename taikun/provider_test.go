@@ -36,3 +36,15 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("TAIKUN_PASSWORD must be set for acceptance tests")
 	}
 }
+
+func testAccPreCheckPrometheus(t *testing.T) {
+	if err := os.Getenv("PROMETHEUS_URL"); err == "" {
+		t.Fatal("PROMETHEUS_URL must be set for acceptance tests")
+	}
+	if err := os.Getenv("PROMETHEUS_USERNAME"); err == "" {
+		t.Fatal("PROMETHEUS_USERNAME must be set for acceptance tests")
+	}
+	if err := os.Getenv("PROMETHEUS_PASSWORD"); err == "" {
+		t.Fatal("PROMETHEUS_PASSWORD must be set for acceptance tests")
+	}
+}

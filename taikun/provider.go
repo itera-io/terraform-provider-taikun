@@ -54,11 +54,14 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
-			"taikun_access_profiles": dataSourceTaikunAccessProfiles(),
-			"taikun_access_profile":  dataSourceTaikunAccessProfile(),
+			"taikun_access_profiles":     dataSourceTaikunAccessProfiles(),
+			"taikun_access_profile":      dataSourceTaikunAccessProfile(),
+			"taikun_billing_credentials": dataSourceTaikunBillingCredentials(),
+			"taikun_billing_credential":  dataSourceTaikunBillingCredential(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"taikun_access_profile": resourceTaikunAccessProfile(),
+			"taikun_access_profile":     resourceTaikunAccessProfile(),
+			"taikun_billing_credential": resourceTaikunBillingCredential(),
 		},
 		Schema: map[string]*schema.Schema{
 			"email": {
