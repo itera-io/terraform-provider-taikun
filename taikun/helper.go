@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -41,6 +42,10 @@ func randomTestName() string {
 
 func randomName(prefix string, length int) string {
 	return fmt.Sprintf("%s%s", prefix, acctest.RandString(length))
+}
+
+func randomString() string {
+	return acctest.RandString(rand.Int()%10 + 10)
 }
 
 func getLockMode(locked bool) string {
