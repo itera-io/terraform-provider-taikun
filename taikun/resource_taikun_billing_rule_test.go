@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 	"github.com/itera-io/taikungoclient/models"
+	"os"
 	"strings"
 	"testing"
 )
@@ -53,12 +54,23 @@ func init() {
 }
 
 const testAccResourceTaikunBillingRule = `
+
+resource "taikun_billing_credential" "foo" {
+  name            = "%s"
+  organization_id = "638"
+  is_locked       = false
+
+  prometheus_password = "%s"
+  prometheus_url = "%s"
+  prometheus_username = "%s"
+}
+
 resource "taikun_billing_rule" "foo" {
   name            = "%s"
   metric_name     =   "coredns_forward_request_duration_seconds"
   price = 1
   type = "Sum"
-  billing_credential_id = "89"
+  billing_credential_id = resource.taikun_billing_credential.foo.id
   label {
     label = "label"
     value = "value"
@@ -67,18 +79,19 @@ resource "taikun_billing_rule" "foo" {
 `
 
 func TestAccResourceTaikunBillingRule(t *testing.T) {
-	firstName := randomTestName()
+	credName := randomTestName()
+	ruleName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingRule, firstName),
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRule, credName, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME"), ruleName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds")),
 			},
 		},
