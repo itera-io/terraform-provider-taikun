@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strings"
 	"testing"
@@ -62,7 +63,7 @@ resource "taikun_organization" "foo" {
   full_name = "%s"
   discount_rate = %f
 
-  vat_number = %s
+  vat_number = "%s"
   email = "%s"
   billing_email = "%s"
   phone = "%s"
@@ -79,7 +80,7 @@ resource "taikun_organization" "foo" {
 func TestAccResourceTaikunOrganization(t *testing.T) {
 	name := randomTestName()
 	fullName := randomString()
-	discountRate := rand.Float64() * 100
+	discountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
 	email := "manager@example.org"
 	billingEmail := "billing@example.org"
@@ -111,18 +112,18 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					letManagersChangeSubscription),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
-					resource.TestCheckResourceAttr("taikun_organization.foo", "name", name),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fullName),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "discount_rate", discountRate),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "vat_number", vatNumber),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "email", email),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "billing_email", billingEmail),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "phone", phone),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "address", address),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "city", city),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "country", country),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", isLocked),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", letManagersChangeSubscription),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(name)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fmt.Sprint(fullName)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "discount_rate", fmt.Sprint(discountRate)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "vat_number", fmt.Sprint(vatNumber)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "email", fmt.Sprint(email)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "billing_email", fmt.Sprint(billingEmail)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "phone", fmt.Sprint(phone)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(address)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(city)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(country)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
 		},
@@ -134,8 +135,8 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 	newName := randomTestName()
 	fullName := randomString()
 	newFullName := randomString()
-	discountRate := rand.Float64() * 100
-	newDiscountRate := rand.Float64() * 100
+	discountRate := math.Round(rand.Float64()*10000) / 100
+	newDiscountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
 	newVatNumber := randomString()
 	email := "manager@example.org"
@@ -176,18 +177,18 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					letManagersChangeSubscription),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
-					resource.TestCheckResourceAttr("taikun_organization.foo", "name", name),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fullName),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "discount_rate", discountRate),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "vat_number", vatNumber),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "email", email),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "billing_email", billingEmail),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "phone", phone),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "address", address),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "city", city),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "country", country),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", isLocked),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", letManagersChangeSubscription),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(name)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fmt.Sprint(fullName)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "discount_rate", fmt.Sprint(discountRate)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "vat_number", fmt.Sprint(vatNumber)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "email", fmt.Sprint(email)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "billing_email", fmt.Sprint(billingEmail)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "phone", fmt.Sprint(phone)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(address)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(city)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(country)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
 			{
@@ -206,18 +207,18 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					newLetManagersChangeSubscription),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
-					resource.TestCheckResourceAttr("taikun_organization.foo", "name", newName),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", newFullName),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "discount_rate", newDiscountRate),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "vat_number", newVatNumber),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "email", newEmail),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "billing_email", newBillingEmail),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "phone", newPhone),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "address", newAddress),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "city", newCity),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "country", newCountry),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", newIsLocked),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", newLetManagersChangeSubscription),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(newName)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fmt.Sprint(newFullName)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "discount_rate", fmt.Sprint(newDiscountRate)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "vat_number", fmt.Sprint(newVatNumber)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "email", fmt.Sprint(newEmail)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "billing_email", fmt.Sprint(newBillingEmail)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "phone", fmt.Sprint(newPhone)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(newAddress)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(newCity)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(newCountry)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", fmt.Sprint(newIsLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(newLetManagersChangeSubscription)),
 				),
 			},
 		},
@@ -232,9 +233,8 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
 		var limit int32 = 1
-		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&id).WithLimit(&limit)
+		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID).WithLimit(&limit)
 
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
@@ -253,12 +253,12 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
 		var limit int32 = 1
-		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id).WithLimit(&limit)
+		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID).WithLimit(&limit)
 
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
-		if err == nil && len(response.Payload.Data) != 0 {
+		organizationID, _ := atoi32(rs.Primary.ID)
+		if err == nil && response.Payload.Data[0].ID == organizationID {
 			return fmt.Errorf("organization still exists")
 		}
 	}
