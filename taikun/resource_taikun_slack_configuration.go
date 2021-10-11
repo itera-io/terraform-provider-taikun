@@ -14,7 +14,6 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 		Description:   "Taikun Slack Configuration",
 		CreateContext: resourceTaikunSlackConfigurationCreate,
 		ReadContext:   resourceTaikunSlackConfigurationRead,
-		UpdateContext: resourceTaikunSlackConfigurationUpdate,
 		DeleteContext: resourceTaikunSlackConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -115,10 +114,7 @@ func resourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.Reso
 
 func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
-}
 
-func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
 }
 
 func resourceTaikunSlackConfigurationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
