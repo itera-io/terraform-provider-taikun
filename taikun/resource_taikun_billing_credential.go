@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"strconv"
 )
 
 func resourceTaikunBillingCredential() *schema.Resource {
@@ -155,7 +154,7 @@ func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.Resourc
 		if err := data.Set("created_by", rawBillingCredential.CreatedBy); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("id", strconv.Itoa(int(rawBillingCredential.ID))); err != nil {
+		if err := data.Set("id", i32toa(rawBillingCredential.ID)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("is_locked", rawBillingCredential.IsLocked); err != nil {
@@ -173,7 +172,7 @@ func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.Resourc
 		if err := data.Set("name", rawBillingCredential.Name); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("organization_id", strconv.Itoa(int(rawBillingCredential.OrganizationID))); err != nil {
+		if err := data.Set("organization_id", i32toa(rawBillingCredential.OrganizationID)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("organization_name", rawBillingCredential.OrganizationName); err != nil {
