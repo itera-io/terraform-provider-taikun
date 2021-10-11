@@ -23,6 +23,7 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				Description: "Slack channel for notifications",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"id": {
 				Description: "ID",
@@ -33,12 +34,14 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				Description: "Name",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"organization_id": {
 				Description: "Organization ID",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"organization_name": {
 				Description: "Organization Name",
@@ -50,11 +53,13 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Alert", "General"}, false),
+				ForceNew:     true,
 			},
 			"url": {
 				Description: "Webhook URL from Slack app",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 		},
 	}
