@@ -45,10 +45,10 @@ resource "taikun_access_profile" "foo" {
 
 ### Optional
 
-- **dns_server** (Block List) List of DNS servers. (see [below for nested schema](#nestedblock--dns_server))
+- **dns_server** (Block List, Max: 2) List of DNS servers. (see [below for nested schema](#nestedblock--dns_server))
 - **http_proxy** (String) HTTP Proxy of the access profile.
 - **is_locked** (Boolean) Indicates whether the access profile is locked or not. Defaults to `false`.
-- **ntp_server** (Block List) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
+- **ntp_server** (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
 - **organization_id** (String) Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
 - **ssh_user** (Block List) List of SSH Users. (see [below for nested schema](#nestedblock--ssh_user))
 
