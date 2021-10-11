@@ -23,7 +23,7 @@ func dataSourceTaikunBillingRule() *schema.Resource {
 				Computed:    true,
 			},
 			"metric_name": {
-				Description: "The name of the metric.",
+				Description: "The name of the metric from Prometheus you want to bill.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -52,12 +52,12 @@ func dataSourceTaikunBillingRule() *schema.Resource {
 				},
 			},
 			"type": {
-				Description: "Type of the billing rule. `Count` or `Sum`",
+				Description: "Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"price": {
-				Description: "The price of the billing rule.",
+				Description: "The price in CZK per selected unit.",
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},

@@ -28,7 +28,7 @@ func resourceTaikunBillingRule() *schema.Resource {
 				Required:    true,
 			},
 			"metric_name": {
-				Description: "The name of the metric.",
+				Description: "The name of the metric from Prometheus you want to bill.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -58,13 +58,13 @@ func resourceTaikunBillingRule() *schema.Resource {
 				},
 			},
 			"type": {
-				Description:  "Type of the billing rule. `Count` or `Sum`",
+				Description:  "Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
 			},
 			"price": {
-				Description:  "The price of the billing rule.",
+				Description:  "The price in CZK per selected unit.",
 				Type:         schema.TypeFloat,
 				Required:     true,
 				ValidateFunc: validation.FloatAtLeast(0),
