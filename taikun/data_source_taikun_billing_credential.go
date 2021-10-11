@@ -31,6 +31,7 @@ func dataSourceTaikunBillingCredential() *schema.Resource {
 				Description: "The prometheus password.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 			},
 			"prometheus_url": {
 				Description: "The prometheus url.",
