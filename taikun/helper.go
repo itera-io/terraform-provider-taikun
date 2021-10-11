@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
@@ -20,6 +21,17 @@ func atoi32(str string) (int32, error) {
 
 func i32toa(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
+}
+
+func stringIsLowercase(i interface{}, k string) ([]string, []error) {
+	v, ok := i.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
+	}
+	if strings.ToLower(v) != v {
+		return nil, []error{fmt.Errorf("expected %q to be lowercase", k)}
+	}
+	return nil, nil
 }
 
 func stringIsInt(i interface{}, k string) ([]string, []error) {
