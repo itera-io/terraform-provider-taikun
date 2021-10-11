@@ -205,17 +205,17 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	//billingCredentialId, err := atoi32(data.Get("billing_credential_id").(string))
-	//if err != nil {
-	//	return diag.Errorf("billing_credential_id isn't valid: %s", data.Get("billing_credential_id").(string))
-	//}
+	billingCredentialId, err := atoi32(data.Get("billing_credential_id").(string))
+	if err != nil {
+		return diag.Errorf("billing_credential_id isn't valid: %s", data.Get("billing_credential_id").(string))
+	}
 
 	body := &models.RuleForUpdateDto{
-		Name:       data.Get("name").(string),
-		MetricName: data.Get("metric_name").(string),
-		Price:      data.Get("price").(float64),
-		//OperationCredentialID: billingCredentialId,
-		Type: models.PrometheusType(getPrometheusType(data.Get("type").(string))),
+		Name:                  data.Get("name").(string),
+		MetricName:            data.Get("metric_name").(string),
+		Price:                 data.Get("price").(float64),
+		OperationCredentialID: billingCredentialId,
+		Type:                  models.PrometheusType(getPrometheusType(data.Get("type").(string))),
 	}
 
 	params := prometheus.NewPrometheusUpdateParams().WithV(ApiVersion).WithID(id).WithBody(body)
