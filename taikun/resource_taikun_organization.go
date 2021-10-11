@@ -88,9 +88,10 @@ func resourceTaikunOrganization() *schema.Resource {
 				Computed:    true,
 			},
 			"name": {
-				Description: "Name",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Name",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: stringIsLowercase,
 			},
 			// TODO partner details?
 			"partner_id": {
