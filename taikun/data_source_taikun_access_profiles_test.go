@@ -1,15 +1,10 @@
 package taikun
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
-
-// TODO add test with organization_ID set
-// with additional check:
-// resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "organization_id")
 
 func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -36,8 +31,8 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 }
 
 func testAccCheckTaikunAccessProfilesConfig() string {
-	return fmt.Sprintln(`
+	return `
 data "taikun_access_profiles" "all" {
-    organization_id="638"
-}`)
+    #organization_id="638"
+}`
 }

@@ -47,9 +47,10 @@ func resourceTaikunBillingCredential() *schema.Resource {
 				ForceNew:    true,
 			},
 			"organization_id": {
-				Description:  "The id of the organization which owns the billing credential.",
+				Description:  "Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: stringIsInt,
 				ForceNew:     true,
 			},
@@ -94,17 +95,20 @@ func resourceTaikunBillingCredential() *schema.Resource {
 func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	organizationId, err := atoi32(data.Get("organization_id").(string))
-	if err != nil {
-		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
-	}
-
 	body := &models.OperationCredentialsCreateCommand{
 		Name:               data.Get("name").(string),
-		OrganizationID:     organizationId,
 		PrometheusPassword: data.Get("prometheus_password").(string),
 		PrometheusURL:      data.Get("prometheus_url").(string),
 		PrometheusUsername: data.Get("prometheus_username").(string),
+	}
+
+	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	if organizationIDIsSet {
+		organizationId, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+		}
+		body.OrganizationID = organizationId
 	}
 
 	params := ops_credentials.NewOpsCredentialsCreateParams().WithV(ApiVersion).WithBody(body)

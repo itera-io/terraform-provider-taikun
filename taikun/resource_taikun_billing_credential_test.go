@@ -56,7 +56,6 @@ func init() {
 const testAccResourceTaikunBillingCredential = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
-  organization_id = "638"
   is_locked       = %t
 
   prometheus_password = "%s"
@@ -79,7 +78,7 @@ func TestAccResourceTaikunBillingCredential(t *testing.T) {
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "false"),
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "organization_id", "638"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
@@ -103,7 +102,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "false"),
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "organization_id", "638"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
@@ -115,7 +114,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "true"),
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "organization_id", "638"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
