@@ -35,7 +35,7 @@ data "taikun_billing_credential" "foo" {
 - **name** (String) The name of the billing credential.
 - **organization_id** (String) The id of the organization which owns the billing credential.
 - **organization_name** (String) The name of the organization which owns the billing credential.
-- **prometheus_password** (String) The prometheus password.
+- **prometheus_password** (String, Sensitive) The prometheus password.
 - **prometheus_url** (String) The prometheus url.
 - **prometheus_username** (String) The prometheus username.
 

@@ -39,6 +39,7 @@ func resourceTaikunBillingCredential() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				Sensitive:   true,
 			},
 			"prometheus_url": {
 				Description: "The prometheus url.",
