@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -206,7 +205,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload), len(sshResponse.Payload))
 		for i, rawSSHUser := range sshResponse.Payload {
 			SSHUsers[i] = map[string]interface{}{
-				"id":         strconv.Itoa(int(rawSSHUser.ID)),
+				"id":         i32toa(rawSSHUser.ID),
 				"name":       rawSSHUser.Name,
 				"public_key": rawSSHUser.SSHPublicKey,
 			}
@@ -221,7 +220,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		if err := data.Set("http_proxy", rawAccessProfile.HTTPProxy); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("id", strconv.Itoa(int(rawAccessProfile.ID))); err != nil {
+		if err := data.Set("id", i32toa(rawAccessProfile.ID)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("is_locked", rawAccessProfile.IsLocked); err != nil {
@@ -239,7 +238,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		if err := data.Set("ntp_server", NTPServers); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("organization_id", strconv.Itoa(int(rawAccessProfile.OrganizationID))); err != nil {
+		if err := data.Set("organization_id", i32toa(rawAccessProfile.OrganizationID)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("organization_name", rawAccessProfile.OrganizationName); err != nil {

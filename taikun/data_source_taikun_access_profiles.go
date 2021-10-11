@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/itera-io/taikungoclient/client/ssh_users"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -240,7 +239,7 @@ func flattenDatasourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessPr
 	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload), len(sshResponse.Payload))
 	for i, rawSSHUser := range sshResponse.Payload {
 		SSHUsers[i] = map[string]interface{}{
-			"id":         strconv.Itoa(int(rawSSHUser.ID)),
+			"id":         i32toa(rawSSHUser.ID),
 			"name":       rawSSHUser.Name,
 			"public_key": rawSSHUser.SSHPublicKey,
 		}
