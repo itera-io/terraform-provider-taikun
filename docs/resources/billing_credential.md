@@ -29,7 +29,6 @@ resource "taikun_billing_credential" "foo" {
 ### Required
 
 - **name** (String) The name of the billing credential.
-- **organization_id** (String) The id of the organization which owns the billing credential.
 - **prometheus_password** (String, Sensitive) The prometheus password.
 - **prometheus_url** (String) The prometheus url.
 - **prometheus_username** (String) The prometheus username.
@@ -37,6 +36,7 @@ resource "taikun_billing_credential" "foo" {
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the billing credential is locked or not. Defaults to `false`.
+- **organization_id** (String) Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
 
 ### Read-Only
 
