@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/itera-io/taikungoclient/models"
 )
 
 const testNamePrefix = "tf-acc-test-"
@@ -92,9 +93,9 @@ func parseLoadBalancingSolution(loadBalancingSolution string) (bool, bool) {
 	return false, false
 }
 
-func getSlackConfigurationType(configType string) int32 {
+func getSlackConfigurationType(configType string) models.SlackType {
 	if configType == "Alert" {
-		return 100
+		return models.SlackType(100)
 	}
-	return 200 // General
+	return models.SlackType(200) // General
 }
