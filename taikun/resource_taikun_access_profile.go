@@ -50,6 +50,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				ForceNew:    true,
+				MaxItems:    2,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -70,6 +71,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				ForceNew:    true,
+				MaxItems:    2,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
