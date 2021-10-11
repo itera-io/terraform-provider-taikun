@@ -143,5 +143,21 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 }
 
 func resourceTaikunSlackConfigurationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	body := models.DeleteSlackConfigurationCommand{ID: id}
+	params := slack.NewSlackDeleteParams().WithV(ApiVersion).WithBody(&body)
+	_, _, err = apiClient.client.Slack.SlackDelete(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId("")
+
 	return nil
 }
