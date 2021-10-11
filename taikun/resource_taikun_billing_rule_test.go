@@ -54,7 +54,6 @@ func init() {
 }
 
 const testAccResourceTaikunBillingRule = `
-
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
   organization_id = "638"
