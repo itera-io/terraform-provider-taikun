@@ -67,4 +67,11 @@ resource "taikun_organization" "foo" {
 - **servers** (Number) Number of associated servers
 - **users** (Number) Number of associated users
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# import with Taikun ID
+terraform import taikun_organization.myorganization 42
+```
