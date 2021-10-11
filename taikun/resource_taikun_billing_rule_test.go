@@ -98,7 +98,11 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds")),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
+					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
+				),
 			},
 		},
 	})
@@ -126,6 +130,9 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
+					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
 				),
 			},
 			{
@@ -140,6 +147,9 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleNameNew),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
+					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
 				),
 			},
 		},
