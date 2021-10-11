@@ -88,7 +88,13 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingRule, credName, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME"), ruleName),
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRule,
+					credName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+					ruleName,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
@@ -98,54 +104,47 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 	})
 }
 
-//func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
-//	firstName := randomTestName()
-//	secondName := randomTestName()
-//
-//	resource.ParallelTest(t, resource.TestCase{
-//		PreCheck:          func() { testAccPreCheck(t) },
-//		ProviderFactories: testAccProviderFactories,
-//		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: fmt.Sprintf(testAccResourceTaikunBillingRule, firstName, false),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckTaikunBillingRuleExists,
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", firstName),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "is_locked", "false"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "organization_id", "638"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "dns_server.#", "2"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "dns_server.0.address", "8.8.8.8"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "dns_server.1.address", "8.8.4.4"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ntp_server.#", "2"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ntp_server.0.address", "time.windows.com"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ntp_server.1.address", "ntp.pool.org"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ssh_user.#", "1"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ssh_user.0.name", "oui oui"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
-//				),
-//			},
-//			{
-//				Config: fmt.Sprintf(testAccResourceTaikunBillingRule, secondName, true),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckTaikunBillingRuleExists,
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", secondName),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "is_locked", "true"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "organization_id", "638"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "dns_server.#", "2"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "dns_server.0.address", "8.8.8.8"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "dns_server.1.address", "8.8.4.4"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ntp_server.#", "2"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ntp_server.0.address", "time.windows.com"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ntp_server.1.address", "ntp.pool.org"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ssh_user.#", "1"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ssh_user.0.name", "oui oui"),
-//					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
-//				),
-//			},
-//		},
-//	})
-//}
+func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
+	credName := randomTestName()
+	ruleName := randomTestName()
+	ruleNameNew := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRule,
+					credName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+					ruleName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunBillingRuleExists,
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRule,
+					credName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+					ruleNameNew,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunBillingRuleExists,
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleNameNew),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient)
