@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -133,7 +132,6 @@ func dataSourceTaikunOrganizationRead(ctx context.Context, data *schema.Resource
 	id := data.Get("id").(string)
 	id32, _ := atoi32(id)
 	if id != "" {
-		log.Println("[DEBUG] YYYYYYYYY searching with ID")
 		params = params.WithSearchID(&id)
 	}
 
@@ -150,7 +148,6 @@ func dataSourceTaikunOrganizationRead(ctx context.Context, data *schema.Resource
 		return diag.Errorf("Organization with ID %s not found", id)
 	}
 
-	log.Println("[DEBUG] YYYYYYYYY found organization")
 	rawOrganization := response.GetPayload().Data[0]
 
 	if err := data.Set("address", rawOrganization.Address); err != nil {
