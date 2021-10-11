@@ -89,19 +89,19 @@ func resourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.Reso
 	if err := data.Set("channel", rawSlackConfiguration.Channel); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("id", rawSlackConfiguration.ID); err != nil {
+	if err := data.Set("id", i32toa(rawSlackConfiguration.ID)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("name", rawSlackConfiguration.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("organization_id", rawSlackConfiguration.OrganizationID); err != nil {
+	if err := data.Set("organization_id", i32toa(rawSlackConfiguration.OrganizationID)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("organization_name", rawSlackConfiguration.OrganizationName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("slack_type", rawSlackConfiguration.SlackType); err != nil {
+	if err := data.Set("type", rawSlackConfiguration.SlackType); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("url", rawSlackConfiguration.URL); err != nil {
