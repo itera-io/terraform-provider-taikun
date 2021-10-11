@@ -29,7 +29,7 @@ func stringIsLowercase(i interface{}, k string) ([]string, []error) {
 		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
 	}
 	if strings.ToLower(v) != v {
-		return nil, []error{fmt.Errorf("expected %q to be a lowercase name", k)}
+		return nil, []error{fmt.Errorf("expected %q to be lowercase", k)}
 	}
 	return nil, nil
 }
