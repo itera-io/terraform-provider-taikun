@@ -2,12 +2,13 @@ package taikun
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/models"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -56,7 +57,6 @@ func init() {
 const testAccResourceTaikunAccessProfile = `
 resource "taikun_access_profile" "foo" {
   name            = "%s"
-  organization_id = "638"
   is_locked       = %t
 
   ssh_user {
@@ -96,7 +96,6 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "organization_id", "638"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),
@@ -127,7 +126,6 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "organization_id", "638"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),
@@ -145,7 +143,6 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "true"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "organization_id", "638"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),

@@ -30,9 +30,10 @@ func resourceTaikunAccessProfile() *schema.Resource {
 				Required:    true,
 			},
 			"organization_id": {
-				Description:  "The id of the organization which owns the access profile.",
+				Description:  "Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: stringIsInt,
 			},
 			"organization_name": {
@@ -260,14 +261,17 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	organizationId, err := atoi32(data.Get("organization_id").(string))
-	if err != nil {
-		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+	body := &models.UpsertAccessProfileCommand{
+		Name: data.Get("name").(string),
 	}
 
-	body := &models.UpsertAccessProfileCommand{
-		Name:           data.Get("name").(string),
-		OrganizationID: organizationId,
+	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	if organizationIDIsSet {
+		organizationId, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+		}
+		body.OrganizationID = organizationId
 	}
 
 	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
@@ -344,27 +348,6 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 
 	id, err := atoi32(data.Id())
 
-	organizationId, err := atoi32(data.Get("organization_id").(string))
-	if err != nil {
-		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
-	}
-
-	body := &models.UpsertAccessProfileCommand{
-		ID:             id,
-		Name:           data.Get("name").(string),
-		OrganizationID: organizationId,
-	}
-
-	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
-		body.HTTPProxy = proxy.(string)
-	}
-
-	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	if data.HasChange("is_locked") {
 		lockBody := models.AccessProfilesLockManagementCommand{
 			ID:   id,
@@ -377,7 +360,35 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 		}
 	}
 
-	data.SetId(createResult.Payload.ID)
+	if !data.HasChangeExcept("is_locked") {
+		return resourceTaikunAccessProfileRead(ctx, data, meta)
+	}
+
+	body := &models.UpsertAccessProfileCommand{
+		ID:   id,
+		Name: data.Get("name").(string),
+	}
+
+	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	if organizationIDIsSet {
+		organizationId, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+		}
+		body.OrganizationID = organizationId
+	}
+
+	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
+		body.HTTPProxy = proxy.(string)
+	}
+
+	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
+	updateResponse, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(updateResponse.Payload.ID)
 
 	return resourceTaikunAccessProfileRead(ctx, data, meta)
 }
