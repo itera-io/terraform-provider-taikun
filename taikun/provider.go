@@ -71,6 +71,7 @@ func Provider() *schema.Provider {
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization":                         resourceTaikunOrganization(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
+			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
 		},
 		Schema: map[string]*schema.Schema{
 			"email": {
