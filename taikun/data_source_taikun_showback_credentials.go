@@ -30,7 +30,7 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 							Computed:    true,
 						},
 						"name": {
-							Description: "The name of the billing credential.",
+							Description: "The name of the showback credential.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
