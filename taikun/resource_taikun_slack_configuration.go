@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/slack"
+	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunSlackConfiguration() *schema.Resource {
@@ -113,8 +114,32 @@ func resourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.Reso
 }
 
 func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	apiClient := meta.(*apiClient)
 
+	body := models.UpsertSlackConfigurationCommand{
+		Name:      data.Get("name").(string),
+		URL:       data.Get("url").(string),
+		Channel:   data.Get("channel").(string),
+		SlackType: getSlackConfigurationType(data.Get("type").(string)),
+	}
+
+	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+		organizationID, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		body.OrganizationID = organizationID
+	}
+
+	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
+	response, err := apiClient.client.Slack.SlackCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(response.Payload))
+
+	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
 }
 
 func resourceTaikunSlackConfigurationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
