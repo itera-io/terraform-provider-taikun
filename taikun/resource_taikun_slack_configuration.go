@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient/client/slack"
 )
 
 func resourceTaikunSlackConfiguration() *schema.Resource {
@@ -66,6 +67,48 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 }
 
 func resourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	data.SetId("")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
+	response, err := apiClient.client.Slack.SlackList(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if response.Payload.TotalCount != 1 {
+		return diag.Errorf("Slack configuration with ID %d not found", id)
+	}
+
+	rawSlackConfiguration := response.Payload.Data[0]
+	if err := data.Set("channel", rawSlackConfiguration.Channel); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", rawSlackConfiguration.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawSlackConfiguration.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", rawSlackConfiguration.OrganizationID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawSlackConfiguration.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("slack_type", rawSlackConfiguration.SlackType); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("url", rawSlackConfiguration.URL); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
+
 	return nil
 }
 
