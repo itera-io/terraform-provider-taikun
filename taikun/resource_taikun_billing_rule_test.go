@@ -56,7 +56,6 @@ func init() {
 const testAccResourceTaikunBillingRule = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
-  organization_id = "638"
   is_locked       = false
 
   prometheus_password = "%s"
