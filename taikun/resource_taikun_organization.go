@@ -142,7 +142,7 @@ func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceDa
 	data.SetId("")
 
 	var limit int32 = 1
-	response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&id).WithLimit(&limit), apiClient)
+	response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32).WithLimit(&limit), apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

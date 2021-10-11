@@ -132,7 +132,7 @@ func dataSourceTaikunOrganizationRead(ctx context.Context, data *schema.Resource
 	id := data.Get("id").(string)
 	id32, _ := atoi32(id)
 	if id != "" {
-		params = params.WithSearchID(&id)
+		params = params.WithID(&id32)
 	}
 
 	data.SetId("")
