@@ -3,11 +3,11 @@ module github.com/itera-io/terraform-provider-taikun
 go 1.17
 
 require (
-	github.com/go-openapi/runtime v0.19.31
-	github.com/go-openapi/strfmt v0.20.2
+	github.com/go-openapi/runtime v0.20.0
+	github.com/go-openapi/strfmt v0.20.3
 	github.com/hashicorp/terraform-plugin-docs v0.5.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.8.0
-	github.com/itera-io/taikungoclient v0.0.0-20211008130218-32c89e13bb5f
+	github.com/itera-io/taikungoclient v0.0.0-20211011093156-f0b5df8bda76
 )
 
 require (
@@ -36,7 +36,7 @@ require (
 	github.com/go-openapi/loads v0.20.2 // indirect
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
-	github.com/go-openapi/validate v0.20.2 // indirect
+	github.com/go-openapi/validate v0.20.3 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
