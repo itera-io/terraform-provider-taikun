@@ -57,10 +57,11 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				ForceNew:     true,
 			},
 			"url": {
-				Description: "Webhook URL from Slack app",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "Webhook URL from Slack app",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 		},
 	}
