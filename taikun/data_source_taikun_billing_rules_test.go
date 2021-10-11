@@ -21,7 +21,7 @@ func TestAccDataSourceTaikunBillingRules(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.metric_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.label.#"),
-					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.label.0.label"),
+					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.label.0.key"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.label.0.value"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.label.0.id"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.type"),

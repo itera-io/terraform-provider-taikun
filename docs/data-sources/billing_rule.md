@@ -43,7 +43,7 @@ data "taikun_billing_rule" "foo" {
 Read-Only:
 
 - **id** (String)
-- **label** (String)
+- **key** (String)
 - **value** (String)
 
 

@@ -50,7 +50,7 @@ Read-Only:
 Read-Only:
 
 - **id** (String)
-- **label** (String)
+- **key** (String)
 - **value** (String)
 
 

@@ -31,7 +31,7 @@ resource "taikun_billing_rule" "foo" {
   billing_credential_id = resource.taikun_billing_credential.foo.id
 
   label {
-    label = "label"
+    key   = "label"
     value = "value"
   }
 }
@@ -61,7 +61,7 @@ resource "taikun_billing_rule" "foo" {
 
 Required:
 
-- **label** (String) Key of the label.
+- **key** (String) Key of the label.
 - **value** (String) Value of the label.
 
 Read-Only:

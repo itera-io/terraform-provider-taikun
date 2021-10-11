@@ -39,7 +39,7 @@ func resourceTaikunBillingRule() *schema.Resource {
 				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"label": {
+						"key": {
 							Description: "Key of the label.",
 							Type:        schema.TypeString,
 							Required:    true,
@@ -118,7 +118,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
 		LabelsList[i] = &models.PrometheusLabelListDto{
-			Label: rawLabel["label"].(string),
+			Label: rawLabel["key"].(string),
 			Value: rawLabel["value"].(string),
 		}
 	}
@@ -155,7 +155,7 @@ func resourceTaikunBillingRuleRead(_ context.Context, data *schema.ResourceData,
 		labels := make([]map[string]interface{}, len(rawBillingRule.Labels), len(rawBillingRule.Labels))
 		for i, rawLabel := range rawBillingRule.Labels {
 			labels[i] = map[string]interface{}{
-				"label": rawLabel.Label,
+				"key":   rawLabel.Label,
 				"value": rawLabel.Value,
 				"id":    i32toa(rawLabel.ID),
 			}

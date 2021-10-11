@@ -40,7 +40,7 @@ func dataSourceTaikunBillingRules() *schema.Resource {
 							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"label": {
+									"key": {
 										Description: "Key of the label.",
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -132,7 +132,7 @@ func flattenDatasourceTaikunBillingRuleItem(rawBillingRule *models.PrometheusRul
 	labels := make([]map[string]interface{}, len(rawBillingRule.Labels), len(rawBillingRule.Labels))
 	for i, rawLabel := range rawBillingRule.Labels {
 		labels[i] = map[string]interface{}{
-			"label": rawLabel.Label,
+			"key":   rawLabel.Label,
 			"value": rawLabel.Value,
 			"id":    i32toa(rawLabel.ID),
 		}

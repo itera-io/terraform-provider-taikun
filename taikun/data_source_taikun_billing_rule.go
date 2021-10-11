@@ -33,7 +33,7 @@ func dataSourceTaikunBillingRule() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"label": {
+						"key": {
 							Description: "Key of the label.",
 							Type:        schema.TypeString,
 							Computed:    true,
