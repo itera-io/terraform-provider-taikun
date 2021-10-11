@@ -105,6 +105,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
 		},
@@ -135,6 +136,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
 			{
@@ -152,6 +154,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
 		},
