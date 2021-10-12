@@ -1,13 +1,12 @@
 resource "taikun_billing_credential" "foo" {
-  name            = "foo"
-  organization_id = "42"
-
+  name                = "foo"
   prometheus_password = "password"
   prometheus_url      = "url"
   prometheus_username = "username"
 }
 
 resource "taikun_billing_rule" "foo" {
+  # Required
   name        = "foo"
   metric_name = "coredns_forward_request_duration_seconds"
   price       = 1
