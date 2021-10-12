@@ -60,6 +60,7 @@ func Provider() *schema.Provider {
 			"taikun_billing_credential":  dataSourceTaikunBillingCredential(),
 			"taikun_billing_rules":       dataSourceTaikunBillingRules(),
 			"taikun_billing_rule":        dataSourceTaikunBillingRule(),
+			"taikun_kubernetes_profiles": dataSourceTaikunKubernetesProfiles(),
 			"taikun_organization":        dataSourceTaikunOrganization(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
