@@ -48,7 +48,7 @@ func dataSourceTaikunKubernetesProfile() *schema.Resource {
 				Computed:    true,
 			},
 			"load_balancing_solution": {
-				Description: "Load-balancing solution.",
+				Description: "Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
