@@ -18,6 +18,7 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 			{
 				Config: testAccDataSourceTaikunAccessProfilesConfig,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_access_profiles.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.dns_server.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.id"),

@@ -38,6 +38,7 @@ func TestAccDataSourceTaikunBillingCredentials(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_billing_credentials.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.created_by"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.id"),
