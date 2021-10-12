@@ -167,7 +167,7 @@ func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 
 		response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("access profile doesn't exist")
+			return fmt.Errorf("billing rule doesn't exist")
 		}
 	}
 
@@ -187,7 +187,7 @@ func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
 
 		response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("access profile still exists")
+			return fmt.Errorf("billing rule still exists")
 		}
 	}
 
