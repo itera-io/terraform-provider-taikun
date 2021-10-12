@@ -117,7 +117,7 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 
 	kubernetesProfiles := make([]map[string]interface{}, len(kubernetesProfilesListDtos), len(kubernetesProfilesListDtos))
 	for i, rawKubernetesProfile := range kubernetesProfilesListDtos {
-		kubernetesProfiles[i] = flattenDatasourceTaikunKubernetesProfilesItem(rawKubernetesProfile)
+		kubernetesProfiles[i] = flattenDataSourceTaikunKubernetesProfilesItem(rawKubernetesProfile)
 	}
 	if err := data.Set("kubernetes_profiles", kubernetesProfiles); err != nil {
 		return diag.FromErr(err)
@@ -128,7 +128,7 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 	return nil
 }
 
-func flattenDatasourceTaikunKubernetesProfilesItem(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
+func flattenDataSourceTaikunKubernetesProfilesItem(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
 
 	return map[string]interface{}{
 		"bastion_proxy_enabled":   rawKubernetesProfile.ExposeNodePortOnBastion,

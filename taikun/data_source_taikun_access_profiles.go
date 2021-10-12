@@ -199,7 +199,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 			return diag.FromErr(err)
 		}
 
-		accessProfiles[i] = flattenDatasourceTaikunAccessProfilesItem(rawAccessProfile, sshResponse)
+		accessProfiles[i] = flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile, sshResponse)
 	}
 	if err := data.Set("access_profiles", accessProfiles); err != nil {
 		return diag.FromErr(err)
@@ -210,7 +210,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 	return nil
 }
 
-func flattenDatasourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
+func flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
 
 	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers), len(rawAccessProfile.DNSServers))
 	for i, rawDNSServer := range rawAccessProfile.DNSServers {
