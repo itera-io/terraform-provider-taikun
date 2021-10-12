@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/client/showback"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -49,7 +50,8 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 			"organization_id": {
 				Description:  "The id of the organization which owns the showback credential.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: stringIsInt,
 				ForceNew:     true,
 			},
@@ -106,30 +108,29 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 	}
 
 	params := showback.NewShowbackCreateCredentialParams().WithV(ApiVersion).WithBody(body)
-	_, err := apiClient.client.Showback.ShowbackCreateCredential(params, apiClient)
+	createResult, err := apiClient.client.Showback.ShowbackCreateCredential(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	//TODO Wait for proper response
-	//locked := data.Get("is_locked").(bool)
-	//if locked {
-	//	id, err := atoi32(createResult.Payload.ID)
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//	lockBody := models.OperationCredentialLockManagerCommand{
-	//		ID:   id,
-	//		Mode: getLockMode(locked),
-	//	}
-	//	lockParams := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-	//	_, err = apiClient.client.OpsCredentials.OpsCredentialsLockManager(lockParams, apiClient)
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//}
+	locked := data.Get("is_locked").(bool)
+	if locked {
+		id, err := atoi32(createResult.Payload.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		lockBody := models.OperationCredentialLockManagerCommand{
+			ID:   id,
+			Mode: getLockMode(locked),
+		}
+		lockParams := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+		_, err = apiClient.client.OpsCredentials.OpsCredentialsLockManager(lockParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
-	//data.SetId(createResult.Payload.ID)
+	data.SetId(createResult.Payload.ID)
 
 	return resourceTaikunShowbackCredentialRead(ctx, data, meta)
 }
@@ -180,8 +181,7 @@ func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.Resour
 		if err := data.Set("prometheus_url", rawShowbackCredential.URL); err != nil {
 			return diag.FromErr(err)
 		}
-		//TODO
-		if err := data.Set("prometheus_username", ""); err != nil {
+		if err := data.Set("prometheus_username", rawShowbackCredential.Username); err != nil {
 			return diag.FromErr(err)
 		}
 

@@ -142,7 +142,6 @@ func flattenDatasourceTaikunShowbackCredentialItem(rawShowbackCredential *models
 		"organization_name":   rawShowbackCredential.OrganizationName,
 		"prometheus_password": rawShowbackCredential.Password,
 		"prometheus_url":      rawShowbackCredential.URL,
-		//TODO
-		"prometheus_username": "",
+		"prometheus_username": rawShowbackCredential.Username,
 	}
 }
