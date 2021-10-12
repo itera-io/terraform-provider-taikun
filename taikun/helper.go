@@ -73,3 +73,21 @@ func getPrometheusType(typeS string) int32 {
 	}
 	return 200
 }
+
+func getLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string {
+	if octaviaEnabled {
+		return "Octavia"
+	} else if taikunLBEnabled {
+		return "Taikun"
+	}
+	return "None"
+}
+
+func parseLoadBalancingSolution(loadBalancingSolution string) (bool, bool) {
+	if loadBalancingSolution == "Octavia" {
+		return true, false
+	} else if loadBalancingSolution == "Taikun" {
+		return false, true
+	}
+	return false, false
+}

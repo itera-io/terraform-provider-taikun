@@ -24,6 +24,11 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"bastion_proxy_enabled": {
+							Description: "Exposes the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
+							Type:        schema.TypeBool,
+							Computed:    true,
+						},
 						"created_by": {
 							Description: "The creator of the Kubernetes profile.",
 							Type:        schema.TypeString,
@@ -32,11 +37,6 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 						"cni": {
 							Description: "Container Network Interface(CNI) of the Kubernetes profile.",
 							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"expose_node_port_on_bastion": {
-							Description: "Exposes the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
-							Type:        schema.TypeBool,
 							Computed:    true,
 						},
 						"id": {
@@ -59,14 +59,14 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"name": {
-							Description: "The name of the Kubernetes profile.",
+						"load_balancing_solution": {
+							Description: "Load-balancing solution.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"octavia_enabled": {
-							Description: "Indicates whether Octavia is enabled or not. (Only valid for Openstack cloud)",
-							Type:        schema.TypeBool,
+						"name": {
+							Description: "The name of the Kubernetes profile.",
+							Type:        schema.TypeString,
 							Computed:    true,
 						},
 						"organization_id": {
@@ -77,11 +77,6 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 						"organization_name": {
 							Description: "The name of the organization which owns the Kubernetes profile.",
 							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"taikun_lb_enabled": {
-							Description: "Indicates whether Taikun Load Balancer is enabled or not. (Only for Openstack cloud when Octavia is not available)",
-							Type:        schema.TypeBool,
 							Computed:    true,
 						},
 					},
@@ -136,17 +131,16 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 func flattenDatasourceTaikunKubernetesProfilesItem(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":                  rawKubernetesProfile.CreatedBy,
-		"cni":                         rawKubernetesProfile.Cni,
-		"expose_node_port_on_bastion": rawKubernetesProfile.ExposeNodePortOnBastion,
-		"id":                          i32toa(rawKubernetesProfile.ID),
-		"is_locked":                   rawKubernetesProfile.IsLocked,
-		"last_modified":               rawKubernetesProfile.LastModified,
-		"last_modified_by":            rawKubernetesProfile.LastModifiedBy,
-		"name":                        rawKubernetesProfile.Name,
-		"octavia_enabled":             rawKubernetesProfile.OctaviaEnabled,
-		"organization_id":             i32toa(rawKubernetesProfile.OrganizationID),
-		"organization_name":           rawKubernetesProfile.OrganizationName,
-		"taikun_lb_enabled":           rawKubernetesProfile.TaikunLBEnabled,
+		"bastion_proxy_enabled":   rawKubernetesProfile.ExposeNodePortOnBastion,
+		"created_by":              rawKubernetesProfile.CreatedBy,
+		"cni":                     rawKubernetesProfile.Cni,
+		"id":                      i32toa(rawKubernetesProfile.ID),
+		"is_locked":               rawKubernetesProfile.IsLocked,
+		"last_modified":           rawKubernetesProfile.LastModified,
+		"last_modified_by":        rawKubernetesProfile.LastModifiedBy,
+		"load_balancing_solution": getLoadBalancingSolution(rawKubernetesProfile.OctaviaEnabled, rawKubernetesProfile.TaikunLBEnabled),
+		"name":                    rawKubernetesProfile.Name,
+		"organization_id":         i32toa(rawKubernetesProfile.OrganizationID),
+		"organization_name":       rawKubernetesProfile.OrganizationName,
 	}
 }
