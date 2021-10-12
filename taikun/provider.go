@@ -63,6 +63,7 @@ func Provider() *schema.Provider {
 			"taikun_kubernetes_profiles": dataSourceTaikunKubernetesProfiles(),
 			"taikun_kubernetes_profile":  dataSourceTaikunKubernetesProfile(),
 			"taikun_organization":        dataSourceTaikunOrganization(),
+			"taikun_slack_configuration": dataSourceTaikunSlackConfiguration(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"taikun_access_profile":                       resourceTaikunAccessProfile(),
