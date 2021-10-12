@@ -93,50 +93,50 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 	})
 }
 
-// func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
-// 	name := randomTestName()
-// 	newName := randomTestName()
-// 	url := "https://www.example.org"
-// 	newUrl := "https://www.example.com"
-// 	channel := randomString()
-// 	newChannel := randomString()
-// 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
-// 	newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
-//
-// 	resource.ParallelTest(t, resource.TestCase{
-// 		PreCheck:          func() { testAccPreCheck(t) },
-// 		ProviderFactories: testAccProviderFactories,
-// 		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
-// 		Steps: []resource.TestStep{
-// 			{
-// 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, name, url, channel, slackConfigType),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckTaikunSlackConfigurationExists,
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
-// 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", name),
-// 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_id"),
-// 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_name"),
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "type", slackConfigType),
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "url", url),
-// 				),
-// 			},
-// 			{
-// 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, newName, newUrl, newChannel, newSlackConfigType),
-// 				Check: resource.ComposeTestCheckFunc(
-// 					testAccCheckTaikunSlackConfigurationExists,
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
-// 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", name),
-// 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_id"),
-// 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_name"),
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "type", slackConfigType),
-// 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "url", url),
-// 				),
-// 			},
-// 		},
-// 	})
-// }
+func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
+	name := randomTestName()
+	newName := randomTestName()
+	url := "https://www.example.org"
+	newUrl := "https://www.example.com"
+	channel := randomString()
+	newChannel := randomString()
+	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
+	newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, name, url, channel, slackConfigType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunSlackConfigurationExists,
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
+					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", name),
+					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "type", slackConfigType),
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "url", url),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, newName, newUrl, newChannel, newSlackConfigType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunSlackConfigurationExists,
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
+					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", name),
+					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "type", slackConfigType),
+					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "url", url),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckTaikunSlackConfigurationExists(state *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient)
