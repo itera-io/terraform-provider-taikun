@@ -58,9 +58,9 @@ resource "taikun_showback_credential" "foo" {
   name            = "%s"
   is_locked       = %t
 
-  prometheus_password = "%s"
-  prometheus_url = "%s"
-  prometheus_username = "%s"
+  password = "%s"
+  url = "%s"
+  username = "%s"
 }
 `
 
@@ -79,9 +79,9 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "prometheus_password"),
-					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "prometheus_url"),
-					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "prometheus_username"),
+					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
+					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "url"),
+					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "username"),
 				),
 			},
 		},
@@ -103,9 +103,9 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "prometheus_password"),
-					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "prometheus_url"),
-					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "prometheus_username"),
+					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
+					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "url"),
+					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "username"),
 				),
 			},
 			{
@@ -115,9 +115,9 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "true"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
-					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
-					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "password"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "url"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "username"),
 				),
 			},
 		},

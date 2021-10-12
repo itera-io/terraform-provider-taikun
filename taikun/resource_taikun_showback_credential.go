@@ -28,21 +28,21 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"prometheus_username": {
-				Description: "The prometheus username.",
+			"username": {
+				Description: "The prometheus username or other credential.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
-			"prometheus_password": {
-				Description: "The prometheus password.",
+			"password": {
+				Description: "The prometheus password or other credential.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 				ForceNew:    true,
 			},
-			"prometheus_url": {
-				Description: "The prometheus url.",
+			"url": {
+				Description: "Url of the source.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -93,9 +93,9 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 
 	body := &models.CreateShowbackCredentialCommand{
 		Name:     data.Get("name").(string),
-		Password: data.Get("prometheus_password").(string),
-		URL:      data.Get("prometheus_url").(string),
-		Username: data.Get("prometheus_username").(string),
+		Password: data.Get("password").(string),
+		URL:      data.Get("url").(string),
+		Username: data.Get("username").(string),
 	}
 
 	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
@@ -175,13 +175,13 @@ func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.Resour
 		if err := data.Set("organization_name", rawShowbackCredential.OrganizationName); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("prometheus_password", rawShowbackCredential.Password); err != nil {
+		if err := data.Set("password", rawShowbackCredential.Password); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("prometheus_url", rawShowbackCredential.URL); err != nil {
+		if err := data.Set("url", rawShowbackCredential.URL); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("prometheus_username", rawShowbackCredential.Username); err != nil {
+		if err := data.Set("username", rawShowbackCredential.Username); err != nil {
 			return diag.FromErr(err)
 		}
 

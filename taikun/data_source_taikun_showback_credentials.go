@@ -34,19 +34,19 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"prometheus_username": {
-							Description: "The prometheus username.",
+						"username": {
+							Description: "The prometheus username or other credential.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"prometheus_password": {
-							Description: "The prometheus password.",
+						"password": {
+							Description: "The prometheus password or other credential.",
 							Type:        schema.TypeString,
 							Computed:    true,
 							Sensitive:   true,
 						},
-						"prometheus_url": {
-							Description: "The prometheus url.",
+						"url": {
+							Description: "Url of the source.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -132,16 +132,16 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.Res
 func flattenDatasourceTaikunShowbackCredentialItem(rawShowbackCredential *models.ShowbackCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":          rawShowbackCredential.CreatedBy,
-		"id":                  i32toa(rawShowbackCredential.ID),
-		"is_locked":           rawShowbackCredential.IsLocked,
-		"last_modified":       rawShowbackCredential.LastModified,
-		"last_modified_by":    rawShowbackCredential.LastModifiedBy,
-		"name":                rawShowbackCredential.Name,
-		"organization_id":     i32toa(rawShowbackCredential.OrganizationID),
-		"organization_name":   rawShowbackCredential.OrganizationName,
-		"prometheus_password": rawShowbackCredential.Password,
-		"prometheus_url":      rawShowbackCredential.URL,
-		"prometheus_username": rawShowbackCredential.Username,
+		"created_by":        rawShowbackCredential.CreatedBy,
+		"id":                i32toa(rawShowbackCredential.ID),
+		"is_locked":         rawShowbackCredential.IsLocked,
+		"last_modified":     rawShowbackCredential.LastModified,
+		"last_modified_by":  rawShowbackCredential.LastModifiedBy,
+		"name":              rawShowbackCredential.Name,
+		"organization_id":   i32toa(rawShowbackCredential.OrganizationID),
+		"organization_name": rawShowbackCredential.OrganizationName,
+		"password":          rawShowbackCredential.Password,
+		"url":               rawShowbackCredential.URL,
+		"username":          rawShowbackCredential.Username,
 	}
 }

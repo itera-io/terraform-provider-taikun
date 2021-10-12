@@ -22,19 +22,19 @@ func dataSourceTaikunShowbackCredential() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"prometheus_username": {
-				Description: "The prometheus username.",
+			"username": {
+				Description: "The prometheus username or other credential.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"prometheus_password": {
-				Description: "The prometheus password.",
+			"password": {
+				Description: "The prometheus password or other credential.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"prometheus_url": {
-				Description: "The prometheus url.",
+			"url": {
+				Description: "Url of the source.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
