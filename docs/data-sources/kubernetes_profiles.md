@@ -14,6 +14,8 @@ Get the list of Kubernetes profiles, optionally filtered by organization.
 
 ```terraform
 data "taikun_kubernetes_profiles" "foo" {
+  # Optional for Partner and Admin
+  organization_id = "42"
 }
 ```
 
