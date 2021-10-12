@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -122,12 +121,12 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		lockBody := models.AccessProfilesLockManagementCommand{
+		lockBody := models.KubernetesProfilesLockManagerCommand{
 			ID:   id,
 			Mode: getLockMode(locked),
 		}
-		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
+		lockParams := kubernetes_profiles.NewKubernetesProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+		_, err = apiClient.client.KubernetesProfiles.KubernetesProfilesLockManager(lockParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
