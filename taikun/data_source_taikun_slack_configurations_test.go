@@ -16,6 +16,9 @@ resource "taikun_slack_configuration" "foo" {
 }
 
 data "taikun_slack_configurations" "all" {
+  depends_on = [
+    taikun_slack_configuration.foo
+  ]
 }
 `
 
