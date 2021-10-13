@@ -7,6 +7,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+const testAccDataSourceTaikunAccessProfilesConfig = `
+resource "taikun_access_profile" "foo" {
+  name = "%s"
+}
+
+data "taikun_access_profiles" "all" {
+   depends_on = [
+    taikun_access_profile.foo
+  ]
+}`
+
 func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 	accessProfileName := randomTestName()
 
@@ -15,7 +26,7 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccCheckTaikunAccessProfilesConfig(), accessProfileName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfilesConfig, accessProfileName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.dns_server.#"),
@@ -31,17 +42,4 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckTaikunAccessProfilesConfig() string {
-	return `
-resource "taikun_access_profile" "foo" {
-  name = "%s"
-}
-
-data "taikun_access_profiles" "all" {
-   depends_on = [
-    taikun_access_profile.foo
-  ]
-}`
 }

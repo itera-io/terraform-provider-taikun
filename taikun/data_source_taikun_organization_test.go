@@ -6,9 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceOrganization = `
+const testAccDataSourceOrganizationConfig = `
 data "taikun_organization" "foo" {
-  # id = 441
 }
 `
 
@@ -19,7 +18,7 @@ func TestAccDataSourceTaikunOrganization(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceOrganization,
+				Config: testAccDataSourceOrganizationConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "discount_rate"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "name"),

@@ -8,6 +8,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+const testAccDataSourceTaikunBillingCredentialsConfig = `
+resource "taikun_billing_credential" "foo" {
+  name = "%s"
+
+  prometheus_password = "%s"
+  prometheus_url      = "%s"
+  prometheus_username = "%s"
+}
+
+data "taikun_billing_credentials" "all" {
+   depends_on = [
+    taikun_billing_credential.foo
+  ]
+}`
+
 func TestAccDataSourceTaikunBillingCredentials(t *testing.T) {
 	billingCredentialName := randomTestName()
 
@@ -16,7 +31,7 @@ func TestAccDataSourceTaikunBillingCredentials(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccCheckTaikunBillingCredentialConfig(),
+				Config: fmt.Sprintf(testAccDataSourceTaikunBillingCredentialsConfig,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
@@ -38,21 +53,4 @@ func TestAccDataSourceTaikunBillingCredentials(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckTaikunBillingCredentialConfig() string {
-	return `
-resource "taikun_billing_credential" "foo" {
-  name = "%s"
-
-  prometheus_password = "%s"
-  prometheus_url      = "%s"
-  prometheus_username = "%s"
-}
-
-data "taikun_billing_credentials" "all" {
-   depends_on = [
-    taikun_billing_credential.foo
-  ]
-}`
 }

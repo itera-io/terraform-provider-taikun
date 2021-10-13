@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceAccessProfile = `
+const testAccDataSourceTaikunAccessProfileConfig = `
 resource "taikun_access_profile" "foo" {
   name = "%s"
 }
@@ -25,7 +25,7 @@ func TestAccDataSourceTaikunAccessProfile(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceAccessProfile, accessProfileName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfileConfig, accessProfileName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "name"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profile.foo", "organization_id"),

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceKubernetesProfile = `
+const testAccDataSourceTaikunKubernetesProfileConfig = `
 resource "taikun_kubernetes_profile" "foo" {
 	name = "%s"
 }
@@ -25,7 +25,7 @@ func TestAccDataSourceTaikunKubernetesProfile(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceKubernetesProfile, kubernetesProfileName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfileConfig, kubernetesProfileName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "name"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "organization_id"),
