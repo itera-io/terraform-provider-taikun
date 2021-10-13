@@ -54,7 +54,7 @@ resource "taikun_access_profile" "foo" {
 - **http_proxy** (String) HTTP Proxy of the access profile.
 - **is_locked** (Boolean) Indicates whether the access profile is locked or not. Defaults to `false`.
 - **ntp_server** (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
-- **organization_id** (String) Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
+- **organization_id** (String) The id of the organization which owns the access profile.
 - **ssh_user** (Block List) List of SSH Users. (see [below for nested schema](#nestedblock--ssh_user))
 
 ### Read-Only

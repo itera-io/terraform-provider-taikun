@@ -8,6 +8,80 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Description: "The id of the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description: "The name of the billing credential.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"prometheus_username": {
+			Description: "The prometheus username.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"prometheus_password": {
+			Description: "The prometheus password.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Sensitive:   true,
+		},
+		"prometheus_url": {
+			Description: "The prometheus url.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"organization_id": {
+			Description:  "The id of the organization which owns the billing credential.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: stringIsInt,
+			ForceNew:     true,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"is_locked": {
+			Description: "Indicates whether the billing credential is locked or not.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"is_default": {
+			Description: "Indicates whether the billing credential is the organization's default or not.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"created_by": {
+			Description: "The creator of the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
+
 func resourceTaikunBillingCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Billing Credential",
@@ -15,77 +89,7 @@ func resourceTaikunBillingCredential() *schema.Resource {
 		ReadContext:   resourceTaikunBillingCredentialRead,
 		UpdateContext: resourceTaikunBillingCredentialUpdate,
 		DeleteContext: resourceTaikunBillingCredentialDelete,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Description: "The id of the billing credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"name": {
-				Description: "The name of the billing credential.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"prometheus_username": {
-				Description: "The prometheus username.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"prometheus_password": {
-				Description: "The prometheus password.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Sensitive:   true,
-			},
-			"prometheus_url": {
-				Description: "The prometheus url.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"organization_id": {
-				Description:  "Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: stringIsInt,
-				ForceNew:     true,
-			},
-			"organization_name": {
-				Description: "The name of the organization which owns the billing credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"is_locked": {
-				Description: "Indicates whether the billing credential is locked or not.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-			},
-			"is_default": {
-				Description: "Indicates whether the billing credential is the organization's default or not.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
-			"created_by": {
-				Description: "The creator of the billing credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_modified": {
-				Description: "Time of last modification.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_modified_by": {
-				Description: "The last user who modified the billing credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:        resourceTaikunBillingCredentialSchema(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

@@ -7,78 +7,9 @@ import (
 )
 
 func dataSourceTaikunBillingRuleSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Description:  "The id of the billing rule.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: stringIsInt,
-		},
-		"name": {
-			Description: "The name of the billing rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"metric_name": {
-			Description: "The name of the metric from Prometheus you want to bill.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"label": {
-			Description: "Labels linked to this billing rule.",
-			Type:        schema.TypeList,
-			Computed:    true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"key": {
-						Description: "Key of the label.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-					"value": {
-						Description: "Value of the label.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-					"id": {
-						Description: "Id of the label.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-				},
-			},
-		},
-		"type": {
-			Description: "Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"price": {
-			Description: "The price in CZK per selected unit.",
-			Type:        schema.TypeInt,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the billing credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"billing_credential_id": {
-			Description: "Id of the billing credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "Time of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user who modified the billing credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-	}
+	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunBillingRuleSchema())
+	addRequiredFieldsToSchema(dsSchema, "id")
+	return dsSchema
 }
 
 func dataSourceTaikunBillingRule() *schema.Resource {

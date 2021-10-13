@@ -39,7 +39,7 @@ resource "taikun_billing_credential" "foo" {
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the billing credential is locked or not. Defaults to `false`.
-- **organization_id** (String) Can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
+- **organization_id** (String) The id of the organization which owns the billing credential.
 
 ### Read-Only
 

@@ -9,6 +9,76 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Description: "The id of the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"bastion_proxy_enabled": {
+			Description: "Exposes the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
+		"created_by": {
+			Description: "The creator of the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"cni": {
+			Description: "Container Network Interface(CNI) of the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"is_locked": {
+			Description: "Indicates whether the Kubernetes profile is locked or not.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"load_balancing_solution": {
+			Description:  "Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "Octavia",
+			ForceNew:     true,
+			ValidateFunc: validation.StringInSlice([]string{"None", "Octavia", "Taikun"}, false),
+		},
+		"name": {
+			Description: "The name of the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"organization_id": {
+			Description:  "The id of the organization which owns the Kubernetes profile.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ForceNew:     true,
+			ValidateFunc: stringIsInt,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
+
 func resourceTaikunKubernetesProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Kubernetes Profile",
@@ -16,73 +86,7 @@ func resourceTaikunKubernetesProfile() *schema.Resource {
 		ReadContext:   resourceTaikunKubernetesProfileRead,
 		UpdateContext: resourceTaikunKubernetesProfileUpdate,
 		DeleteContext: resourceTaikunKubernetesProfileDelete,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Description: "The id of the Kubernetes profile.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"bastion_proxy_enabled": {
-				Description: "Exposes the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				ForceNew:    true,
-			},
-			"created_by": {
-				Description: "The creator of the Kubernetes profile.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"cni": {
-				Description: "Container Network Interface(CNI) of the Kubernetes profile.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"is_locked": {
-				Description: "Indicates whether the Kubernetes profile is locked or not.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-			},
-			"last_modified": {
-				Description: "Time of last modification.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_modified_by": {
-				Description: "The last user who modified the Kubernetes profile.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"load_balancing_solution": {
-				Description:  "Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "Octavia",
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"None", "Octavia", "Taikun"}, false),
-			},
-			"name": {
-				Description: "The name of the Kubernetes profile.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"organization_id": {
-				Description:  "The id of the organization which owns the Kubernetes profile.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: stringIsInt,
-			},
-			"organization_name": {
-				Description: "The name of the organization which owns the Kubernetes profile.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:        resourceTaikunKubernetesProfileSchema(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
