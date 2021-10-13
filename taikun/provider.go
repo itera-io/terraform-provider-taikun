@@ -63,6 +63,8 @@ func Provider() *schema.Provider {
 			"taikun_kubernetes_profiles":  dataSourceTaikunKubernetesProfiles(),
 			"taikun_kubernetes_profile":   dataSourceTaikunKubernetesProfile(),
 			"taikun_organization":         dataSourceTaikunOrganization(),
+			"taikun_showback_credentials": dataSourceTaikunShowbackCredentials(),
+			"taikun_showback_credential":  dataSourceTaikunShowbackCredential(),
 			"taikun_slack_configuration":  dataSourceTaikunSlackConfiguration(),
 			"taikun_slack_configurations": dataSourceTaikunSlackConfigurations(),
 		},
@@ -73,6 +75,7 @@ func Provider() *schema.Provider {
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization":                         resourceTaikunOrganization(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
+			"taikun_showback_credential":                  resourceTaikunShowbackCredential(),
 			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
 		},
 		Schema: map[string]*schema.Schema{
