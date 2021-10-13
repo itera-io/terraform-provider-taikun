@@ -17,7 +17,7 @@ func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the billing credential.",
+			Description: "The name of the showback credential.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
@@ -214,7 +214,7 @@ func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return resourceTaikunBillingCredentialRead(ctx, data, meta)
+	return resourceTaikunShowbackCredentialRead(ctx, data, meta)
 }
 
 func resourceTaikunShowbackCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
