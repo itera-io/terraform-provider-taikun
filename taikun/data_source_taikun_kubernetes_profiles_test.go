@@ -6,13 +6,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+const testAccDataSourceTaikunKubernetesProfilesConfig = `
+data "taikun_kubernetes_profiles" "all" {
+}`
+
 func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckTaikunKubernetesProfilesConfig(),
+				Config: testAccDataSourceTaikunKubernetesProfilesConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.bastion_proxy_enabled"),
@@ -27,11 +31,4 @@ func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckTaikunKubernetesProfilesConfig() string {
-	return `
-data "taikun_kubernetes_profiles" "all" {
-    #organization_id="638"
-}`
 }

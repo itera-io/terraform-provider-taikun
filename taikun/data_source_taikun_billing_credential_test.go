@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceBillingCredential = `
+const testAccDataSourceTaikunBillingCredentialConfig = `
 resource "taikun_billing_credential" "foo" {
   name = "%s"
 
@@ -30,7 +30,7 @@ func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceBillingCredential,
+				Config: fmt.Sprintf(testAccDataSourceTaikunBillingCredentialConfig,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),

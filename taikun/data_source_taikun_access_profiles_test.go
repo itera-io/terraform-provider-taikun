@@ -6,13 +6,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+const testAccDataSourceTaikunAccessProfilesConfig = `
+data "taikun_access_profiles" "all" {
+}`
+
 func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckTaikunAccessProfilesConfig(),
+				Config: testAccDataSourceTaikunAccessProfilesConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.dns_server.#"),
@@ -28,11 +32,4 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckTaikunAccessProfilesConfig() string {
-	return `
-data "taikun_access_profiles" "all" {
-    #organization_id="638"
-}`
 }

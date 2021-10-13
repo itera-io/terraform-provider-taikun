@@ -53,7 +53,7 @@ func init() {
 	})
 }
 
-const testAccResourceTaikunBillingRule = `
+const testAccResourceTaikunBillingRuleConfig = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
   is_locked       = false
@@ -86,7 +86,7 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingRule,
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRuleConfig,
 					credName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
@@ -117,7 +117,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingRule,
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRuleConfig,
 					credName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
@@ -134,7 +134,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingRule,
+				Config: fmt.Sprintf(testAccResourceTaikunBillingRuleConfig,
 					credName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),

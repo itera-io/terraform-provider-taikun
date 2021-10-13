@@ -12,8 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-const testAccResourceTaikunOrganizationBillingRuleAttachment = `
-
+const testAccResourceTaikunOrganizationBillingRuleAttachmentConfig = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
   is_locked       = false
@@ -62,7 +61,7 @@ func TestAccResourceTaikunOrganizationBillingRuleAttachment(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunOrganizationBillingRuleAttachment,
+				Config: fmt.Sprintf(testAccResourceTaikunOrganizationBillingRuleAttachmentConfig,
 					credName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),

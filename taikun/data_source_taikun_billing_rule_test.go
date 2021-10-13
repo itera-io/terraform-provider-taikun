@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceBillingRule = `
+const testAccDataSourceTaikunBillingRuleConfig = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
 
@@ -43,7 +43,7 @@ func TestAccDataSourceTaikunBillingRule(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceBillingRule,
+				Config: fmt.Sprintf(testAccDataSourceTaikunBillingRuleConfig,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
