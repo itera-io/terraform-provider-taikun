@@ -39,7 +39,7 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
 		},
 		"price": {
-			Description:  "The price in CZK per selected unit.",
+			Description:  "Billing in CZK per selected unit.",
 			Type:         schema.TypeFloat,
 			Required:     true,
 			ValidateFunc: validation.FloatAtLeast(0),
@@ -52,14 +52,14 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"global_alert_limit": {
-			Description:  "Set limit of alerts for one projects.",
+			Description:  "Set limit of alerts for all projects.",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			Default:      0,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"organization_id": {
-			Description:  "The id of the organization which owns the showback credential.",
+			Description:  "The id of the organization which owns the showback rule.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			Computed:     true,
@@ -67,24 +67,24 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"organization_name": {
-			Description: "The name of the organization which owns the showback credential.",
+			Description: "The name of the organization which owns the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"showback_credential_id": {
-			Description:  "Id of the showback credential.",
+			Description:  "Id of the showback rule.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: stringIsInt,
 		},
 		"showback_credential_name": {
-			Description: "Name of the showback credential.",
+			Description: "Name of the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"created_by": {
-			Description: "The creator of the showback credential.",
+			Description: "The creator of the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -94,12 +94,12 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the showback credential.",
+			Description: "The last user who modified the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"label": {
-			Description: "Labels linked to this billing rule.",
+			Description: "Labels linked to this showback rule.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem: &schema.Resource{
