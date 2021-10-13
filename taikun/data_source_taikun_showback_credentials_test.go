@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceTaikunShowbackCredentialConfig = `
+const testAccDataSourceTaikunShowbackCredentialsConfig = `
 resource "taikun_showback_credential" "foo" {
   name            = "%s"
 
@@ -31,7 +31,7 @@ func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackCredentialConfig,
+				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackCredentialsConfig,
 					showbackCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
