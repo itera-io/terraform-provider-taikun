@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/itera-io/taikungoclient/models"
 )
 
 const testNamePrefix = "tf-acc-test-"
@@ -67,8 +68,8 @@ func getLockMode(locked bool) string {
 	return "unlock"
 }
 
-func getPrometheusType(typeS string) int32 {
-	if typeS == "Count" {
+func getPrometheusType(prometheusType string) int32 {
+	if prometheusType == "Count" {
 		return 100
 	}
 	return 200
@@ -90,4 +91,11 @@ func parseLoadBalancingSolution(loadBalancingSolution string) (bool, bool) {
 		return false, true
 	}
 	return false, false
+}
+
+func getSlackConfigurationType(configType string) models.SlackType {
+	if configType == "Alert" {
+		return models.SlackType(100)
+	}
+	return models.SlackType(200) // General
 }

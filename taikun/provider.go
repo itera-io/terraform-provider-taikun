@@ -54,15 +54,17 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
-			"taikun_access_profiles":     dataSourceTaikunAccessProfiles(),
-			"taikun_access_profile":      dataSourceTaikunAccessProfile(),
-			"taikun_billing_credentials": dataSourceTaikunBillingCredentials(),
-			"taikun_billing_credential":  dataSourceTaikunBillingCredential(),
-			"taikun_billing_rules":       dataSourceTaikunBillingRules(),
-			"taikun_billing_rule":        dataSourceTaikunBillingRule(),
-			"taikun_kubernetes_profiles": dataSourceTaikunKubernetesProfiles(),
-			"taikun_kubernetes_profile":  dataSourceTaikunKubernetesProfile(),
-			"taikun_organization":        dataSourceTaikunOrganization(),
+			"taikun_access_profiles":      dataSourceTaikunAccessProfiles(),
+			"taikun_access_profile":       dataSourceTaikunAccessProfile(),
+			"taikun_billing_credentials":  dataSourceTaikunBillingCredentials(),
+			"taikun_billing_credential":   dataSourceTaikunBillingCredential(),
+			"taikun_billing_rules":        dataSourceTaikunBillingRules(),
+			"taikun_billing_rule":         dataSourceTaikunBillingRule(),
+			"taikun_kubernetes_profiles":  dataSourceTaikunKubernetesProfiles(),
+			"taikun_kubernetes_profile":   dataSourceTaikunKubernetesProfile(),
+			"taikun_organization":         dataSourceTaikunOrganization(),
+			"taikun_slack_configuration":  dataSourceTaikunSlackConfiguration(),
+			"taikun_slack_configurations": dataSourceTaikunSlackConfigurations(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"taikun_access_profile":                       resourceTaikunAccessProfile(),
@@ -71,6 +73,7 @@ func Provider() *schema.Provider {
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization":                         resourceTaikunOrganization(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
+			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
 		},
 		Schema: map[string]*schema.Schema{
 			"email": {
