@@ -160,7 +160,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 	if showbackCredentialIDIsSet {
 		showbackCredentialId, err := atoi32(showbackCredentialIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("showback_credential_id isn't valid: %s", data.Get("showback_credential_id").(string))
 		}
 		body.ShowbackCredentialID = showbackCredentialId
 	}
