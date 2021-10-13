@@ -24,7 +24,6 @@ resource "taikun_billing_credential" "foo" {
   # Optional
   organization_id = "42" # Optional for Partner and Admin
   is_locked       = true
-  is_default      = true
 }
 ```
 
