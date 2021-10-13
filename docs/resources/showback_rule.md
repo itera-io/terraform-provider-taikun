@@ -27,8 +27,10 @@ resource "taikun_showback_rule" "foo" {
     key   = "key"
     value = "value"
   }
-  project_alert_limit = 42
-  global_alert_limit  = 42
+  project_alert_limit    = 42
+  global_alert_limit     = 42
+  organization_id        = 42
+  showback_credential_id = 42
 }
 ```
 
