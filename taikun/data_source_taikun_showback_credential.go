@@ -14,7 +14,7 @@ func dataSourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunShowbackCredential() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a billing credential by its id.",
+		Description: "Get a showback credential by its id.",
 		ReadContext: dataSourceTaikunShowbackCredentialRead,
 		Schema:      dataSourceTaikunShowbackCredentialSchema(),
 	}
