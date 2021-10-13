@@ -76,6 +76,7 @@ func Provider() *schema.Provider {
 			"taikun_organization":                         resourceTaikunOrganization(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
 			"taikun_showback_credential":                  resourceTaikunShowbackCredential(),
+			"taikun_showback_rule":                        resourceTaikunShowbackRule(),
 			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
 		},
 		Schema: map[string]*schema.Schema{

@@ -75,6 +75,13 @@ func getPrometheusType(prometheusType string) int32 {
 	return 200
 }
 
+func getShowbackType(showbackType string) models.ShowbackType {
+	if showbackType == "General" {
+		return 100
+	}
+	return 200
+}
+
 func getLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string {
 	if octaviaEnabled {
 		return "Octavia"
