@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceSlackConfigurations = `
+const testAccDataSourceTaikunSlackConfigurationsConfig = `
 resource "taikun_slack_configuration" "foo" {
   name = "%s"
   url = "https://www.example.org"
@@ -30,7 +30,7 @@ func TestAccDataSourceTaikunSlackConfigurations(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceSlackConfigurations, slackConfigurationName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunSlackConfigurationsConfig, slackConfigurationName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.channel"),

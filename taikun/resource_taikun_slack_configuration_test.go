@@ -56,7 +56,7 @@ func init() {
 	})
 }
 
-const testAccResourceTaikunSlackConfiguration = `
+const testAccResourceTaikunSlackConfigurationConfig = `
 resource "taikun_slack_configuration" "foo" {
   name = "%s"
   url  = "%s"
@@ -77,7 +77,7 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, name, url, channel, slackConfigType),
+				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, name, url, channel, slackConfigType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
@@ -109,7 +109,7 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, name, url, channel, slackConfigType),
+				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, name, url, channel, slackConfigType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
@@ -122,7 +122,7 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunSlackConfiguration, newName, newUrl, newChannel, newSlackConfigType),
+				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, newName, newUrl, newChannel, newSlackConfigType),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", newChannel),
