@@ -214,10 +214,10 @@ func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData
 		if err := data.Set("created_by", rawShowbackCredential.CreatedBy); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("id", i32toa(rawShowbackCredential.ID)); err != nil {
+		if err := data.Set("global_alert_limit", rawShowbackCredential.GlobalAlertLimit); err != nil {
 			return diag.FromErr(err)
 		}
-		if err := data.Set("global_alert_limit", rawShowbackCredential.GlobalAlertLimit); err != nil {
+		if err := data.Set("id", i32toa(rawShowbackCredential.ID)); err != nil {
 			return diag.FromErr(err)
 		}
 		if err := data.Set("kind", rawShowbackCredential.Kind); err != nil {
