@@ -81,6 +81,7 @@ data "taikun_billing_credentials" "all" {
 }`
 
 func TestAccDataSourceTaikunBillingCredentialsWithFilter(t *testing.T) {
+	organizationName := randomTestName()
 	billingCredentialName := randomTestName()
 
 	resource.Test(t, resource.TestCase{
@@ -89,13 +90,14 @@ func TestAccDataSourceTaikunBillingCredentialsWithFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunBillingCredentialsWithFilterConfig,
-					randomTestName(),
+					organizationName,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_billing_credentials.all", "billing_credentials.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.created_by"),
@@ -104,7 +106,6 @@ func TestAccDataSourceTaikunBillingCredentialsWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.is_default"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.prometheus_password"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.prometheus_url"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_credentials.all", "billing_credentials.0.prometheus_username"),
