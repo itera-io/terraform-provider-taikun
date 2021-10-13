@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
@@ -88,13 +89,14 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 
 func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
+	dataSourceID := "all"
 
 	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion)
 
 	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
-	var organizationID int32 = -1
 	if organizationIDProvided {
-		organizationID, err := atoi32(organizationIDData.(string))
+		dataSourceID = organizationIDData.(string)
+		organizationID, err := atoi32(dataSourceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -123,7 +125,7 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(organizationID))
+	data.SetId(dataSourceID)
 
 	return nil
 }

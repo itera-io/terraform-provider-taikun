@@ -18,6 +18,7 @@ func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
 			{
 				Config: testAccDataSourceTaikunKubernetesProfilesConfig,
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_kubernetes_profiles.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.bastion_proxy_enabled"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.cni"),

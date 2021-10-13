@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"fmt"
+
 	"github.com/itera-io/taikungoclient/client/ssh_users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -162,13 +163,14 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 
 func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
+	dataSourceID := "all"
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
 
 	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
-	var organizationID int32 = -1
 	if organizationIDProvided {
-		organizationID, err := atoi32(organizationIDData.(string))
+		dataSourceID = organizationIDData.(string)
+		organizationID, err := atoi32(dataSourceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -205,7 +207,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(organizationID))
+	data.SetId(dataSourceID)
 
 	return nil
 }
