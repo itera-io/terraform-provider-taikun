@@ -2,18 +2,28 @@ package taikun
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccDataSourceTaikunBillingRules(t *testing.T) {
+	billingCredentialName := randomTestName()
+	billingRuleName := randomTestName()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckTaikunBillingRulesConfig(),
+				Config: fmt.Sprintf(testAccCheckTaikunBillingRulesConfig(),
+					billingCredentialName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+					billingRuleName,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.created_by"),
@@ -34,7 +44,30 @@ func TestAccDataSourceTaikunBillingRules(t *testing.T) {
 }
 
 func testAccCheckTaikunBillingRulesConfig() string {
-	return fmt.Sprintln(`
+	return `
+resource "taikun_billing_credential" "foo" {
+  name            = "%s"
+
+  prometheus_password = "%s"
+  prometheus_url = "%s"
+  prometheus_username = "%s"
+}
+
+resource "taikun_billing_rule" "foo" {
+  name            = "%s"
+  metric_name     =  "coredns_forward_request_duration_seconds"
+  price = 1
+  type = "Sum"
+  billing_credential_id = resource.taikun_billing_credential.foo.id
+  label {
+    key = "key"
+    value = "value"
+  }
+}
+
 data "taikun_billing_rules" "all" {
-}`)
+   depends_on = [
+    taikun_billing_rule.foo
+  ]
+}`
 }
