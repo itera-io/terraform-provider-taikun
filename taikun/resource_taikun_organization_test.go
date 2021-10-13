@@ -57,7 +57,7 @@ func init() {
 	})
 }
 
-const testAccResourceTaikunOrganization = `
+const testAccResourceTaikunOrganizationConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
   full_name = "%s"
@@ -97,7 +97,7 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunOrganizationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunOrganization,
+				Config: fmt.Sprintf(testAccResourceTaikunOrganizationConfig,
 					name,
 					fullName,
 					discountRate,
@@ -162,7 +162,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunOrganizationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunOrganization,
+				Config: fmt.Sprintf(testAccResourceTaikunOrganizationConfig,
 					name,
 					fullName,
 					discountRate,
@@ -192,7 +192,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunOrganization,
+				Config: fmt.Sprintf(testAccResourceTaikunOrganizationConfig,
 					newName,
 					newFullName,
 					newDiscountRate,

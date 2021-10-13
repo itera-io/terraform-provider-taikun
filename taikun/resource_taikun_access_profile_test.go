@@ -54,7 +54,7 @@ func init() {
 	})
 }
 
-const testAccResourceTaikunAccessProfile = `
+const testAccResourceTaikunAccessProfileConfig = `
 resource "taikun_access_profile" "foo" {
   name            = "%s"
   is_locked       = %t
@@ -91,7 +91,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfile, firstName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
@@ -122,7 +122,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfile, firstName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
@@ -140,7 +140,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfile, secondName, true),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, secondName, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
