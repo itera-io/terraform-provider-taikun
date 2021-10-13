@@ -19,7 +19,7 @@ func dataSourceTaikunOrganizations() *schema.Resource {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
-					Schema: dataSourceTaikunOrganizationSchema(),
+					Schema: datasourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema()),
 				},
 			},
 		},
