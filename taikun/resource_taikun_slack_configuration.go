@@ -15,6 +15,7 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 		Description:   "Taikun Slack Configuration",
 		CreateContext: resourceTaikunSlackConfigurationCreate,
 		ReadContext:   resourceTaikunSlackConfigurationRead,
+		UpdateContext: resourceTaikunSlackConfigurationUpdate,
 		DeleteContext: resourceTaikunSlackConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -24,7 +25,6 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				Description: "Slack channel for notifications",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"id": {
 				Description: "ID",
@@ -35,14 +35,12 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				Description: "Name",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"organization_id": {
 				Description: "Organization ID",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 			},
 			"organization_name": {
 				Description: "Organization Name",
@@ -54,13 +52,11 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"Alert", "General"}, false),
-				ForceNew:     true,
 			},
 			"url": {
 				Description:  "Webhook URL from Slack app",
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 			},
 		},
@@ -117,6 +113,41 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 	apiClient := meta.(*apiClient)
 
 	body := models.UpsertSlackConfigurationCommand{
+		Name:      data.Get("name").(string),
+		URL:       data.Get("url").(string),
+		Channel:   data.Get("channel").(string),
+		SlackType: getSlackConfigurationType(data.Get("type").(string)),
+	}
+
+	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+		organizationID, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		body.OrganizationID = organizationID
+	}
+
+	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
+	response, err := apiClient.client.Slack.SlackCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(response.Payload))
+
+	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
+}
+
+func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	body := models.UpsertSlackConfigurationCommand{
+		ID:        id,
 		Name:      data.Get("name").(string),
 		URL:       data.Get("url").(string),
 		Channel:   data.Get("channel").(string),
