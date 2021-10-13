@@ -65,6 +65,7 @@ func Provider() *schema.Provider {
 			"taikun_organization":         dataSourceTaikunOrganization(),
 			"taikun_showback_credentials": dataSourceTaikunShowbackCredentials(),
 			"taikun_showback_credential":  dataSourceTaikunShowbackCredential(),
+			"taikun_showback_rule":        dataSourceTaikunShowbackRule(),
 			"taikun_slack_configuration":  dataSourceTaikunSlackConfiguration(),
 			"taikun_slack_configurations": dataSourceTaikunSlackConfigurations(),
 		},
