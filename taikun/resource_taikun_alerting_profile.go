@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient/client/alerting_profiles"
 )
 
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
@@ -134,8 +135,85 @@ func resourceTaikunAlertingProfile() *schema.Resource {
 	}
 }
 
-	// FIXME
 func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+	id, err := atoi32(data.Id())
+	data.SetId("")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
+	response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("Alerting profile with ID %d not found", id)
+	}
+
+	rawAlertingProfile := response.Payload.Data[0]
+
+	emails := make([]string, len(rawAlertingProfile.Emails))
+	for i, rawEmail := range rawAlertingProfile.Emails {
+		emails[i] = rawEmail.Email
+	}
+
+	webhooks := make([]map[string]interface{}, len(rawAlertingProfile.Webhooks))
+	for i, rawWebhook := range rawAlertingProfile.Webhooks {
+		headers := make([]map[string]interface{}, len(rawWebhook.Headers))
+		for i, rawHeader := range rawWebhook.Headers {
+			headers[i] = map[string]interface{}{
+				"key":   rawHeader.Key,
+				"value": rawHeader.Value,
+			}
+		}
+		webhooks[i] = map[string]interface{}{
+			"headers": headers,
+			"url":     rawWebhook.URL,
+		}
+	}
+
+	if err := data.Set("created_by", rawAlertingProfile.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("emails", emails); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawAlertingProfile.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawAlertingProfile.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawAlertingProfile.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawAlertingProfile.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawAlertingProfile.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawAlertingProfile.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawAlertingProfile.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("reminder", rawAlertingProfile.Reminder); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("slack_configuration_id", rawAlertingProfile.SlackConfigurationID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("slack_configuration_name", rawAlertingProfile.SlackConfigurationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("webhooks", webhooks); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
