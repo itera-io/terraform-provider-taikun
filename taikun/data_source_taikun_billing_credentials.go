@@ -123,7 +123,7 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.Reso
 
 	operationCredentials := make([]map[string]interface{}, len(operationCredentialsList), len(operationCredentialsList))
 	for i, rawOperationCredential := range operationCredentialsList {
-		operationCredentials[i] = flattenDatasourceTaikunBillingCredentialItem(rawOperationCredential)
+		operationCredentials[i] = flattenDataSourceTaikunBillingCredentialItem(rawOperationCredential)
 	}
 	if err := data.Set("billing_credentials", operationCredentials); err != nil {
 		return diag.FromErr(err)
@@ -134,7 +134,7 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.Reso
 	return nil
 }
 
-func flattenDatasourceTaikunBillingCredentialItem(rawOperationCredential *models.OperationCredentialsListDto) map[string]interface{} {
+func flattenDataSourceTaikunBillingCredentialItem(rawOperationCredential *models.OperationCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
 		"created_by":          rawOperationCredential.CreatedBy,

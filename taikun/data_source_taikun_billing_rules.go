@@ -116,7 +116,7 @@ func dataSourceTaikunBillingRulesRead(_ context.Context, data *schema.ResourceDa
 
 	billingRules := make([]map[string]interface{}, len(billingRulesList), len(billingRulesList))
 	for i, rawBillingRule := range billingRulesList {
-		billingRules[i] = flattenDatasourceTaikunBillingRuleItem(rawBillingRule)
+		billingRules[i] = flattenDataSourceTaikunBillingRuleItem(rawBillingRule)
 	}
 	if err := data.Set("billing_rules", billingRules); err != nil {
 		return diag.FromErr(err)
@@ -127,7 +127,7 @@ func dataSourceTaikunBillingRulesRead(_ context.Context, data *schema.ResourceDa
 	return nil
 }
 
-func flattenDatasourceTaikunBillingRuleItem(rawBillingRule *models.PrometheusRuleListDto) map[string]interface{} {
+func flattenDataSourceTaikunBillingRuleItem(rawBillingRule *models.PrometheusRuleListDto) map[string]interface{} {
 
 	labels := make([]map[string]interface{}, len(rawBillingRule.Labels), len(rawBillingRule.Labels))
 	for i, rawLabel := range rawBillingRule.Labels {
