@@ -18,6 +18,9 @@ resource "taikun_showback_credential" "foo" {
 }
 
 data "taikun_showback_credentials" "all" {
+   depends_on = [
+    taikun_showback_credential.foo
+  ]
 }`
 
 func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
@@ -42,9 +45,9 @@ func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.prometheus_password"),
-					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.prometheus_url"),
-					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.prometheus_username"),
+					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.password"),
+					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.url"),
+					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.username"),
 				),
 			},
 		},

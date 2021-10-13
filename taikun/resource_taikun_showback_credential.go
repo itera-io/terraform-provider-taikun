@@ -9,6 +9,75 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Description: "The id of the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description: "The name of the billing credential.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"username": {
+			Description: "The prometheus username or other credential.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"password": {
+			Description: "The prometheus password or other credential.",
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			ForceNew:    true,
+		},
+		"url": {
+			Description: "Url of the source.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"organization_id": {
+			Description:  "The id of the organization which owns the showback credential.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: stringIsInt,
+			ForceNew:     true,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"is_locked": {
+			Description: "Indicates whether the showback credential is locked or not.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"created_by": {
+			Description: "The creator of the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
+
 func resourceTaikunShowbackCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Showback Credential",
@@ -16,72 +85,7 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 		ReadContext:   resourceTaikunShowbackCredentialRead,
 		UpdateContext: resourceTaikunShowbackCredentialUpdate,
 		DeleteContext: resourceTaikunShowbackCredentialDelete,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Description: "The id of the showback credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"name": {
-				Description: "The name of the billing credential.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"username": {
-				Description: "The prometheus username or other credential.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"password": {
-				Description: "The prometheus password or other credential.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				ForceNew:    true,
-			},
-			"url": {
-				Description: "Url of the source.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"organization_id": {
-				Description:  "The id of the organization which owns the showback credential.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: stringIsInt,
-				ForceNew:     true,
-			},
-			"organization_name": {
-				Description: "The name of the organization which owns the showback credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"is_locked": {
-				Description: "Indicates whether the showback credential is locked or not.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-			},
-			"created_by": {
-				Description: "The creator of the showback credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_modified": {
-				Description: "Time of last modification.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_modified_by": {
-				Description: "The last user who modified the showback credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:        resourceTaikunShowbackCredentialSchema(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

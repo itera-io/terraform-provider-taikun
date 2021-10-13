@@ -23,64 +23,7 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Description: "The id of the showback credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"name": {
-							Description: "The name of the showback credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"username": {
-							Description: "The prometheus username or other credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"password": {
-							Description: "The prometheus password or other credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-						},
-						"url": {
-							Description: "Url of the source.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"organization_id": {
-							Description: "The id of the organization which owns the showback credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"organization_name": {
-							Description: "The name of the organization which owns the showback credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"is_locked": {
-							Description: "Indicates whether the showback credential is locked or not.",
-							Type:        schema.TypeBool,
-							Computed:    true,
-						},
-						"created_by": {
-							Description: "The creator of the showback credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"last_modified": {
-							Description: "Time of last modification.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"last_modified_by": {
-							Description: "The last user who modified the showback credential.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-					},
+					Schema: dataSourceTaikunShowbackCredentialSchema(),
 				},
 			},
 		},
