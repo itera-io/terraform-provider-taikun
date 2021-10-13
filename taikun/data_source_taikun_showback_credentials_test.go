@@ -2,18 +2,38 @@ package taikun
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
+const testAccDataSourceTaikunShowbackCredentialConfig = `
+resource "taikun_showback_credential" "foo" {
+  name            = "%s"
+
+  password = "%s"
+  url = "%s"
+  username = "%s"
+}
+
+data "taikun_showback_credentials" "all" {
+}`
+
 func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
+	showbackCredentialName := randomTestName()
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckTaikunShowbackCredentialConfig(),
+				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackCredentialConfig,
+					showbackCredentialName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.created_by"),
@@ -29,10 +49,4 @@ func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testAccCheckTaikunShowbackCredentialConfig() string {
-	return fmt.Sprintln(`
-data "taikun_showback_credentials" "all" {
-}`)
 }

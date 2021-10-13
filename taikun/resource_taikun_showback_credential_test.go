@@ -53,7 +53,7 @@ func init() {
 	})
 }
 
-const testAccResourceTaikunShowbackCredential = `
+const testAccResourceTaikunShowbackCredentialConfig = `
 resource "taikun_showback_credential" "foo" {
   name            = "%s"
   is_locked       = %t
@@ -65,7 +65,7 @@ resource "taikun_showback_credential" "foo" {
 `
 
 func TestAccResourceTaikunShowbackCredential(t *testing.T) {
-	firstName := randomTestName()
+	showbackCredentialName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
@@ -73,10 +73,16 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredential, firstName, false, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
+				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredentialConfig,
+					showbackCredentialName,
+					false,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
-					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
@@ -89,7 +95,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 }
 
 func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
-	firstName := randomTestName()
+	showbackCredentialName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
@@ -97,10 +103,16 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredential, firstName, false, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
+				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredentialConfig,
+					showbackCredentialName,
+					false,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
-					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
@@ -109,10 +121,16 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredential, firstName, true, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
+				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredentialConfig,
+					showbackCredentialName,
+					true,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "true"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "password"),

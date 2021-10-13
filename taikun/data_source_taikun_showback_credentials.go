@@ -89,13 +89,14 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 
 func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
+	dataSourceID := "all"
 
 	params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion)
 
 	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
-	var organizationID int32 = -1
 	if organizationIDProvided {
-		organizationID, err := atoi32(organizationIDData.(string))
+		dataSourceID = organizationIDData.(string)
+		organizationID, err := atoi32(dataSourceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -124,7 +125,7 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(organizationID))
+	data.SetId(dataSourceID)
 
 	return nil
 }
