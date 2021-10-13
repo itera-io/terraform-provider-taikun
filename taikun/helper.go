@@ -68,7 +68,7 @@ func getLockMode(locked bool) string {
 	return "unlock"
 }
 
-func getPrometheusType(prometheusType string) int32 {
+func getPrometheusType(prometheusType string) models.PrometheusType {
 	if prometheusType == "Count" {
 		return 100
 	}
@@ -102,7 +102,7 @@ func parseLoadBalancingSolution(loadBalancingSolution string) (bool, bool) {
 
 func getSlackConfigurationType(configType string) models.SlackType {
 	if configType == "Alert" {
-		return models.SlackType(100)
+		return 100
 	}
-	return models.SlackType(200) // General
+	return 200 // General
 }

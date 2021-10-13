@@ -140,7 +140,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 	body := &models.CreateShowbackRuleCommand{
 		Name:              data.Get("name").(string),
 		MetricName:        data.Get("metric_name").(string),
-		Type:              models.PrometheusType(getPrometheusType(data.Get("type").(string))),
+		Type:              getPrometheusType(data.Get("type").(string)),
 		Kind:              getShowbackType(data.Get("kind").(string)),
 		Price:             data.Get("price").(float64),
 		ProjectAlertLimit: int32(data.Get("project_alert_limit").(int)),
@@ -280,7 +280,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 		ID:                id,
 		Name:              data.Get("name").(string),
 		MetricName:        data.Get("metric_name").(string),
-		Type:              models.PrometheusType(getPrometheusType(data.Get("type").(string))),
+		Type:              getPrometheusType(data.Get("type").(string)),
 		Kind:              getShowbackType(data.Get("kind").(string)),
 		Price:             data.Get("price").(float64),
 		ProjectAlertLimit: int32(data.Get("project_alert_limit").(int)),

@@ -114,7 +114,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 		MetricName:            data.Get("metric_name").(string),
 		Price:                 data.Get("price").(float64),
 		OperationCredentialID: billingCredentialId,
-		Type:                  models.PrometheusType(getPrometheusType(data.Get("type").(string))),
+		Type:                  getPrometheusType(data.Get("type").(string)),
 	}
 
 	rawLabelsList := data.Get("label").([]interface{})
@@ -219,7 +219,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 		MetricName:            data.Get("metric_name").(string),
 		Price:                 data.Get("price").(float64),
 		OperationCredentialID: billingCredentialId,
-		Type:                  models.PrometheusType(getPrometheusType(data.Get("type").(string))),
+		Type:                  getPrometheusType(data.Get("type").(string)),
 	}
 
 	params := prometheus.NewPrometheusUpdateParams().WithV(ApiVersion).WithID(id).WithBody(body)
