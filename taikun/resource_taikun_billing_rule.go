@@ -9,6 +9,84 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Description: "The id of the billing rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description: "The name of the billing rule.",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"metric_name": {
+			Description: "The name of the metric from Prometheus you want to bill.",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"label": {
+			Description: "Labels linked to this billing rule.",
+			Type:        schema.TypeList,
+			Required:    true,
+			ForceNew:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Description: "Key of the label.",
+						Type:        schema.TypeString,
+						Required:    true,
+					},
+					"value": {
+						Description: "Value of the label.",
+						Type:        schema.TypeString,
+						Required:    true,
+					},
+					"id": {
+						Description: "Id of the label.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"type": {
+			Description:  "Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
+		},
+		"price": {
+			Description:  "The price in CZK per selected unit.",
+			Type:         schema.TypeFloat,
+			Required:     true,
+			ValidateFunc: validation.FloatAtLeast(0),
+		},
+		"created_by": {
+			Description: "The creator of the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"billing_credential_id": {
+			Description:  "Id of the billing credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: stringIsInt,
+		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
+
 func resourceTaikunBillingRule() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Billing Rule",
@@ -16,81 +94,7 @@ func resourceTaikunBillingRule() *schema.Resource {
 		ReadContext:   resourceTaikunBillingRuleRead,
 		UpdateContext: resourceTaikunBillingRuleUpdate,
 		DeleteContext: resourceTaikunBillingRuleDelete,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Description: "The id of the billing rule.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"name": {
-				Description: "The name of the billing rule.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"metric_name": {
-				Description: "The name of the metric from Prometheus you want to bill.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"label": {
-				Description: "Labels linked to this billing rule.",
-				Type:        schema.TypeList,
-				Required:    true,
-				ForceNew:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Description: "Key of the label.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"value": {
-							Description: "Value of the label.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"id": {
-							Description: "Id of the label.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"type": {
-				Description:  "Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
-			},
-			"price": {
-				Description:  "The price in CZK per selected unit.",
-				Type:         schema.TypeFloat,
-				Required:     true,
-				ValidateFunc: validation.FloatAtLeast(0),
-			},
-			"created_by": {
-				Description: "The creator of the billing credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"billing_credential_id": {
-				Description:  "Id of the billing credential.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: stringIsInt,
-			},
-			"last_modified": {
-				Description: "Time of last modification.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_modified_by": {
-				Description: "The last user who modified the billing credential.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:        resourceTaikunBillingRuleSchema(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

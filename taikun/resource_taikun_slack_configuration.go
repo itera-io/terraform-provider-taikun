@@ -10,6 +10,49 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"channel": {
+			Description: "Slack channel for notifications",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"id": {
+			Description: "ID",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description: "Name",
+			Type:        schema.TypeString,
+			Required:    true,
+		},
+		"organization_id": {
+			Description: "Organization ID",
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+		},
+		"organization_name": {
+			Description: "Organization Name",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"type": {
+			Description:  "Alert (receive only alert-type of notification) or General (receive all notifications)",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"Alert", "General"}, false),
+		},
+		"url": {
+			Description:  "Webhook URL from Slack app",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+		},
+	}
+}
+
 func resourceTaikunSlackConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Slack Configuration",
@@ -20,46 +63,7 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"channel": {
-				Description: "Slack channel for notifications",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"id": {
-				Description: "ID",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"name": {
-				Description: "Name",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"organization_id": {
-				Description: "Organization ID",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-			},
-			"organization_name": {
-				Description: "Organization Name",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"type": {
-				Description:  "Alert (receive only alert-type of notification) or General (receive all notifications)",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"Alert", "General"}, false),
-			},
-			"url": {
-				Description:  "Webhook URL from Slack app",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-			},
-		},
+		Schema: resourceTaikunSlackConfigurationSchema(),
 	}
 }
 

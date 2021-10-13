@@ -11,41 +11,45 @@ import (
 	"strings"
 )
 
+func resourceTaikunOrganizationBillingRuleAttachmentSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"billing_rule_id": {
+			Description:  "Id of the billing rule.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: stringIsInt,
+		},
+		"discount_rate": {
+			Description:  "Discount rate in percents (0-1000 %), 100 equals one.",
+			Type:         schema.TypeFloat,
+			Optional:     true,
+			ForceNew:     true,
+			Default:      100,
+			ValidateFunc: validation.FloatBetween(0, 1000),
+		},
+		"organization_id": {
+			Description:  "Id of the organisation.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: stringIsInt,
+		},
+		"organization_name": {
+			Description: "Name of the organisation.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
+
 func resourceTaikunOrganizationBillingRuleAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Organization - Billing Rule Attachment",
 		CreateContext: resourceTaikunOrganizationBillingRuleAttachmentCreate,
 		ReadContext:   resourceTaikunOrganizationBillingRuleAttachmentRead,
 		DeleteContext: resourceTaikunOrganizationBillingRuleAttachmentDelete,
-		Schema: map[string]*schema.Schema{
-			"billing_rule_id": {
-				Description:  "Id of the billing rule.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: stringIsInt,
-			},
-			"discount_rate": {
-				Description:  "Discount rate in percents (0-1000 %), 100 equals one.",
-				Type:         schema.TypeFloat,
-				Optional:     true,
-				ForceNew:     true,
-				Default:      100,
-				ValidateFunc: validation.FloatBetween(0, 1000),
-			},
-			"organization_id": {
-				Description:  "Id of the organisation.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: stringIsInt,
-			},
-			"organization_name": {
-				Description: "Name of the organisation.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:        resourceTaikunOrganizationBillingRuleAttachmentSchema(),
 	}
 }
 

@@ -8,118 +8,17 @@ import (
 	"github.com/itera-io/taikungoclient/client/organizations"
 )
 
+func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
+	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema())
+	addOptionalFieldsToSchema(dsSchema, "id")
+	return dsSchema
+}
+
 func dataSourceTaikunOrganization() *schema.Resource {
 	return &schema.Resource{
 		Description: "Organization details",
 		ReadContext: dataSourceTaikunOrganizationRead,
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Description: "Address",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"billing_email": {
-				Description: "Billing email",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"city": {
-				Description: "City",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"cloud_credentials": {
-				Description: "Number of associated cloud credentials",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
-			"country": {
-				Description: "Country",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"created_at": {
-				Description: "Time and date of creation",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"discount_rate": {
-				Description: "Discount rate, must be between 0 and 100 (included)",
-				Type:        schema.TypeFloat,
-				Computed:    true,
-			},
-			"email": {
-				Description: "Email",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"full_name": {
-				Description: "Full name",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"id": {
-				Description: "ID",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-			},
-			"let_managers_change_subscription": {
-				Description: "Allow subscription to be changed by managers",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
-			"is_locked": {
-				Description: "Whether the organization is locked",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
-			"is_read_only": {
-				Description: "Whether the organization is in read-only mode",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
-			"name": {
-				Description: "Name",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"partner_id": {
-				Description: "ID of the organization's partner",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"partner_name": {
-				Description: "Name of the organization's partner",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"phone": {
-				Description: "Phone number",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"projects": {
-				Description: "Number of associated projects",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
-			"servers": {
-				Description: "Number of associated servers",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
-			"users": {
-				Description: "Number of associated users",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
-			"vat_number": {
-				Description: "VAT number",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-		},
+		Schema:      dataSourceTaikunOrganizationSchema(),
 	}
 }
 
