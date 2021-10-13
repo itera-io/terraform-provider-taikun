@@ -8,9 +8,6 @@ import (
 
 const testAccDataSourceTaikunKubernetesProfilesConfig = `
 data "taikun_kubernetes_profiles" "all" {
-   depends_on = [
-    taikun_kubernetes_profile.foo
-  ]
 }`
 
 func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
