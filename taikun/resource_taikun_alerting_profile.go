@@ -1,6 +1,9 @@
 package taikun
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -115,4 +118,35 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			},
 		},
 	}
+}
+
+func resourceTaikunAlertingProfile() *schema.Resource {
+	return &schema.Resource{
+		Description:   "Taikun Alerting Profile",
+		CreateContext: resourceTaikunAlertingProfileCreate,
+		ReadContext:   resourceTaikunAlertingProfileRead,
+		UpdateContext: resourceTaikunAlertingProfileUpdate,
+		DeleteContext: resourceTaikunAlertingProfileDelete,
+		Schema:        resourceTaikunAlertingProfileSchema(),
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
+	// FIXME
+func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return nil
+}
+func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// FIXME
+	return nil
+}
+func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// FIXME
+	return nil
+}
+func resourceTaikunAlertingProfileDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// FIXME
+	return nil
 }
