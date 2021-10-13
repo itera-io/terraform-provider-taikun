@@ -48,13 +48,16 @@ data "taikun_access_profiles" "all" {
 }`
 
 func TestAccDataSourceTaikunAccessProfilesWithFilter(t *testing.T) {
+	organizationName := randomTestName()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfilesWithFilterConfig, randomTestName()),
+				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfilesWithFilterConfig, organizationName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_access_profiles.all", "access_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.dns_server.#"),
@@ -63,7 +66,6 @@ func TestAccDataSourceTaikunAccessProfilesWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.ntp_server.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.project.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.ssh_user.#"),
 				),

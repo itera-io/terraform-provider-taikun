@@ -83,12 +83,12 @@ func TestAccDataSourceTaikunSlackConfigurationsWithFilter(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunSlackConfigurationsWithFilterConfig, organizationName, slackConfigurationName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_slack_configurations.all", "slack_configurations.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.channel"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.id"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.type"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.0.url"),

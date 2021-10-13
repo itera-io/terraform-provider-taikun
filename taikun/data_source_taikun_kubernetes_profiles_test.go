@@ -47,13 +47,16 @@ data "taikun_kubernetes_profiles" "all" {
 }`
 
 func TestAccDataSourceTaikunKubernetesProfilesWithFilter(t *testing.T) {
+	organizationName := randomTestName()
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfilesWithFilterConfig, randomTestName()),
+				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfilesWithFilterConfig, organizationName),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.bastion_proxy_enabled"),
@@ -63,7 +66,6 @@ func TestAccDataSourceTaikunKubernetesProfilesWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.load_balancing_solution"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.organization_name"),
 				),
 			},
 		},
