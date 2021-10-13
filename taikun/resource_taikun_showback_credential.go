@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/client/showback"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -123,12 +122,12 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		lockBody := models.OperationCredentialLockManagerCommand{
+		lockBody := models.ShowbackCredentialLockCommand{
 			ID:   id,
 			Mode: getLockMode(locked),
 		}
-		lockParams := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.OpsCredentials.OpsCredentialsLockManager(lockParams, apiClient)
+		lockParams := showback.NewShowbackLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+		_, err = apiClient.client.Showback.ShowbackLockManager(lockParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
