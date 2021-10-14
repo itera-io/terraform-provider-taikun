@@ -233,8 +233,8 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 			continue
 		}
 
-		var limit int32 = 1
-		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID).WithLimit(&limit)
+		id, _ := atoi32(rs.Primary.ID)
+		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id)
 
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
@@ -253,12 +253,11 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 			continue
 		}
 
-		var limit int32 = 1
-		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID).WithLimit(&limit)
+		id, _ := atoi32(rs.Primary.ID)
+		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id)
 
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
-		organizationID, _ := atoi32(rs.Primary.ID)
-		if err == nil && response.Payload.Data[0].ID == organizationID {
+		if err == nil && response.Payload.TotalCount != 0 {
 			return fmt.Errorf("organization still exists")
 		}
 	}
