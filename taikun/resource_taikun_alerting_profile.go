@@ -270,14 +270,13 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	}
 
 	// TODO handle alerting integrations
-
 	params := alerting_profiles.NewAlertingProfilesCreateParams().WithV(ApiVersion).WithBody(&body)
 	response, err := apiClient.client.AlertingProfiles.AlertingProfilesCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// TODO data.SetId()
+	data.SetId(response.Payload.ID)
 
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
