@@ -119,13 +119,11 @@ func getSlackConfigurationType(configType string) models.SlackType {
 
 func getAlertingProfileReminder(reminder string) models.AlertingReminder {
 	switch reminder {
-	case "None":
-		return 100
 	case "HalfHour":
-		return 200
+		return 100
 	case "Hourly":
-		return 300
+		return 200
 	default: // "Daily"
-		return 400
+		return 300
 	}
 }
