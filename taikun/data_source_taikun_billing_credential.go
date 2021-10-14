@@ -9,6 +9,7 @@ import (
 func dataSourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunBillingCredentialSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
+	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema
 }
 

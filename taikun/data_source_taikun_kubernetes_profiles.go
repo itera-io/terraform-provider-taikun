@@ -15,10 +15,10 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 		ReadContext: dataSourceTaikunKubernetesProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:  "Organization id filter.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: stringIsInt,
+				Description:      "Organization id filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 			"kubernetes_profiles": {
 				Type:     schema.TypeList,

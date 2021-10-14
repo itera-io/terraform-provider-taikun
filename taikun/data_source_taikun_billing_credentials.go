@@ -15,10 +15,10 @@ func dataSourceTaikunBillingCredentials() *schema.Resource {
 		ReadContext: dataSourceTaikunBillingCredentialsRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:  "Organization id filter.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: stringIsInt,
+				Description:      "Organization id filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 			"billing_credentials": {
 				Type:     schema.TypeList,

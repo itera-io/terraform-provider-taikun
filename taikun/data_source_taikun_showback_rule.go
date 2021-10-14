@@ -9,6 +9,7 @@ import (
 func dataSourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunShowbackRuleSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
+	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema
 }
 

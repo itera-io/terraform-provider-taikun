@@ -41,12 +41,12 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"organization_id": {
-			Description:  "The id of the organization which owns the billing credential.",
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ValidateFunc: stringIsInt,
-			ForceNew:     true,
+			Description:      "The id of the organization which owns the billing credential.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
 		},
 		"organization_name": {
 			Description: "The name of the organization which owns the billing credential.",

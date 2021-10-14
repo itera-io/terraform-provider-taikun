@@ -16,10 +16,10 @@ func dataSourceTaikunSlackConfigurations() *schema.Resource {
 		ReadContext: dataSourceTaikunSlackConfigurationsRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:  "Organization ID filter (for Partner and Admin roles).",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: stringIsInt,
+				Description:      "Organization ID filter (for Partner and Admin roles).",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 			"slack_configurations": {
 				Type:     schema.TypeList,

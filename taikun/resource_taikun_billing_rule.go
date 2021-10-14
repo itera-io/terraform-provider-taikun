@@ -69,10 +69,10 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"billing_credential_id": {
-			Description:  "Id of the billing credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: stringIsInt,
+			Description:      "Id of the billing credential.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"last_modified": {
 			Description: "Time of last modification.",

@@ -9,6 +9,7 @@ import (
 func dataSourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunAccessProfileSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
+	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema
 }
 

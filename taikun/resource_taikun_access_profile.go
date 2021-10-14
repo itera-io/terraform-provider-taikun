@@ -23,11 +23,11 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"organization_id": {
-			Description:  "The id of the organization which owns the access profile.",
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ValidateFunc: stringIsInt,
+			Description:      "The id of the organization which owns the access profile.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
 			Description: "The name of the organization which owns the access profile.",
