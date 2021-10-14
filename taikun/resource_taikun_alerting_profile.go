@@ -306,7 +306,97 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 }
 
 func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// FIXME
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if data.HasChanges("name", "organization_id", "reminder", "slack_configuration_id") {
+		body := models.UpdateAlertingProfileCommand{
+			ID:   id,
+			Name: data.Get("name").(string),
+		}
+		if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+			organizationID, err := atoi32(organizationIDData.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			body.OrganizationID = organizationID
+		}
+		if reminderData, reminderIsSet := data.GetOk("reminder"); reminderIsSet {
+			body.Reminder = getAlertingProfileReminder(reminderData.(string))
+		}
+		if slackConfigIDData, slackConfigIDIsSet := data.GetOk("slack_configuration_id"); slackConfigIDIsSet {
+			slackConfigID, err := atoi32(slackConfigIDData.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			body.SlackConfigurationID = slackConfigID
+		}
+		params := alerting_profiles.NewAlertingProfilesEditParams().WithV(ApiVersion)
+		response, err := apiClient.client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		data.SetId(response.Payload.ID)
+	}
+
+	if data.HasChange("is_locked") {
+		body := models.AlertingProfilesLockManagerCommand{
+			ID:   id,
+			Mode: getLockMode(data.Get("is_locked").(bool)),
+		}
+		params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
+		_, err := apiClient.client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if data.HasChange("emails") {
+		emails := data.Get("emails").([]interface{})
+		body := make([]*models.AlertingEmailDto, len(emails))
+		for i, email := range emails {
+			body[i] = &models.AlertingEmailDto{
+				Email: email.(string),
+			}
+
+		}
+		params := alerting_profiles.NewAlertingProfilesAssignEmailsParams().WithV(ApiVersion).WithID(id).WithBody(body)
+		_, err := apiClient.client.AlertingProfiles.AlertingProfilesAssignEmails(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if data.HasChange("webhook") { // TODO factorize
+		webhooks := data.Get("webhooks").([]interface{})
+		body := make([]*models.AlertingWebhookDto, len(webhooks))
+		for i, webhookData := range webhooks {
+			webhook := webhookData.(map[string]interface{})
+			headers := webhook["headers"].([]interface{})
+			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
+			for i, headerData := range headers {
+				header := headerData.(map[string]interface{})
+				headerDTOs[i] = &models.WebhookHeaderDto{
+					Key:   header["key"].(string),
+					Value: header["value"].(string),
+				}
+			}
+			body[i] = &models.AlertingWebhookDto{
+				Headers: headerDTOs,
+				URL:     webhook["url"].(string),
+			}
+		}
+		params := alerting_profiles.NewAlertingProfilesAssignWebhooksParams().WithV(ApiVersion).WithID(id).WithBody(body)
+		_, err := apiClient.client.AlertingProfiles.AlertingProfilesAssignWebhooks(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 
