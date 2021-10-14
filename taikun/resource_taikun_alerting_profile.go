@@ -87,13 +87,13 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 		},
 		"webhook": {
 			Description: "list of webhooks to notify",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"header": {
 						Description: "list of headers",
-						Type:        schema.TypeList,
+						Type:        schema.TypeSet,
 						Optional:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -260,11 +260,11 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	}
 
 	if webhooksData, webhooksIsSet := data.GetOk("webhook"); webhooksIsSet {
-		webhooks := webhooksData.([]interface{})
+		webhooks := webhooksData.(*schema.Set).List()
 		webhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
 		for i, webhookData := range webhooks {
 			webhook := webhookData.(map[string]interface{})
-			headers := webhook["header"].([]interface{})
+			headers := webhook["header"].(*schema.Set).List()
 			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
 			for i, headerData := range headers {
 				header := headerData.(map[string]interface{})
@@ -335,7 +335,6 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 			}
 			body.SlackConfigurationID = slackConfigID
 		}
-		params := alerting_profiles.NewAlertingProfilesEditParams().WithV(ApiVersion)
 		params := alerting_profiles.NewAlertingProfilesEditParams().WithV(ApiVersion).WithBody(&body)
 		response, err := apiClient.client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
 		if err != nil {
@@ -373,11 +372,11 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 	}
 
 	if data.HasChange("webhook") { // TODO factorize
-		webhooks := data.Get("webhook").([]interface{})
+		webhooks := data.Get("webhook").(*schema.Set).List()
 		body := make([]*models.AlertingWebhookDto, len(webhooks))
 		for i, webhookData := range webhooks {
 			webhook := webhookData.(map[string]interface{})
-			headers := webhook["header"].([]interface{})
+			headers := webhook["header"].(*schema.Set).List()
 			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
 			for i, headerData := range headers {
 				header := headerData.(map[string]interface{})
