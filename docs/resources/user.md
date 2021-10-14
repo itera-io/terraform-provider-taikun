@@ -42,7 +42,7 @@ resource "taikun_user" "foo" {
 ### Optional
 
 - **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If new user is not approved by partner, he won't be able to login. Defaults to `true`.
-- **display_name** (String) The name of the user displayed in the upper right corner. Defaults to ``.
+- **display_name** (String) The name of the user displayed in the upper right corner. Defaults to ` `.
 - **organization_id** (String) The id of the organization to which the user belongs.
 - **user_disabled** (Boolean) Indicates whether the user is locked or not. Defaults to `false`.
 

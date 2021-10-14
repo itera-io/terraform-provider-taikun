@@ -20,7 +20,12 @@ func init() {
 	schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
 		desc := s.Description
 		if s.Default != nil {
-			desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
+			defaultString := fmt.Sprint(s.Default)
+			if len(defaultString) == 0 {
+				defaultString = " "
+			}
+
+			desc += fmt.Sprintf(" Defaults to `%s`.", defaultString)
 		}
 		if s.Deprecated != "" {
 			desc += " " + s.Deprecated
