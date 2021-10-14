@@ -60,7 +60,7 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.Res
 		params = params.WithOffset(&offset)
 	}
 
-	showbackCredentials := make([]map[string]interface{}, len(showbackCredentialsList), len(showbackCredentialsList))
+	showbackCredentials := make([]map[string]interface{}, len(showbackCredentialsList))
 	for i, rawShowbackCredential := range showbackCredentialsList {
 		showbackCredentials[i] = flattenDatasourceTaikunShowbackCredentialItem(rawShowbackCredential)
 	}

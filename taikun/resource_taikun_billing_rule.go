@@ -118,7 +118,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 	}
 
 	rawLabelsList := data.Get("label").([]interface{})
-	LabelsList := make([]*models.PrometheusLabelListDto, len(rawLabelsList), len(rawLabelsList))
+	LabelsList := make([]*models.PrometheusLabelListDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
 		LabelsList[i] = &models.PrometheusLabelListDto{
@@ -156,7 +156,7 @@ func resourceTaikunBillingRuleRead(_ context.Context, data *schema.ResourceData,
 	if response.Payload.TotalCount == 1 {
 		rawBillingRule := response.GetPayload().Data[0]
 
-		labels := make([]map[string]interface{}, len(rawBillingRule.Labels), len(rawBillingRule.Labels))
+		labels := make([]map[string]interface{}, len(rawBillingRule.Labels))
 		for i, rawLabel := range rawBillingRule.Labels {
 			labels[i] = map[string]interface{}{
 				"key":   rawLabel.Label,

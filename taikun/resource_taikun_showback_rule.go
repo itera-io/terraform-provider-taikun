@@ -166,7 +166,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 	}
 
 	rawLabelsList := data.Get("label").([]interface{})
-	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList), len(rawLabelsList))
+	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
 		LabelsList[i] = &models.ShowbackLabelCreateDto{
@@ -203,7 +203,7 @@ func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData
 	if response.Payload.TotalCount == 1 {
 		rawShowbackCredential := response.GetPayload().Data[0]
 
-		labels := make([]map[string]interface{}, len(rawShowbackCredential.Labels), len(rawShowbackCredential.Labels))
+		labels := make([]map[string]interface{}, len(rawShowbackCredential.Labels))
 		for i, rawLabel := range rawShowbackCredential.Labels {
 			labels[i] = map[string]interface{}{
 				"key":   rawLabel.Label,
@@ -288,7 +288,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 	}
 
 	rawLabelsList := data.Get("label").([]interface{})
-	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList), len(rawLabelsList))
+	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
 		LabelsList[i] = &models.ShowbackLabelCreateDto{

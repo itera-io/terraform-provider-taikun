@@ -61,7 +61,7 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.Reso
 		params = params.WithOffset(&offset)
 	}
 
-	operationCredentials := make([]map[string]interface{}, len(operationCredentialsList), len(operationCredentialsList))
+	operationCredentials := make([]map[string]interface{}, len(operationCredentialsList))
 	for i, rawOperationCredential := range operationCredentialsList {
 		operationCredentials[i] = flattenDataSourceTaikunBillingCredentialItem(rawOperationCredential)
 	}

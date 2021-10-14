@@ -184,7 +184,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 	if response.Payload.TotalCount == 1 {
 		rawAccessProfile := response.GetPayload().Data[0]
 
-		DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers), len(rawAccessProfile.DNSServers))
+		DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
 		for i, rawDNSServer := range rawAccessProfile.DNSServers {
 			DNSServers[i] = map[string]interface{}{
 				"address": rawDNSServer.Address,
@@ -192,7 +192,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 			}
 		}
 
-		NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers), len(rawAccessProfile.NtpServers))
+		NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
 		for i, rawNTPServer := range rawAccessProfile.NtpServers {
 			NTPServers[i] = map[string]interface{}{
 				"address": rawNTPServer.Address,
@@ -200,7 +200,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 			}
 		}
 
-		projects := make([]map[string]interface{}, len(rawAccessProfile.Projects), len(rawAccessProfile.Projects))
+		projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
 		for i, rawProject := range rawAccessProfile.Projects {
 			projects[i] = map[string]interface{}{
 				"id":   i32toa(rawProject.ID),
@@ -208,7 +208,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 			}
 		}
 
-		SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload), len(sshResponse.Payload))
+		SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
 		for i, rawSSHUser := range sshResponse.Payload {
 			SSHUsers[i] = map[string]interface{}{
 				"id":         i32toa(rawSSHUser.ID),
@@ -285,7 +285,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 
 	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_user"); isSSHUsersSet {
 		rawSSHUsersList := SSHUsers.([]interface{})
-		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList), len(rawSSHUsersList))
+		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
 		for i, e := range rawSSHUsersList {
 			rawSSHUser := e.(map[string]interface{})
 			SSHUsersList[i] = &models.SSHUserCreateDto{
@@ -298,7 +298,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 
 	if NtpServers, isNTPServersSet := data.GetOk("ntp_server"); isNTPServersSet {
 		rawNtpServersList := NtpServers.([]interface{})
-		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList), len(rawNtpServersList))
+		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
 		for i, e := range rawNtpServersList {
 			rawNtpServer := e.(map[string]interface{})
 			NTPServersList[i] = &models.NtpServerListDto{
@@ -310,7 +310,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 
 	if DNSServers, isDNSServersSet := data.GetOk("dns_server"); isDNSServersSet {
 		rawDNSServersList := DNSServers.([]interface{})
-		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList), len(rawDNSServersList))
+		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
 		for i, e := range rawDNSServersList {
 			rawDNSServer := e.(map[string]interface{})
 			DNSServersList[i] = &models.DNSServerListDto{
