@@ -206,7 +206,7 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 	if err := data.Set("reminder", rawAlertingProfile.Reminder); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("slack_configuration_id", rawAlertingProfile.SlackConfigurationID); err != nil {
+	if err := data.Set("slack_configuration_id", i32toa(rawAlertingProfile.SlackConfigurationID)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("slack_configuration_name", rawAlertingProfile.SlackConfigurationName); err != nil {
