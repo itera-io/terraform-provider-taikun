@@ -2,11 +2,13 @@ package taikun
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/itera-io/taikungoclient/models"
@@ -60,7 +62,21 @@ func randomName(prefix string, length int) string {
 }
 
 func randomString() string {
+	rand.Seed(time.Now().UnixNano())
 	return acctest.RandString(rand.Int()%10 + 10)
+}
+
+func randomURL() string {
+	return fmt.Sprintf("https://%s.%s.example", randomString(), randomString())
+}
+
+func randomEmail() string {
+	return fmt.Sprintf("%s@%s.example", randomString(), randomString())
+}
+
+func randomBool() bool {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int()%2 == 0
 }
 
 func getLockMode(locked bool) string {
