@@ -68,7 +68,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"is_owner": {
-			Description: "Indicates whether the user is the owner of his organization.",
+			Description: "Indicates whether the user is the Owner of his organization.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -79,7 +79,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"approved_by_partner": {
-			Description: "Indicates whether the user account has been approved by a partner. If new user is not approved by partner, he won't be able to login",
+			Description: "Indicates whether the user account has been approved by a partner. If new user is not approved by partner, he won't be able to login.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     true,
