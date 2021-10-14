@@ -51,11 +51,11 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"organization_id": {
-			Description:  "ID of the organization which owns the profile",
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ValidateFunc: stringIsInt,
+			Description:      "ID of the organization which owns the profile",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
 			Description: "name of the organization which owns the profile",
@@ -74,11 +74,11 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"slack_configuration_id": {
-			Description:  "ID of Slack configuration to notify",
-			Type:         schema.TypeString,
-			Optional:     true,
-			Default:      "0",
-			ValidateFunc: stringIsInt,
+			Description:      "ID of Slack configuration to notify",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "0",
+			ValidateDiagFunc: stringIsInt,
 		},
 		"slack_configuration_name": {
 			Description: "name of Slack configuration to notify",
