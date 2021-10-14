@@ -11,6 +11,9 @@ description: |-
 
 ~> **Role Requirement** In order to use the `taikun_users` data source you need at least a `Manager` account
 
+-> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
+organization.
+
 ## Example Usage
 
 {{tffile "examples/data-sources/taikun_users/data-source.tf"}}
