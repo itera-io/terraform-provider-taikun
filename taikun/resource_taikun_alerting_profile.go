@@ -85,13 +85,13 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"webhooks": {
+		"webhook": {
 			Description: "list of webhooks to notify",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"headers": {
+					"header": {
 						Description: "list of headers",
 						Type:        schema.TypeList,
 						Optional:    true,
@@ -169,8 +169,8 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 			}
 		}
 		webhooks[i] = map[string]interface{}{
-			"headers": headers,
-			"url":     rawWebhook.URL,
+			"header": headers,
+			"url":    rawWebhook.URL,
 		}
 	}
 
@@ -211,7 +211,7 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 	if err := data.Set("slack_configuration_name", rawAlertingProfile.SlackConfigurationName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("webhooks", webhooks); err != nil {
+	if err := data.Set("webhook", webhooks); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -259,12 +259,12 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.SlackConfigurationID = slackConfigID
 	}
 
-	if webhooksData, webhooksIsSet := data.GetOk("webhooks"); webhooksIsSet {
+	if webhooksData, webhooksIsSet := data.GetOk("webhook"); webhooksIsSet {
 		webhooks := webhooksData.([]interface{})
 		webhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
 		for i, webhookData := range webhooks {
 			webhook := webhookData.(map[string]interface{})
-			headers := webhook["headers"].([]interface{})
+			headers := webhook["header"].([]interface{})
 			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
 			for i, headerData := range headers {
 				header := headerData.(map[string]interface{})
@@ -372,11 +372,11 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 	}
 
 	if data.HasChange("webhook") { // TODO factorize
-		webhooks := data.Get("webhooks").([]interface{})
+		webhooks := data.Get("webhook").([]interface{})
 		body := make([]*models.AlertingWebhookDto, len(webhooks))
 		for i, webhookData := range webhooks {
 			webhook := webhookData.(map[string]interface{})
-			headers := webhook["headers"].([]interface{})
+			headers := webhook["header"].([]interface{})
 			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
 			for i, headerData := range headers {
 				header := headerData.(map[string]interface{})
