@@ -1,0 +1,24 @@
+---
+page_title: "{{.Type}} {{.Name}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Type}} ({{.Name}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** In order to use the `billing_rule` resource you need at least a `Partner` account
+
+## Example Usage
+
+{{tffile "examples/resources/taikun_billing_rule/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/taikun_billing_rule/import.sh"}}

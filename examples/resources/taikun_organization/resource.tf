@@ -1,5 +1,3 @@
-# Only valid for roles with permission to create/delete/modify Organizations
-# i.e. Partner and Admin roles
 resource "taikun_organization" "foo" {
   # Required
   name          = "foo"
