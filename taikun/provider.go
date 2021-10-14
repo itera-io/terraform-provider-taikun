@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 			"taikun_showback_credential":                  resourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        resourceTaikunShowbackRule(),
 			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
+			"taikun_user":                                 resourceTaikunUser(),
 		},
 		Schema: map[string]*schema.Schema{
 			"email": {
