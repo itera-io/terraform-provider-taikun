@@ -66,11 +66,10 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 		},
 		// TODO add "projects" ?
 		"reminder": {
-			Description: "frequency of notifications (None, HalfHour, Hourly or Daily)",
+			Description: "frequency of notifications (HalfHour, Hourly or Daily), defaults to None if not specified",
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			ValidateFunc: validation.StringInSlice([]string{
-				"None",
 				"HalfHour",
 				"Hourly",
 				"Daily",
@@ -224,8 +223,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	apiClient := meta.(*apiClient)
 
 	body := models.CreateAlertingProfileCommand{
-		Name:     data.Get("name").(string),
-		Reminder: getAlertingProfileReminder(data.Get("reminder").(string)),
+		Name: data.Get("name").(string),
 	}
 
 	if emailsData, emailsIsSet := data.GetOk("emails"); emailsIsSet {
@@ -243,6 +241,10 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 			return diag.FromErr(err)
 		}
 		body.OrganizationID = organizationID
+	}
+
+	if reminderData, reminderIsSet := data.GetOk("reminder"); reminderIsSet {
+		body.Reminder = getAlertingProfileReminder(reminderData.(string))
 	}
 
 	if slackConfigIDData, slackConfigIDIsSet := data.GetOk("slack_configuration_id"); slackConfigIDIsSet {
