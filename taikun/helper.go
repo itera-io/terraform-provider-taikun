@@ -79,6 +79,12 @@ func randomBool() bool {
 	return rand.Int()%2 == 0
 }
 
+// Return an integer in the range [0; maxInt[
+func randomInt(maxInt int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int() % maxInt
+}
+
 func getLockMode(locked bool) string {
 	if locked {
 		return "lock"
