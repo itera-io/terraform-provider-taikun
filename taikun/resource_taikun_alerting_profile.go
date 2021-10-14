@@ -227,16 +227,8 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		Name: data.Get("name").(string),
 	}
 
-	if emailsData, emailsIsSet := data.GetOk("emails"); emailsIsSet {
-		emails := emailsData.([]interface{})
-		emailDTOs := make([]*models.AlertingEmailDto, len(emails))
-		for i, email := range emails {
-			emailDTOs[i] = &models.AlertingEmailDto{
-				Email: email.(string),
-			}
-
-		}
-		body.Emails = emailDTOs
+	if _, emailsIsSet := data.GetOk("emails"); emailsIsSet {
+		body.Emails = getEmailDTOsFromAlertingProfileResourceData(data)
 	}
 
 	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
@@ -259,26 +251,8 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.SlackConfigurationID = slackConfigID
 	}
 
-	if webhooksData, webhooksIsSet := data.GetOk("webhook"); webhooksIsSet {
-		webhooks := webhooksData.(*schema.Set).List()
-		webhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
-		for i, webhookData := range webhooks {
-			webhook := webhookData.(map[string]interface{})
-			headers := webhook["header"].(*schema.Set).List()
-			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
-			for i, headerData := range headers {
-				header := headerData.(map[string]interface{})
-				headerDTOs[i] = &models.WebhookHeaderDto{
-					Key:   header["key"].(string),
-					Value: header["value"].(string),
-				}
-			}
-			webhookDTOs[i] = &models.AlertingWebhookDto{
-				Headers: headerDTOs,
-				URL:     webhook["url"].(string),
-			}
-		}
-		body.Webhooks = webhookDTOs
+	if _, webhooksIsSet := data.GetOk("webhook"); webhooksIsSet {
+		body.Webhooks = getWebhookDTOsFromAlertingProfileResourceData(data)
 	}
 
 	// TODO handle alerting integrations
@@ -356,14 +330,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 	}
 
 	if data.HasChange("emails") {
-		emails := data.Get("emails").([]interface{})
-		body := make([]*models.AlertingEmailDto, len(emails))
-		for i, email := range emails {
-			body[i] = &models.AlertingEmailDto{
-				Email: email.(string),
-			}
-
-		}
+		body := getEmailDTOsFromAlertingProfileResourceData(data)
 		params := alerting_profiles.NewAlertingProfilesAssignEmailsParams().WithV(ApiVersion).WithID(id).WithBody(body)
 		_, err := apiClient.client.AlertingProfiles.AlertingProfilesAssignEmails(params, apiClient)
 		if err != nil {
@@ -371,25 +338,8 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	if data.HasChange("webhook") { // TODO factorize
-		webhooks := data.Get("webhook").(*schema.Set).List()
-		body := make([]*models.AlertingWebhookDto, len(webhooks))
-		for i, webhookData := range webhooks {
-			webhook := webhookData.(map[string]interface{})
-			headers := webhook["header"].(*schema.Set).List()
-			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
-			for i, headerData := range headers {
-				header := headerData.(map[string]interface{})
-				headerDTOs[i] = &models.WebhookHeaderDto{
-					Key:   header["key"].(string),
-					Value: header["value"].(string),
-				}
-			}
-			body[i] = &models.AlertingWebhookDto{
-				Headers: headerDTOs,
-				URL:     webhook["url"].(string),
-			}
-		}
+	if data.HasChange("webhook") {
+		body := getWebhookDTOsFromAlertingProfileResourceData(data)
 		params := alerting_profiles.NewAlertingProfilesAssignWebhooksParams().WithV(ApiVersion).WithID(id).WithBody(body)
 		_, err := apiClient.client.AlertingProfiles.AlertingProfilesAssignWebhooks(params, apiClient)
 		if err != nil {
@@ -416,4 +366,38 @@ func resourceTaikunAlertingProfileDelete(ctx context.Context, data *schema.Resou
 
 	data.SetId("")
 	return nil
+}
+
+func getEmailDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingEmailDto {
+	emails := data.Get("emails").([]interface{})
+	emailDTOs := make([]*models.AlertingEmailDto, len(emails))
+	for i, email := range emails {
+		emailDTOs[i] = &models.AlertingEmailDto{
+			Email: email.(string),
+		}
+
+	}
+	return emailDTOs
+}
+
+func getWebhookDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingWebhookDto {
+	webhooks := data.Get("webhook").(*schema.Set).List()
+	alertingWebhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
+	for i, webhookData := range webhooks {
+		webhook := webhookData.(map[string]interface{})
+		headers := webhook["header"].(*schema.Set).List()
+		headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
+		for i, headerData := range headers {
+			header := headerData.(map[string]interface{})
+			headerDTOs[i] = &models.WebhookHeaderDto{
+				Key:   header["key"].(string),
+				Value: header["value"].(string),
+			}
+		}
+		alertingWebhookDTOs[i] = &models.AlertingWebhookDto{
+			Headers: headerDTOs,
+			URL:     webhook["url"].(string),
+		}
+	}
+	return alertingWebhookDTOs
 }
