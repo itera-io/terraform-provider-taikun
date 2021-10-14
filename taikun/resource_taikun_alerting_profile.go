@@ -77,6 +77,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description:  "ID of Slack configuration to notify",
 			Type:         schema.TypeString,
 			Optional:     true,
+			Default:      "0",
 			ValidateFunc: stringIsInt,
 		},
 		"slack_configuration_name": {
