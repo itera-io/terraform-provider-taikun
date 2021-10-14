@@ -285,23 +285,6 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	if !data.HasChanges(
-		"address",
-		"billing_email",
-		"city",
-		"country",
-		"discount_rate",
-		"email",
-		"full_name",
-		"let_managers_change_subscription",
-		"is_locked",
-		"name",
-		"phone",
-		"vat_number",
-	) {
-		return resourceTaikunOrganizationRead(ctx, data, meta)
-	}
-
 	body := &models.UpdateOrganizationCommand{
 		Address:                      data.Get("address").(string),
 		BillingEmail:                 data.Get("billing_email").(string),
