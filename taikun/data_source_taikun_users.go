@@ -15,10 +15,10 @@ func dataSourceTaikunUsers() *schema.Resource {
 		ReadContext: dataSourceTaikunUsersRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:  "Organization id filter.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: stringIsInt,
+				Description:      "Organization id filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 			"users": {
 				Type:     schema.TypeList,
