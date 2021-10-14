@@ -9,7 +9,8 @@ description: |-
 
 Taikun Slack Configuration
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
+-> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
+organization.
 
 ## Example Usage
 

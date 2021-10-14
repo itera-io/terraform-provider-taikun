@@ -9,7 +9,8 @@ description: |-
 
 Get the list of slack configurations for your organization, or filter by organization if Partner or Admin.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
+-> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
+organization.
 
 ## Example Usage
 

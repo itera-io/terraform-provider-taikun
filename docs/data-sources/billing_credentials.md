@@ -11,7 +11,8 @@ Get the list of billing credentials, optionally filtered by organization.
 
 ~> **Role Requirement** In order to use the `billing_credentials` data source you need at least a `Partner` account
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
+-> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
+organization.
 
 ## Example Usage
 
