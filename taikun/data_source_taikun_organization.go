@@ -25,7 +25,8 @@ func dataSourceTaikunOrganization() *schema.Resource {
 func dataSourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	params := organizations.NewOrganizationsListParams().WithV(ApiVersion)
+	var limit int32 = 1
+	params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithLimit(&limit)
 
 	id := data.Get("id").(string)
 	id32, _ := atoi32(id)
