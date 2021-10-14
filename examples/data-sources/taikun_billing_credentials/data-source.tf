@@ -1,4 +1,4 @@
 data "taikun_billing_credentials" "foo" {
-  # Optional for Partner and Admin
+  # Optional
   organization_id = "42"
 }
