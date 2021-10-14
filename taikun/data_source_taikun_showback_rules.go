@@ -60,7 +60,7 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, data *schema.ResourceD
 		params = params.WithOffset(&offset)
 	}
 
-	showbackRules := make([]map[string]interface{}, len(showbackRulesList), len(showbackRulesList))
+	showbackRules := make([]map[string]interface{}, len(showbackRulesList))
 	for i, rawShowbackRule := range showbackRulesList {
 		showbackRules[i] = flattenDatasourceTaikunShowbackRuleItem(rawShowbackRule)
 	}
@@ -75,7 +75,7 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, data *schema.ResourceD
 
 func flattenDatasourceTaikunShowbackRuleItem(rawShowbackRule *models.ShowbackRulesListDto) map[string]interface{} {
 
-	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels), len(rawShowbackRule.Labels))
+	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels))
 	for i, rawLabel := range rawShowbackRule.Labels {
 		labels[i] = map[string]interface{}{
 			"key":   rawLabel.Label,

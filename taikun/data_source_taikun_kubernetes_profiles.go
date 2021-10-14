@@ -61,7 +61,7 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 		params = params.WithOffset(&offset)
 	}
 
-	kubernetesProfiles := make([]map[string]interface{}, len(kubernetesProfilesListDtos), len(kubernetesProfilesListDtos))
+	kubernetesProfiles := make([]map[string]interface{}, len(kubernetesProfilesListDtos))
 	for i, rawKubernetesProfile := range kubernetesProfilesListDtos {
 		kubernetesProfiles[i] = flattenDataSourceTaikunKubernetesProfilesItem(rawKubernetesProfile)
 	}

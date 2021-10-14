@@ -64,7 +64,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 		params = params.WithOffset(&offset)
 	}
 
-	accessProfiles := make([]map[string]interface{}, len(accessProfilesList), len(accessProfilesList))
+	accessProfiles := make([]map[string]interface{}, len(accessProfilesList))
 	for i, rawAccessProfile := range accessProfilesList {
 
 		sshParams := ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(rawAccessProfile.ID)
@@ -87,7 +87,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 
 func flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
 
-	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers), len(rawAccessProfile.DNSServers))
+	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
 	for i, rawDNSServer := range rawAccessProfile.DNSServers {
 		DNSServers[i] = map[string]interface{}{
 			"address": rawDNSServer.Address,
@@ -95,7 +95,7 @@ func flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessPr
 		}
 	}
 
-	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers), len(rawAccessProfile.NtpServers))
+	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
 	for i, rawNTPServer := range rawAccessProfile.NtpServers {
 		NTPServers[i] = map[string]interface{}{
 			"address": rawNTPServer.Address,
@@ -103,7 +103,7 @@ func flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessPr
 		}
 	}
 
-	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects), len(rawAccessProfile.Projects))
+	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
 	for i, rawProject := range rawAccessProfile.Projects {
 		projects[i] = map[string]interface{}{
 			"id":   i32toa(rawProject.ID),
@@ -111,7 +111,7 @@ func flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessPr
 		}
 	}
 
-	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload), len(sshResponse.Payload))
+	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
 	for i, rawSSHUser := range sshResponse.Payload {
 		SSHUsers[i] = map[string]interface{}{
 			"id":         i32toa(rawSSHUser.ID),
