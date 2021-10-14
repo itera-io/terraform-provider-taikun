@@ -7,10 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/alerting_profiles"
+	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		// TODO "alerting_integrations"
 		"created_by": {
 			Description: "profile creator",
 			Type:        schema.TypeString,
@@ -194,6 +196,7 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 	}
 	if err := data.Set("name", rawAlertingProfile.Name); err != nil {
 		return diag.FromErr(err)
+
 	}
 	if err := data.Set("organization_id", i32toa(rawAlertingProfile.OrganizationID)); err != nil {
 		return diag.FromErr(err)
@@ -216,9 +219,67 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 
 	return nil
 }
+
 func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// FIXME
-	return nil
+	apiClient := meta.(*apiClient)
+
+	body := models.CreateAlertingProfileCommand{
+		Name:     data.Get("name").(string),
+		Reminder: getAlertingProfileReminder(data.Get("reminder").(string)),
+	}
+
+	if emailsData, emailsIsSet := data.GetOk("emails"); emailsIsSet {
+		emails := emailsData.([]string)
+		emailDTOs := make([]*models.AlertingEmailDto, len(emails))
+		for i, email := range emails {
+			emailDTOs[i].Email = email
+		}
+		body.Emails = emailDTOs
+	}
+
+	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+		organizationID, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		body.OrganizationID = organizationID
+	}
+
+	if slackConfigIDData, slackConfigIDIsSet := data.GetOk("slack_configuration_id"); slackConfigIDIsSet {
+		slackConfigID, err := atoi32(slackConfigIDData.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		body.SlackConfigurationID = slackConfigID
+	}
+
+	if webhooksData, webhooksIsSet := data.GetOk("webhooks"); webhooksIsSet {
+		webhooks := webhooksData.([]interface{})
+		webhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
+		for i, webhookData := range webhooks {
+			webhook := webhookData.(map[string]interface{})
+			webhookDTOs[i].URL = webhook["url"].(string)
+			headers := webhook["headers"].([]map[string]string)
+			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
+			for i, header := range headers {
+				headerDTOs[i].Key = header["key"]
+				headerDTOs[i].Value = header["value"]
+			}
+		}
+		body.Webhooks = webhookDTOs
+	}
+
+	// TODO handle alerting integrations
+
+	params := alerting_profiles.NewAlertingProfilesCreateParams().WithV(ApiVersion).WithBody(&body)
+	response, err := apiClient.client.AlertingProfiles.AlertingProfilesCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// TODO data.SetId()
+
+	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// FIXME
