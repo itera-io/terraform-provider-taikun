@@ -280,11 +280,26 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
+
 func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// FIXME
-	return nil
+	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
+
 func resourceTaikunAlertingProfileDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// FIXME
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	body := models.DeleteAlertingProfilesCommand{ID: id}
+	params := alerting_profiles.NewAlertingProfilesDeleteParams().WithV(ApiVersion).WithBody(&body)
+	if _, _, err := apiClient.client.AlertingProfiles.AlertingProfilesDelete(params, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId("")
 	return nil
 }
