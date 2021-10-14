@@ -2,6 +2,8 @@ package taikun
 
 import (
 	"fmt"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -35,18 +37,18 @@ func stringIsLowercase(i interface{}, k string) ([]string, []error) {
 	return nil, nil
 }
 
-func stringIsInt(i interface{}, k string) ([]string, []error) {
+func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
 	v, ok := i.(string)
 	if !ok {
-		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
 	}
 
 	_, err := strconv.Atoi(v)
 	if err != nil {
-		return nil, []error{fmt.Errorf("expected %q to be an int inside a string", k)}
+		return diag.FromErr(path.NewErrorf("expected an int inside a string"))
 	}
 
-	return nil, nil
+	return nil
 }
 
 func randomTestName() string {

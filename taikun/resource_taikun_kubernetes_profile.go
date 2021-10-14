@@ -64,12 +64,12 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"organization_id": {
-			Description:  "The id of the organization which owns the Kubernetes profile.",
-			Type:         schema.TypeString,
-			Optional:     true,
-			Computed:     true,
-			ForceNew:     true,
-			ValidateFunc: stringIsInt,
+			Description:      "The id of the organization which owns the Kubernetes profile.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
 			Description: "The name of the organization which owns the Kubernetes profile.",
