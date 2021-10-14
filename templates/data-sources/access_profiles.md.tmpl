@@ -9,13 +9,11 @@ description: |-
 
 {{ .Description | trimspace }}
 
-~> **Role Requirement** In order to use the `billing_credentials` data source you need at least a `Partner` account
-
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
 
 ## Example Usage
 
-{{tffile "examples/data-sources/taikun_billing_credentials/data-source.tf"}}
+{{tffile "examples/data-sources/taikun_access_profiles/data-source.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
