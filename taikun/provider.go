@@ -70,6 +70,7 @@ func Provider() *schema.Provider {
 			"taikun_showback_rule":        dataSourceTaikunShowbackRule(),
 			"taikun_slack_configuration":  dataSourceTaikunSlackConfiguration(),
 			"taikun_slack_configurations": dataSourceTaikunSlackConfigurations(),
+			"taikun_user":                 dataSourceTaikunUser(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"taikun_access_profile":                       resourceTaikunAccessProfile(),
