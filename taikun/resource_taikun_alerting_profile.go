@@ -263,12 +263,13 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		webhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
 		for i, webhookData := range webhooks {
 			webhook := webhookData.(map[string]interface{})
-			headers := webhook["headers"].([]map[string]string)
+			headers := webhook["headers"].([]interface{})
 			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
-			for i, header := range headers {
+			for i, headerData := range headers {
+				header := headerData.(map[string]interface{})
 				headerDTOs[i] = &models.WebhookHeaderDto{
-					Key:   header["key"],
-					Value: header["value"],
+					Key:   header["key"].(string),
+					Value: header["value"].(string),
 				}
 			}
 			webhookDTOs[i] = &models.AlertingWebhookDto{
