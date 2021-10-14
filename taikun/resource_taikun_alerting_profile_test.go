@@ -182,9 +182,9 @@ func TestAccResourceTaikunAlertingProfileConfigurationModify(t *testing.T) {
 	newReminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
 	newIsLocked := randomBool()
 	newNumberOfEmails := randomInt(10)
-	newEmails := testAccResourceTaikunAlertingProfileRandomEmails(numberOfEmails)
+	newEmails := testAccResourceTaikunAlertingProfileRandomEmails(newNumberOfEmails)
 	newNumberOfWebhooks := randomInt(10)
-	newWebhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(numberOfWebhooks)
+	newWebhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(newNumberOfWebhooks)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
