@@ -11,6 +11,7 @@ import (
 func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
 	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema())
 	addOptionalFieldsToSchema(dsSchema, "id")
+	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema
 }
 

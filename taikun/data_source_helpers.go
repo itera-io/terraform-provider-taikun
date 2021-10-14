@@ -70,3 +70,7 @@ func addRequiredFieldsToSchema(schema map[string]*schema.Schema, keys ...string)
 func addOptionalFieldsToSchema(schema map[string]*schema.Schema, keys ...string) {
 	fixDatasourceSchemaFlags(schema, false, keys...)
 }
+
+func setValidateDiagFuncToSchema(schema map[string]*schema.Schema, key string, f schema.SchemaValidateDiagFunc) {
+	schema[key].ValidateDiagFunc = f
+}
