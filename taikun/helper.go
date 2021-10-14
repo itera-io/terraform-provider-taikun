@@ -145,7 +145,9 @@ func getAlertingProfileReminder(reminder string) models.AlertingReminder {
 		return 100
 	case "Hourly":
 		return 200
-	default: // "Daily"
+	case "Daily":
 		return 300
+	default: // "None"
+		return -1
 	}
 }
