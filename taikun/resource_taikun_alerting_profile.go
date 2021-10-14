@@ -287,8 +287,20 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	data.SetId(response.Payload.ID)
+	id, _ := atoi32(response.Payload.ID)
+
+	if isLocked, isLockedIsSet := data.GetOk("is_locked"); isLockedIsSet && isLocked.(bool) {
+		body := models.AlertingProfilesLockManagerCommand{
+			ID:   id,
+			Mode: "lock",
+		}
+		params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
+		_, err := apiClient.client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
