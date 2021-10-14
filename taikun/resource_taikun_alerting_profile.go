@@ -22,9 +22,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "list of e-mails to notify",
 			Type:        schema.TypeList,
 			Optional:    true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
+			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		"id": {
 			Description: "ID",
@@ -229,10 +227,13 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	}
 
 	if emailsData, emailsIsSet := data.GetOk("emails"); emailsIsSet {
-		emails := emailsData.([]string)
+		emails := emailsData.([]interface{})
 		emailDTOs := make([]*models.AlertingEmailDto, len(emails))
 		for i, email := range emails {
-			emailDTOs[i].Email = email
+			emailDTOs[i] = &models.AlertingEmailDto{
+				Email: email.(string),
+			}
+
 		}
 		body.Emails = emailDTOs
 	}
@@ -262,12 +263,17 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		webhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
 		for i, webhookData := range webhooks {
 			webhook := webhookData.(map[string]interface{})
-			webhookDTOs[i].URL = webhook["url"].(string)
 			headers := webhook["headers"].([]map[string]string)
 			headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
 			for i, header := range headers {
-				headerDTOs[i].Key = header["key"]
-				headerDTOs[i].Value = header["value"]
+				headerDTOs[i] = &models.WebhookHeaderDto{
+					Key:   header["key"],
+					Value: header["value"],
+				}
+			}
+			webhookDTOs[i] = &models.AlertingWebhookDto{
+				Headers: headerDTOs,
+				URL:     webhook["url"].(string),
 			}
 		}
 		body.Webhooks = webhookDTOs
