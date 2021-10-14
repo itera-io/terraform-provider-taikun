@@ -20,7 +20,12 @@ func init() {
 	schema.SchemaDescriptionBuilder = func(s *schema.Schema) string {
 		desc := s.Description
 		if s.Default != nil {
-			desc += fmt.Sprintf(" Defaults to `%v`.", s.Default)
+			defaultString := fmt.Sprint(s.Default)
+			if len(defaultString) == 0 {
+				defaultString = " "
+			}
+
+			desc += fmt.Sprintf(" Defaults to `%s`.", defaultString)
 		}
 		if s.Deprecated != "" {
 			desc += " " + s.Deprecated
@@ -54,22 +59,24 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
-			"taikun_access_profiles":      dataSourceTaikunAccessProfiles(),
 			"taikun_access_profile":       dataSourceTaikunAccessProfile(),
-			"taikun_billing_credentials":  dataSourceTaikunBillingCredentials(),
+			"taikun_access_profiles":      dataSourceTaikunAccessProfiles(),
 			"taikun_billing_credential":   dataSourceTaikunBillingCredential(),
-			"taikun_billing_rules":        dataSourceTaikunBillingRules(),
+			"taikun_billing_credentials":  dataSourceTaikunBillingCredentials(),
 			"taikun_billing_rule":         dataSourceTaikunBillingRule(),
-			"taikun_kubernetes_profiles":  dataSourceTaikunKubernetesProfiles(),
+			"taikun_billing_rules":        dataSourceTaikunBillingRules(),
 			"taikun_kubernetes_profile":   dataSourceTaikunKubernetesProfile(),
+			"taikun_kubernetes_profiles":  dataSourceTaikunKubernetesProfiles(),
 			"taikun_organization":         dataSourceTaikunOrganization(),
 			"taikun_organizations":        dataSourceTaikunOrganizations(),
-			"taikun_showback_credentials": dataSourceTaikunShowbackCredentials(),
 			"taikun_showback_credential":  dataSourceTaikunShowbackCredential(),
-			"taikun_showback_rules":       dataSourceTaikunShowbackRules(),
+			"taikun_showback_credentials": dataSourceTaikunShowbackCredentials(),
 			"taikun_showback_rule":        dataSourceTaikunShowbackRule(),
+			"taikun_showback_rules":       dataSourceTaikunShowbackRules(),
 			"taikun_slack_configuration":  dataSourceTaikunSlackConfiguration(),
 			"taikun_slack_configurations": dataSourceTaikunSlackConfigurations(),
+			"taikun_user":                 dataSourceTaikunUser(),
+			"taikun_users":                dataSourceTaikunUsers(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"taikun_access_profile":                       resourceTaikunAccessProfile(),
@@ -81,6 +88,7 @@ func Provider() *schema.Provider {
 			"taikun_showback_credential":                  resourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        resourceTaikunShowbackRule(),
 			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
+			"taikun_user":                                 resourceTaikunUser(),
 		},
 		Schema: map[string]*schema.Schema{
 			"email": {

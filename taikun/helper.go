@@ -93,6 +93,14 @@ func getLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string 
 	return "None"
 }
 
+func getUserRole(role string) models.UserRole {
+	if role == "User" {
+		return 400
+	}
+	// Manager
+	return 200
+}
+
 func parseLoadBalancingSolution(loadBalancingSolution string) (bool, bool) {
 	if loadBalancingSolution == "Octavia" {
 		return true, false
