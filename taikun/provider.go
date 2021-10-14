@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"taikun_access_profile":                       resourceTaikunAccessProfile(),
+			"taikun_alerting_profile":                     resourceTaikunAlertingProfile(),
 			"taikun_billing_credential":                   resourceTaikunBillingCredential(),
 			"taikun_billing_rule":                         resourceTaikunBillingRule(),
 			"taikun_cloud_credential_openstack":           resourceTaikunCloudCredentialOpenStack(),
