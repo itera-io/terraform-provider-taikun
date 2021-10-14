@@ -216,6 +216,8 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
+	data.SetId(i32toa(rawAlertingProfile.ID))
+
 	return nil
 }
 
