@@ -64,13 +64,14 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 		},
 		// TODO add "projects" ?
 		"reminder": {
-			Description: "frequency of notifications (HalfHour, Hourly or Daily), defaults to None if not specified",
+			Description: "frequency of notifications (HalfHour, Hourly, Daily or None)",
 			Type:        schema.TypeString,
-			Optional:    true,
+			Required:    true,
 			ValidateFunc: validation.StringInSlice([]string{
 				"HalfHour",
 				"Hourly",
 				"Daily",
+				"None",
 			}, false),
 		},
 		"slack_configuration_id": {
