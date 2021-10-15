@@ -2,12 +2,13 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunShowbackRuleSchema())
+	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunShowbackRuleSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema

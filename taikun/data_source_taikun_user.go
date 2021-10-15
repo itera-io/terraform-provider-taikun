@@ -2,12 +2,13 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceTaikunUserSchema() map[string]*schema.Schema {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunUserSchema())
+	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunUserSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	return dsSchema
 }

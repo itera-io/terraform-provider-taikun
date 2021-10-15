@@ -8,7 +8,7 @@ import (
 )
 
 func dataSourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
-	dsSchema := datasourceSchemaFromResourceSchema(resourceTaikunSlackConfigurationSchema())
+	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunSlackConfigurationSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema
