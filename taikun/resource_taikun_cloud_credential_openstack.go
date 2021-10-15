@@ -22,7 +22,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"user": {
-			Description: "The OpenStack username",
+			Description: "The OpenStack user.",
 			Type:        schema.TypeString,
 			Required:    true,
 		},
@@ -80,7 +80,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"imported_network_subnet_id": {
-			Description: "The openstack subnet id in case you want to import a network.",
+			Description: "The openstack subnet id in case you want to import network.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
