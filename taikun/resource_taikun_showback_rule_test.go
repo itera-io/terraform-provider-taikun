@@ -272,7 +272,7 @@ func testAccCheckTaikunShowbackRuleExists(state *terraform.State) error {
 
 		response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("showback rule doesn't exist")
+			return fmt.Errorf("showback rule doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
 
@@ -292,7 +292,7 @@ func testAccCheckTaikunShowbackRuleDestroy(state *terraform.State) error {
 
 		response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("showback rule still exists")
+			return fmt.Errorf("showback rule still exists (id = %s)", rs.Primary.ID)
 		}
 	}
 

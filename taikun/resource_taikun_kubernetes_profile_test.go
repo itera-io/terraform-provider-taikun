@@ -132,7 +132,7 @@ func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
 
 		response, err := client.client.KubernetesProfiles.KubernetesProfilesList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("kubernetes profile doesn't exist")
+			return fmt.Errorf("kubernetes profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
 
@@ -152,7 +152,7 @@ func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
 
 		response, err := client.client.KubernetesProfiles.KubernetesProfilesList(params, client)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("kubernetes profile still exists")
+			return fmt.Errorf("kubernetes profile still exists (id = %s)", rs.Primary.ID)
 		}
 	}
 

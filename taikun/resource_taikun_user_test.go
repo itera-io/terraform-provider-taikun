@@ -194,7 +194,7 @@ func testAccCheckTaikunUserExists(state *terraform.State) error {
 
 		response, err := client.client.Users.UsersList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("user doesn't exist")
+			return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
 
@@ -213,7 +213,7 @@ func testAccCheckTaikunUserDestroy(state *terraform.State) error {
 
 		response, err := client.client.Users.UsersList(params, client)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("user still exists")
+			return fmt.Errorf("user still exists (id = %s)", rs.Primary.ID)
 		}
 	}
 

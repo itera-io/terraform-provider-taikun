@@ -239,7 +239,7 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
-			return fmt.Errorf("organization doesn't exist")
+			return fmt.Errorf("organization doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
 
@@ -259,7 +259,7 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("organization still exists")
+			return fmt.Errorf("organization still exists (id = %s)", rs.Primary.ID)
 		}
 	}
 
