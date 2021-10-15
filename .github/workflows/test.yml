@@ -65,13 +65,13 @@ jobs:
           PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
           PROMETHEUS_USERNAME: ${{ secrets.PROMETHEUS_USERNAME }}
 
-          OPENSTACK_USERNAME: ${{ secrets.OPENSTACK_USERNAME }}
-          OPENSTACK_URL: ${{ secrets.OPENSTACK_URL }}
-          OPENSTACK_REGION: ${{ secrets.OPENSTACK_REGION }}
-          OPENSTACK_PUBLIC_NETWORK: ${{ secrets.OPENSTACK_PUBLIC_NETWORK }}
-          OPENSTACK_PROJECT: ${{ secrets.OPENSTACK_PROJECT }}
-          OPENSTACK_PASSWORD: ${{ secrets.OPENSTACK_PASSWORD }}
-          OPENSTACK_DOMAIN: ${{ secrets.OPENSTACK_DOMAIN }}
+          OS_USERNAME: ${{ secrets.OS_USERNAME }}
+          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
+          OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
+          OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
+          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
+          OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
 
         run: |
           go test -v -cover ./taikun

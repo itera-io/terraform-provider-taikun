@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/openstack"
 	"github.com/itera-io/taikungoclient/models"
@@ -22,27 +23,35 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"user": {
-			Description: "The OpenStack user.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The OpenStack user.",
+			Type:         schema.TypeString,
+			Required:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_USERNAME", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"password": {
-			Description: "The OpenStack password.",
-			Type:        schema.TypeString,
-			Required:    true,
-			Sensitive:   true,
+			Description:  "The OpenStack password.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_PASSWORD", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"url": {
-			Description: "The OpenStack authentication url.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The OpenStack authentication url.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_AUTH_URL", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"project_name": {
-			Description: "The OpenStack project name.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The OpenStack project name.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_PROJECT_NAME", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"project_id": {
 			Description: "The OpenStack project id.",
@@ -50,10 +59,12 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"public_network_name": {
-			Description: "The name of the public OpenStack network which will be used.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The name of the public OpenStack network which will be used.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_INTERFACE", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"availability_zone": {
 			Description: "The OpenStack availability zone.",
@@ -62,16 +73,20 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"domain": {
-			Description: "The OpenStack domain.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The OpenStack domain.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"region": {
-			Description: "The OpenStack region.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The OpenStack region.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("OS_REGION_NAME", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"volume_type_name": {
 			Description: "The OpenStack type of volume.",
