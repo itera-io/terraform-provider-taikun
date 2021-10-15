@@ -31,26 +31,23 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 		},
 		"integration": {
 			Description: "list of alerting integrations",
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
 			Optional:    true,
 			ForceNew:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"id": {
-						Description: "ID",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
 					"token": {
 						Description: "token (required from Opsgenie, Pagerduty and Splunk)",
 						Type:        schema.TypeString,
 						Optional:    true,
 						Default:     "",
+						ForceNew:    true,
 					},
 					"type": {
 						Description: "type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams)",
 						Type:        schema.TypeString,
 						Required:    true,
+						ForceNew:    true,
 						ValidateFunc: validation.StringInSlice([]string{
 							"Opsgenie",
 							"Pagerduty",
@@ -257,10 +254,6 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.Emails = getEmailDTOsFromAlertingProfileResourceData(data)
 	}
 
-	if _, integrationIsSet := data.GetOk("integration"); integrationIsSet {
-		body.AlertingIntegrations = getIntegrationDTOsFromAlertingProfileResourceData(data)
-	}
-
 	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
@@ -292,6 +285,25 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	}
 	data.SetId(response.Payload.ID)
 	id, _ := atoi32(response.Payload.ID)
+
+	if _, integrationIsSet := data.GetOk("integration"); integrationIsSet {
+		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(data)
+		for _, alertingIntegration := range alertingIntegrationDTOs {
+			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
+				AlertingIntegration: &models.AlertingIntegrationDto{
+					AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
+					Token:                   alertingIntegration.Token,
+					URL:                     alertingIntegration.URL,
+				},
+				AlertingProfileID: id,
+			}
+			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
+			_, err = apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
 
 	if isLocked, isLockedIsSet := data.GetOk("is_locked"); isLockedIsSet && isLocked.(bool) {
 		body := models.AlertingProfilesLockManagerCommand{
@@ -427,7 +439,6 @@ func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs [
 	integrations := make([]map[string]interface{}, len(integrationDTOs))
 	for i, integrationDTO := range integrationDTOs {
 		integrations[i] = map[string]interface{}{
-			"id":    i32toa(integrationDTO.ID),
 			"token": integrationDTO.Token,
 			"type":  integrationDTO.AlertingIntegrationType,
 			"url":   integrationDTO.URL,
@@ -471,7 +482,7 @@ func getWebhookDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []
 }
 
 func getIntegrationDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingIntegrationDto {
-	integrations := data.Get("integration").(*schema.Set).List()
+	integrations := data.Get("integration").([]interface{})
 	alertingIntegrationDTOs := make([]*models.AlertingIntegrationDto, len(integrations))
 	for i, integrationData := range integrations {
 		integration := integrationData.(map[string]interface{})
