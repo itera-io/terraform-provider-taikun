@@ -12,7 +12,7 @@ data "taikun_organizations" "all" {
 `
 
 func TestAccDataSourceTaikunOrganizations(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

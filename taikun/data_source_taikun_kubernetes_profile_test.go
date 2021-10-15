@@ -20,7 +20,7 @@ data "taikun_kubernetes_profile" "foo" {
 func TestAccDataSourceTaikunKubernetesProfile(t *testing.T) {
 	kubernetesProfileName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

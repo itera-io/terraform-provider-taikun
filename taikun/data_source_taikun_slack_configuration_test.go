@@ -27,7 +27,7 @@ func TestAccDataSourceTaikunSlackConfiguration(t *testing.T) {
 	channel := randomString()
 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

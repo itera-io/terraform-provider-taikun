@@ -52,7 +52,7 @@ func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
 }
 
 func randomTestName() string {
-	return randomName(testNamePrefix, 10)
+	return randomName(testNamePrefix, 15)
 }
 
 func randomName(prefix string, length int) string {

@@ -101,7 +101,7 @@ func flattenDatasourceTaikunShowbackRuleItem(rawShowbackRule *models.ShowbackRul
 	}
 
 	if rawShowbackRule.ShowbackCredentialID != 0 {
-		result["showback_credential_id"] = rawShowbackRule.ShowbackCredentialID
+		result["showback_credential_id"] = i32toa(rawShowbackRule.ShowbackCredentialID)
 		result["showback_credential_name"] = rawShowbackRule.ShowbackCredentialName
 	}
 	return result

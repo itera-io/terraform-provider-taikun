@@ -39,7 +39,7 @@ func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
 	projectLimit := rand.Int31()
 	globalLimit := rand.Int31()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -72,7 +72,7 @@ func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
 const testAccDataSourceTaikunShowbackRulesWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -101,6 +101,7 @@ data "taikun_showback_rules" "all" {
 
 func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	showbackRuleName := randomTestName()
 	price := math.Round(rand.Float64()*10000) / 100
 	metricName := randomString()
@@ -109,13 +110,14 @@ func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 	projectLimit := rand.Int31()
 	globalLimit := rand.Int31()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackRulesWithFilterConfig,
 					organizationName,
+					organizationFullName,
 					showbackRuleName,
 					price,
 					metricName,

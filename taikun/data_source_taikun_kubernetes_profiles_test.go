@@ -12,7 +12,7 @@ data "taikun_kubernetes_profiles" "all" {
 }`
 
 func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -38,7 +38,7 @@ func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
 const testAccDataSourceTaikunKubernetesProfilesWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -48,13 +48,14 @@ data "taikun_kubernetes_profiles" "all" {
 
 func TestAccDataSourceTaikunKubernetesProfilesWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfilesWithFilterConfig, organizationName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfilesWithFilterConfig, organizationName, organizationFullName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "id"),

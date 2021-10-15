@@ -13,7 +13,7 @@ data "taikun_users" "all" {
 
 func TestAccDataSourceTaikunUsers(t *testing.T) {
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -44,7 +44,7 @@ func TestAccDataSourceTaikunUsers(t *testing.T) {
 const testAccDataSourceTaikunUsersWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -69,18 +69,20 @@ data "taikun_users" "all" {
 
 func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	userName := randomTestName()
 	email := randomString() + "@" + randomString() + ".fr"
 	role := "User"
-	displayName := randomTestName()
+	displayName := randomString()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunUsersWithFilterConfig,
 					organizationName,
+					organizationFullName,
 					userName,
 					email,
 					role,
