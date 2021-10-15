@@ -102,7 +102,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(ctx context.Context, da
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawBillingRule := response.GetPayload().Data[0]
 
 		for _, e := range rawBillingRule.BoundOrganizations {

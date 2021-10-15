@@ -151,7 +151,7 @@ func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawShowbackCredential := response.GetPayload().Data[0]
 
 		if err := data.Set("created_by", rawShowbackCredential.CreatedBy); err != nil {

@@ -181,7 +181,7 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawAccessProfile := response.GetPayload().Data[0]
 
 		DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))

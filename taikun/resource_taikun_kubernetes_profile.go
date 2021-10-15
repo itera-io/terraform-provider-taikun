@@ -154,7 +154,7 @@ func resourceTaikunKubernetesProfileRead(_ context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawKubernetesProfile := response.GetPayload().Data[0]
 
 		if err := data.Set("bastion_proxy_enabled", rawKubernetesProfile.ExposeNodePortOnBastion); err != nil {

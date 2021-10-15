@@ -200,7 +200,7 @@ func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawShowbackCredential := response.GetPayload().Data[0]
 
 		labels := make([]map[string]interface{}, len(rawShowbackCredential.Labels))
