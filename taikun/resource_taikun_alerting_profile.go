@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient/client/alerting_integrations"
 	"github.com/itera-io/taikungoclient/client/alerting_profiles"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -27,6 +28,43 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "The alerting profile's ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"integration": {
+			Description: "list of alerting integrations",
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Description: "ID",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"token": {
+						Description: "token (required from Opsgenie, Pagerduty and Splunk)",
+						Type:        schema.TypeString,
+						Optional:    true,
+						Default:     "",
+					},
+					"type": {
+						Description: "type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams)",
+						Type:        schema.TypeString,
+						Required:    true,
+						ValidateFunc: validation.StringInSlice([]string{
+							"Opsgenie",
+							"Pagerduty",
+							"Splunk",
+							"MicrosoftTeams",
+						}, false),
+					},
+					"url": {
+						Description:  "URL",
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+					},
+				},
+			},
 		},
 		"is_locked": {
 			Description: "Whether the profile is locked or not.",
@@ -152,6 +190,13 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 	}
 	alertingProfileDTO := response.Payload.Data[0]
 
+	alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
+	alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	alertingIntegrationDTOs := alertingIntegrationsResponse.Payload
+
 	if err := data.Set("created_by", alertingProfileDTO.CreatedBy); err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,6 +204,9 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 	if err := data.Set("id", i32toa(alertingProfileDTO.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("integration", getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDTOs)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("is_locked", alertingProfileDTO.IsLocked); err != nil {
@@ -368,6 +416,19 @@ func getAlertingProfileWebhookResourceFromWebhookDTOs(webhookDTOs []*models.Aler
 		}
 	}
 	return webhooks
+}
+
+func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs []*models.AlertingIntegrationsListDto) []map[string]interface{} {
+	integrations := make([]map[string]interface{}, len(integrationDTOs))
+	for i, integrationDTO := range integrationDTOs {
+		integrations[i] = map[string]interface{}{
+			"id":    i32toa(integrationDTO.ID),
+			"token": integrationDTO.Token,
+			"type":  integrationDTO.AlertingIntegrationType,
+			"url":   integrationDTO.URL,
+		}
+	}
+	return integrations
 }
 
 func getEmailDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingEmailDto {
