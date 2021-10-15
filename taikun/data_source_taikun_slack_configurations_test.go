@@ -25,7 +25,7 @@ data "taikun_slack_configurations" "all" {
 func TestAccDataSourceTaikunSlackConfigurations(t *testing.T) {
 	slackConfigurationName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -76,7 +76,7 @@ func TestAccDataSourceTaikunSlackConfigurationsWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 	slackConfigurationName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

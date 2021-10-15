@@ -25,7 +25,7 @@ data "taikun_showback_credential" "foo" {
 func TestAccDataSourceTaikunShowbackCredential(t *testing.T) {
 	showbackCredentialName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

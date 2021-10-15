@@ -25,7 +25,7 @@ data "taikun_billing_credential" "foo" {
 func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 	billingCredentialName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

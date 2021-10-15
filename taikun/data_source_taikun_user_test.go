@@ -27,7 +27,7 @@ func TestAccDataSourceTaikunUser(t *testing.T) {
 	role := "Manager"
 	displayName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

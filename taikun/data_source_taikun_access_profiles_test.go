@@ -50,7 +50,7 @@ data "taikun_access_profiles" "all" {
 func TestAccDataSourceTaikunAccessProfilesWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

@@ -12,7 +12,7 @@ data "taikun_kubernetes_profiles" "all" {
 }`
 
 func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -49,7 +49,7 @@ data "taikun_kubernetes_profiles" "all" {
 func TestAccDataSourceTaikunKubernetesProfilesWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
