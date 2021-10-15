@@ -156,7 +156,7 @@ func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawBillingCredential := response.GetPayload().Data[0]
 
 		if err := data.Set("created_by", rawBillingCredential.CreatedBy); err != nil {

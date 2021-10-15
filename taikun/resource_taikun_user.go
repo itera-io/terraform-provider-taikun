@@ -157,7 +157,7 @@ func resourceTaikunUserRead(_ context.Context, data *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	if response.Payload.TotalCount == 1 {
+	if len(response.Payload.Data) == 1 {
 		rawUser := response.GetPayload().Data[0]
 
 		if err := data.Set("id", rawUser.ID); err != nil {
