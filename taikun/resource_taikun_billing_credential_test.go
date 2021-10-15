@@ -138,7 +138,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 
 		response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("billing credential doesn't exist")
+			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
 
@@ -158,7 +158,7 @@ func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
 
 		response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("billing credential still exists")
+			return fmt.Errorf("billing credential still exists (id = %s)", rs.Primary.ID)
 		}
 	}
 

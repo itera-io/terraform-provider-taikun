@@ -112,7 +112,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 			}
 		}
 
-		return fmt.Errorf("organization_billing_rule_attachment doesn't exist")
+		return fmt.Errorf("organization_billing_rule_attachment doesn't exist (id = %s)", rs.Primary.ID)
 	}
 
 	return nil
@@ -142,7 +142,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 
 			for _, e := range rawBillingRule.BoundOrganizations {
 				if e.OrganizationID == organizationId {
-					return fmt.Errorf("organization_billing_rule_attachment exists")
+					return fmt.Errorf("organization_billing_rule_attachment exists (id = %s)", rs.Primary.ID)
 				}
 			}
 		}

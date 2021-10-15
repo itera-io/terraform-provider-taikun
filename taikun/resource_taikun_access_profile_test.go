@@ -174,7 +174,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 
 		response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
-			return fmt.Errorf("access profile doesn't exist")
+			return fmt.Errorf("access profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
 
@@ -194,7 +194,7 @@ func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
 
 		response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
 		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("access profile still exists")
+			return fmt.Errorf("access profile still exists (id = %s)", rs.Primary.ID)
 		}
 	}
 
