@@ -33,6 +33,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "list of alerting integrations",
 			Type:        schema.TypeSet,
 			Optional:    true,
+			ForceNew:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
