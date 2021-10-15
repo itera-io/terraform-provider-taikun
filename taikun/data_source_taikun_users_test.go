@@ -44,7 +44,7 @@ func TestAccDataSourceTaikunUsers(t *testing.T) {
 const testAccDataSourceTaikunUsersWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -69,6 +69,7 @@ data "taikun_users" "all" {
 
 func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	userName := randomTestName()
 	email := randomString() + "@" + randomString() + ".fr"
 	role := "User"
@@ -81,6 +82,7 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunUsersWithFilterConfig,
 					organizationName,
+					organizationFullName,
 					userName,
 					email,
 					role,

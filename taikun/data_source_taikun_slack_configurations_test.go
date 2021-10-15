@@ -50,7 +50,7 @@ func TestAccDataSourceTaikunSlackConfigurations(t *testing.T) {
 const testAccDataSourceTaikunSlackConfigurationsWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -74,6 +74,7 @@ data "taikun_slack_configurations" "all" {
 
 func TestAccDataSourceTaikunSlackConfigurationsWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	slackConfigurationName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -81,7 +82,11 @@ func TestAccDataSourceTaikunSlackConfigurationsWithFilter(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunSlackConfigurationsWithFilterConfig, organizationName, slackConfigurationName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunSlackConfigurationsWithFilterConfig,
+					organizationName,
+					organizationFullName,
+					slackConfigurationName,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_slack_configurations.all", "slack_configurations.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "id"),

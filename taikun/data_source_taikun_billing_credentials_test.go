@@ -59,7 +59,7 @@ func TestAccDataSourceTaikunBillingCredentials(t *testing.T) {
 const testAccDataSourceTaikunBillingCredentialsWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -82,6 +82,7 @@ data "taikun_billing_credentials" "all" {
 
 func TestAccDataSourceTaikunBillingCredentialsWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	billingCredentialName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -91,6 +92,7 @@ func TestAccDataSourceTaikunBillingCredentialsWithFilter(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunBillingCredentialsWithFilterConfig,
 					organizationName,
+					organizationFullName,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),

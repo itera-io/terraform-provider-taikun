@@ -72,7 +72,7 @@ func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
 const testAccDataSourceTaikunShowbackRulesWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -101,6 +101,7 @@ data "taikun_showback_rules" "all" {
 
 func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	showbackRuleName := randomTestName()
 	price := math.Round(rand.Float64()*10000) / 100
 	metricName := randomString()
@@ -116,6 +117,7 @@ func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackRulesWithFilterConfig,
 					organizationName,
+					organizationFullName,
 					showbackRuleName,
 					price,
 					metricName,
