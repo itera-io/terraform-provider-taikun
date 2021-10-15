@@ -256,6 +256,10 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.Emails = getEmailDTOsFromAlertingProfileResourceData(data)
 	}
 
+	if _, integrationIsSet := data.GetOk("integration"); integrationIsSet {
+		body.AlertingIntegrations = getIntegrationDTOsFromAlertingProfileResourceData(data)
+	}
+
 	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
@@ -463,4 +467,18 @@ func getWebhookDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []
 		}
 	}
 	return alertingWebhookDTOs
+}
+
+func getIntegrationDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingIntegrationDto {
+	integrations := data.Get("integration").(*schema.Set).List()
+	alertingIntegrationDTOs := make([]*models.AlertingIntegrationDto, len(integrations))
+	for i, integrationData := range integrations {
+		integration := integrationData.(map[string]interface{})
+		alertingIntegrationDTOs[i] = &models.AlertingIntegrationDto{
+			AlertingIntegrationType: getAlertingIntegrationType(integration["type"].(string)),
+			Token:                   integration["token"].(string),
+			URL:                     integration["url"].(string),
+		}
+	}
+	return alertingIntegrationDTOs
 }
