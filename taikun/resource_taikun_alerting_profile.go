@@ -153,70 +153,49 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 		return diag.Errorf("Alerting profile with ID %d not found", id)
 	}
 
-	rawAlertingProfile := response.Payload.Data[0]
+	alertingProfileDTO := response.Payload.Data[0]
 
-	emails := make([]string, len(rawAlertingProfile.Emails))
-	for i, rawEmail := range rawAlertingProfile.Emails {
-		emails[i] = rawEmail.Email
-	}
-
-	webhooks := make([]map[string]interface{}, len(rawAlertingProfile.Webhooks))
-	for i, rawWebhook := range rawAlertingProfile.Webhooks {
-		headers := make([]map[string]interface{}, len(rawWebhook.Headers))
-		for i, rawHeader := range rawWebhook.Headers {
-			headers[i] = map[string]interface{}{
-				"key":   rawHeader.Key,
-				"value": rawHeader.Value,
-			}
-		}
-		webhooks[i] = map[string]interface{}{
-			"header": headers,
-			"url":    rawWebhook.URL,
-		}
-	}
-
-	if err := data.Set("created_by", rawAlertingProfile.CreatedBy); err != nil {
+	if err := data.Set("created_by", alertingProfileDTO.CreatedBy); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("emails", emails); err != nil {
+	if err := data.Set("emails", getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("id", i32toa(rawAlertingProfile.ID)); err != nil {
+	if err := data.Set("id", i32toa(alertingProfileDTO.ID)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("is_locked", rawAlertingProfile.IsLocked); err != nil {
+	if err := data.Set("is_locked", alertingProfileDTO.IsLocked); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("last_modified", rawAlertingProfile.LastModified); err != nil {
+	if err := data.Set("last_modified", alertingProfileDTO.LastModified); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("last_modified_by", rawAlertingProfile.LastModifiedBy); err != nil {
+	if err := data.Set("last_modified_by", alertingProfileDTO.LastModifiedBy); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("name", rawAlertingProfile.Name); err != nil {
-		return diag.FromErr(err)
-
-	}
-	if err := data.Set("organization_id", i32toa(rawAlertingProfile.OrganizationID)); err != nil {
+	if err := data.Set("name", alertingProfileDTO.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("organization_name", rawAlertingProfile.OrganizationName); err != nil {
+	if err := data.Set("organization_id", i32toa(alertingProfileDTO.OrganizationID)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("reminder", rawAlertingProfile.Reminder); err != nil {
+	if err := data.Set("organization_name", alertingProfileDTO.OrganizationName); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("slack_configuration_id", i32toa(rawAlertingProfile.SlackConfigurationID)); err != nil {
+	if err := data.Set("reminder", alertingProfileDTO.Reminder); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("slack_configuration_name", rawAlertingProfile.SlackConfigurationName); err != nil {
+	if err := data.Set("slack_configuration_id", i32toa(alertingProfileDTO.SlackConfigurationID)); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := data.Set("webhook", webhooks); err != nil {
+	if err := data.Set("slack_configuration_name", alertingProfileDTO.SlackConfigurationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("webhook", getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks)); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(rawAlertingProfile.ID))
+	data.SetId(i32toa(alertingProfileDTO.ID))
 
 	return nil
 }
@@ -367,6 +346,32 @@ func resourceTaikunAlertingProfileDelete(ctx context.Context, data *schema.Resou
 
 	data.SetId("")
 	return nil
+}
+
+func getAlertingProfileEmailsResourceFromEmailDTOs(emailDTOs []*models.AlertingEmailDto) []string {
+	emails := make([]string, len(emailDTOs))
+	for i, emailDTO := range emailDTOs {
+		emails[i] = emailDTO.Email
+	}
+	return emails
+}
+
+func getAlertingProfileWebhookResourceFromWebhookDTOs(webhookDTOs []*models.AlertingWebhookDto) []map[string]interface{} {
+	webhooks := make([]map[string]interface{}, len(webhookDTOs))
+	for i, webhookDTO := range webhookDTOs {
+		headers := make([]map[string]interface{}, len(webhookDTO.Headers))
+		for i, rawHeader := range webhookDTO.Headers {
+			headers[i] = map[string]interface{}{
+				"key":   rawHeader.Key,
+				"value": rawHeader.Value,
+			}
+		}
+		webhooks[i] = map[string]interface{}{
+			"header": headers,
+			"url":    webhookDTO.URL,
+		}
+	}
+	return webhooks
 }
 
 func getEmailDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingEmailDto {
