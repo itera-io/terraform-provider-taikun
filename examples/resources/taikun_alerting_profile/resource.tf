@@ -1,6 +1,6 @@
 resource "taikun_alerting_profile" "foo" {
   # Required
-  name = "foo"
+  name     = "foo"
   reminder = "None"
 
   # Optional
@@ -16,7 +16,7 @@ resource "taikun_alerting_profile" "foo" {
 
   webhook {
     header {
-      key = "key"
+      key   = "key"
       value = "value"
     }
     url = "https://www.example.com"
@@ -24,11 +24,11 @@ resource "taikun_alerting_profile" "foo" {
 
   webhook {
     header {
-      key = "key"
+      key   = "key"
       value = "value"
     }
     header {
-      key = "key2"
+      key   = "key2"
       value = "value"
     }
     url = "https://www.example.org"
