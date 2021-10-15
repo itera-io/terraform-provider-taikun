@@ -13,56 +13,56 @@ import (
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"created_by": {
-			Description: "profile creator",
+			Description: "The profile creator.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"emails": {
-			Description: "list of e-mails to notify",
+			Description: "The list of e-mails to notify.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		"id": {
-			Description: "ID",
+			Description: "The alerting profile's ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"is_locked": {
-			Description: "whether the profile is locked or not",
+			Description: "Whether the profile is locked or not.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"last_modified": {
-			Description: "time and date of last modification",
+			Description: "The time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "last user to have modified the profile",
+			Description: "The last user to have modified the profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"name": {
-			Description: "name",
+			Description: "The alerting profile's name.",
 			Type:        schema.TypeString,
 			Required:    true,
 		},
 		"organization_id": {
-			Description:      "ID of the organization which owns the profile",
+			Description:      "The ID of the organization which owns the profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "name of the organization which owns the profile",
+			Description: "The name of the organization which owns the profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"reminder": {
-			Description: "frequency of notifications (HalfHour, Hourly, Daily or None)",
+			Description: "The frequency of notifications (HalfHour, Hourly, Daily or None).",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.StringInSlice([]string{
@@ -73,36 +73,36 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"slack_configuration_id": {
-			Description:      "ID of Slack configuration to notify",
+			Description:      "The ID of the Slack configuration to notify.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Default:          "0",
 			ValidateDiagFunc: stringIsInt,
 		},
 		"slack_configuration_name": {
-			Description: "name of Slack configuration to notify",
+			Description: "The name of the Slack configuration to notify.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"webhook": {
-			Description: "list of webhooks to notify",
+			Description: "The list of webhooks to notify.",
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"header": {
-						Description: "list of headers",
+						Description: "The list of headers.",
 						Type:        schema.TypeSet,
 						Optional:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
-									Description: "key",
+									Description: "The header key.",
 									Type:        schema.TypeString,
 									Required:    true,
 								},
 								"value": {
-									Description: "value",
+									Description: "The header value.",
 									Type:        schema.TypeString,
 									Required:    true,
 								},
@@ -110,7 +110,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 						},
 					},
 					"url": {
-						Description: "URL",
+						Description: "The webhook URL.",
 						Type:        schema.TypeString,
 						Required:    true,
 					},
