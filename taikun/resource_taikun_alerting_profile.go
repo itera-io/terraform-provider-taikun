@@ -12,7 +12,6 @@ import (
 
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		// TODO "alerting_integrations"
 		"created_by": {
 			Description: "profile creator",
 			Type:        schema.TypeString,
@@ -62,7 +61,6 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		// TODO add "projects" ?
 		"reminder": {
 			Description: "frequency of notifications (HalfHour, Hourly, Daily or None)",
 			Type:        schema.TypeString,
@@ -152,7 +150,6 @@ func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.Resourc
 	if len(response.Payload.Data) != 1 {
 		return diag.Errorf("Alerting profile with ID %d not found", id)
 	}
-
 	alertingProfileDTO := response.Payload.Data[0]
 
 	if err := data.Set("created_by", alertingProfileDTO.CreatedBy); err != nil {
@@ -231,11 +228,10 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.SlackConfigurationID = slackConfigID
 	}
 
-	if _, webhooksIsSet := data.GetOk("webhook"); webhooksIsSet {
+	if _, webhookIsSet := data.GetOk("webhook"); webhookIsSet {
 		body.Webhooks = getWebhookDTOsFromAlertingProfileResourceData(data)
 	}
 
-	// TODO handle alerting integrations
 	params := alerting_profiles.NewAlertingProfilesCreateParams().WithV(ApiVersion).WithBody(&body)
 	response, err := apiClient.client.AlertingProfiles.AlertingProfilesCreate(params, apiClient)
 	if err != nil {
