@@ -17,10 +17,10 @@ func sharedConfig() (interface{}, error) {
 	password := os.Getenv("TAIKUN_PASSWORD")
 
 	if email == "" {
-		return nil, fmt.Errorf("TAIKUN_EMAIL must be set for acceptance tests")
+		return nil, fmt.Errorf("TAIKUN_EMAIL must be set in order to run sweepers")
 	}
 	if password == "" {
-		return nil, fmt.Errorf("TAIKUN_PASSWORD must be set for acceptance tests")
+		return nil, fmt.Errorf("TAIKUN_PASSWORD must be set in order to run sweepers")
 	}
 
 	return &apiClient{
