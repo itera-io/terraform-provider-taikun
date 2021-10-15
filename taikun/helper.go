@@ -151,3 +151,16 @@ func getAlertingProfileReminder(reminder string) models.AlertingReminder {
 		return -1
 	}
 }
+
+func getAlertingIntegrationType(integrationType string) models.AlertingIntegrationType {
+	switch integrationType {
+	case "Opsgenie":
+		return 100
+	case "Pagerduty":
+		return 200
+	case "Splunk":
+		return 300
+	default: // "MicrosoftTeams"
+		return 400
+	}
+}
