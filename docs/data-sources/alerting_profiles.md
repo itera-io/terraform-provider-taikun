@@ -39,6 +39,7 @@ Read-Only:
 - **created_by** (String)
 - **emails** (List of String)
 - **id** (String)
+- **integration** (List of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--integration))
 - **is_locked** (Boolean)
 - **last_modified** (String)
 - **last_modified_by** (String)
@@ -49,6 +50,16 @@ Read-Only:
 - **slack_configuration_id** (String)
 - **slack_configuration_name** (String)
 - **webhook** (Set of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--webhook))
+
+<a id="nestedobjatt--alerting_profiles--integration"></a>
+### Nested Schema for `alerting_profiles.integration`
+
+Read-Only:
+
+- **token** (String)
+- **type** (String)
+- **url** (String)
+
 
 <a id="nestedobjatt--alerting_profiles--webhook"></a>
 ### Nested Schema for `alerting_profiles.webhook`

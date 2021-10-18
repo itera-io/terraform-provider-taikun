@@ -29,6 +29,7 @@ data "taikun_alerting_profile" "foo" {
 
 - **created_by** (String) The profile creator.
 - **emails** (List of String) The list of e-mails to notify.
+- **integration** (List of Object) list of alerting integrations (see [below for nested schema](#nestedatt--integration))
 - **is_locked** (Boolean) Whether the profile is locked or not.
 - **last_modified** (String) The time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the profile.
@@ -39,6 +40,16 @@ data "taikun_alerting_profile" "foo" {
 - **slack_configuration_id** (String) The ID of the Slack configuration to notify.
 - **slack_configuration_name** (String) The name of the Slack configuration to notify.
 - **webhook** (Set of Object) The list of webhooks to notify. (see [below for nested schema](#nestedatt--webhook))
+
+<a id="nestedatt--integration"></a>
+### Nested Schema for `integration`
+
+Read-Only:
+
+- **token** (String)
+- **type** (String)
+- **url** (String)
+
 
 <a id="nestedatt--webhook"></a>
 ### Nested Schema for `webhook`

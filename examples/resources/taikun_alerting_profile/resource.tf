@@ -33,4 +33,19 @@ resource "taikun_alerting_profile" "foo" {
     }
     url = "https://www.example.org"
   }
+
+  integration {
+    type  = "Opsgenie"
+    url   = "https://www.opsgenie.example"
+    token = "secret_token"
+  }
+  integration {
+    type = "MicrosoftTeams"
+    url  = "https://www.teams.example"
+  }
+  integration {
+    type  = "Splunk"
+    url   = "https://www.splunk.example"
+    token = "secret_token"
+  }
 }
