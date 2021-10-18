@@ -24,6 +24,7 @@ func TestAccDataSourceTaikunAlertingProfiles(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.emails.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.id"),
+					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.integration.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.is_locked"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.organization_id"),
