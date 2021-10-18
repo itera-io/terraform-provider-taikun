@@ -38,7 +38,7 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 ### Required
 
-- **access_key_id** (String) The AWS Access Key ID.
+- **access_key_id** (String, Sensitive) The AWS Access Key ID.
 - **availability_zone** (String) The AWS availability zone for the region.
 - **name** (String) The name of the AWS cloud credential.
 - **region** (String) The AWS region.
