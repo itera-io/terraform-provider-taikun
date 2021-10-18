@@ -27,6 +27,17 @@ resource "taikun_alerting_profile" "foo" {
 
   # webhooks:
   %s
+
+  # integrations
+  integration {
+    type = "Pagerduty"
+    url = "https://www.pagerduty.example"
+    token = "secret_token"
+  }
+  integration {
+    type = "MicrosoftTeams"
+    url = "https://www.teams.example"
+  }
 }
 
 data "taikun_alerting_profile" "foo" {
@@ -39,10 +50,11 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
 	isLocked := randomBool()
-	numberOfEmails := randomInt(10)
+	numberOfEmails := 1
 	emails := testAccResourceTaikunAlertingProfileRandomEmails(numberOfEmails)
-	numberOfWebhooks := randomInt(10)
+	numberOfWebhooks := 4
 	webhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(numberOfWebhooks)
+	numberOfIntegrations := 2
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -64,6 +76,7 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("data.taikun_alerting_profile.foo", "is_locked", fmt.Sprint(isLocked)),
 					resource.TestCheckResourceAttr("data.taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
 					resource.TestCheckResourceAttr("data.taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
+					resource.TestCheckResourceAttr("data.taikun_alerting_profile.foo", "integration.#", fmt.Sprint(numberOfIntegrations)),
 				),
 			},
 		},
