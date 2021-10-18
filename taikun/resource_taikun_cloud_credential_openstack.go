@@ -95,13 +95,13 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"imported_network_subnet_id": {
-			Description: "The openstack subnet id in case you want to import network.",
+			Description: "The OpenStack subnet id in case you want to import network.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the openstack cloud credential.",
+			Description:      "The id of the organization which owns the OpenStack cloud credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -109,23 +109,23 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "The name of the organization which owns the openstack cloud credential.",
+			Description: "The name of the organization which owns the OpenStack cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"is_locked": {
-			Description: "Indicates whether the openstack cloud credential is locked or not.",
+			Description: "Indicates whether the OpenStack cloud credential is locked or not.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"is_default": {
-			Description: "Indicates whether the openstack cloud credential is the default one.",
+			Description: "Indicates whether the OpenStack cloud credential is the default one.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
 		"created_by": {
-			Description: "The creator of the openstack cloud credential.",
+			Description: "The creator of the OpenStack cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -135,7 +135,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the openstack cloud credential.",
+			Description: "The last user who modified the OpenStack cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

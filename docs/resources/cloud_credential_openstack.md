@@ -63,17 +63,17 @@ resource "taikun_cloud_credential_openstack" "foo" {
 ### Optional
 
 - **availability_zone** (String) The OpenStack availability zone.
-- **imported_network_subnet_id** (String) The openstack subnet id in case you want to import network.
-- **is_locked** (Boolean) Indicates whether the openstack cloud credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the openstack cloud credential.
+- **imported_network_subnet_id** (String) The OpenStack subnet id in case you want to import network.
+- **is_locked** (Boolean) Indicates whether the OpenStack cloud credential is locked or not. Defaults to `false`.
+- **organization_id** (String) The id of the organization which owns the OpenStack cloud credential.
 - **volume_type_name** (String) The OpenStack type of volume.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the openstack cloud credential.
+- **created_by** (String) The creator of the OpenStack cloud credential.
 - **id** (String) The id of the OpenStack cloud credential.
-- **is_default** (Boolean) Indicates whether the openstack cloud credential is the default one.
+- **is_default** (Boolean) Indicates whether the OpenStack cloud credential is the default one.
 - **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the openstack cloud credential.
-- **organization_name** (String) The name of the organization which owns the openstack cloud credential.
+- **last_modified_by** (String) The last user who modified the OpenStack cloud credential.
+- **organization_name** (String) The name of the organization which owns the OpenStack cloud credential.
 - **project_id** (String) The OpenStack project id.
