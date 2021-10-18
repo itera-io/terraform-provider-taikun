@@ -1,15 +1,14 @@
 ---
 page_title: "taikun_billing_rule Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Billing Rule
+description: |-   Taikun Billing Rule
 ---
 
 # taikun_billing_rule (Resource)
 
 Taikun Billing Rule
 
-~> **Role Requirement** In order to use the `billing_rule` resource you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_rule` resource you need at least a `Partner` account
 
 ## Example Usage
 

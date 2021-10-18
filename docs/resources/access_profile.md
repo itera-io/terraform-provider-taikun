@@ -1,13 +1,14 @@
 ---
 page_title: "taikun_access_profile Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Access Profile
+description: |-   Taikun Access Profile
 ---
 
 # taikun_access_profile (Resource)
 
 Taikun Access Profile
+
+~> **Role Requirement** In order to use the `taikun_access_profile` resource you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

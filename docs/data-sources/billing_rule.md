@@ -1,15 +1,14 @@
 ---
 page_title: "taikun_billing_rule Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get a billing rule by its id.
+description: |-   Get a billing rule by its id.
 ---
 
 # taikun_billing_rule (Data Source)
 
 Get a billing rule by its id.
 
-~> **Role Requirement** In order to use the `billing_rule` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_rule` data source you need at least a `Partner` account
 
 ## Example Usage
 

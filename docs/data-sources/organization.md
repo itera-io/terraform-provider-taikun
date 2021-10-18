@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_organization Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Organization details
+description: |-   Organization details
 ---
 
 # taikun_organization (Data Source)

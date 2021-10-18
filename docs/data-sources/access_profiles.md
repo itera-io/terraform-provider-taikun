@@ -1,13 +1,14 @@
 ---
 page_title: "taikun_access_profiles Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of access profiles, optionally filtered by organization.
+description: |-   Get the list of access profiles, optionally filtered by organization.
 ---
 
 # taikun_access_profiles (Data Source)
 
 Get the list of access profiles, optionally filtered by organization.
+
+~> **Role Requirement** In order to use the `taikun_access_profiles` data source you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

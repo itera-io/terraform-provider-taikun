@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_organizations Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Retrieve all organizations (only valid for Partner and Admin roles)
+description: |-   Retrieve all organizations (only valid for Partner and Admin roles)
 ---
 
 # taikun_organizations (Data Source)

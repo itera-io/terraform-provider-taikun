@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_user Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun User
+description: |-   Taikun User
 ---
 
 # taikun_user (Resource)
@@ -11,7 +10,8 @@ Taikun User
 
 ~> **Role Requirement** In order to use the `taikun_user` resource you need at least a `Manager` account
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's organization.
+-> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
+organization.
 
 ## Example Usage
 

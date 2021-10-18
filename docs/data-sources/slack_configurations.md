@@ -1,13 +1,15 @@
 ---
 page_title: "taikun_slack_configurations Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of slack configurations for your organization, or filter by organization if Partner or Admin.
+description: |-   Get the list of slack configurations for your organization, or filter by organization if Partner or Admin.
 ---
 
 # taikun_slack_configurations (Data Source)
 
 Get the list of slack configurations for your organization, or filter by organization if Partner or Admin.
+
+~> **Role Requirement** In order to use the `taikun_slack_configurations` data source you need at least a `Manager`
+account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.
