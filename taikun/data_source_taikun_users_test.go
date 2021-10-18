@@ -13,7 +13,7 @@ data "taikun_users" "all" {
 
 func TestAccDataSourceTaikunUsers(t *testing.T) {
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -75,7 +75,7 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 	role := "User"
 	displayName := randomString()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

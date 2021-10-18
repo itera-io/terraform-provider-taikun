@@ -26,7 +26,7 @@ data "taikun_showback_credentials" "all" {
 func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
 	showbackCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -83,7 +83,7 @@ func TestAccDataSourceTaikunShowbackCredentialsWithFilter(t *testing.T) {
 	organizationFullName := randomTestName()
 	showbackCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

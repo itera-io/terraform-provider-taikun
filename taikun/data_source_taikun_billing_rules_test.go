@@ -39,7 +39,7 @@ func TestAccDataSourceTaikunBillingRules(t *testing.T) {
 	billingCredentialName := randomTestName()
 	billingRuleName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
