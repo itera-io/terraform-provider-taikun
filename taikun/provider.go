@@ -64,6 +64,7 @@ func Provider() *schema.Provider {
 			"taikun_access_profiles":             dataSourceTaikunAccessProfiles(),
 			"taikun_alerting_profile":            dataSourceTaikunAlertingProfile(),
 			"taikun_alerting_profiles":           dataSourceTaikunAlertingProfiles(),
+			"taikun_backup_credential":           dataSourceTaikunBackupCredential(),
 			"taikun_billing_credential":          dataSourceTaikunBillingCredential(),
 			"taikun_billing_credentials":         dataSourceTaikunBillingCredentials(),
 			"taikun_billing_rule":                dataSourceTaikunBillingRule(),

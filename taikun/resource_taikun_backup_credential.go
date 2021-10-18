@@ -74,7 +74,7 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"created_by": {
-			Description: "The creator of the billing credential.",
+			Description: "The creator of the backup credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -84,7 +84,7 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the billing credential.",
+			Description: "The last user who modified the backup credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
