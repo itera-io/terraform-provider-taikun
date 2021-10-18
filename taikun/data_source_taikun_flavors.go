@@ -86,12 +86,11 @@ func dataSourceTaikunFlavors() *schema.Resource {
 }
 
 func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	cloudType := data.Get("cloud_type").(string)
-	params := dataSourceTaikunFlavorsMakeParams(cloudType, data)
-	flavorDTOs, err := dataSourceTaikunFlavorsGetDTOs(cloudType, params, meta)
+	flavorDTOs, err := dataSourceTaikunFlavorsGetDTOs(data, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	cloudType := data.Get("cloud_type").(string)
 	flavors := flattenDataSourceTaikunFlavors(cloudType, flavorDTOs)
 	if err := data.Set("flavors", flavors); err != nil {
 		return diag.FromErr(err)
@@ -100,39 +99,27 @@ func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData,
 	return nil
 }
 
-func dataSourceTaikunFlavorsMakeParams(cloudType string, data *schema.ResourceData) interface{} {
-	var paramsAddr interface{}
+func dataSourceTaikunFlavorsGetDTOs(data *schema.ResourceData, meta interface{}) (interface{}, error) {
 	startCPU := data.Get("min_cpu").(int32)
 	endCPU := data.Get("max_cpu").(int32)
 	startRAM := data.Get("min_ram").(int32)
 	endRAM := data.Get("max_ram").(int32)
+	cloudType := data.Get("cloud_type").(string)
 	switch cloudType {
 	case "AWS":
 		params := flavors.NewFlavorsAwsFlavorsParams().WithV(ApiVersion).WithCloudID(data.Get("cloud_credential_id").(int32))
 		params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
-		paramsAddr = &params
+		flavorDTOs, err := dataSourceTaikunFlavorsAWSGetDTOs(params, meta)
+		return &flavorDTOs, err
 	case "Azure":
 		params := flavors.NewFlavorsAzureFlavorsParams().WithV(ApiVersion).WithCloudID(data.Get("cloud_credential_id").(int32))
 		params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
-		paramsAddr = &params
+		flavorDTOs, err := dataSourceTaikunFlavorsAzureGetDTOs(params, meta)
+		return &flavorDTOs, err
 	case "OpenStack":
 		params := flavors.NewFlavorsOpenstackFlavorsParams().WithV(ApiVersion).WithCloudID(data.Get("cloud_credential_id").(int32))
 		params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
-		paramsAddr = &params
-	}
-	return paramsAddr
-}
-
-func dataSourceTaikunFlavorsGetDTOs(cloudType string, params interface{}, meta interface{}) (interface{}, error) {
-	switch cloudType {
-	case "AWS":
-		flavorDTOs, err := dataSourceTaikunFlavorsAWSGetDTOs(params.(*flavors.FlavorsAwsFlavorsParams), meta)
-		return &flavorDTOs, err
-	case "Azure":
-		flavorDTOs, err := dataSourceTaikunFlavorsAzureGetDTOs(params.(*flavors.FlavorsAzureFlavorsParams), meta)
-		return &flavorDTOs, err
-	case "OpenStack":
-		flavorDTOs, err := dataSourceTaikunFlavorsOpenStackGetDTOs(params.(*flavors.FlavorsOpenstackFlavorsParams), meta)
+		flavorDTOs, err := dataSourceTaikunFlavorsOpenStackGetDTOs(params, meta)
 		return &flavorDTOs, err
 	default:
 		return nil, fmt.Errorf("%s is not a valid cloud type", cloudType)
