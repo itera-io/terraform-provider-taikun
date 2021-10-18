@@ -87,3 +87,24 @@ func testAccPreCheckAWS(t *testing.T) {
 		t.Fatal("AWS_AVAILABILITY_ZONE must be set for acceptance tests")
 	}
 }
+
+func testAccPreCheckAzure(t *testing.T) {
+	if err := os.Getenv("ARM_SUBSCRIPTION_ID"); err == "" {
+		t.Fatal("ARM_SUBSCRIPTION_ID must be set for acceptance tests")
+	}
+	if err := os.Getenv("ARM_CLIENT_ID"); err == "" {
+		t.Fatal("ARM_CLIENT_ID must be set for acceptance tests")
+	}
+	if err := os.Getenv("ARM_TENANT_ID"); err == "" {
+		t.Fatal("ARM_TENANT_ID must be set for acceptance tests")
+	}
+	if err := os.Getenv("ARM_CLIENT_SECRET"); err == "" {
+		t.Fatal("ARM_CLIENT_SECRET must be set for acceptance tests")
+	}
+	if err := os.Getenv("ARM_AVAILABILITY_ZONE"); err == "" {
+		t.Fatal("ARM_AVAILABILITY_ZONE must be set for acceptance tests")
+	}
+	if err := os.Getenv("ARM_LOCATION"); err == "" {
+		t.Fatal("ARM_LOCATION must be set for acceptance tests")
+	}
+}
