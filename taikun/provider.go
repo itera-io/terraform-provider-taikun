@@ -86,6 +86,7 @@ func Provider() *schema.Provider {
 			"taikun_alerting_profile":                     resourceTaikunAlertingProfile(),
 			"taikun_billing_credential":                   resourceTaikunBillingCredential(),
 			"taikun_billing_rule":                         resourceTaikunBillingRule(),
+			"taikun_cloud_credential_aws":                 resourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_openstack":           resourceTaikunCloudCredentialOpenStack(),
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization":                         resourceTaikunOrganization(),
