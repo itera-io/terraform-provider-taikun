@@ -89,6 +89,11 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "url", url),
 				),
 			},
+			{
+				ResourceName:      "taikun_slack_configuration.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

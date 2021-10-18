@@ -109,6 +109,11 @@ func TestAccResourceTaikunShowbackRule(t *testing.T) {
 					resource.TestCheckNoResourceAttr("taikun_showback_rule.foo", "showback_credential_name"),
 				),
 			},
+			{
+				ResourceName:      "taikun_showback_rule.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -254,6 +259,11 @@ func TestAccResourceTaikunShowbackRuleWithCredentials(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "showback_credential_id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "showback_credential_name", showbackCredentialName),
 				),
+			},
+			{
+				ResourceName:      "taikun_showback_rule.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

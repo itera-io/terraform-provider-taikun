@@ -103,6 +103,11 @@ func TestAccResourceTaikunUser(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "email_notification_enabled"),
 				),
 			},
+			{
+				ResourceName:      "taikun_user.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
