@@ -130,7 +130,7 @@ resource "taikun_alerting_profile" "foo" {
 }
 `
 
-func TestAccResourceTaikunAlertingProfileConfiguration(t *testing.T) {
+func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 	organizationName := randomTestName()
 	slackConfigName := randomTestName()
 	alertingProfileName := randomTestName()
@@ -178,7 +178,7 @@ func TestAccResourceTaikunAlertingProfileConfiguration(t *testing.T) {
 	})
 }
 
-func TestAccResourceTaikunAlertingProfileConfigurationModify(t *testing.T) {
+func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 	organizationName := randomTestName()
 	slackConfigName := randomTestName()
 	alertingProfileName := randomTestName()
@@ -250,7 +250,7 @@ func TestAccResourceTaikunAlertingProfileConfigurationModify(t *testing.T) {
 	})
 }
 
-func TestAccResourceTaikunAlertingProfileConfigurationModifyIntegrations(t *testing.T) {
+func TestAccResourceTaikunAlertingProfileModifyIntegrations(t *testing.T) {
 	organizationName := randomTestName()
 	slackConfigName := randomTestName()
 	alertingProfileName := randomTestName()
