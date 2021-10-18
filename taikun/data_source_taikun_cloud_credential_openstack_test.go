@@ -34,7 +34,6 @@ func TestAccDataSourceTaikunCloudCredentialOpenStack(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_openstack.foo", "name"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_openstack.foo", "user"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_openstack.foo", "url"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_openstack.foo", "domain"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_openstack.foo", "project_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_openstack.foo", "public_network_name"),

@@ -11,7 +11,7 @@ func dataSourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema 
 	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunCloudCredentialOpenStackSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
-	deleteFieldsFromSchema(dsSchema, "password")
+	deleteFieldsFromSchema(dsSchema, "password", "url")
 	return dsSchema
 }
 

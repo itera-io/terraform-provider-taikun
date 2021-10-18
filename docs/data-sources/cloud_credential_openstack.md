@@ -44,7 +44,6 @@ data "taikun_cloud_credential_openstack" "foo" {
 - **project_name** (String) The OpenStack project name.
 - **public_network_name** (String) The name of the public OpenStack network which will be used.
 - **region** (String) The OpenStack region.
-- **url** (String) The OpenStack authentication url.
 - **user** (String) The OpenStack user.
 - **volume_type_name** (String) The OpenStack type of volume.
 

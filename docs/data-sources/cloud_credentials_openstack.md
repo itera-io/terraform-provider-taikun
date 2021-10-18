@@ -56,7 +56,6 @@ Read-Only:
 - **project_name** (String)
 - **public_network_name** (String)
 - **region** (String)
-- **url** (String)
 - **user** (String)
 - **volume_type_name** (String)
 
