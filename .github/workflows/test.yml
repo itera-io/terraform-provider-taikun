@@ -73,5 +73,10 @@ jobs:
           OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
           OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
 
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_AVAILABILITY_ZONE: ${{ secrets.AWS_AVAILABILITY_ZONE }}
+
         run: |
           go test -v -cover ./taikun
