@@ -78,5 +78,12 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_AVAILABILITY_ZONE: ${{ secrets.AWS_AVAILABILITY_ZONE }}
 
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_AVAILABILITY_ZONE: ${{ secrets.ARM_AVAILABILITY_ZONE }}
+          ARM_LOCATION: ${{ secrets.ARM_LOCATION }}
+
         run: |
           go test -v -cover ./taikun
