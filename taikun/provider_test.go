@@ -72,3 +72,18 @@ func testAccPreCheckOpenStack(t *testing.T) {
 		t.Fatal("OS_REGION_NAME must be set for acceptance tests")
 	}
 }
+
+func testAccPreCheckAWS(t *testing.T) {
+	if err := os.Getenv("AWS_ACCESS_KEY_ID"); err == "" {
+		t.Fatal("AWS_ACCESS_KEY_ID must be set for acceptance tests")
+	}
+	if err := os.Getenv("AWS_SECRET_ACCESS_KEY"); err == "" {
+		t.Fatal("AWS_SECRET_ACCESS_KEY must be set for acceptance tests")
+	}
+	if err := os.Getenv("AWS_DEFAULT_REGION"); err == "" {
+		t.Fatal("AWS_DEFAULT_REGION must be set for acceptance tests")
+	}
+	if err := os.Getenv("AWS_AVAILABILITY_ZONE"); err == "" {
+		t.Fatal("AWS_AVAILABILITY_ZONE must be set for acceptance tests")
+	}
+}
