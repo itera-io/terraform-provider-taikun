@@ -5,7 +5,7 @@
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
+<img src="https://raw.githubusercontent.com/hashicorp/terraform-website/ff7a019259feb18b0a7b2f0ed7ce70b2e3e5d02f/content/source/assets/images/logo-terraform-main.svg" width="600px">
 
 ## Requirements
 
