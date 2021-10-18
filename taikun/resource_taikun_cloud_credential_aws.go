@@ -26,6 +26,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Description:  "The AWS Access Key ID.",
 			Type:         schema.TypeString,
 			Required:     true,
+			Sensitive:    true,
 			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
