@@ -69,14 +69,17 @@ func dataSourceTaikunFlavors() *schema.Resource {
 						"cpu": {
 							Description: "CPU count.",
 							Type:        schema.TypeInt,
+							Computed:    true,
 						},
 						"name": {
 							Description: "Flavor name.",
 							Type:        schema.TypeString,
+							Computed:    true,
 						},
 						"ram": {
 							Description: "RAM size.",
 							Type:        schema.TypeInt,
+							Computed:    true,
 						},
 					},
 				},
@@ -95,32 +98,37 @@ func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData,
 	if err := data.Set("flavors", flavors); err != nil {
 		return diag.FromErr(err)
 	}
-	data.SetId(i32toa(data.Get("cloud_credential_id").(int32)))
+	cloudCredentialID, _ := atoi32(data.Get("cloud_credential_id").(string))
+	data.SetId(i32toa(cloudCredentialID))
 	return nil
 }
 
 func dataSourceTaikunFlavorsGetDTOs(data *schema.ResourceData, meta interface{}) (interface{}, error) {
-	startCPU := data.Get("min_cpu").(int32)
-	endCPU := data.Get("max_cpu").(int32)
-	startRAM := data.Get("min_ram").(int32)
-	endRAM := data.Get("max_ram").(int32)
+	startCPU := int32(data.Get("min_cpu").(int))
+	endCPU := int32(data.Get("max_cpu").(int))
+	startRAM := int32(data.Get("min_ram").(int))
+	endRAM := int32(data.Get("max_ram").(int))
 	cloudType := data.Get("cloud_type").(string)
+	cloudCredentialID, err := atoi32(data.Get("cloud_credential_id").(string))
+	if err != nil {
+		return nil, err
+	}
 	switch cloudType {
 	case "AWS":
-		params := flavors.NewFlavorsAwsFlavorsParams().WithV(ApiVersion).WithCloudID(data.Get("cloud_credential_id").(int32))
+		params := flavors.NewFlavorsAwsFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 		params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
 		flavorDTOs, err := dataSourceTaikunFlavorsAWSGetDTOs(params, meta)
-		return &flavorDTOs, err
+		return flavorDTOs, err
 	case "Azure":
-		params := flavors.NewFlavorsAzureFlavorsParams().WithV(ApiVersion).WithCloudID(data.Get("cloud_credential_id").(int32))
+		params := flavors.NewFlavorsAzureFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 		params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
 		flavorDTOs, err := dataSourceTaikunFlavorsAzureGetDTOs(params, meta)
-		return &flavorDTOs, err
+		return flavorDTOs, err
 	case "OpenStack":
-		params := flavors.NewFlavorsOpenstackFlavorsParams().WithV(ApiVersion).WithCloudID(data.Get("cloud_credential_id").(int32))
+		params := flavors.NewFlavorsOpenstackFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 		params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
 		flavorDTOs, err := dataSourceTaikunFlavorsOpenStackGetDTOs(params, meta)
-		return &flavorDTOs, err
+		return flavorDTOs, err
 	default:
 		return nil, fmt.Errorf("%s is not a valid cloud type", cloudType)
 	}
@@ -181,53 +189,50 @@ func dataSourceTaikunFlavorsOpenStackGetDTOs(params *flavors.FlavorsOpenstackFla
 }
 
 func flattenDataSourceTaikunFlavors(cloudType string, rawFlavorDTOs interface{}) []map[string]interface{} {
-	flavorDTOs := rawFlavorDTOs.([]interface{})
-	flavors := make([]map[string]interface{}, len(flavorDTOs))
-	flattenFunc := getFlattenDataSourceTaikunFlavorItemFunc(cloudType)
-	for i, flavorDTO := range flavorDTOs {
-		flavors[i] = flattenFunc(flavorDTO)
-	}
-	return flavors
-}
-
-type flattenDataSourceTaikunFlavorItemFunc func(interface{}) map[string]interface{}
-
-func getFlattenDataSourceTaikunFlavorItemFunc(cloudType string) flattenDataSourceTaikunFlavorItemFunc {
 	switch cloudType {
 	case "AWS":
-		return flattenDataSourceTaikunFlavorsAWSItem
+		return flattenDataSourceTaikunFlavorsAWS(rawFlavorDTOs.([]*models.AwsFlavorListDto))
 	case "Azure":
-		return flattenDataSourceTaikunFlavorsAzureItem
+		return flattenDataSourceTaikunFlavorsAzure(rawFlavorDTOs.([]*models.AzureFlavorListDto))
 	case "OpenStack":
-		return flattenDataSourceTaikunFlavorsOpenStackItem
+		return flattenDataSourceTaikunFlavorsOpenStack(rawFlavorDTOs.([]*models.OpenstackFlavorListDto))
 	default:
 		return nil
 	}
 }
 
-func flattenDataSourceTaikunFlavorsAWSItem(rawFlavorDTO interface{}) map[string]interface{} {
-	flavorDTO := rawFlavorDTO.(*models.AwsFlavorListDto)
-	return map[string]interface{}{
-		"cpu":  flavorDTO.CPU.(int32),
-		"name": flavorDTO.Name.(string),
-		"ram":  flavorDTO.RAM.(int32),
+func flattenDataSourceTaikunFlavorsAWS(flavorDTOs []*models.AwsFlavorListDto) []map[string]interface{} {
+	flavors := make([]map[string]interface{}, len(flavorDTOs))
+	for i, flavorDTO := range flavorDTOs {
+		flavors[i] = map[string]interface{}{
+			"cpu":  flavorDTO.CPU.(int32),
+			"name": flavorDTO.Name.(string),
+			"ram":  flavorDTO.RAM.(int32),
+		}
 	}
+	return flavors
 }
 
-func flattenDataSourceTaikunFlavorsAzureItem(rawFlavorDTO interface{}) map[string]interface{} {
-	flavorDTO := rawFlavorDTO.(*models.AzureFlavorListDto)
-	return map[string]interface{}{
-		"cpu":  flavorDTO.CPU.(int32),
-		"name": flavorDTO.Name.(string),
-		"ram":  flavorDTO.RAM.(int32),
+func flattenDataSourceTaikunFlavorsAzure(flavorDTOs []*models.AzureFlavorListDto) []map[string]interface{} {
+	flavors := make([]map[string]interface{}, len(flavorDTOs))
+	for i, flavorDTO := range flavorDTOs {
+		flavors[i] = map[string]interface{}{
+			"cpu":  flavorDTO.CPU.(int32),
+			"name": flavorDTO.Name.(string),
+			"ram":  flavorDTO.RAM.(int32),
+		}
 	}
+	return flavors
 }
 
-func flattenDataSourceTaikunFlavorsOpenStackItem(rawFlavorDTO interface{}) map[string]interface{} {
-	flavorDTO := rawFlavorDTO.(*models.OpenstackFlavorListDto)
-	return map[string]interface{}{
-		"cpu":  int32(flavorDTO.CPU),
-		"name": flavorDTO.Name,
-		"ram":  int32(flavorDTO.RAM),
+func flattenDataSourceTaikunFlavorsOpenStack(flavorDTOs []*models.OpenstackFlavorListDto) []map[string]interface{} {
+	flavors := make([]map[string]interface{}, len(flavorDTOs))
+	for i, flavorDTO := range flavorDTOs {
+		flavors[i] = map[string]interface{}{
+			"cpu":  int32(flavorDTO.CPU),
+			"name": flavorDTO.Name,
+			"ram":  int32(flavorDTO.RAM),
+		}
 	}
+	return flavors
 }
