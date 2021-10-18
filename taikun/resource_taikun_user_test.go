@@ -66,7 +66,7 @@ resource "taikun_user" "foo" {
 
 func TestAccResourceTaikunUser(t *testing.T) {
 	userName := randomTestName()
-	email := randomString() + "@" + randomString() + ".fr"
+	email := randomEmail()
 	role := "User"
 	displayName := randomTestName()
 	userDisabled := false
@@ -114,13 +114,13 @@ func TestAccResourceTaikunUser(t *testing.T) {
 
 func TestAccResourceTaikunUserUpdate(t *testing.T) {
 	userName := randomTestName()
-	email := randomString() + "@" + randomString() + ".fr"
+	email := randomEmail()
 	role := "Manager"
 	displayName := randomTestName()
 	userDisabled := false
 	approvedByPartner := true
 	newUserName := randomTestName()
-	newEmail := randomString() + "@" + randomString() + ".fr"
+	newEmail := randomEmail()
 	newRole := "Manager"
 	newDisplayName := randomTestName()
 	newUserDisabled := true

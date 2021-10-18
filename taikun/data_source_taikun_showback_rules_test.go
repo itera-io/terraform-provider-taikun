@@ -39,7 +39,7 @@ func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
 	projectLimit := rand.Int31()
 	globalLimit := rand.Int31()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -110,7 +110,7 @@ func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 	projectLimit := rand.Int31()
 	globalLimit := rand.Int31()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
