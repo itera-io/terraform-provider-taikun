@@ -50,6 +50,5 @@ Read-Only:
 - **organization_id** (String)
 - **organization_name** (String)
 - **region** (String)
-- **secret_access_key** (String)
 
 

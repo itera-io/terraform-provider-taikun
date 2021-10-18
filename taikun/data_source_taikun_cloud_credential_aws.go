@@ -11,7 +11,7 @@ func dataSourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunCloudCredentialAWSSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
-	deleteFieldsFromSchema(dsSchema, "aws_secret_key", "access_key_id")
+	deleteFieldsFromSchema(dsSchema, "secret_access_key", "access_key_id")
 	return dsSchema
 }
 

@@ -39,6 +39,5 @@ data "taikun_cloud_credential_aws" "foo" {
 - **organization_id** (String) The id of the organization which owns the AWS cloud credential.
 - **organization_name** (String) The name of the organization which owns the AWS cloud credential.
 - **region** (String) The AWS region.
-- **secret_access_key** (String, Sensitive) The AWS Secret Access Key.
 
 
