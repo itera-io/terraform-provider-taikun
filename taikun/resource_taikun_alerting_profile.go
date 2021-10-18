@@ -454,7 +454,6 @@ func getEmailDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*m
 		emailDTOs[i] = &models.AlertingEmailDto{
 			Email: email.(string),
 		}
-
 	}
 	return emailDTOs
 }

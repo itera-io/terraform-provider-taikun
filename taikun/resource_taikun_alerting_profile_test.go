@@ -164,6 +164,11 @@ func TestAccResourceTaikunAlertingProfileConfiguration(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
 				),
 			},
+			{
+				ResourceName:      "taikun_alerting_profile.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
