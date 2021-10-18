@@ -23,14 +23,14 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"s3_access_key_id": {
-			Description:  "The prometheus username.",
+			Description:  "The S3 Access Key ID.",
 			Type:         schema.TypeString,
 			Required:     true,
 			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"s3_secret_access_key": {
-			Description:  "The prometheus password.",
+			Description:  "The S3 Secret Access Key.",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -38,13 +38,13 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"s3_endpoint": {
-			Description: "The prometheus url.",
+			Description: "The S3 endpoint URL.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
 		},
 		"s3_region": {
-			Description: "The prometheus url.",
+			Description: "The S3 region.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
