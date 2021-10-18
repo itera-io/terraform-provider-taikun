@@ -16,6 +16,9 @@ import (
 // can be customized.
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
+// Proofread the generated documentation
+//go:generate ./scripts/docs_cleanup.sh
+
 func main() {
 	plugin.Serve(
 		&plugin.ServeOpts{
