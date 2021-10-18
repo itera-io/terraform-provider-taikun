@@ -26,7 +26,6 @@ data "taikun_access_profiles" "foo" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
 - **organization_id** (String) Organization id filter.
 
 ### Read-Only

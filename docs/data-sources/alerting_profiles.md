@@ -24,7 +24,6 @@ data "taikun_alerting_profiles" "foo" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
 - **organization_id** (String) organization ID filter (for Partner and Admin roles)
 
 ### Read-Only

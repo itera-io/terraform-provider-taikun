@@ -26,7 +26,6 @@ data "taikun_slack_configurations" "all" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
 - **organization_id** (String) Organization ID filter (for Partner and Admin roles).
 
 ### Read-Only
