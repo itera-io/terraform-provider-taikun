@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_cloud_credential_openstack Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun OpenStack Cloud Credential
+description: |-   Taikun OpenStack Cloud Credential
 ---
 
 # taikun_cloud_credential_openstack (Resource)

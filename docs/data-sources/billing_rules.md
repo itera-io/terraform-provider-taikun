@@ -1,15 +1,14 @@
 ---
 page_title: "taikun_billing_rules Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of billing rules.
+description: |-   Get the list of billing rules.
 ---
 
 # taikun_billing_rules (Data Source)
 
 Get the list of billing rules.
 
-~> **Role Requirement** In order to use the `billing_rules` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_rules` data source you need at least a `Partner` account
 
 ## Example Usage
 

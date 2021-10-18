@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_organization Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Organization
+description: |-   Taikun Organization
 ---
 
 # taikun_organization (Resource)

@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_user Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get a user by its id.
+description: |-   Get a user by its id.
 ---
 
 # taikun_user (Data Source)

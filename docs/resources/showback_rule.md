@@ -1,13 +1,14 @@
 ---
 page_title: "taikun_showback_rule Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Showback Rule
+description: |-   Taikun Showback Rule
 ---
 
 # taikun_showback_rule (Resource)
 
 Taikun Showback Rule
+
+~> **Role Requirement** In order to use the `taikun_showback_rule` resource you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

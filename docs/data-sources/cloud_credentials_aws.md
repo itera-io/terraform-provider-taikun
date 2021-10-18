@@ -1,15 +1,15 @@
 ---
 page_title: "taikun_cloud_credentials_aws Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of AWS cloud credentials, optionally filtered by organization.
+description: |-   Get the list of AWS cloud credentials, optionally filtered by organization.
 ---
 
 # taikun_cloud_credentials_aws (Data Source)
 
 Get the list of AWS cloud credentials, optionally filtered by organization.
 
-~> **Role Requirement** In order to use the `cloud_credentials_aws` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_cloud_credentials_aws` data source you need at least a `Manager`
+account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

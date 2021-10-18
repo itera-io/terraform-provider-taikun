@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_cloud_credential_aws Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun AWS Cloud Credential
+description: |-   Taikun AWS Cloud Credential
 ---
 
 # taikun_cloud_credential_aws (Resource)

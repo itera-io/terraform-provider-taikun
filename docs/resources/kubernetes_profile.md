@@ -1,13 +1,14 @@
 ---
 page_title: "taikun_kubernetes_profile Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Kubernetes Profile
+description: |-   Taikun Kubernetes Profile
 ---
 
 # taikun_kubernetes_profile (Resource)
 
 Taikun Kubernetes Profile
+
+~> **Role Requirement** In order to use the `taikun_kubernetes_profile` resource you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

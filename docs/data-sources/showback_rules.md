@@ -1,13 +1,14 @@
 ---
 page_title: "taikun_showback_rules Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of showback rules, optionally filtered by organization.
+description: |-   Get the list of showback rules, optionally filtered by organization.
 ---
 
 # taikun_showback_rules (Data Source)
 
 Get the list of showback rules, optionally filtered by organization.
+
+~> **Role Requirement** In order to use the `taikun_showback_rules` data source you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

@@ -1,15 +1,15 @@
 ---
 page_title: "taikun_billing_credential Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get a billing credential by its id.
+description: |-   Get a billing credential by its id.
 ---
 
 # taikun_billing_credential (Data Source)
 
 Get a billing credential by its id.
 
-~> **Role Requirement** In order to use the `billing_credential` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_credential` data source you need at least a `Partner`
+account
 
 ## Example Usage
 

@@ -1,13 +1,14 @@
 ---
 page_title: "taikun_slack_configuration Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Slack Configuration
+description: |-   Taikun Slack Configuration
 ---
 
 # taikun_slack_configuration (Resource)
 
 Taikun Slack Configuration
+
+~> **Role Requirement** In order to use the `taikun_slack_configuration` resource you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.

@@ -1,15 +1,15 @@
 ---
 page_title: "taikun_cloud_credential_openstack Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get an OpenStack cloud credential by its id.
+description: |-   Get an OpenStack cloud credential by its id.
 ---
 
 # taikun_cloud_credential_openstack (Data Source)
 
 Get an OpenStack cloud credential by its id.
 
-~> **Role Requirement** In order to use the `cloud_credential_openstack` data source you need at least a `Manager`
+~> **Role Requirement** In order to use the `taikun_cloud_credential_openstack` data source you need at least
+a `Manager`
 account
 
 ## Example Usage

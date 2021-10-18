@@ -1,15 +1,14 @@
 ---
 page_title: "taikun_cloud_credential_azure Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get an Azure cloud credential by its id.
+description: |-   Get an Azure cloud credential by its id.
 ---
 
 # taikun_cloud_credential_azure (Data Source)
 
 Get an Azure cloud credential by its id.
 
-~> **Role Requirement** In order to use the `cloud_credential_azure` data source you need at least a `Manager`
+~> **Role Requirement** In order to use the `taikun_cloud_credential_azure` data source you need at least a `Manager`
 account
 
 ## Example Usage

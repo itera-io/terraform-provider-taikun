@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_users Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of users, optionally filtered by organization.
+description: |-   Get the list of users, optionally filtered by organization.
 ---
 
 # taikun_users (Data Source)

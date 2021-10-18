@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_cloud_credential_azure Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Azure Cloud Credential
+description: |-   Taikun Azure Cloud Credential
 ---
 
 # taikun_cloud_credential_azure (Resource)
