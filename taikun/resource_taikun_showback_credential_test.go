@@ -90,6 +90,11 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "username"),
 				),
 			},
+			{
+				ResourceName:      "taikun_showback_credential.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

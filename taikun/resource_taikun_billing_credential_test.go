@@ -85,6 +85,11 @@ func TestAccResourceTaikunBillingCredential(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
 				),
 			},
+			{
+				ResourceName:      "taikun_billing_credential.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

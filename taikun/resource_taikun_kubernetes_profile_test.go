@@ -79,6 +79,11 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy_enabled"),
 				),
 			},
+			{
+				ResourceName:      "taikun_kubernetes_profile.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

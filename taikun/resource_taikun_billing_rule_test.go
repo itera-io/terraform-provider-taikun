@@ -102,6 +102,11 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
 				),
 			},
+			{
+				ResourceName:      "taikun_billing_rule.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

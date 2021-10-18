@@ -108,6 +108,11 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
+			{
+				ResourceName:      "taikun_access_profile.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

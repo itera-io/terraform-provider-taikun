@@ -127,6 +127,11 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
+			{
+				ResourceName:      "taikun_organization.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
