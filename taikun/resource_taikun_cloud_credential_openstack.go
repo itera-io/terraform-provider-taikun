@@ -148,7 +148,7 @@ func resourceTaikunCloudCredentialOpenStack() *schema.Resource {
 		CreateContext: resourceTaikunCloudCredentialOpenStackCreate,
 		ReadContext:   resourceTaikunCloudCredentialOpenStackRead,
 		UpdateContext: resourceTaikunCloudCredentialOpenStackUpdate,
-		DeleteContext: resourceTaikunCloudCredentialOpenStackDelete,
+		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialOpenStackSchema(),
 	}
 }
@@ -331,21 +331,4 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 	}
 
 	return resourceTaikunCloudCredentialOpenStackRead(ctx, data, meta)
-}
-
-func resourceTaikunCloudCredentialOpenStackDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	params := cloud_credentials.NewCloudCredentialsDeleteParams().WithV(ApiVersion).WithCloudID(id)
-	_, _, err = apiClient.client.CloudCredentials.CloudCredentialsDelete(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId("")
-	return nil
 }
