@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_backup_credentials Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get the list of backup credentials, optionally filtered by organization.
+description: |-   Get the list of backup credentials, optionally filtered by organization.
 ---
 
 # taikun_backup_credentials (Data Source)

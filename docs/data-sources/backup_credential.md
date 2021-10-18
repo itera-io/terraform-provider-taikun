@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_backup_credential Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Get a backup credential by its id.
+description: |-   Get a backup credential by its id.
 ---
 
 # taikun_backup_credential (Data Source)

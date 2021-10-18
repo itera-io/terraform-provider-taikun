@@ -1,8 +1,7 @@
 ---
 page_title: "taikun_backup_credential Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-
-  Taikun Backup Credential
+description: |-   Taikun Backup Credential
 ---
 
 # taikun_backup_credential (Resource)
