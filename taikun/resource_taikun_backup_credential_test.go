@@ -147,58 +147,58 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 	})
 }
 
-//func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
-//	backupCredentialName := randomTestName()
-//	newBackupCredentialName := randomTestName()
-//
-//	resource.ParallelTest(t, resource.TestCase{
-//		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
-//		ProviderFactories: testAccProviderFactories,
-//		CheckDestroy:      testAccCheckTaikunBackupCredentialDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
-//					backupCredentialName,
-//					false,
-//					os.Getenv("S3_ENDPOINT"),
-//					os.Getenv("S3_REGION"),
-//				),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckTaikunBackupCredentialExists,
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
-//					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
-//					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
-//					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
-//				),
-//			},
-//			{
-//				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
-//					newBackupCredentialName,
-//					false,
-//					os.Getenv("S3_ENDPOINT"),
-//					os.Getenv("S3_REGION"),
-//				),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckTaikunBackupCredentialExists,
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", newBackupCredentialName),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-//					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
-//					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
-//					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
-//					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
-//				),
-//			},
-//		},
-//	})
-//}
+func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
+	backupCredentialName := randomTestName()
+	newBackupCredentialName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunBackupCredentialDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					backupCredentialName,
+					false,
+					os.Getenv("S3_ENDPOINT"),
+					os.Getenv("S3_REGION"),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunBackupCredentialExists,
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					newBackupCredentialName,
+					false,
+					os.Getenv("S3_ENDPOINT"),
+					os.Getenv("S3_REGION"),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunBackupCredentialExists,
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", newBackupCredentialName),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient)
