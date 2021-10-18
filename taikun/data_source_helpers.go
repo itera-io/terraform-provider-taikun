@@ -2,13 +2,13 @@ package taikun
 
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-// datasourceSchemaFromResourceSchema is a recursive func that
+// dataSourceSchemaFromResourceSchema is a recursive func that
 // converts an existing Resource schema to a Datasource schema.
 // All schema elements are copied, but certain attributes are ignored or changed:
 // - all attributes have Computed = true
 // - all attributes have ForceNew, Required = false
 // - Validation funcs and attributes (e.g. MaxItems) are not copied
-func datasourceSchemaFromResourceSchema(rs map[string]*schema.Schema) map[string]*schema.Schema {
+func dataSourceSchemaFromResourceSchema(rs map[string]*schema.Schema) map[string]*schema.Schema {
 	ds := make(map[string]*schema.Schema, len(rs))
 	for k, v := range rs {
 		dv := &schema.Schema{
@@ -31,7 +31,7 @@ func datasourceSchemaFromResourceSchema(rs map[string]*schema.Schema) map[string
 			if elem, ok := v.Elem.(*schema.Resource); ok {
 				// handle the case where the Element is a sub-resource
 				dv.Elem = &schema.Resource{
-					Schema: datasourceSchemaFromResourceSchema(elem.Schema),
+					Schema: dataSourceSchemaFromResourceSchema(elem.Schema),
 				}
 			} else {
 				// handle simple primitive case

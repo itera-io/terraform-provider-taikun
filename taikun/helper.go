@@ -2,11 +2,13 @@ package taikun
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/itera-io/taikungoclient/models"
@@ -60,7 +62,27 @@ func randomName(prefix string, length int) string {
 }
 
 func randomString() string {
+	rand.Seed(time.Now().UnixNano())
 	return acctest.RandString(rand.Int()%10 + 10)
+}
+
+func randomURL() string {
+	return fmt.Sprintf("https://%s.%s.example", randomString(), randomString())
+}
+
+func randomEmail() string {
+	return fmt.Sprintf("%s@%s.example", randomString(), randomString())
+}
+
+func randomBool() bool {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int()%2 == 0
+}
+
+// Return an integer in the range [0; maxInt[
+func randomInt(maxInt int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Int() % maxInt
 }
 
 func getLockMode(locked bool) string {
@@ -115,4 +137,30 @@ func getSlackConfigurationType(configType string) models.SlackType {
 		return 100
 	}
 	return 200 // General
+}
+
+func getAlertingProfileReminder(reminder string) models.AlertingReminder {
+	switch reminder {
+	case "HalfHour":
+		return 100
+	case "Hourly":
+		return 200
+	case "Daily":
+		return 300
+	default: // "None"
+		return -1
+	}
+}
+
+func getAlertingIntegrationType(integrationType string) models.AlertingIntegrationType {
+	switch integrationType {
+	case "Opsgenie":
+		return 100
+	case "Pagerduty":
+		return 200
+	case "Splunk":
+		return 300
+	default: // "MicrosoftTeams"
+		return 400
+	}
 }

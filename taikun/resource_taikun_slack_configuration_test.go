@@ -14,7 +14,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("taikun_slack_configuration", &resource.Sweeper{
-		Name: "taikun_slack_configuration",
+		Name:         "taikun_slack_configuration",
+		Dependencies: []string{"taikun_alerting_profile"},
 		F: func(r string) error {
 
 			meta, err := sharedConfig()
