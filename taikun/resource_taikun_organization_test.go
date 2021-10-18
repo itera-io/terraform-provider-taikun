@@ -17,7 +17,7 @@ import (
 func init() {
 	resource.AddTestSweepers("taikun_organization", &resource.Sweeper{
 		Name:         "taikun_organization",
-		Dependencies: []string{"taikun_user"},
+		Dependencies: []string{"taikun_user", "taikun_cloud_credential_openstack"},
 		F: func(r string) error {
 
 			meta, err := sharedConfig()

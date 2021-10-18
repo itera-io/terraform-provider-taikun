@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -82,6 +83,7 @@ func Provider() *schema.Provider {
 			"taikun_access_profile":                       resourceTaikunAccessProfile(),
 			"taikun_billing_credential":                   resourceTaikunBillingCredential(),
 			"taikun_billing_rule":                         resourceTaikunBillingRule(),
+			"taikun_cloud_credential_openstack":           resourceTaikunCloudCredentialOpenStack(),
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization":                         resourceTaikunOrganization(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
@@ -98,6 +100,7 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_EMAIL", nil),
 				ConflictsWith: []string{"keycloak_email"},
 				RequiredWith:  []string{"password"},
+				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 			"password": {
 				Type:          schema.TypeString,
@@ -107,6 +110,7 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_PASSWORD", nil),
 				ConflictsWith: []string{"keycloak_password"},
 				RequiredWith:  []string{"email"},
+				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 			"keycloak_email": {
 				Type:          schema.TypeString,
@@ -115,6 +119,7 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_KEYCLOAK_EMAIL", nil),
 				ConflictsWith: []string{"email"},
 				RequiredWith:  []string{"keycloak_password"},
+				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 			"keycloak_password": {
 				Type:          schema.TypeString,
@@ -124,6 +129,7 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_KEYCLOAK_PASSWORD", nil),
 				ConflictsWith: []string{"password"},
 				RequiredWith:  []string{"keycloak_email"},
+				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 		},
 		ConfigureContextFunc: configureContextFunc,

@@ -48,3 +48,27 @@ func testAccPreCheckPrometheus(t *testing.T) {
 		t.Fatal("PROMETHEUS_PASSWORD must be set for acceptance tests")
 	}
 }
+
+func testAccPreCheckOpenStack(t *testing.T) {
+	if err := os.Getenv("OS_AUTH_URL"); err == "" {
+		t.Fatal("OS_AUTH_URL must be set for acceptance tests")
+	}
+	if err := os.Getenv("OS_USERNAME"); err == "" {
+		t.Fatal("OS_USERNAME must be set for acceptance tests")
+	}
+	if err := os.Getenv("OS_PASSWORD"); err == "" {
+		t.Fatal("OS_PASSWORD must be set for acceptance tests")
+	}
+	if err := os.Getenv("OS_USER_DOMAIN_NAME"); err == "" {
+		t.Fatal("OS_USER_DOMAIN_NAME must be set for acceptance tests")
+	}
+	if err := os.Getenv("OS_PROJECT_NAME"); err == "" {
+		t.Fatal("OS_PROJECT_NAME must be set for acceptance tests")
+	}
+	if err := os.Getenv("OS_INTERFACE"); err == "" {
+		t.Fatal("OS_INTERFACE must be set for acceptance tests")
+	}
+	if err := os.Getenv("OS_REGION_NAME"); err == "" {
+		t.Fatal("OS_REGION_NAME must be set for acceptance tests")
+	}
+}

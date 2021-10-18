@@ -5,9 +5,10 @@ go 1.17
 require (
 	github.com/go-openapi/runtime v0.20.0
 	github.com/go-openapi/strfmt v0.20.3
+	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-docs v0.5.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.8.0
-	github.com/itera-io/taikungoclient v0.0.0-20211012120210-b64373f2f1a8
+	github.com/itera-io/taikungoclient v0.0.0-20211015132544-d7fcacc195a8
 )
 
 require (
@@ -45,7 +46,6 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
 	github.com/hashicorp/go-getter v1.5.3 // indirect
 	github.com/hashicorp/go-hclog v0.15.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
