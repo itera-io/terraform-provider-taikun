@@ -116,6 +116,8 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
+	data.SetId(createResult.Payload.ID)
+
 	locked := data.Get("is_locked").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
@@ -132,8 +134,6 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 			return diag.FromErr(err)
 		}
 	}
-
-	data.SetId(createResult.Payload.ID)
 
 	return resourceTaikunShowbackCredentialRead(ctx, data, meta)
 }
