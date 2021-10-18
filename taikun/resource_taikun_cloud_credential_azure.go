@@ -149,6 +149,8 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 		return diag.FromErr(err)
 	}
 
+	data.SetId(createResult.Payload.ID)
+
 	locked := data.Get("is_locked").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
@@ -165,8 +167,6 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 			return diag.FromErr(err)
 		}
 	}
-
-	data.SetId(createResult.Payload.ID)
 
 	return resourceTaikunCloudCredentialAzureRead(ctx, data, meta)
 }

@@ -121,6 +121,8 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
+	data.SetId(createResult.Payload.ID)
+
 	locked := data.Get("is_locked").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
@@ -137,8 +139,6 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 			return diag.FromErr(err)
 		}
 	}
-
-	data.SetId(createResult.Payload.ID)
 
 	return resourceTaikunBillingCredentialRead(ctx, data, meta)
 }

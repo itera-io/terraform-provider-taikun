@@ -132,6 +132,8 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
+	data.SetId(createResult.Payload.ID)
+
 	locked := data.Get("is_locked").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
@@ -148,8 +150,6 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 			return diag.FromErr(err)
 		}
 	}
-
-	data.SetId(createResult.Payload.ID)
 
 	return resourceTaikunCloudCredentialAWSRead(ctx, data, meta)
 }
