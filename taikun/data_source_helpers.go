@@ -74,3 +74,9 @@ func addOptionalFieldsToSchema(schema map[string]*schema.Schema, keys ...string)
 func setValidateDiagFuncToSchema(schema map[string]*schema.Schema, key string, f schema.SchemaValidateDiagFunc) {
 	schema[key].ValidateDiagFunc = f
 }
+
+func deleteFieldsFromSchema(schema map[string]*schema.Schema, keys ...string) {
+	for _, v := range keys {
+		delete(schema, v)
+	}
+}
