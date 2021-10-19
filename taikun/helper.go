@@ -53,6 +53,19 @@ func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
 	return nil
 }
 
+func stringIsUrl(i interface{}, k string) ([]string, []error) {
+	v, ok := i.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
+	}
+
+	if !strings.HasPrefix(v, "http://") && !strings.HasPrefix(v, "https://") {
+		return nil, []error{fmt.Errorf("expected %q to be a valid url", k)}
+	}
+
+	return nil, nil
+}
+
 func randomTestName() string {
 	return randomName(testNamePrefix, 15)
 }

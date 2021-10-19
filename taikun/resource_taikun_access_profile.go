@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,6 +22,10 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Description: "The name of the access profile.",
 			Type:        schema.TypeString,
 			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringIsNotEmpty,
+				validation.StringLenBetween(3, 30),
+			),
 		},
 		"organization_id": {
 			Description:      "The id of the organization which owns the access profile.",
@@ -38,6 +43,10 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Description: "HTTP Proxy of the access profile.",
 			Type:        schema.TypeString,
 			Optional:    true,
+			ValidateFunc: validation.All(
+				validation.StringIsNotEmpty,
+				stringIsUrl,
+			),
 		},
 		"ntp_server": {
 			Description: "List of NTP servers.",
@@ -92,11 +101,16 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 						Description: "Name of SSH User.",
 						Type:        schema.TypeString,
 						Required:    true,
+						ValidateFunc: validation.All(
+							validation.StringIsNotEmpty,
+							validation.StringLenBetween(3, 30),
+						),
 					},
 					"public_key": {
-						Description: "Public key of SSH User.",
-						Type:        schema.TypeString,
-						Required:    true,
+						Description:  "Public key of SSH User.",
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					"id": {
 						Description: "Id of SSH User.",
