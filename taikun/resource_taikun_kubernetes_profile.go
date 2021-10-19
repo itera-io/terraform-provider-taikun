@@ -58,10 +58,11 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringInSlice([]string{"None", "Octavia", "Taikun"}, false),
 		},
 		"name": {
-			Description: "The name of the Kubernetes profile.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The name of the Kubernetes profile.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"organization_id": {
 			Description:      "The id of the organization which owns the Kubernetes profile.",
