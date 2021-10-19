@@ -36,10 +36,10 @@ data "taikun_flavors" "foo" {
 
 ### Optional
 
-- **max_cpu** (Number) Maximal CPU count Defaults to `36`.
-- **max_ram** (Number) Maximal RAM size in GB Defaults to `500`.
-- **min_cpu** (Number) Minimal CPU count Defaults to `2`.
-- **min_ram** (Number) Minimal RAM size in GB Defaults to `2`.
+- **max_cpu** (Number) Maximal CPU count. Defaults to `36`.
+- **max_ram** (Number) Maximal RAM size in GB. Defaults to `500`.
+- **min_cpu** (Number) Minimal CPU count. Defaults to `2`.
+- **min_ram** (Number) Minimal RAM size in GB. Defaults to `2`.
 
 ### Read-Only
 

@@ -31,7 +31,7 @@ func dataSourceTaikunFlavors() *schema.Resource {
 				ValidateFunc: validation.IntBetween(2, 36),
 			},
 			"max_cpu": {
-				Description:  "Maximal CPU count",
+				Description:  "Maximal CPU count.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      36,
