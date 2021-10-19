@@ -24,7 +24,7 @@ func dataSourceTaikunFlavors() *schema.Resource {
 				ValidateDiagFunc: stringIsInt,
 			},
 			"min_cpu": {
-				Description:  "Minimal CPU count",
+				Description:  "Minimal CPU count.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      2,
@@ -38,14 +38,14 @@ func dataSourceTaikunFlavors() *schema.Resource {
 				ValidateFunc: validation.IntBetween(2, 36),
 			},
 			"min_ram": {
-				Description:  "Minimal RAM size in GB",
+				Description:  "Minimal RAM size in GB.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      2,
 				ValidateFunc: validation.IntBetween(2, 500),
 			},
 			"max_ram": {
-				Description:  "Maximal RAM size in GB",
+				Description:  "Maximal RAM size in GB.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      500,
