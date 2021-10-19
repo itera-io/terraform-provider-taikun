@@ -27,10 +27,6 @@ func TestAccDataSourceTaikunUser(t *testing.T) {
 	role := "Manager"
 	displayName := randomTestName()
 
-	fmt.Println(userName)
-	fmt.Println(email)
-	fmt.Println(displayName)
-
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
