@@ -75,6 +75,10 @@ func setValidateDiagFuncToSchema(schema map[string]*schema.Schema, key string, f
 	schema[key].ValidateDiagFunc = f
 }
 
+func setValidateFuncToSchema(schema map[string]*schema.Schema, key string, f schema.SchemaValidateFunc) {
+	schema[key].ValidateFunc = f
+}
+
 func deleteFieldsFromSchema(schema map[string]*schema.Schema, keys ...string) {
 	for _, v := range keys {
 		delete(schema, v)
