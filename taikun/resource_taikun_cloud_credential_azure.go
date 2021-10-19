@@ -18,9 +18,10 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the Azure cloud credential.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the Azure cloud credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"subscription_id": {
 			Description:  "The Azure Subscription ID.",

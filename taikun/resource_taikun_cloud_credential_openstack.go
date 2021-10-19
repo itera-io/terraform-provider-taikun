@@ -18,9 +18,10 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the OpenStack cloud credential.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the OpenStack cloud credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"user": {
 			Description:  "The OpenStack user.",
