@@ -72,6 +72,10 @@ func TestAccResourceTaikunUser(t *testing.T) {
 	userDisabled := false
 	approvedByPartner := false
 
+	fmt.Println(userName)
+	fmt.Println(email)
+	fmt.Println(displayName)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
@@ -125,6 +129,14 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 	newDisplayName := randomTestName()
 	newUserDisabled := true
 	newApprovedByPartner := false
+
+	fmt.Println(userName)
+	fmt.Println(email)
+	fmt.Println(displayName)
+
+	fmt.Println(newUserName)
+	fmt.Println(newEmail)
+	fmt.Println(newDisplayName)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
