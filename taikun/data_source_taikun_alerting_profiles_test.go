@@ -40,7 +40,7 @@ func TestAccDataSourceTaikunAlertingProfiles(t *testing.T) {
 const testAccDataSourceTaikunAlertingProfilesWithFilterConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -51,13 +51,14 @@ data "taikun_alerting_profiles" "all" {
 
 func TestAccDataSourceTaikunAlertingProfilesWithFilter(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunAlertingProfilesWithFilterConfig, organizationName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunAlertingProfilesWithFilterConfig, organizationName, organizationFullName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_alerting_profiles.all", "alerting_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "id"),

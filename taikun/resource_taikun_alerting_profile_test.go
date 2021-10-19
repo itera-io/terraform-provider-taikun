@@ -97,7 +97,7 @@ func testAccResourceTaikunAlertingProfileRandomWebhooks(n int) string {
 const testAccResourceTaikunAlertingProfileConfig = `
 resource "taikun_organization" "foo" {
   name = "%s"
-  full_name = "Foo"
+  full_name = "%s"
   discount_rate = 42
 }
 
@@ -132,6 +132,7 @@ resource "taikun_alerting_profile" "foo" {
 
 func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
@@ -150,6 +151,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
+					organizationFullName,
 					slackConfigName,
 					alertingProfileName,
 					reminder,
@@ -180,6 +182,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 
 func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
@@ -205,6 +208,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
+					organizationFullName,
 					slackConfigName,
 					alertingProfileName,
 					reminder,
@@ -227,6 +231,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
+					organizationFullName,
 					slackConfigName,
 					newAlertingProfileName,
 					newReminder,
@@ -252,6 +257,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 
 func TestAccResourceTaikunAlertingProfileModifyIntegrations(t *testing.T) {
 	organizationName := randomTestName()
+	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
@@ -297,6 +303,7 @@ integration {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
+					organizationFullName,
 					slackConfigName,
 					alertingProfileName,
 					reminder,
@@ -321,6 +328,7 @@ integration {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
+					organizationFullName,
 					slackConfigName,
 					alertingProfileName,
 					reminder,
