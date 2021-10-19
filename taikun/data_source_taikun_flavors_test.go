@@ -95,3 +95,44 @@ func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 		},
 	})
 }
+
+const testAccDataSourceTaikunFlavorsOpenStackConfig = `
+resource "taikun_cloud_credential_openstack" "foo" {
+  name = "%s"
+}
+
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+
+  min_cpu = %d
+  max_cpu = %d
+  min_ram = %d
+  max_ram = %d
+}
+`
+
+func TestAccDataSourceTaikunFlavorsOpenStack(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	cpu := 8
+	ram := 32
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccDataSourceTaikunFlavorsOpenStackConfig,
+					cloudCredentialName,
+					cpu, cpu,
+					ram, ram,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.#"),
+					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.0.name"),
+					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.cpu", fmt.Sprint(cpu)),
+					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.ram", fmt.Sprint(ram)),
+				),
+			},
+		},
+	})
+}
