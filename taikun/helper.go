@@ -81,7 +81,6 @@ func randomName(prefix string, length int) string {
 }
 
 func randomString() string {
-	rand.Seed(time.Now().UnixNano())
 	return acctest.RandString(rand.Int()%10 + 10)
 }
 
@@ -99,7 +98,6 @@ func randomBool() bool {
 
 // Return an integer in the range [0; maxInt[
 func randomInt(maxInt int) int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int() % maxInt
 }
 
