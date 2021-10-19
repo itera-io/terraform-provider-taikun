@@ -19,13 +19,10 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the access profile.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ValidateFunc: validation.All(
-				validation.StringIsNotEmpty,
-				validation.StringLenBetween(3, 30),
-			),
+			Description:  "The name of the access profile.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"organization_id": {
 			Description:      "The id of the organization which owns the access profile.",
@@ -40,13 +37,10 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"http_proxy": {
-			Description: "HTTP Proxy of the access profile.",
-			Type:        schema.TypeString,
-			Optional:    true,
-			ValidateFunc: validation.All(
-				validation.StringIsNotEmpty,
-				stringIsUrl,
-			),
+			Description:  "HTTP Proxy of the access profile.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 		},
 		"ntp_server": {
 			Description: "List of NTP servers.",
@@ -98,13 +92,10 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"name": {
-						Description: "Name of SSH User.",
-						Type:        schema.TypeString,
-						Required:    true,
-						ValidateFunc: validation.All(
-							validation.StringIsNotEmpty,
-							validation.StringLenBetween(3, 30),
-						),
+						Description:  "Name of SSH User.",
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringLenBetween(3, 30),
 					},
 					"public_key": {
 						Description:  "Public key of SSH User.",
