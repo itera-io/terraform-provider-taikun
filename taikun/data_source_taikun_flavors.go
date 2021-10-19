@@ -219,10 +219,12 @@ func flattenDataSourceTaikunFlavorsAWS(flavorDTOs []*models.AwsFlavorListDto) []
 func flattenDataSourceTaikunFlavorsAzure(flavorDTOs []*models.AzureFlavorListDto) []map[string]interface{} {
 	flavors := make([]map[string]interface{}, len(flavorDTOs))
 	for i, flavorDTO := range flavorDTOs {
+		cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
+		ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
 		flavors[i] = map[string]interface{}{
-			"cpu":  flavorDTO.CPU.(int32),
+			"cpu":  cpu,
 			"name": flavorDTO.Name.(string),
-			"ram":  flavorDTO.RAM.(int32),
+			"ram":  mebiByteToGibiByte(ram),
 		}
 	}
 	return flavors
