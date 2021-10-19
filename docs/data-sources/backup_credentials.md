@@ -8,7 +8,7 @@ description: |-   Get the list of backup credentials, optionally filtered by org
 
 Get the list of backup credentials, optionally filtered by organization.
 
-~> **Role Requirement** In order to use the `backup_credentials` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_backup_credentials` data source you need at least a `Manager` account
 
 ## Example Usage
 

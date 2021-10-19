@@ -8,7 +8,7 @@ description: |-   Get a backup credential by its id.
 
 Get a backup credential by its id.
 
-~> **Role Requirement** In order to use the `backup_credential` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_backup_credential` data source you need at least a `Manager` account
 
 ## Example Usage
 

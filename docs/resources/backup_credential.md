@@ -8,7 +8,7 @@ description: |-   Taikun Backup Credential
 
 Taikun Backup Credential
 
-~> **Role Requirement** In order to use the `backup_credential` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_backup_credential` resource you need at least a `Manager` account
 
 -> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
 organization.
