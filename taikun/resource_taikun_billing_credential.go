@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -16,29 +17,33 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the billing credential.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The name of the billing credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"prometheus_username": {
-			Description: "The prometheus username.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The prometheus username.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"prometheus_password": {
-			Description: "The prometheus password.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-			Sensitive:   true,
+			Description:  "The prometheus password.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Sensitive:    true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"prometheus_url": {
-			Description: "The prometheus url.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The prometheus url.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
 			Description:      "The id of the organization which owns the billing credential.",
