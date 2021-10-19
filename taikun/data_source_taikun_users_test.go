@@ -71,7 +71,7 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	userName := randomTestName()
-	email := randomString() + "@" + randomString() + ".fr"
+	email := randomEmail()
 	role := "User"
 	displayName := randomString()
 
