@@ -29,6 +29,14 @@ func i32toa(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
 }
 
+func gibiByteToMebiByte(x int32) int32 {
+	return x * 1024
+}
+
+func mebiByteToGibiByte(x int32) int32 {
+	return x / 1024
+}
+
 func stringIsLowercase(i interface{}, k string) ([]string, []error) {
 	v, ok := i.(string)
 	if !ok {
