@@ -17,14 +17,16 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the showback rule.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the showback rule.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"metric_name": {
-			Description: "The metric name.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The metric name.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 256),
 		},
 		"kind": {
 			Description:  "Type of the showback rule. `General` (data source is taikun) or `External` (data source is external see `showback_credential_id`)",
