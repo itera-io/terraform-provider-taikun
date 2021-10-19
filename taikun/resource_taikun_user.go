@@ -18,9 +18,10 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"user_name": {
-			Description: "The name of the user.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the user.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"organization_id": {
 			Description:      "The id of the organization to which the user belongs.",
@@ -42,15 +43,17 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringInSlice([]string{"User", "Manager"}, false),
 		},
 		"email": {
-			Description: "The email of the user.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:      "The email of the user.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: stringIsEmail,
 		},
 		"display_name": {
-			Description: "The name of the user displayed in the upper right corner.",
-			Type:        schema.TypeString,
-			Optional:    true,
-			Default:     "",
+			Description:  "The name of the user displayed in the upper right corner.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      "",
+			ValidateFunc: validation.StringLenBetween(3, 64),
 		},
 		"email_confirmed": {
 			Description: "Indicates whether the email of the user has been confirmed or not.",

@@ -38,10 +38,11 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"s3_endpoint": {
-			Description: "The S3 endpoint URL.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "The S3 endpoint URL.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
 		},
 		"s3_region": {
 			Description: "The S3 region.",

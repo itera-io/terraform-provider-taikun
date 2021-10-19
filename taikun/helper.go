@@ -3,6 +3,7 @@ package taikun
 import (
 	"fmt"
 	"math/rand"
+	"net/mail"
 	"strconv"
 	"strings"
 	"time"
@@ -48,6 +49,20 @@ func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
 	_, err := strconv.Atoi(v)
 	if err != nil {
 		return diag.FromErr(path.NewErrorf("expected an int inside a string"))
+	}
+
+	return nil
+}
+
+func stringIsEmail(i interface{}, path cty.Path) diag.Diagnostics {
+	v, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	_, err := mail.ParseAddress(v)
+	if err != nil {
+		return diag.FromErr(path.NewErrorf("expected an email"))
 	}
 
 	return nil

@@ -18,9 +18,10 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the AWS cloud credential.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the AWS cloud credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"access_key_id": {
 			Description:  "The AWS Access Key ID.",
@@ -39,11 +40,10 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"availability_zone": {
-			Description:  "The AWS availability zone for the region.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
+			Description: "The AWS availability zone for the region.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
 		},
 		"region": {
 			Description:  "The AWS region.",
