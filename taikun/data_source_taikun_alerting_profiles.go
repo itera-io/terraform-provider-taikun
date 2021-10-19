@@ -11,18 +11,19 @@ import (
 
 func dataSourceTaikunAlertingProfiles() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of alerting profiles for your organizations, or filter by organization if Partner or Admin",
+		Description: "Retrieve all alerting profiles.",
 		ReadContext: dataSourceTaikunAlertingProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:      "organization ID filter (for Partner and Admin roles)",
+				Description:      "Organization ID filter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
 			"alerting_profiles": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved alerting profiles.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunAlertingProfileSchema(),
 				},

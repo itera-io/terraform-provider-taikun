@@ -11,18 +11,19 @@ import (
 
 func dataSourceTaikunBillingCredentials() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of billing credentials, optionally filtered by organization.",
+		Description: "Retrieve all billing credentials.",
 		ReadContext: dataSourceTaikunBillingCredentialsRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:      "Organization id filter.",
+				Description:      "Organization ID filter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
 			"billing_credentials": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved billing credentials.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunBillingCredentialSchema(),
 				},

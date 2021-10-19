@@ -14,77 +14,77 @@ import (
 func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"address": {
-			Description: "Address",
+			Description: "Address.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
 		"billing_email": {
-			Description: "Billing email",
+			Description: "Billing email.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
 		// TODO bound_rules?
 		"city": {
-			Description: "City",
+			Description: "City.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
 		"cloud_credentials": {
-			Description: "Number of associated cloud credentials",
+			Description: "Number of associated cloud credentials.",
 			Type:        schema.TypeInt,
 			Computed:    true,
 		},
 		"country": {
-			Description: "Country",
+			Description: "Country.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
 		"created_at": {
-			Description: "Time and date of creation",
+			Description: "Time and date of creation.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"discount_rate": {
-			Description:  "Discount rate, must be between 0 and 100 (included)",
+			Description:  "Discount rate, must be between 0 and 100 (included).",
 			Type:         schema.TypeFloat,
 			Required:     true,
 			ValidateFunc: validation.FloatBetween(0, 100),
 		},
 		"email": {
-			Description: "Email",
+			Description: "Email.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
 		"full_name": {
-			Description:  "Full name",
+			Description:  "Full name.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"id": {
-			Description: "ID",
+			Description: "Organization's ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"let_managers_change_subscription": {
-			Description: "Allow subscription to be changed by managers",
+			Description: "Allow subscription to be changed by managers.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     true,
 		},
 		"is_locked": {
-			Description: "Whether the organization is locked",
+			Description: "Whether the organization is locked.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"is_read_only": {
-			Description: "Whether the organization is in read-only mode",
+			Description: "Whether the organization is in read-only mode.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
 		"name": {
-			Description: "Name",
+			Description: "Organization's name.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.All(
@@ -95,39 +95,38 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 				),
 			),
 		},
-		// TODO partner details?
 		"partner_id": {
-			Description: "ID of the organization's partner",
+			Description: "ID of the organization's partner.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"partner_name": {
-			Description: "Name of the organization's partner",
+			Description: "Name of the organization's partner.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"phone": {
-			Description: "Phone number",
+			Description: "Phone number.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
 		"projects": {
-			Description: "Number of associated projects",
+			Description: "Number of associated projects.",
 			Type:        schema.TypeInt,
 			Computed:    true,
 		},
 		"servers": {
-			Description: "Number of associated servers",
+			Description: "Number of associated servers.",
 			Type:        schema.TypeInt,
 			Computed:    true,
 		},
 		"users": {
-			Description: "Number of associated users",
+			Description: "Number of associated users.",
 			Type:        schema.TypeInt,
 			Computed:    true,
 		},
 		"vat_number": {
-			Description: "VAT number",
+			Description: "VAT number.",
 			Type:        schema.TypeString,
 			Optional:    true,
 		},

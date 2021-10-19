@@ -36,18 +36,18 @@ resource "taikun_showback_credential" "foo" {
 
 - **name** (String) The name of the showback credential.
 - **password** (String, Sensitive) The prometheus password or other credential.
-- **url** (String) Url of the source.
+- **url** (String) URL of the source.
 - **username** (String) The prometheus username or other credential.
 
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the showback credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the showback credential.
+- **organization_id** (String) The ID of the organization which owns the showback credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the showback credential.
-- **id** (String) The id of the showback credential.
+- **id** (String) The ID of the showback credential.
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback credential.
 - **organization_name** (String) The name of the organization which owns the showback credential.

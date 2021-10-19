@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_access_profiles Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of access profiles, optionally filtered by organization.
+description: |-   Retrieve all access profiles.
 ---
 
 # taikun_access_profiles (Data Source)
 
-Get the list of access profiles, optionally filtered by organization.
+Retrieve all access profiles.
 
 ~> **Role Requirement** In order to use the `taikun_access_profiles` data source you need at least a `Manager` account
 
@@ -27,11 +27,11 @@ data "taikun_access_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **access_profiles** (List of Object) (see [below for nested schema](#nestedatt--access_profiles))
+- **access_profiles** (List of Object) List of retrieved access profiles. (see [below for nested schema](#nestedatt--access_profiles))
 
 <a id="nestedatt--access_profiles"></a>
 ### Nested Schema for `access_profiles`

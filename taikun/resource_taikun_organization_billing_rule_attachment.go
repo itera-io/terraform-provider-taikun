@@ -3,33 +3,34 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 	"github.com/itera-io/taikungoclient/models"
-	"strings"
 )
 
 func resourceTaikunOrganizationBillingRuleAttachmentSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"billing_rule_id": {
-			Description:      "Id of the billing rule.",
+			Description:      "ID of the billing rule.",
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"discount_rate": {
-			Description:  "Discount rate in percents (0-1000 %), 100 equals one.",
+			Description:  "Discount rate in percents (0-100 %).",
 			Type:         schema.TypeFloat,
 			Optional:     true,
 			ForceNew:     true,
 			Default:      100,
-			ValidateFunc: validation.FloatBetween(0, 1000),
+			ValidateFunc: validation.FloatBetween(0, 100),
 		},
 		"organization_id": {
-			Description:      "Id of the organisation.",
+			Description:      "ID of the organisation.",
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,

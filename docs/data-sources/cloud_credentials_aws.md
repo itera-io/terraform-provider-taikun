@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_cloud_credentials_aws Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of AWS cloud credentials, optionally filtered by organization.
+description: |-   Retrieve all AWS cloud credentials.
 ---
 
 # taikun_cloud_credentials_aws (Data Source)
 
-Get the list of AWS cloud credentials, optionally filtered by organization.
+Retrieve all AWS cloud credentials.
 
 ~> **Role Requirement** In order to use the `taikun_cloud_credentials_aws` data source you need at least a `Manager`
 account
@@ -28,11 +28,11 @@ data "taikun_cloud_credentials_aws" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **cloud_credentials** (List of Object) (see [below for nested schema](#nestedatt--cloud_credentials))
+- **cloud_credentials** (List of Object) List of retrieved AWS cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
 
 <a id="nestedatt--cloud_credentials"></a>
 ### Nested Schema for `cloud_credentials`

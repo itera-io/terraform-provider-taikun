@@ -3,12 +3,12 @@
 page_title: "taikun_alerting_profiles Data Source - terraform-provider-taikun"
 subcategory: ""
 description: |-
-  Get the list of alerting profiles for your organizations, or filter by organization if Partner or Admin
+  Retrieve all alerting profiles.
 ---
 
 # taikun_alerting_profiles (Data Source)
 
-Get the list of alerting profiles for your organizations, or filter by organization if Partner or Admin
+Retrieve all alerting profiles.
 
 ## Example Usage
 
@@ -24,11 +24,11 @@ data "taikun_alerting_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) organization ID filter (for Partner and Admin roles)
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **alerting_profiles** (List of Object) (see [below for nested schema](#nestedatt--alerting_profiles))
+- **alerting_profiles** (List of Object) List of retrieved alerting profiles. (see [below for nested schema](#nestedatt--alerting_profiles))
 
 <a id="nestedatt--alerting_profiles"></a>
 ### Nested Schema for `alerting_profiles`

@@ -3,12 +3,12 @@
 page_title: "taikun_showback_rule Data Source - terraform-provider-taikun"
 subcategory: ""
 description: |-
-  Get a showback rule by its id.
+  Get a showback rule by its ID.
 ---
 
 # taikun_showback_rule (Data Source)
 
-Get a showback rule by its id.
+Get a showback rule by its ID.
 
 ## Example Usage
 
@@ -23,7 +23,7 @@ data "taikun_showback_rule" "foo" {
 
 ### Required
 
-- **id** (String) The id of the showback rule.
+- **id** (String) The ID of the showback rule.
 
 ### Read-Only
 
@@ -35,7 +35,7 @@ data "taikun_showback_rule" "foo" {
 - **last_modified_by** (String) The last user who modified the showback rule.
 - **metric_name** (String) The metric name.
 - **name** (String) The name of the showback rule.
-- **organization_id** (String) The id of the organization which owns the showback rule.
+- **organization_id** (String) The ID of the organization which owns the showback rule.
 - **organization_name** (String) The name of the organization which owns the showback rule.
 - **price** (Number) Billing in CZK per selected unit.
 - **project_alert_limit** (Number) Set limit of alerts for one project.

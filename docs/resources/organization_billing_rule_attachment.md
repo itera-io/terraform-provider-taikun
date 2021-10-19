@@ -55,12 +55,12 @@ resource "taikun_organization_billing_rule_attachment" "foo" {
 
 ### Required
 
-- **billing_rule_id** (String) Id of the billing rule.
-- **organization_id** (String) Id of the organisation.
+- **billing_rule_id** (String) ID of the billing rule.
+- **organization_id** (String) ID of the organisation.
 
 ### Optional
 
-- **discount_rate** (Number) Discount rate in percents (0-1000 %), 100 equals one. Defaults to `100`.
+- **discount_rate** (Number) Discount rate in percents (0-100 %). Defaults to `100`.
 - **id** (String) The ID of this resource.
 
 ### Read-Only

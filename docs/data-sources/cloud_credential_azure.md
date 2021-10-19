@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_cloud_credential_azure Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get an Azure cloud credential by its id.
+description: |-   Get an Azure cloud credential by its ID.
 ---
 
 # taikun_cloud_credential_azure (Data Source)
 
-Get an Azure cloud credential by its id.
+Get an Azure cloud credential by its ID.
 
 ~> **Role Requirement** In order to use the `taikun_cloud_credential_azure` data source you need at least a `Manager`
 account
@@ -24,7 +24,7 @@ data "taikun_cloud_credential_azure" "foo" {
 
 ### Required
 
-- **id** (String) The id of the Azure cloud credential.
+- **id** (String) The ID of the Azure cloud credential.
 
 ### Read-Only
 
@@ -32,11 +32,11 @@ data "taikun_cloud_credential_azure" "foo" {
 - **created_by** (String) The creator of the Azure cloud credential.
 - **is_default** (Boolean) Indicates whether the Azure cloud credential is the default one.
 - **is_locked** (Boolean) Indicates whether the Azure cloud credential is locked or not.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the Azure cloud credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the Azure cloud credential.
 - **location** (String) The Azure location.
 - **name** (String) The name of the Azure cloud credential.
-- **organization_id** (String) The id of the organization which owns the Azure cloud credential.
+- **organization_id** (String) The ID of the organization which owns the Azure cloud credential.
 - **organization_name** (String) The name of the organization which owns the Azure cloud credential.
 - **tenant_id** (String) The Azure Tenant ID.
 

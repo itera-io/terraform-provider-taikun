@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,7 +15,7 @@ import (
 func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the AWS cloud credential.",
+			Description: "The ID of the AWS cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -61,7 +62,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the AWS cloud credential.",
+			Description:      "The ID of the organization which owns the AWS cloud credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -90,12 +91,12 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "Time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the AWS cloud credential.",
+			Description: "The last user to have modified the AWS cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

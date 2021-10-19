@@ -16,7 +16,7 @@ func dataSourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunKubernetesProfile() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a Kubernetes profile by its id.",
+		Description: "Get a Kubernetes profile by its ID.",
 		ReadContext: dataSourceTaikunKubernetesProfileRead,
 		Schema:      dataSourceTaikunKubernetesProfileSchema(),
 	}

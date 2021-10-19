@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_kubernetes_profiles Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of Kubernetes profiles, optionally filtered by organization.
+description: |-   Retrieve all Kubernetes profiles.
 ---
 
 # taikun_kubernetes_profiles (Data Source)
 
-Get the list of Kubernetes profiles, optionally filtered by organization.
+Retrieve all Kubernetes profiles.
 
 ~> **Role Requirement** In order to use the `taikun_kubernetes_profiles` data source you need at least a `Manager`
 account
@@ -28,11 +28,11 @@ data "taikun_kubernetes_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **kubernetes_profiles** (List of Object) (see [below for nested schema](#nestedatt--kubernetes_profiles))
+- **kubernetes_profiles** (List of Object) List of retrieved Kubernetes profiles. (see [below for nested schema](#nestedatt--kubernetes_profiles))
 
 <a id="nestedatt--kubernetes_profiles"></a>
 ### Nested Schema for `kubernetes_profiles`

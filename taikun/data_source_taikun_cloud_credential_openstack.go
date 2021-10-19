@@ -17,7 +17,7 @@ func dataSourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema 
 
 func dataSourceTaikunCloudCredentialOpenStack() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an OpenStack cloud credential by its id.",
+		Description: "Get an OpenStack cloud credential by its ID.",
 		ReadContext: dataSourceTaikunCloudCredentialOpenStackRead,
 		Schema:      dataSourceTaikunCloudCredentialOpenStackSchema(),
 	}

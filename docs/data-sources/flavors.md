@@ -3,12 +3,12 @@
 page_title: "taikun_flavors Data Source - terraform-provider-taikun"
 subcategory: ""
 description: |-
-  Get the list of flavors for a given cloud credential
+  Retrieve flavors for a given cloud credential.
 ---
 
 # taikun_flavors (Data Source)
 
-Get the list of flavors for a given cloud credential
+Retrieve flavors for a given cloud credential.
 
 ## Example Usage
 
@@ -43,7 +43,7 @@ data "taikun_flavors" "foo" {
 
 ### Read-Only
 
-- **flavors** (List of Object) List of flavors. (see [below for nested schema](#nestedatt--flavors))
+- **flavors** (List of Object) List of retrieved flavors. (see [below for nested schema](#nestedatt--flavors))
 
 <a id="nestedatt--flavors"></a>
 ### Nested Schema for `flavors`

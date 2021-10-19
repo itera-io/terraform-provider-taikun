@@ -16,7 +16,7 @@ func dataSourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunBillingRule() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a billing rule by its id.",
+		Description: "Get a billing rule by its ID.",
 		ReadContext: dataSourceTaikunBillingRuleRead,
 		Schema:      dataSourceTaikunBillingRuleSchema(),
 	}

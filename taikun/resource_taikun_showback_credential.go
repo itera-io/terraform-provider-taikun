@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -12,7 +13,7 @@ import (
 func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the showback credential.",
+			Description: "The ID of the showback credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -39,14 +40,14 @@ func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"url": {
-			Description:  "Url of the source.",
+			Description:  "URL of the source.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the showback credential.",
+			Description:      "The ID of the organization which owns the showback credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,

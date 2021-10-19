@@ -46,13 +46,13 @@ resource "taikun_cloud_credential_aws" "foo" {
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the AWS cloud credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the AWS cloud credential.
+- **organization_id** (String) The ID of the organization which owns the AWS cloud credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the AWS cloud credential.
-- **id** (String) The id of the AWS cloud credential.
+- **id** (String) The ID of the AWS cloud credential.
 - **is_default** (Boolean) Indicates whether the AWS cloud credential is the default one.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the AWS cloud credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the AWS cloud credential.
 - **organization_name** (String) The name of the organization which owns the AWS cloud credential.

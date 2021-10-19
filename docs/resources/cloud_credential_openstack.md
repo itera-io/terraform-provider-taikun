@@ -54,25 +54,25 @@ resource "taikun_cloud_credential_openstack" "foo" {
 - **name** (String) The name of the OpenStack cloud credential.
 - **password** (String, Sensitive) The OpenStack password.
 - **project_name** (String) The OpenStack project name.
-- **public_network_name** (String) The name of the public OpenStack network which will be used.
+- **public_network_name** (String) The name of the public OpenStack network to use.
 - **region** (String) The OpenStack region.
-- **url** (String) The OpenStack authentication url.
+- **url** (String) The OpenStack authentication URL.
 - **user** (String) The OpenStack user.
 
 ### Optional
 
 - **availability_zone** (String) The OpenStack availability zone.
-- **imported_network_subnet_id** (String) The OpenStack subnet id in case you want to import network.
+- **imported_network_subnet_id** (String) The OpenStack network subnet ID to import a network.
 - **is_locked** (Boolean) Indicates whether the OpenStack cloud credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the OpenStack cloud credential.
+- **organization_id** (String) The ID of the organization which owns the OpenStack cloud credential.
 - **volume_type_name** (String) The OpenStack type of volume.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the OpenStack cloud credential.
-- **id** (String) The id of the OpenStack cloud credential.
+- **id** (String) The ID of the OpenStack cloud credential.
 - **is_default** (Boolean) Indicates whether the OpenStack cloud credential is the default one.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the OpenStack cloud credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the OpenStack cloud credential.
 - **organization_name** (String) The name of the organization which owns the OpenStack cloud credential.
-- **project_id** (String) The OpenStack project id.
+- **project_id** (String) The OpenStack project ID.

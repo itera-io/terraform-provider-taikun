@@ -16,7 +16,7 @@ func dataSourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunAlertingProfile() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an alerting profile by its id.",
+		Description: "Retrieve an alerting profile by its ID.",
 		ReadContext: dataSourceTaikunAlertingProfileRead,
 		Schema:      dataSourceTaikunAlertingProfileSchema(),
 	}

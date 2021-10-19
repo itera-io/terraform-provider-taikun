@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -12,7 +13,7 @@ import (
 func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the backup credential.",
+			Description: "The ID of the backup credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -51,7 +52,7 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the backup credential.",
+			Description:      "The ID of the organization which owns the backup credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -80,12 +81,12 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "Time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the backup credential.",
+			Description: "The last user to have modified the backup credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

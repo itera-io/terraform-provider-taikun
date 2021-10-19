@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_showback_credentials Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of showback credentials, optionally filtered by organization.
+description: |-   Retrieve all showback credentials.
 ---
 
 # taikun_showback_credentials (Data Source)
 
-Get the list of showback credentials, optionally filtered by organization.
+Retrieve all showback credentials.
 
 ~> **Role Requirement** In order to use the `taikun_showback_credentials` data source you need at least a `Manager`
 account
@@ -28,11 +28,11 @@ data "taikun_showback_credentials" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **showback_credentials** (List of Object) (see [below for nested schema](#nestedatt--showback_credentials))
+- **showback_credentials** (List of Object) List of retrieved showback credentials. (see [below for nested schema](#nestedatt--showback_credentials))
 
 <a id="nestedatt--showback_credentials"></a>
 ### Nested Schema for `showback_credentials`

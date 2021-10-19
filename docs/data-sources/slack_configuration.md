@@ -23,15 +23,15 @@ data "taikun_slack_configuration" "foo" {
 
 ### Required
 
-- **id** (String) ID
+- **id** (String) ID.
 
 ### Read-Only
 
-- **channel** (String) Slack channel for notifications
-- **name** (String) Name
-- **organization_id** (String) Organization ID
-- **organization_name** (String) Organization Name
-- **type** (String) Alert (receive only alert-type of notification) or General (receive all notifications)
-- **url** (String) Webhook URL from Slack app
+- **channel** (String) Slack channel for notifications.
+- **name** (String) Name.
+- **organization_id** (String) Organization ID.
+- **organization_name** (String) Organization Name.
+- **type** (String) Alert (receive only alert-type of notification) or General (receive all notifications).
+- **url** (String) Webhook URL from Slack app.
 
 

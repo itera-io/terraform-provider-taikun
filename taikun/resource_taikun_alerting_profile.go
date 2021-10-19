@@ -14,12 +14,12 @@ import (
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"created_by": {
-			Description: "The profile creator.",
+			Description: "The creator of the alerting profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"emails": {
-			Description: "The list of e-mails to notify.",
+			Description: "The list of emails to notify.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem:        &schema.Schema{Type: schema.TypeString},
@@ -30,21 +30,21 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"integration": {
-			Description: "list of alerting integrations",
+			Description: "List of alerting integrations.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			ForceNew:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"token": {
-						Description: "token (required from Opsgenie, Pagerduty and Splunk)",
+						Description: "The token (required by Opsgenie, Pagerduty and Splunk).",
 						Type:        schema.TypeString,
 						Optional:    true,
 						Default:     "",
 						ForceNew:    true,
 					},
 					"type": {
-						Description: "type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams)",
+						Description: "The type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams).",
 						Type:        schema.TypeString,
 						Required:    true,
 						ForceNew:    true,
@@ -56,7 +56,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 						}, false),
 					},
 					"url": {
-						Description:  "URL",
+						Description:  "The alerting integration's URL.",
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.IsURLWithHTTPorHTTPS,

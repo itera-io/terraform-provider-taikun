@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_showback_rules Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of showback rules, optionally filtered by organization.
+description: |-   Retrieve all showback rules.
 ---
 
 # taikun_showback_rules (Data Source)
 
-Get the list of showback rules, optionally filtered by organization.
+Retrieve all showback rules.
 
 ~> **Role Requirement** In order to use the `taikun_showback_rules` data source you need at least a `Manager` account
 
@@ -27,11 +27,11 @@ data "taikun_showback_rules" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **showback_rules** (List of Object) (see [below for nested schema](#nestedatt--showback_rules))
+- **showback_rules** (List of Object) List of retrieved showback rules. (see [below for nested schema](#nestedatt--showback_rules))
 
 <a id="nestedatt--showback_rules"></a>
 ### Nested Schema for `showback_rules`

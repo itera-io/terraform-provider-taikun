@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,7 +18,7 @@ func dataSourceTaikunUserSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunUser() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a user by its id.",
+		Description: "Get a user by its ID.",
 		ReadContext: dataSourceTaikunUserRead,
 		Schema:      dataSourceTaikunUserSchema(),
 	}

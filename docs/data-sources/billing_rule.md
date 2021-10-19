@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_billing_rule Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get a billing rule by its id.
+description: |-   Get a billing rule by its ID.
 ---
 
 # taikun_billing_rule (Data Source)
 
-Get a billing rule by its id.
+Get a billing rule by its ID.
 
 ~> **Role Requirement** In order to use the `taikun_billing_rule` data source you need at least a `Partner` account
 
@@ -23,19 +23,19 @@ data "taikun_billing_rule" "foo" {
 
 ### Required
 
-- **id** (String) The id of the billing rule.
+- **id** (String) The ID of the billing rule.
 
 ### Read-Only
 
-- **billing_credential_id** (String) Id of the billing credential.
-- **created_by** (String) The creator of the billing credential.
-- **label** (List of Object) Labels linked to this billing rule. (see [below for nested schema](#nestedatt--label))
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the billing credential.
-- **metric_name** (String) The name of the metric from Prometheus you want to bill.
+- **billing_credential_id** (String) ID of the billing credential.
+- **created_by** (String) The creator of the billing rule.
+- **label** (List of Object) Labels linked to the billing rule. (see [below for nested schema](#nestedatt--label))
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the billing rule.
+- **metric_name** (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
 - **name** (String) The name of the billing rule.
 - **price** (Number) The price in CZK per selected unit.
-- **type** (String) Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)
+- **type** (String) Type of billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)
 
 <a id="nestedatt--label"></a>
 ### Nested Schema for `label`

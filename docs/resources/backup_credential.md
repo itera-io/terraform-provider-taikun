@@ -8,10 +8,9 @@ description: |-   Taikun Backup Credential
 
 Taikun Backup Credential
 
-~> **Role Requirement** In order to use the `taikun_backup_credential` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_backup_credential` resource you need at least a `Manager` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for Partner and Admin roles, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
@@ -44,14 +43,14 @@ resource "taikun_backup_credential" "foo" {
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the backup credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the backup credential.
+- **organization_id** (String) The ID of the organization which owns the backup credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the backup credential.
-- **id** (String) The id of the backup credential.
+- **id** (String) The ID of the backup credential.
 - **is_default** (Boolean) Indicates whether the backup credential is the organization's default or not.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the backup credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the backup credential.
 - **organization_name** (String) The name of the organization which owns the backup credential.
 

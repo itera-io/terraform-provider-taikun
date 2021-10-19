@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,7 +15,7 @@ import (
 func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the OpenStack cloud credential.",
+			Description: "The ID of the OpenStack cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -46,7 +47,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"url": {
-			Description:  "The OpenStack authentication url.",
+			Description:  "The OpenStack authentication URL.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -62,12 +63,12 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"project_id": {
-			Description: "The OpenStack project id.",
+			Description: "The OpenStack project ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"public_network_name": {
-			Description:  "The name of the public OpenStack network which will be used.",
+			Description:  "The name of the public OpenStack network to use.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -103,13 +104,13 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"imported_network_subnet_id": {
-			Description: "The OpenStack subnet id in case you want to import network.",
+			Description: "The OpenStack network subnet ID to import a network.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the OpenStack cloud credential.",
+			Description:      "The ID of the organization which owns the OpenStack cloud credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -138,12 +139,12 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "Time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the OpenStack cloud credential.",
+			Description: "The last user to have modified the OpenStack cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

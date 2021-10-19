@@ -3,12 +3,12 @@
 page_title: "taikun_showback_credential Data Source - terraform-provider-taikun"
 subcategory: ""
 description: |-
-  Get a showback credential by its id.
+  Get a showback credential by its ID.
 ---
 
 # taikun_showback_credential (Data Source)
 
-Get a showback credential by its id.
+Get a showback credential by its ID.
 
 ## Example Usage
 
@@ -23,7 +23,7 @@ data "taikun_showback_credential" "foo" {
 
 ### Required
 
-- **id** (String) The id of the showback credential.
+- **id** (String) The ID of the showback credential.
 
 ### Read-Only
 
@@ -32,10 +32,10 @@ data "taikun_showback_credential" "foo" {
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback credential.
 - **name** (String) The name of the showback credential.
-- **organization_id** (String) The id of the organization which owns the showback credential.
+- **organization_id** (String) The ID of the organization which owns the showback credential.
 - **organization_name** (String) The name of the organization which owns the showback credential.
 - **password** (String, Sensitive) The prometheus password or other credential.
-- **url** (String) Url of the source.
+- **url** (String) URL of the source.
 - **username** (String) The prometheus username or other credential.
 
 

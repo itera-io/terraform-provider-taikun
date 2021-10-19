@@ -76,8 +76,8 @@ resource "taikun_alerting_profile" "foo" {
 
 ### Optional
 
-- **emails** (List of String) The list of e-mails to notify.
-- **integration** (Block List) list of alerting integrations (see [below for nested schema](#nestedblock--integration))
+- **emails** (List of String) The list of emails to notify.
+- **integration** (Block List) List of alerting integrations. (see [below for nested schema](#nestedblock--integration))
 - **is_locked** (Boolean) Whether the profile is locked or not. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the profile.
 - **slack_configuration_id** (String) The ID of the Slack configuration to notify. Defaults to `0`.
@@ -85,7 +85,7 @@ resource "taikun_alerting_profile" "foo" {
 
 ### Read-Only
 
-- **created_by** (String) The profile creator.
+- **created_by** (String) The creator of the alerting profile.
 - **id** (String) The alerting profile's ID.
 - **last_modified** (String) The time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the profile.
@@ -97,12 +97,12 @@ resource "taikun_alerting_profile" "foo" {
 
 Required:
 
-- **type** (String) type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams)
-- **url** (String) URL
+- **type** (String) The type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams).
+- **url** (String) The alerting integration's URL.
 
 Optional:
 
-- **token** (String) token (required from Opsgenie, Pagerduty and Splunk) Defaults to ` `.
+- **token** (String) The token (required by Opsgenie, Pagerduty and Splunk). Defaults to ` `.
 
 
 <a id="nestedblock--webhook"></a>

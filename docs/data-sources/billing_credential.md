@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_billing_credential Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get a billing credential by its id.
+description: |-   Get a billing credential by its ID.
 ---
 
 # taikun_billing_credential (Data Source)
 
-Get a billing credential by its id.
+Get a billing credential by its ID.
 
 ~> **Role Requirement** In order to use the `taikun_billing_credential` data source you need at least a `Partner`
 account
@@ -24,20 +24,20 @@ data "taikun_billing_credential" "foo" {
 
 ### Required
 
-- **id** (String) The id of the billing credential.
+- **id** (String) The ID of the billing credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the billing credential.
 - **is_default** (Boolean) Indicates whether the billing credential is the organization's default or not.
 - **is_locked** (Boolean) Indicates whether the billing credential is locked or not.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the billing credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the billing credential.
 - **name** (String) The name of the billing credential.
-- **organization_id** (String) The id of the organization which owns the billing credential.
+- **organization_id** (String) The ID of the organization which owns the billing credential.
 - **organization_name** (String) The name of the organization which owns the billing credential.
 - **prometheus_password** (String, Sensitive) The prometheus password.
-- **prometheus_url** (String) The prometheus url.
+- **prometheus_url** (String) The prometheus URL.
 - **prometheus_username** (String) The prometheus username.
 
 

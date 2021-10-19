@@ -2,8 +2,10 @@ package taikun
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
 	"regexp"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,7 +17,7 @@ import (
 func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the access profile.",
+			Description: "The ID of the access profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -26,7 +28,7 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the access profile.",
+			Description:      "The ID of the organization which owns the access profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -52,12 +54,12 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"address": {
-						Description: "Address of NTP server.",
+						Description: "Address of the NTP server.",
 						Type:        schema.TypeString,
 						Required:    true,
 					},
 					"id": {
-						Description: "Id of NTP server.",
+						Description: "ID of the NTP server.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
@@ -73,12 +75,12 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"address": {
-						Description: "Address of DNS server.",
+						Description: "Address of the DNS server.",
 						Type:        schema.TypeString,
 						Required:    true,
 					},
 					"id": {
-						Description: "Id of DNS server.",
+						Description: "ID of the DNS server.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
@@ -86,14 +88,14 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			},
 		},
 		"ssh_user": {
-			Description: "List of SSH Users.",
+			Description: "List of SSH users.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			ForceNew:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"name": {
-						Description: "Name of SSH User.",
+						Description: "Name of the SSH user.",
 						Type:        schema.TypeString,
 						Required:    true,
 						ValidateFunc: validation.All(
@@ -106,13 +108,13 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 						),
 					},
 					"public_key": {
-						Description:  "Public key of SSH User.",
+						Description:  "Public key of the SSH user.",
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					"id": {
-						Description: "Id of SSH User.",
+						Description: "ID of the SSH user.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
@@ -125,12 +127,12 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "The time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the access profile.",
+			Description: "The last user to have modified the profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -147,7 +149,7 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
-						Description: "Id of associated project.",
+						Description: "ID of associated project.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},

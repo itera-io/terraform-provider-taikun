@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/showback"
@@ -10,18 +11,19 @@ import (
 
 func dataSourceTaikunShowbackRules() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of showback rules, optionally filtered by organization.",
+		Description: "Retrieve all showback rules.",
 		ReadContext: dataSourceTaikunShowbackRulesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:      "Organization id filter.",
+				Description:      "Organization ID filter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
 			"showback_rules": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved showback rules.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunShowbackRuleSchema(),
 				},
