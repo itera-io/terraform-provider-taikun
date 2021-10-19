@@ -3,8 +3,9 @@ package taikun
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -76,6 +77,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_aws":       dataSourceTaikunCloudCredentialsAWS(),
 			"taikun_cloud_credentials_azure":     dataSourceTaikunCloudCredentialsAzure(),
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
+			"taikun_flavors":                     dataSourceTaikunFlavors(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),
 			"taikun_kubernetes_profiles":         dataSourceTaikunKubernetesProfiles(),
 			"taikun_organization":                dataSourceTaikunOrganization(),
