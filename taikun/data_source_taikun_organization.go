@@ -44,9 +44,6 @@ func dataSourceTaikunOrganizationRead(ctx context.Context, data *schema.Resource
 	if len(response.GetPayload().Data) != 1 {
 		return diag.Errorf("No organization found")
 	}
-	if id != "" && response.Payload.Data[0].ID != id32 {
-		return diag.Errorf("Organization with ID %s not found", id)
-	}
 
 	rawOrganization := response.GetPayload().Data[0]
 
