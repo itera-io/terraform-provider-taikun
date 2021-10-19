@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -106,8 +107,8 @@ func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData,
 func dataSourceTaikunFlavorsGetDTOs(data *schema.ResourceData, meta interface{}) (interface{}, error) {
 	startCPU := int32(data.Get("min_cpu").(int))
 	endCPU := int32(data.Get("max_cpu").(int))
-	startRAM := int32(data.Get("min_ram").(int))
-	endRAM := int32(data.Get("max_ram").(int))
+	startRAM := gibiByteToMebiByte(int32(data.Get("min_ram").(int)))
+	endRAM := gibiByteToMebiByte(int32(data.Get("max_ram").(int)))
 	cloudType := data.Get("cloud_type").(string)
 	cloudCredentialID, err := atoi32(data.Get("cloud_credential_id").(string))
 	if err != nil {
@@ -204,10 +205,12 @@ func flattenDataSourceTaikunFlavors(cloudType string, rawFlavorDTOs interface{})
 func flattenDataSourceTaikunFlavorsAWS(flavorDTOs []*models.AwsFlavorListDto) []map[string]interface{} {
 	flavors := make([]map[string]interface{}, len(flavorDTOs))
 	for i, flavorDTO := range flavorDTOs {
+		cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
+		ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
 		flavors[i] = map[string]interface{}{
-			"cpu":  flavorDTO.CPU.(int32),
+			"cpu":  cpu,
 			"name": flavorDTO.Name.(string),
-			"ram":  flavorDTO.RAM.(int32),
+			"ram":  mebiByteToGibiByte(ram),
 		}
 	}
 	return flavors
