@@ -71,9 +71,13 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	userName := randomTestName()
-	email := randomString() + "@" + randomString() + ".fr"
+	email := randomEmail()
 	role := "User"
 	displayName := randomString()
+
+	fmt.Println(userName)
+	fmt.Println(email)
+	fmt.Println(displayName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },

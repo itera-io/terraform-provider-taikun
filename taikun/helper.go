@@ -18,6 +18,10 @@ import (
 
 const testNamePrefix = "tf-acc-test-"
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 func atoi32(str string) (int32, error) {
 	res, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
@@ -91,7 +95,6 @@ func randomName(prefix string, length int) string {
 }
 
 func randomString() string {
-	rand.Seed(time.Now().UnixNano())
 	return acctest.RandString(rand.Int()%10 + 10)
 }
 
@@ -104,13 +107,11 @@ func randomEmail() string {
 }
 
 func randomBool() bool {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int()%2 == 0
 }
 
 // Return an integer in the range [0; maxInt[
 func randomInt(maxInt int) int {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int() % maxInt
 }
 

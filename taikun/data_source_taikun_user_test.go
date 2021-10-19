@@ -23,9 +23,13 @@ data "taikun_user" "foo" {
 
 func TestAccDataSourceTaikunUser(t *testing.T) {
 	userName := randomTestName()
-	email := randomString() + "@" + randomString() + ".fr"
+	email := randomEmail()
 	role := "Manager"
 	displayName := randomTestName()
+
+	fmt.Println(userName)
+	fmt.Println(email)
+	fmt.Println(displayName)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },

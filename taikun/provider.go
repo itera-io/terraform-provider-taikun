@@ -109,6 +109,13 @@ func Provider() *schema.Provider {
 			"taikun_user":                                 resourceTaikunUser(),
 		},
 		Schema: map[string]*schema.Schema{
+			"api_host": {
+				Type:         schema.TypeString,
+				Description:  "Taikun API host.",
+				Optional:     true,
+				Default:      "api.taikun.dev",
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 			"email": {
 				Type:          schema.TypeString,
 				Description:   "Taikun email.",
@@ -166,8 +173,14 @@ func configureContextFunc(_ context.Context, data *schema.ResourceData) (interfa
 		return nil, diag.Errorf("You must define an email and a password")
 	}
 
+	transportConfig := &client.TransportConfig{
+		Host:     data.Get("api_host").(string),
+		BasePath: client.DefaultBasePath,
+		Schemes:  client.DefaultSchemes,
+	}
+
 	return &apiClient{
-		client:              client.Default,
+		client:              client.NewHTTPClientWithConfig(nil, transportConfig),
 		email:               email.(string),
 		password:            password.(string),
 		useKeycloakEndpoint: keycloakEnabled,
