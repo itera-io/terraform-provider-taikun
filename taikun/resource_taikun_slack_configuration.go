@@ -29,10 +29,11 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 40),
 		},
 		"organization_id": {
-			Description: "Organization ID",
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
+			Description:      "Organization ID",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
 			Description: "Organization Name",
