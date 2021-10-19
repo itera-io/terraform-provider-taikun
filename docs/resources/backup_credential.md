@@ -36,15 +36,15 @@ resource "taikun_backup_credential" "foo" {
 ### Required
 
 - **name** (String) The name of the backup credential.
+- **s3_access_key_id** (String) The S3 Access Key ID.
 - **s3_endpoint** (String) The S3 endpoint URL.
 - **s3_region** (String) The S3 region.
+- **s3_secret_access_key** (String, Sensitive) The S3 Secret Access Key.
 
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the backup credential is locked or not. Defaults to `false`.
 - **organization_id** (String) The id of the organization which owns the backup credential.
-- **s3_access_key_id** (String) The S3 Access Key ID.
-- **s3_secret_access_key** (String, Sensitive) The S3 Secret Access Key.
 
 ### Read-Only
 
