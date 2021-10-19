@@ -85,5 +85,8 @@ jobs:
           ARM_AVAILABILITY_ZONE: 1
           ARM_LOCATION: northeurope
 
+          S3_REGION: eu-west-2
+          S3_ENDPOINT: https://s3.eu-west-2.amazonaws.com
+
         run: |
           go test -v -cover ./taikun

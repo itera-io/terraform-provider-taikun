@@ -88,6 +88,21 @@ func testAccPreCheckAWS(t *testing.T) {
 	}
 }
 
+func testAccPreCheckS3(t *testing.T) {
+	if err := os.Getenv("AWS_ACCESS_KEY_ID"); err == "" {
+		t.Fatal("AWS_ACCESS_KEY_ID must be set for acceptance tests")
+	}
+	if err := os.Getenv("AWS_SECRET_ACCESS_KEY"); err == "" {
+		t.Fatal("AWS_SECRET_ACCESS_KEY must be set for acceptance tests")
+	}
+	if err := os.Getenv("S3_ENDPOINT"); err == "" {
+		t.Fatal("S3_ENDPOINT must be set for acceptance tests")
+	}
+	if err := os.Getenv("S3_REGION"); err == "" {
+		t.Fatal("S3_REGION must be set for acceptance tests")
+	}
+}
+
 func testAccPreCheckAzure(t *testing.T) {
 	if err := os.Getenv("ARM_SUBSCRIPTION_ID"); err == "" {
 		t.Fatal("ARM_SUBSCRIPTION_ID must be set for acceptance tests")
