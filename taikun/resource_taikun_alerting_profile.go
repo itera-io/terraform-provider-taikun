@@ -81,9 +81,10 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The alerting profile's name.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The alerting profile's name.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
 			Description:      "The ID of the organization which owns the profile.",
