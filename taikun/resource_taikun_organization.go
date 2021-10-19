@@ -55,9 +55,10 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Optional:    true,
 		},
 		"full_name": {
-			Description: "Full name",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "Full name",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"id": {
 			Description: "ID",
@@ -82,10 +83,13 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description:  "Name",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: stringIsLowercase,
+			Description: "Name",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				stringIsLowercase,
+				validation.StringLenBetween(3, 30),
+			),
 		},
 		// TODO partner details?
 		"partner_id": {
