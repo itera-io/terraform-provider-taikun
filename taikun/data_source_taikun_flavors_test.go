@@ -15,7 +15,6 @@ resource "taikun_cloud_credential_aws" "foo" {
 }
 
 data "taikun_flavors" "foo" {
-  cloud_type = "AWS"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
   min_cpu = %d
@@ -60,7 +59,6 @@ resource "taikun_cloud_credential_azure" "foo" {
 }
 
 data "taikun_flavors" "foo" {
-  cloud_type = "Azure"
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
 
   min_cpu = %d
