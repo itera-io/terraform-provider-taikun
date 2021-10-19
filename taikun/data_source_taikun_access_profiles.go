@@ -2,8 +2,6 @@ package taikun
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/itera-io/taikungoclient/client/ssh_users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -70,7 +68,6 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 		sshParams := ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(rawAccessProfile.ID)
 		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(sshParams, apiClient)
 		if err != nil {
-			fmt.Println(rawAccessProfile.ID)
 			return diag.FromErr(err)
 		}
 
