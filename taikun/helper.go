@@ -17,6 +17,10 @@ import (
 
 const testNamePrefix = "tf-acc-test-"
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 func atoi32(str string) (int32, error) {
 	res, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
@@ -90,7 +94,6 @@ func randomEmail() string {
 }
 
 func randomBool() bool {
-	rand.Seed(time.Now().UnixNano())
 	return rand.Int()%2 == 0
 }
 
