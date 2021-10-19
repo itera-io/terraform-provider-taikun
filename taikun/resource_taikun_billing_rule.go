@@ -17,20 +17,23 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "The name of the billing rule.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the billing rule.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"metric_name": {
-			Description: "The name of the metric from Prometheus you want to bill.",
-			Type:        schema.TypeString,
-			Required:    true,
+			Description:  "The name of the metric from Prometheus you want to bill.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 256),
 		},
 		"label": {
 			Description: "Labels linked to this billing rule.",
 			Type:        schema.TypeList,
 			Required:    true,
 			ForceNew:    true,
+			MinItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"key": {
