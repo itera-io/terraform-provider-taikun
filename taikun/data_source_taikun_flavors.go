@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -94,12 +95,14 @@ func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData,
 	params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
 
 	apiClient := meta.(*apiClient)
+	var cloudType string
 	var flavorDTOs []*models.FlavorsListDto
 	for {
 		response, err := apiClient.client.CloudCredentials.CloudCredentialsAllFlavors(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		cloudType = response.Payload.CloudType
 		flavorDTOs = append(flavorDTOs, response.Payload.Data...)
 		if len(flavorDTOs) == int(response.Payload.TotalCount) {
 			break
@@ -108,7 +111,7 @@ func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData,
 		params = params.WithOffset(&offset)
 	}
 
-	flavors := flattenDataSourceTaikunFlavors(flavorDTOs)
+	flavors := flattenDataSourceTaikunFlavors(cloudType, flavorDTOs)
 	if err := data.Set("flavors", flavors); err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,16 +120,54 @@ func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData,
 	return nil
 }
 
-func flattenDataSourceTaikunFlavors(flavorDTOs []*models.FlavorsListDto) []map[string]interface{} {
+func flattenDataSourceTaikunFlavors(cloudType string, flavorDTOs []*models.FlavorsListDto) []map[string]interface{} {
 	flavors := make([]map[string]interface{}, len(flavorDTOs))
+	flattenFunc := getFlattenDataSourceTaikunFlavorsItemFunc(cloudType)
 	for i, flavorDTO := range flavorDTOs {
-		cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
-		ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
-		flavors[i] = map[string]interface{}{
-			"cpu":  cpu,
-			"name": flavorDTO.Name.(string),
-			"ram":  mebiByteToGibiByte(ram),
-		}
+		flavors[i] = flattenFunc(flavorDTO)
 	}
 	return flavors
+}
+
+type flattenDataSourceTaikunFlavorsItemFunc func(flavorDTO *models.FlavorsListDto) map[string]interface{}
+
+func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSourceTaikunFlavorsItemFunc {
+	switch strings.ToLower(cloudType) {
+	case "aws":
+		return flattenDataSourceTaikunFlavorsAWSItem
+	case "azure":
+		return flattenDataSourceTaikunFlavorsAzureItem
+	case "openstack":
+		return flattenDataSourceTaikunFlavorsOpenStackItem
+	default:
+		return nil
+	}
+}
+
+func flattenDataSourceTaikunFlavorsAWSItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
+	cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
+	ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
+	return map[string]interface{}{
+		"cpu":  cpu,
+		"name": flavorDTO.Name.(string),
+		"ram":  mebiByteToGibiByte(ram),
+	}
+}
+
+func flattenDataSourceTaikunFlavorsAzureItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
+	return map[string]interface{}{
+		"cpu":  jsonNumberAsFloatToInt32(flavorDTO.CPU.(json.Number)),
+		"name": flavorDTO.Name.(string),
+		"ram":  jsonNumberAsFloatToInt32(flavorDTO.RAM.(json.Number)),
+	}
+}
+
+func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
+	cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
+	ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
+	return map[string]interface{}{
+		"cpu":  cpu,
+		"name": flavorDTO.Name.(string),
+		"ram":  mebiByteToGibiByte(ram),
+	}
 }
