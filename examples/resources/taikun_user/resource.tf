@@ -4,7 +4,7 @@ resource "taikun_user" "foo" {
   role      = "User"
 
   display_name        = "Foo"
-  organization_id     = "42" # Optional for Partner and Admin
+  organization_id     = "42"
   user_disabled       = true
   approved_by_partner = true
 }
