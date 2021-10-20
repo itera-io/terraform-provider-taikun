@@ -211,7 +211,7 @@ func resourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("organization with ID %d not found", id)
+		return diag.Errorf("organization with ID %d not found", id32)
 	}
 
 	rawOrganization := response.GetPayload().Data[0]
