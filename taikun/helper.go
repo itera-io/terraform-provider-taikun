@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"net/mail"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -45,17 +44,6 @@ func gibiByteToMebiByte(x int32) int32 {
 
 func mebiByteToGibiByte(x int32) int32 {
 	return x / 1024
-}
-
-func stringIsLowercase(i interface{}, k string) ([]string, []error) {
-	v, ok := i.(string)
-	if !ok {
-		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
-	}
-	if strings.ToLower(v) != v {
-		return nil, []error{fmt.Errorf("expected %q to be lowercase", k)}
-	}
-	return nil, nil
 }
 
 func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
