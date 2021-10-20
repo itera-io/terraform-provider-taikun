@@ -65,7 +65,7 @@ func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, data *sche
 
 	cloudCredentials := make([]map[string]interface{}, len(cloudCredentialsList))
 	for i, rawCloudCredential := range cloudCredentialsList {
-		cloudCredentials[i] = flattenDataSourceTaikunCloudCredentialOpenStackItem(rawCloudCredential)
+		cloudCredentials[i] = flattenTaikunCloudCredentialOpenStack(rawCloudCredential)
 	}
 	if err := data.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)
@@ -74,28 +74,4 @@ func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, data *sche
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunCloudCredentialOpenStackItem(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"created_by":                 rawOpenStackCredential.CreatedBy,
-		"id":                         i32toa(rawOpenStackCredential.ID),
-		"is_locked":                  rawOpenStackCredential.IsLocked,
-		"is_default":                 rawOpenStackCredential.IsDefault,
-		"last_modified":              rawOpenStackCredential.LastModified,
-		"last_modified_by":           rawOpenStackCredential.LastModifiedBy,
-		"name":                       rawOpenStackCredential.Name,
-		"user":                       rawOpenStackCredential.User,
-		"project_name":               rawOpenStackCredential.Project,
-		"project_id":                 rawOpenStackCredential.TenantID,
-		"organization_id":            i32toa(rawOpenStackCredential.OrganizationID),
-		"organization_name":          rawOpenStackCredential.OrganizationName,
-		"public_network_name":        rawOpenStackCredential.PublicNetwork,
-		"availability_zone":          rawOpenStackCredential.AvailabilityZone,
-		"domain":                     rawOpenStackCredential.Domain,
-		"region":                     rawOpenStackCredential.Region,
-		"volume_type_name":           rawOpenStackCredential.VolumeType,
-		"imported_network_subnet_id": rawOpenStackCredential.InternalSubnetID,
-	}
 }

@@ -180,37 +180,8 @@ func resourceTaikunCloudCredentialAWSRead(_ context.Context, data *schema.Resour
 
 	rawCloudCredentialAWS := response.GetPayload().Amazon[0]
 
-	if err := data.Set("created_by", rawCloudCredentialAWS.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawCloudCredentialAWS.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawCloudCredentialAWS.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_default", rawCloudCredentialAWS.IsDefault); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawCloudCredentialAWS.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawCloudCredentialAWS.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawCloudCredentialAWS.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("availability_zone", rawCloudCredentialAWS.AvailabilityZone); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("region", rawCloudCredentialAWS.Region); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawCloudCredentialAWS.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawCloudCredentialAWS.OrganizationName); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -253,4 +224,21 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 	}
 
 	return resourceTaikunCloudCredentialAWSRead(ctx, data, meta)
+}
+
+func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {
+
+	return map[string]interface{}{
+		"created_by":        rawAWSCredential.CreatedBy,
+		"id":                i32toa(rawAWSCredential.ID),
+		"is_locked":         rawAWSCredential.IsLocked,
+		"is_default":        rawAWSCredential.IsDefault,
+		"last_modified":     rawAWSCredential.LastModified,
+		"last_modified_by":  rawAWSCredential.LastModifiedBy,
+		"name":              rawAWSCredential.Name,
+		"organization_id":   i32toa(rawAWSCredential.OrganizationID),
+		"organization_name": rawAWSCredential.OrganizationName,
+		"availability_zone": rawAWSCredential.AvailabilityZone,
+		"region":            rawAWSCredential.Region,
+	}
 }

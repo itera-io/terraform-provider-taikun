@@ -271,48 +271,9 @@ func resourceTaikunAlertingProfileRead(_ context.Context, data *schema.ResourceD
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	alertingIntegrationDTOs := alertingIntegrationsResponse.Payload
 
-	if err := data.Set("created_by", alertingProfileDTO.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("emails", getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(alertingProfileDTO.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("integration", getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDTOs)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", alertingProfileDTO.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", alertingProfileDTO.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", alertingProfileDTO.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", alertingProfileDTO.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(alertingProfileDTO.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", alertingProfileDTO.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("reminder", alertingProfileDTO.Reminder); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("slack_configuration_id", i32toa(alertingProfileDTO.SlackConfigurationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("slack_configuration_name", alertingProfileDTO.SlackConfigurationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("webhook", getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks)); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -493,4 +454,23 @@ func getIntegrationDTOsFromAlertingProfileResourceData(data *schema.ResourceData
 		}
 	}
 	return alertingIntegrationDTOs
+}
+
+func flattenTaikunAlertingProfile(alertingProfileDTO *models.AlertingProfilesListDto, alertingIntegrationDto []*models.AlertingIntegrationsListDto) map[string]interface{} {
+	return map[string]interface{}{
+		"created_by":               alertingProfileDTO.CreatedBy,
+		"emails":                   getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails),
+		"id":                       i32toa(alertingProfileDTO.ID),
+		"integration":              getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDto),
+		"is_locked":                alertingProfileDTO.IsLocked,
+		"last_modified":            alertingProfileDTO.LastModified,
+		"last_modified_by":         alertingProfileDTO.LastModifiedBy,
+		"name":                     alertingProfileDTO.Name,
+		"organization_id":          i32toa(alertingProfileDTO.OrganizationID),
+		"organization_name":        alertingProfileDTO.OrganizationName,
+		"reminder":                 alertingProfileDTO.Reminder,
+		"slack_configuration_id":   i32toa(alertingProfileDTO.SlackConfigurationID),
+		"slack_configuration_name": alertingProfileDTO.SlackConfigurationName,
+		"webhook":                  getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks),
+	}
 }

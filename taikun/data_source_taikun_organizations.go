@@ -49,7 +49,7 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, data *schema.ResourceD
 
 	organizations := make([]map[string]interface{}, len(organizationsList))
 	for i, rawOrganization := range organizationsList {
-		organizations[i] = flattenDataSourceTaikunOrganizationsItem(rawOrganization)
+		organizations[i] = flattenTaikunOrganization(rawOrganization)
 	}
 	if err := data.Set("organizations", organizations); err != nil {
 		return diag.FromErr(err)
@@ -58,30 +58,4 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, data *schema.ResourceD
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunOrganizationsItem(rawOrganization *models.OrganizationDetailsDto) map[string]interface{} {
-	return map[string]interface{}{
-		"address":                          rawOrganization.Address,
-		"billing_email":                    rawOrganization.BillingEmail,
-		"city":                             rawOrganization.City,
-		"cloud_credentials":                rawOrganization.CloudCredentials,
-		"country":                          rawOrganization.Country,
-		"created_at":                       rawOrganization.CreatedAt,
-		"discount_rate":                    rawOrganization.DiscountRate,
-		"email":                            rawOrganization.Email,
-		"full_name":                        rawOrganization.FullName,
-		"id":                               i32toa(rawOrganization.ID),
-		"let_managers_change_subscription": rawOrganization.IsEligibleUpdateSubscription,
-		"is_locked":                        rawOrganization.IsLocked,
-		"is_read_only":                     rawOrganization.IsReadOnly,
-		"name":                             rawOrganization.Name,
-		"partner_id":                       i32toa(rawOrganization.PartnerID),
-		"partner_name":                     rawOrganization.PartnerName,
-		"phone":                            rawOrganization.Phone,
-		"projects":                         rawOrganization.Projects,
-		"servers":                          rawOrganization.Servers,
-		"users":                            rawOrganization.Users,
-		"vat_number":                       rawOrganization.VatNumber,
-	}
 }

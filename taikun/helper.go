@@ -3,6 +3,7 @@ package taikun
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"math/rand"
 	"net/mail"
 	"strconv"
@@ -19,6 +20,15 @@ const testNamePrefix = "tf-acc-test-"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+func setResourceDataFromMap(d *schema.ResourceData, m map[string]interface{}) error {
+	for key, value := range m {
+		if err := d.Set(key, value); err != nil {
+			return fmt.Errorf("unable to set `%s` attribute: %s", key, err)
+		}
+	}
+	return nil
 }
 
 func atoi32(str string) (int32, error) {

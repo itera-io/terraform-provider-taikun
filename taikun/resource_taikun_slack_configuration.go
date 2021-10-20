@@ -124,25 +124,9 @@ func resourceTaikunSlackConfigurationRead(_ context.Context, data *schema.Resour
 	}
 
 	rawSlackConfiguration := response.Payload.Data[0]
-	if err := data.Set("channel", rawSlackConfiguration.Channel); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawSlackConfiguration.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawSlackConfiguration.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawSlackConfiguration.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawSlackConfiguration.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("type", rawSlackConfiguration.SlackType); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("url", rawSlackConfiguration.URL); err != nil {
+
+	err = setResourceDataFromMap(data, flattenTaikunSlackConfiguration(rawSlackConfiguration))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -204,4 +188,16 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.Reso
 	data.SetId("")
 
 	return nil
+}
+
+func flattenTaikunSlackConfiguration(rawSlackConfiguration *models.SlackConfigurationDto) map[string]interface{} {
+	return map[string]interface{}{
+		"channel":           rawSlackConfiguration.Channel,
+		"id":                i32toa(rawSlackConfiguration.ID),
+		"name":              rawSlackConfiguration.Name,
+		"organization_id":   i32toa(rawSlackConfiguration.OrganizationID),
+		"organization_name": rawSlackConfiguration.OrganizationName,
+		"type":              rawSlackConfiguration.SlackType,
+		"url":               rawSlackConfiguration.URL,
+	}
 }

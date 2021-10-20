@@ -215,67 +215,8 @@ func resourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData
 
 	rawOrganization := response.GetPayload().Data[0]
 
-	if err := data.Set("address", rawOrganization.Address); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("billing_email", rawOrganization.BillingEmail); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("city", rawOrganization.City); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("cloud_credentials", rawOrganization.CloudCredentials); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("country", rawOrganization.Country); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("created_at", rawOrganization.CreatedAt); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("discount_rate", rawOrganization.DiscountRate); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("email", rawOrganization.Email); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("full_name", rawOrganization.FullName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawOrganization.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("let_managers_change_subscription", rawOrganization.IsEligibleUpdateSubscription); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawOrganization.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_read_only", rawOrganization.IsReadOnly); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawOrganization.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("partner_id", i32toa(rawOrganization.PartnerID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("partner_name", rawOrganization.PartnerName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("phone", rawOrganization.Phone); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("projects", rawOrganization.Projects); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("servers", rawOrganization.Servers); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("users", rawOrganization.Users); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("vat_number", rawOrganization.VatNumber); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunOrganization(rawOrganization))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -332,4 +273,30 @@ func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceDa
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunOrganization(rawOrganization *models.OrganizationDetailsDto) map[string]interface{} {
+	return map[string]interface{}{
+		"address":                          rawOrganization.Address,
+		"billing_email":                    rawOrganization.BillingEmail,
+		"city":                             rawOrganization.City,
+		"cloud_credentials":                rawOrganization.CloudCredentials,
+		"country":                          rawOrganization.Country,
+		"created_at":                       rawOrganization.CreatedAt,
+		"discount_rate":                    rawOrganization.DiscountRate,
+		"email":                            rawOrganization.Email,
+		"full_name":                        rawOrganization.FullName,
+		"id":                               i32toa(rawOrganization.ID),
+		"let_managers_change_subscription": rawOrganization.IsEligibleUpdateSubscription,
+		"is_locked":                        rawOrganization.IsLocked,
+		"is_read_only":                     rawOrganization.IsReadOnly,
+		"name":                             rawOrganization.Name,
+		"partner_id":                       i32toa(rawOrganization.PartnerID),
+		"partner_name":                     rawOrganization.PartnerName,
+		"phone":                            rawOrganization.Phone,
+		"projects":                         rawOrganization.Projects,
+		"servers":                          rawOrganization.Servers,
+		"users":                            rawOrganization.Users,
+		"vat_number":                       rawOrganization.VatNumber,
+	}
 }

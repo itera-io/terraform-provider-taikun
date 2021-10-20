@@ -198,43 +198,8 @@ func resourceTaikunCloudCredentialAzureRead(_ context.Context, data *schema.Reso
 
 	rawCloudCredentialAzure := response.GetPayload().Azure[0]
 
-	if err := data.Set("created_by", rawCloudCredentialAzure.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawCloudCredentialAzure.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawCloudCredentialAzure.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_default", rawCloudCredentialAzure.IsDefault); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawCloudCredentialAzure.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawCloudCredentialAzure.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawCloudCredentialAzure.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("availability_zone", rawCloudCredentialAzure.AvailabilityZone); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("location", rawCloudCredentialAzure.Location); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("tenant_id", rawCloudCredentialAzure.TenantID); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("availability_zone", rawCloudCredentialAzure.AvailabilityZone); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawCloudCredentialAzure.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawCloudCredentialAzure.OrganizationName); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -277,4 +242,22 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 	}
 
 	return resourceTaikunCloudCredentialAzureRead(ctx, data, meta)
+}
+
+func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {
+
+	return map[string]interface{}{
+		"created_by":        rawAzureCredential.CreatedBy,
+		"id":                i32toa(rawAzureCredential.ID),
+		"is_locked":         rawAzureCredential.IsLocked,
+		"is_default":        rawAzureCredential.IsDefault,
+		"last_modified":     rawAzureCredential.LastModified,
+		"last_modified_by":  rawAzureCredential.LastModifiedBy,
+		"name":              rawAzureCredential.Name,
+		"organization_id":   i32toa(rawAzureCredential.OrganizationID),
+		"organization_name": rawAzureCredential.OrganizationName,
+		"availability_zone": rawAzureCredential.AvailabilityZone,
+		"location":          rawAzureCredential.Location,
+		"tenant_id":         rawAzureCredential.TenantID,
+	}
 }

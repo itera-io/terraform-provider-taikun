@@ -65,7 +65,7 @@ func dataSourceTaikunCloudCredentialsAWSRead(_ context.Context, data *schema.Res
 
 	cloudCredentials := make([]map[string]interface{}, len(cloudCredentialsList))
 	for i, rawCloudCredential := range cloudCredentialsList {
-		cloudCredentials[i] = flattenDataSourceTaikunCloudCredentialAWSItem(rawCloudCredential)
+		cloudCredentials[i] = flattenTaikunCloudCredentialAWS(rawCloudCredential)
 	}
 	if err := data.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)
@@ -74,21 +74,4 @@ func dataSourceTaikunCloudCredentialsAWSRead(_ context.Context, data *schema.Res
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunCloudCredentialAWSItem(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"created_by":        rawAWSCredential.CreatedBy,
-		"id":                i32toa(rawAWSCredential.ID),
-		"is_locked":         rawAWSCredential.IsLocked,
-		"is_default":        rawAWSCredential.IsDefault,
-		"last_modified":     rawAWSCredential.LastModified,
-		"last_modified_by":  rawAWSCredential.LastModifiedBy,
-		"name":              rawAWSCredential.Name,
-		"organization_id":   i32toa(rawAWSCredential.OrganizationID),
-		"organization_name": rawAWSCredential.OrganizationName,
-		"availability_zone": rawAWSCredential.AvailabilityZone,
-		"region":            rawAWSCredential.Region,
-	}
 }

@@ -64,7 +64,7 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.Reso
 
 	operationCredentials := make([]map[string]interface{}, len(operationCredentialsList))
 	for i, rawOperationCredential := range operationCredentialsList {
-		operationCredentials[i] = flattenDataSourceTaikunBillingCredentialItem(rawOperationCredential)
+		operationCredentials[i] = flattenTaikunBillingCredential(rawOperationCredential)
 	}
 	if err := data.Set("billing_credentials", operationCredentials); err != nil {
 		return diag.FromErr(err)
@@ -73,22 +73,4 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.Reso
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunBillingCredentialItem(rawOperationCredential *models.OperationCredentialsListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"created_by":          rawOperationCredential.CreatedBy,
-		"id":                  i32toa(rawOperationCredential.ID),
-		"is_locked":           rawOperationCredential.IsLocked,
-		"is_default":          rawOperationCredential.IsDefault,
-		"last_modified":       rawOperationCredential.LastModified,
-		"last_modified_by":    rawOperationCredential.LastModifiedBy,
-		"name":                rawOperationCredential.Name,
-		"organization_id":     i32toa(rawOperationCredential.OrganizationID),
-		"organization_name":   rawOperationCredential.OrganizationName,
-		"prometheus_password": rawOperationCredential.PrometheusPassword,
-		"prometheus_url":      rawOperationCredential.PrometheusURL,
-		"prometheus_username": rawOperationCredential.PrometheusUsername,
-	}
 }

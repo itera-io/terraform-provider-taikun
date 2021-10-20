@@ -64,7 +64,7 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, data *schema.ResourceD
 
 	showbackRules := make([]map[string]interface{}, len(showbackRulesList))
 	for i, rawShowbackRule := range showbackRulesList {
-		showbackRules[i] = flattenDatasourceTaikunShowbackRuleItem(rawShowbackRule)
+		showbackRules[i] = flattenTaikunShowbackRule(rawShowbackRule)
 	}
 	if err := data.Set("showback_rules", showbackRules); err != nil {
 		return diag.FromErr(err)
@@ -73,38 +73,4 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, data *schema.ResourceD
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDatasourceTaikunShowbackRuleItem(rawShowbackRule *models.ShowbackRulesListDto) map[string]interface{} {
-
-	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels))
-	for i, rawLabel := range rawShowbackRule.Labels {
-		labels[i] = map[string]interface{}{
-			"key":   rawLabel.Label,
-			"value": rawLabel.Value,
-		}
-	}
-
-	result := map[string]interface{}{
-		"created_by":          rawShowbackRule.CreatedBy,
-		"global_alert_limit":  rawShowbackRule.GlobalAlertLimit,
-		"id":                  i32toa(rawShowbackRule.ID),
-		"kind":                rawShowbackRule.Kind,
-		"label":               labels,
-		"last_modified":       rawShowbackRule.LastModified,
-		"last_modified_by":    rawShowbackRule.LastModifiedBy,
-		"metric_name":         rawShowbackRule.MetricName,
-		"name":                rawShowbackRule.Name,
-		"organization_id":     i32toa(rawShowbackRule.OrganizationID),
-		"organization_name":   rawShowbackRule.OrganizationName,
-		"price":               rawShowbackRule.Price,
-		"project_alert_limit": rawShowbackRule.ProjectAlertLimit,
-		"type":                rawShowbackRule.Type,
-	}
-
-	if rawShowbackRule.ShowbackCredentialID != 0 {
-		result["showback_credential_id"] = i32toa(rawShowbackRule.ShowbackCredentialID)
-		result["showback_credential_name"] = rawShowbackRule.ShowbackCredentialName
-	}
-	return result
 }
