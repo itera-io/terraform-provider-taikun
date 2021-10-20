@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -92,10 +93,13 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"name": {
-						Description:  "Name of SSH User.",
-						Type:         schema.TypeString,
-						Required:     true,
-						ValidateFunc: validation.StringLenBetween(3, 30),
+						Description: "Name of SSH User.",
+						Type:        schema.TypeString,
+						Required:    true,
+						ValidateFunc: validation.All(
+							validation.StringLenBetween(3, 30),
+							validation.StringMatch(regexp.MustCompile("^[a-z_][a-z0-9_-]*[$]"), "expect a valid linux user"),
+						),
 					},
 					"public_key": {
 						Description:  "Public key of SSH User.",
