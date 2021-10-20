@@ -176,6 +176,91 @@ func resourceTaikunAccessProfile() *schema.Resource {
 	}
 }
 
+func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+
+	body := &models.UpsertAccessProfileCommand{
+		Name: data.Get("name").(string),
+	}
+
+	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	if organizationIDIsSet {
+		organizationId, err := atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+		}
+		body.OrganizationID = organizationId
+	}
+
+	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
+		body.HTTPProxy = proxy.(string)
+	}
+
+	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_user"); isSSHUsersSet {
+		rawSSHUsersList := SSHUsers.([]interface{})
+		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
+		for i, e := range rawSSHUsersList {
+			rawSSHUser := e.(map[string]interface{})
+			SSHUsersList[i] = &models.SSHUserCreateDto{
+				Name:         rawSSHUser["name"].(string),
+				SSHPublicKey: rawSSHUser["public_key"].(string),
+			}
+		}
+		body.SSHUsers = SSHUsersList
+	}
+
+	if NtpServers, isNTPServersSet := data.GetOk("ntp_server"); isNTPServersSet {
+		rawNtpServersList := NtpServers.([]interface{})
+		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
+		for i, e := range rawNtpServersList {
+			rawNtpServer := e.(map[string]interface{})
+			NTPServersList[i] = &models.NtpServerListDto{
+				Address: rawNtpServer["address"].(string),
+			}
+		}
+		body.NtpServers = NTPServersList
+	}
+
+	if DNSServers, isDNSServersSet := data.GetOk("dns_server"); isDNSServersSet {
+		rawDNSServersList := DNSServers.([]interface{})
+		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
+		for i, e := range rawDNSServersList {
+			rawDNSServer := e.(map[string]interface{})
+			DNSServersList[i] = &models.DNSServerListDto{
+				Address: rawDNSServer["address"].(string),
+			}
+		}
+		body.DNSServers = DNSServersList
+	}
+
+	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
+	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(createResult.Payload.ID)
+
+	locked := data.Get("is_locked").(bool)
+	if locked {
+		id, err := atoi32(createResult.Payload.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		lockBody := models.AccessProfilesLockManagementCommand{
+			ID:   id,
+			Mode: getLockMode(locked),
+		}
+		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return resourceTaikunAccessProfileRead(ctx, data, meta)
+}
+
 func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id, err := atoi32(data.Id())
@@ -274,91 +359,6 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 	}
 
 	return nil
-}
-
-func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-
-	body := &models.UpsertAccessProfileCommand{
-		Name: data.Get("name").(string),
-	}
-
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
-	if organizationIDIsSet {
-		organizationId, err := atoi32(organizationIDData.(string))
-		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
-		}
-		body.OrganizationID = organizationId
-	}
-
-	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
-		body.HTTPProxy = proxy.(string)
-	}
-
-	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_user"); isSSHUsersSet {
-		rawSSHUsersList := SSHUsers.([]interface{})
-		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
-		for i, e := range rawSSHUsersList {
-			rawSSHUser := e.(map[string]interface{})
-			SSHUsersList[i] = &models.SSHUserCreateDto{
-				Name:         rawSSHUser["name"].(string),
-				SSHPublicKey: rawSSHUser["public_key"].(string),
-			}
-		}
-		body.SSHUsers = SSHUsersList
-	}
-
-	if NtpServers, isNTPServersSet := data.GetOk("ntp_server"); isNTPServersSet {
-		rawNtpServersList := NtpServers.([]interface{})
-		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
-		for i, e := range rawNtpServersList {
-			rawNtpServer := e.(map[string]interface{})
-			NTPServersList[i] = &models.NtpServerListDto{
-				Address: rawNtpServer["address"].(string),
-			}
-		}
-		body.NtpServers = NTPServersList
-	}
-
-	if DNSServers, isDNSServersSet := data.GetOk("dns_server"); isDNSServersSet {
-		rawDNSServersList := DNSServers.([]interface{})
-		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
-		for i, e := range rawDNSServersList {
-			rawDNSServer := e.(map[string]interface{})
-			DNSServersList[i] = &models.DNSServerListDto{
-				Address: rawDNSServer["address"].(string),
-			}
-		}
-		body.DNSServers = DNSServersList
-	}
-
-	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(createResult.Payload.ID)
-
-	locked := data.Get("is_locked").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.AccessProfilesLockManagementCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return resourceTaikunAccessProfileRead(ctx, data, meta)
 }
 
 func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
