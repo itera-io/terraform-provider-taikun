@@ -88,7 +88,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 	return resourceTaikunOrganizationBillingRuleAttachmentRead(ctx, data, meta)
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())
@@ -128,7 +128,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(ctx context.Context, da
 	return nil
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*apiClient)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())

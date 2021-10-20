@@ -23,7 +23,7 @@ func dataSourceTaikunOrganization() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	var limit int32 = 1

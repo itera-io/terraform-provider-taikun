@@ -105,7 +105,7 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
 }
 
-func resourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunSlackConfigurationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())
@@ -186,7 +186,7 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.Re
 	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
 }
 
-func resourceTaikunSlackConfigurationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())

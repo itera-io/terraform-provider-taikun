@@ -200,7 +200,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 	return resourceTaikunOrganizationRead(ctx, data, meta)
 }
 
-func resourceTaikunOrganizationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id := data.Id()
 	id32, _ := atoi32(data.Id())
@@ -318,7 +318,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 	return resourceTaikunOrganizationRead(ctx, data, meta)
 }
 
-func resourceTaikunOrganizationDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id, err := atoi32(data.Id())
 	if err != nil {

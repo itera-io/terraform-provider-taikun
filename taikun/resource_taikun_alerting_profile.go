@@ -248,7 +248,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 
-func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id, err := atoi32(data.Id())
 	data.SetId("")
@@ -392,7 +392,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 
-func resourceTaikunAlertingProfileDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())

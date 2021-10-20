@@ -31,7 +31,7 @@ func dataSourceTaikunAlertingProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAlertingProfilesRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunAlertingProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
