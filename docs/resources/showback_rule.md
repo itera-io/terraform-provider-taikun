@@ -8,23 +8,20 @@ description: |-   Taikun Showback Rule
 
 Taikun Showback Rule
 
-~> **Role Requirement** In order to use the `taikun_showback_rule` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_showback_rule` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_showback_rule" "foo" {
-  # Required
   name        = "foo"
   price       = 1000
   metric_name = "my_metric_name"
   type        = "Sum"
   kind        = "General"
 
-  # Optional
   label {
     key   = "key"
     value = "value"
@@ -77,6 +74,5 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_showback_rule.myrule 42
 ```

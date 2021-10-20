@@ -8,16 +8,14 @@ description: |-   Retrieve all users.
 
 Retrieve all users.
 
-~> **Role Requirement** In order to use the `taikun_users` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_users` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_users" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```

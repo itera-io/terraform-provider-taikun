@@ -8,16 +8,14 @@ description: |-   Retrieve all access profiles.
 
 Retrieve all access profiles.
 
-~> **Role Requirement** In order to use the `taikun_access_profiles` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_access_profiles` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_access_profiles" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```

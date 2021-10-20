@@ -8,8 +8,7 @@ description: |-   Get an Azure cloud credential by its ID.
 
 Get an Azure cloud credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_azure` data source you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credential_azure` data source you need a `Manager` or `Partner` account.
 
 ## Example Usage
 

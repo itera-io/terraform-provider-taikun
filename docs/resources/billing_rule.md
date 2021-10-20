@@ -8,7 +8,7 @@ description: |-   Taikun Billing Rule
 
 Taikun Billing Rule
 
-~> **Role Requirement** In order to use the `taikun_billing_rule` resource you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_rule` resource you need a `Partner` account.
 
 ## Example Usage
 
@@ -21,7 +21,6 @@ resource "taikun_billing_credential" "foo" {
 }
 
 resource "taikun_billing_rule" "foo" {
-  # Required
   name        = "foo"
   metric_name = "coredns_forward_request_duration_seconds"
   price       = 1
@@ -72,6 +71,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_billing_rule.myrule 42
 ```

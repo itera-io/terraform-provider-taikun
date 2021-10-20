@@ -8,22 +8,19 @@ description: |-   Taikun OpenStack Cloud Credential
 
 Taikun OpenStack Cloud Credential
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_openstack` resource you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credential_openstack` resource you need a `Manager` or `Partner` account.
 
-!> **Import Network** If you choose to import network, DNS in profile created in Access Profiles will be IGNORED.
+!> **Import Network** If you choose to import a network, the Access Profile's DNS will be ignored.
 
-~> **Import Network** If you choose to import network, a router between the public network and the internal network must
+~> **Import Network** If you choose to import a network, a router between the public network and the internal network must
 already exist. There should be internal access on the internal network, either from the router or directly.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_cloud_credential_openstack" "foo" {
-  # Required
   name = "foo"
 
   user     = "user"
@@ -35,7 +32,6 @@ resource "taikun_cloud_credential_openstack" "foo" {
   public_network_name = "public_network_name"
   region              = "region"
 
-  # Optional
   availability_zone          = "availability_zone"
   volume_type_name           = "volume_type_name"
   imported_network_subnet_id = "imported_network_subnet_id"

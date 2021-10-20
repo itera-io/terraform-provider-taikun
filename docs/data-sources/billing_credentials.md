@@ -8,17 +8,12 @@ description: |-   Retrieve all billing credentials.
 
 Retrieve all billing credentials.
 
-~> **Role Requirement** In order to use the `taikun_billing_credentials` data source you need at least a `Partner`
-account
-
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+~> **Role Requirement** In order to use the `taikun_billing_credentials` data source you need a `Partner` account.
 
 ## Example Usage
 
 ```terraform
 data "taikun_billing_credentials" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```

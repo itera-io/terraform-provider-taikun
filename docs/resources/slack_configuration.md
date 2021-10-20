@@ -8,22 +8,19 @@ description: |-   Taikun Slack Configuration
 
 Taikun Slack Configuration
 
-~> **Role Requirement** In order to use the `taikun_slack_configuration` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_slack_configuration` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_slack_configuration" "foo" {
-  # Required
   name    = "foo"
   channel = "ci"
   url     = "https://hooks.myapp.example/ci"
   type    = "Alert" // or "General"
 
-  # Optional for Partner and Admin
   organization_id = "42"
 }
 ```
@@ -52,6 +49,5 @@ resource "taikun_slack_configuration" "foo" {
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_slack_configuration.myslackconfig 42
 ```

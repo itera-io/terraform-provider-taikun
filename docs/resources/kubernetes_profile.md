@@ -8,19 +8,16 @@ description: |-   Taikun Kubernetes Profile
 
 Taikun Kubernetes Profile
 
-~> **Role Requirement** In order to use the `taikun_kubernetes_profile` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_kubernetes_profile` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_kubernetes_profile" "foo" {
-  # Required
   name = "foo"
 
-  # Optional
   organization_id         = "42"
   load_balancing_solution = "Taikun"
   bastion_proxy_enabled   = true
@@ -56,6 +53,5 @@ resource "taikun_kubernetes_profile" "foo" {
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_kubernetes_profile.myprofile 42
 ```

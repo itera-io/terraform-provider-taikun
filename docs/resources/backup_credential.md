@@ -8,22 +8,20 @@ description: |-   Taikun Backup Credential
 
 Taikun Backup Credential
 
-~> **Role Requirement** In order to use the `taikun_backup_credential` resource you need at least a `Manager` account.
+~> **Role Requirement** In order to use the `taikun_backup_credential` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, it otherwise defaults to the user's organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_backup_credential" "foo" {
-  # Required
   name                 = "foo"
   s3_access_key_id     = "s3_access_key_id"
   s3_secret_access_key = "s3_secret_access_key"
   s3_endpoint          = "s3_endpoint"
   s3_region            = "s3_region"
 
-  # Optional
   organization_id = "42"
   is_locked       = true
 }

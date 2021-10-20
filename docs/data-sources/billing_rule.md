@@ -8,7 +8,7 @@ description: |-   Get a billing rule by its ID.
 
 Get a billing rule by its ID.
 
-~> **Role Requirement** In order to use the `taikun_billing_rule` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_rule` data source you need a `Partner` account.
 
 ## Example Usage
 

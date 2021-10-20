@@ -8,18 +8,16 @@ description: |-   Taikun Organization
 
 Taikun Organization
 
-~> **Role Requirement** In order to use the `taikun_organization` resource you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_organization` resource you need a `Partner` account.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_organization" "foo" {
-  # Required
   name          = "foo"
   full_name     = "Foo Organization"
   discount_rate = 42
 
-  # Optional
   vat_number                       = "CZ4495374355"
   email                            = "contact@foo.org"
   billing_email                    = "billing@foo.org"
@@ -70,6 +68,5 @@ resource "taikun_organization" "foo" {
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_organization.myorganization 42
 ```

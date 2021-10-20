@@ -8,19 +8,16 @@ description: |-   Taikun Access Profile
 
 Taikun Access Profile
 
-~> **Role Requirement** In order to use the `taikun_access_profile` resource you need at least a `Manager` account.
+~> **Role Requirement** In order to use the `taikun_access_profile` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_access_profile" "foo" {
-  # Required
   name = "foo"
 
-  # Optional
   organization_id = "42" # Optional for Partner and Admin
   is_locked       = true
   http_proxy      = "proxy_url"
@@ -119,6 +116,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_access_profile.myaccessprofile 42
 ```

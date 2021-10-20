@@ -8,17 +8,14 @@ description: |-   Retrieve all Azure cloud credentials.
 
 Retrieve all Azure cloud credentials.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credentials_azure` data source you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credentials_azure` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_cloud_credentials_azure" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```

@@ -8,17 +8,14 @@ description: |-   Taikun AWS Cloud Credential
 
 Taikun AWS Cloud Credential
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` resource you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_cloud_credential_aws" "foo" {
-  # Required
   name = "foo"
 
   access_key_id     = "access_key_id"
@@ -26,7 +23,6 @@ resource "taikun_cloud_credential_aws" "foo" {
   region            = "region"
   availability_zone = "availability_zone"
 
-  # Optional
   organization_id = "42"
   is_locked       = false
 }

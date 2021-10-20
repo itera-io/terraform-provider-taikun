@@ -8,21 +8,18 @@ description: |-   Taikun User
 
 Taikun User
 
-~> **Role Requirement** In order to use the `taikun_user` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_user` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_user" "foo" {
-  # Required
   user_name = "foo"
   email     = "email@domain.fr"
   role      = "User"
 
-  # Optional
   display_name        = "Foo"
   organization_id     = "42" # Optional for Partner and Admin
   user_disabled       = true
@@ -60,6 +57,5 @@ resource "taikun_user" "foo" {
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_user.myuser 00000000-0000-0000-0000-000000000000
 ```

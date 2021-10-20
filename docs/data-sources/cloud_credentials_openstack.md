@@ -8,17 +8,14 @@ description: |-   Retrieve all OpenStack cloud credentials.
 
 Retrieve all OpenStack cloud credentials.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credentials_openstack` data source you need at least
-a `Manager` account
+~> **Role Requirement** In order to use the `taikun_cloud_credentials_openstack` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_cloud_credentials_openstack" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```

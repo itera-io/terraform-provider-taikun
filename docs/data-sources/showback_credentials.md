@@ -8,17 +8,14 @@ description: |-   Retrieve all showback credentials.
 
 Retrieve all showback credentials.
 
-~> **Role Requirement** In order to use the `taikun_showback_credentials` data source you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_showback_credentials` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_showback_credentials" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```
