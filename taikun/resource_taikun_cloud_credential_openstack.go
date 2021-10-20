@@ -242,7 +242,7 @@ func resourceTaikunCloudCredentialOpenStackRead(_ context.Context, data *schema.
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Openstack) != 1 {
-		return diag.Errorf("openstack cloud credential with ID %d not found", id)
+		return nil
 	}
 
 	rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]

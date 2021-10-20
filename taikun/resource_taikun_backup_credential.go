@@ -165,7 +165,7 @@ func resourceTaikunBackupCredentialRead(_ context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("backup credential with ID %d not found", id)
+		return nil
 	}
 
 	rawBackupCredential := response.GetPayload().Data[0]

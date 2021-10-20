@@ -210,7 +210,7 @@ func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("showback rule with ID %d not found", id)
+		return nil
 	}
 
 	rawShowbackRule := response.GetPayload().Data[0]

@@ -175,7 +175,7 @@ func resourceTaikunCloudCredentialAWSRead(_ context.Context, data *schema.Resour
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Amazon) != 1 {
-		return diag.Errorf("aws cloud credential with ID %d not found", id)
+		return nil
 	}
 
 	rawCloudCredentialAWS := response.GetPayload().Amazon[0]

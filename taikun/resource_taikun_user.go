@@ -168,7 +168,7 @@ func resourceTaikunUserRead(_ context.Context, data *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("user with ID %s not found", id)
+		return nil
 	}
 
 	rawUser := response.GetPayload().Data[0]

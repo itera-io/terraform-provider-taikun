@@ -157,7 +157,7 @@ func resourceTaikunBillingRuleRead(_ context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("billing rule with ID %d not found", id)
+		return nil
 	}
 
 	rawBillingRule := response.GetPayload().Data[0]
