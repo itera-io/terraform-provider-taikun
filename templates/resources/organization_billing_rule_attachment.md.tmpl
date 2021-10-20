@@ -1,0 +1,18 @@
+---
+page_title: "{{.Type}} {{.Name}} - {{.ProviderName}}"
+subcategory: ""
+description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Type}} ({{.Name}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** In order to use the `taikun_organization_billing_rule_attachment` resource you need a `Partner` account.
+
+## Example Usage
+
+{{tffile "examples/resources/taikun_organization_billing_rule_attachment/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
