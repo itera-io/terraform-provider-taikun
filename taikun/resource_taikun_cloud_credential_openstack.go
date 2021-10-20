@@ -240,67 +240,68 @@ func resourceTaikunCloudCredentialOpenStackRead(_ context.Context, data *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Openstack) == 1 {
-		rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
-
-		if err := data.Set("created_by", rawCloudCredentialOpenStack.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawCloudCredentialOpenStack.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawCloudCredentialOpenStack.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_default", rawCloudCredentialOpenStack.IsDefault); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawCloudCredentialOpenStack.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawCloudCredentialOpenStack.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawCloudCredentialOpenStack.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("user", rawCloudCredentialOpenStack.User); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("project_name", rawCloudCredentialOpenStack.Project); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("project_id", rawCloudCredentialOpenStack.TenantID); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("public_network_name", rawCloudCredentialOpenStack.PublicNetwork); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("availability_zone", rawCloudCredentialOpenStack.AvailabilityZone); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("domain", rawCloudCredentialOpenStack.Domain); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("region", rawCloudCredentialOpenStack.Region); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("volume_type_name", rawCloudCredentialOpenStack.VolumeType); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("imported_network_subnet_id", rawCloudCredentialOpenStack.InternalSubnetID); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawCloudCredentialOpenStack.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawCloudCredentialOpenStack.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Openstack) != 1 {
+		return diag.Errorf("openstack cloud credential with ID %d not found", id)
 	}
+
+	rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
+
+	if err := data.Set("created_by", rawCloudCredentialOpenStack.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawCloudCredentialOpenStack.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawCloudCredentialOpenStack.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_default", rawCloudCredentialOpenStack.IsDefault); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawCloudCredentialOpenStack.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawCloudCredentialOpenStack.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawCloudCredentialOpenStack.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("user", rawCloudCredentialOpenStack.User); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("project_name", rawCloudCredentialOpenStack.Project); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("project_id", rawCloudCredentialOpenStack.TenantID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("public_network_name", rawCloudCredentialOpenStack.PublicNetwork); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("availability_zone", rawCloudCredentialOpenStack.AvailabilityZone); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("domain", rawCloudCredentialOpenStack.Domain); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("region", rawCloudCredentialOpenStack.Region); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("volume_type_name", rawCloudCredentialOpenStack.VolumeType); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("imported_network_subnet_id", rawCloudCredentialOpenStack.InternalSubnetID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawCloudCredentialOpenStack.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawCloudCredentialOpenStack.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }

@@ -160,49 +160,50 @@ func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.Resourc
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Data) == 1 {
-		rawBillingCredential := response.GetPayload().Data[0]
-
-		if err := data.Set("created_by", rawBillingCredential.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawBillingCredential.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawBillingCredential.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_default", rawBillingCredential.IsDefault); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawBillingCredential.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawBillingCredential.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawBillingCredential.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawBillingCredential.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawBillingCredential.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("prometheus_password", rawBillingCredential.PrometheusPassword); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("prometheus_url", rawBillingCredential.PrometheusURL); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("prometheus_username", rawBillingCredential.PrometheusUsername); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("billing credential with ID %d not found", id)
 	}
+
+	rawBillingCredential := response.GetPayload().Data[0]
+
+	if err := data.Set("created_by", rawBillingCredential.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawBillingCredential.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawBillingCredential.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_default", rawBillingCredential.IsDefault); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawBillingCredential.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawBillingCredential.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawBillingCredential.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawBillingCredential.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawBillingCredential.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("prometheus_password", rawBillingCredential.PrometheusPassword); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("prometheus_url", rawBillingCredential.PrometheusURL); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("prometheus_username", rawBillingCredential.PrometheusUsername); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }

@@ -166,52 +166,53 @@ func resourceTaikunUserRead(_ context.Context, data *schema.ResourceData, meta i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Data) == 1 {
-		rawUser := response.GetPayload().Data[0]
-
-		if err := data.Set("id", rawUser.ID); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("user_name", rawUser.Username); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawUser.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawUser.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("role", rawUser.Role); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("email", rawUser.Email); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("display_name", rawUser.DisplayName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("email_confirmed", rawUser.IsEmailConfirmed); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("email_notification_enabled", rawUser.IsEmailNotificationEnabled); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_csm", rawUser.IsCsm); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_owner", rawUser.Owner); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("user_disabled", rawUser.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("approved_by_partner", rawUser.IsApprovedByPartner); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(id)
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("user with ID %s not found", id)
 	}
+
+	rawUser := response.GetPayload().Data[0]
+
+	if err := data.Set("id", rawUser.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("user_name", rawUser.Username); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawUser.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawUser.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("role", rawUser.Role); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("email", rawUser.Email); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("display_name", rawUser.DisplayName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("email_confirmed", rawUser.IsEmailConfirmed); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("email_notification_enabled", rawUser.IsEmailNotificationEnabled); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_csm", rawUser.IsCsm); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_owner", rawUser.Owner); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("user_disabled", rawUser.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("approved_by_partner", rawUser.IsApprovedByPartner); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(id)
 
 	return nil
 }

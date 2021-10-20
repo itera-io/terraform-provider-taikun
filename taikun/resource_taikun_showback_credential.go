@@ -155,46 +155,47 @@ func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Data) == 1 {
-		rawShowbackCredential := response.GetPayload().Data[0]
-
-		if err := data.Set("created_by", rawShowbackCredential.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawShowbackCredential.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawShowbackCredential.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawShowbackCredential.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawShowbackCredential.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawShowbackCredential.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawShowbackCredential.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawShowbackCredential.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("password", rawShowbackCredential.Password); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("url", rawShowbackCredential.URL); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("username", rawShowbackCredential.Username); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("showback credential with ID %d not found", id)
 	}
+
+	rawShowbackCredential := response.GetPayload().Data[0]
+
+	if err := data.Set("created_by", rawShowbackCredential.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawShowbackCredential.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawShowbackCredential.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawShowbackCredential.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawShowbackCredential.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawShowbackCredential.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawShowbackCredential.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawShowbackCredential.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("password", rawShowbackCredential.Password); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("url", rawShowbackCredential.URL); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("username", rawShowbackCredential.Username); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }

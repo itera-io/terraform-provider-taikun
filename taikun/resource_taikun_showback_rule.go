@@ -208,72 +208,73 @@ func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Data) == 1 {
-		rawShowbackCredential := response.GetPayload().Data[0]
-
-		labels := make([]map[string]interface{}, len(rawShowbackCredential.Labels))
-		for i, rawLabel := range rawShowbackCredential.Labels {
-			labels[i] = map[string]interface{}{
-				"key":   rawLabel.Label,
-				"value": rawLabel.Value,
-			}
-		}
-
-		if err := data.Set("created_by", rawShowbackCredential.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("global_alert_limit", rawShowbackCredential.GlobalAlertLimit); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawShowbackCredential.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("kind", rawShowbackCredential.Kind); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("label", labels); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawShowbackCredential.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawShowbackCredential.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("metric_name", rawShowbackCredential.MetricName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawShowbackCredential.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawShowbackCredential.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawShowbackCredential.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("price", rawShowbackCredential.Price); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("project_alert_limit", rawShowbackCredential.ProjectAlertLimit); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("type", rawShowbackCredential.Type); err != nil {
-			return diag.FromErr(err)
-		}
-
-		if rawShowbackCredential.ShowbackCredentialID != 0 {
-			if err := data.Set("showback_credential_id", i32toa(rawShowbackCredential.ShowbackCredentialID)); err != nil {
-				return diag.FromErr(err)
-			}
-			if err := data.Set("showback_credential_name", rawShowbackCredential.ShowbackCredentialName); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("showback rule with ID %d not found", id)
 	}
+
+	rawShowbackRule := response.GetPayload().Data[0]
+
+	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels))
+	for i, rawLabel := range rawShowbackRule.Labels {
+		labels[i] = map[string]interface{}{
+			"key":   rawLabel.Label,
+			"value": rawLabel.Value,
+		}
+	}
+
+	if err := data.Set("created_by", rawShowbackRule.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("global_alert_limit", rawShowbackRule.GlobalAlertLimit); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawShowbackRule.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("kind", rawShowbackRule.Kind); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("label", labels); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawShowbackRule.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawShowbackRule.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("metric_name", rawShowbackRule.MetricName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawShowbackRule.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawShowbackRule.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawShowbackRule.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("price", rawShowbackRule.Price); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("project_alert_limit", rawShowbackRule.ProjectAlertLimit); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("type", rawShowbackRule.Type); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if rawShowbackRule.ShowbackCredentialID != 0 {
+		if err := data.Set("showback_credential_id", i32toa(rawShowbackRule.ShowbackCredentialID)); err != nil {
+			return diag.FromErr(err)
+		}
+		if err := data.Set("showback_credential_name", rawShowbackRule.ShowbackCredentialName); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }

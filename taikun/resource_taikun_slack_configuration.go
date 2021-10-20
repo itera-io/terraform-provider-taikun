@@ -120,7 +120,7 @@ func resourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("Slack configuration with ID %d not found", id)
+		return diag.Errorf("slack configuration with ID %d not found", id)
 	}
 
 	rawSlackConfiguration := response.Payload.Data[0]
