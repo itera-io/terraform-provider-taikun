@@ -18,18 +18,21 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
 		},
 		"alerting_profile_id": {
 			Description:      "ID of the project's alerting profile",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true, // TODO alerting profile can be detached, maybe handle in Update?
 		},
 		"cloud_credential_id": {
 			Description:      "ID of the cloud credential used to store the project",
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
 		},
 		"id": {
 			Description: "Project ID",
@@ -41,18 +44,21 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
 		},
 		"name": {
 			Description:  "Project name.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+			ForceNew:     true,
 		},
 		"organization_id": {
 			Description:      "ID of the organization which owns the project.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
 		},
 	}
 }
@@ -147,7 +153,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 
 func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// FIXME
-	return nil
+	return resourceTaikunProjectRead(ctx, data, meta)
 }
 
 func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
