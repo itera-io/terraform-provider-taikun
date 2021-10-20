@@ -65,7 +65,7 @@ func dataSourceTaikunCloudCredentialsAzureRead(_ context.Context, data *schema.R
 
 	cloudCredentials := make([]map[string]interface{}, len(cloudCredentialsList))
 	for i, rawCloudCredential := range cloudCredentialsList {
-		cloudCredentials[i] = flattenDataSourceTaikunCloudCredentialAzureItem(rawCloudCredential)
+		cloudCredentials[i] = flattenTaikunCloudCredentialAzure(rawCloudCredential)
 	}
 	if err := data.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)
@@ -74,22 +74,4 @@ func dataSourceTaikunCloudCredentialsAzureRead(_ context.Context, data *schema.R
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunCloudCredentialAzureItem(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"created_by":        rawAzureCredential.CreatedBy,
-		"id":                i32toa(rawAzureCredential.ID),
-		"is_locked":         rawAzureCredential.IsLocked,
-		"is_default":        rawAzureCredential.IsDefault,
-		"last_modified":     rawAzureCredential.LastModified,
-		"last_modified_by":  rawAzureCredential.LastModifiedBy,
-		"name":              rawAzureCredential.Name,
-		"organization_id":   i32toa(rawAzureCredential.OrganizationID),
-		"organization_name": rawAzureCredential.OrganizationName,
-		"availability_zone": rawAzureCredential.AvailabilityZone,
-		"location":          rawAzureCredential.Location,
-		"tenant_id":         rawAzureCredential.TenantID,
-	}
 }

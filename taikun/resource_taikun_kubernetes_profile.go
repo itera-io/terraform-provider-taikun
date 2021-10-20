@@ -161,37 +161,8 @@ func resourceTaikunKubernetesProfileRead(_ context.Context, data *schema.Resourc
 
 	rawKubernetesProfile := response.GetPayload().Data[0]
 
-	if err := data.Set("bastion_proxy_enabled", rawKubernetesProfile.ExposeNodePortOnBastion); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("created_by", rawKubernetesProfile.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("cni", rawKubernetesProfile.Cni); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawKubernetesProfile.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawKubernetesProfile.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawKubernetesProfile.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("load_balancing_solution", getLoadBalancingSolution(rawKubernetesProfile.OctaviaEnabled, rawKubernetesProfile.TaikunLBEnabled)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawKubernetesProfile.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawKubernetesProfile.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawKubernetesProfile.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawKubernetesProfile.OrganizationName); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunKubernetesProfile(rawKubernetesProfile))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -238,4 +209,21 @@ func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.Resou
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunKubernetesProfile(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
+
+	return map[string]interface{}{
+		"bastion_proxy_enabled":   rawKubernetesProfile.ExposeNodePortOnBastion,
+		"created_by":              rawKubernetesProfile.CreatedBy,
+		"cni":                     rawKubernetesProfile.Cni,
+		"id":                      i32toa(rawKubernetesProfile.ID),
+		"is_locked":               rawKubernetesProfile.IsLocked,
+		"last_modified":           rawKubernetesProfile.LastModified,
+		"last_modified_by":        rawKubernetesProfile.LastModifiedBy,
+		"load_balancing_solution": getLoadBalancingSolution(rawKubernetesProfile.OctaviaEnabled, rawKubernetesProfile.TaikunLBEnabled),
+		"name":                    rawKubernetesProfile.Name,
+		"organization_id":         i32toa(rawKubernetesProfile.OrganizationID),
+		"organization_name":       rawKubernetesProfile.OrganizationName,
+	}
 }

@@ -286,76 +286,8 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 
 	rawAccessProfile := response.GetPayload().Data[0]
 
-	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
-	for i, rawDNSServer := range rawAccessProfile.DNSServers {
-		DNSServers[i] = map[string]interface{}{
-			"address": rawDNSServer.Address,
-			"id":      i32toa(rawDNSServer.ID),
-		}
-	}
-
-	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
-	for i, rawNTPServer := range rawAccessProfile.NtpServers {
-		NTPServers[i] = map[string]interface{}{
-			"address": rawNTPServer.Address,
-			"id":      i32toa(rawNTPServer.ID),
-		}
-	}
-
-	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
-	for i, rawProject := range rawAccessProfile.Projects {
-		projects[i] = map[string]interface{}{
-			"id":   i32toa(rawProject.ID),
-			"name": rawProject.Name,
-		}
-	}
-
-	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
-	for i, rawSSHUser := range sshResponse.Payload {
-		SSHUsers[i] = map[string]interface{}{
-			"id":         i32toa(rawSSHUser.ID),
-			"name":       rawSSHUser.Name,
-			"public_key": rawSSHUser.SSHPublicKey,
-		}
-	}
-
-	if err := data.Set("created_by", rawAccessProfile.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("dns_server", DNSServers); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("http_proxy", rawAccessProfile.HTTPProxy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawAccessProfile.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawAccessProfile.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawAccessProfile.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawAccessProfile.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawAccessProfile.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("ntp_server", NTPServers); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawAccessProfile.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawAccessProfile.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("project", projects); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("ssh_user", SSHUsers); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunAccessProfile(rawAccessProfile, sshResponse))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -429,4 +361,56 @@ func resourceTaikunAccessProfileDelete(_ context.Context, data *schema.ResourceD
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
+
+	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
+	for i, rawDNSServer := range rawAccessProfile.DNSServers {
+		DNSServers[i] = map[string]interface{}{
+			"address": rawDNSServer.Address,
+			"id":      i32toa(rawDNSServer.ID),
+		}
+	}
+
+	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
+	for i, rawNTPServer := range rawAccessProfile.NtpServers {
+		NTPServers[i] = map[string]interface{}{
+			"address": rawNTPServer.Address,
+			"id":      i32toa(rawNTPServer.ID),
+		}
+	}
+
+	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
+	for i, rawProject := range rawAccessProfile.Projects {
+		projects[i] = map[string]interface{}{
+			"id":   i32toa(rawProject.ID),
+			"name": rawProject.Name,
+		}
+	}
+
+	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
+	for i, rawSSHUser := range sshResponse.Payload {
+		SSHUsers[i] = map[string]interface{}{
+			"id":         i32toa(rawSSHUser.ID),
+			"name":       rawSSHUser.Name,
+			"public_key": rawSSHUser.SSHPublicKey,
+		}
+	}
+
+	return map[string]interface{}{
+		"created_by":        rawAccessProfile.CreatedBy,
+		"dns_server":        DNSServers,
+		"http_proxy":        rawAccessProfile.HTTPProxy,
+		"id":                i32toa(rawAccessProfile.ID),
+		"is_locked":         rawAccessProfile.IsLocked,
+		"last_modified":     rawAccessProfile.LastModified,
+		"last_modified_by":  rawAccessProfile.LastModifiedBy,
+		"name":              rawAccessProfile.Name,
+		"ntp_server":        NTPServers,
+		"organization_id":   i32toa(rawAccessProfile.OrganizationID),
+		"organization_name": rawAccessProfile.OrganizationName,
+		"project":           projects,
+		"ssh_user":          SSHUsers,
+	}
 }

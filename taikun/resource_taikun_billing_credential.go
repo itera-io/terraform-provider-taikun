@@ -167,40 +167,8 @@ func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.Resourc
 
 	rawBillingCredential := response.GetPayload().Data[0]
 
-	if err := data.Set("created_by", rawBillingCredential.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawBillingCredential.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawBillingCredential.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_default", rawBillingCredential.IsDefault); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawBillingCredential.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawBillingCredential.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawBillingCredential.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawBillingCredential.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawBillingCredential.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("prometheus_password", rawBillingCredential.PrometheusPassword); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("prometheus_url", rawBillingCredential.PrometheusURL); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("prometheus_username", rawBillingCredential.PrometheusUsername); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunBillingCredential(rawBillingCredential))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -246,4 +214,22 @@ func resourceTaikunBillingCredentialDelete(_ context.Context, data *schema.Resou
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunBillingCredential(rawOperationCredential *models.OperationCredentialsListDto) map[string]interface{} {
+
+	return map[string]interface{}{
+		"created_by":          rawOperationCredential.CreatedBy,
+		"id":                  i32toa(rawOperationCredential.ID),
+		"is_locked":           rawOperationCredential.IsLocked,
+		"is_default":          rawOperationCredential.IsDefault,
+		"last_modified":       rawOperationCredential.LastModified,
+		"last_modified_by":    rawOperationCredential.LastModifiedBy,
+		"name":                rawOperationCredential.Name,
+		"organization_id":     i32toa(rawOperationCredential.OrganizationID),
+		"organization_name":   rawOperationCredential.OrganizationName,
+		"prometheus_password": rawOperationCredential.PrometheusPassword,
+		"prometheus_url":      rawOperationCredential.PrometheusURL,
+		"prometheus_username": rawOperationCredential.PrometheusUsername,
+	}
 }

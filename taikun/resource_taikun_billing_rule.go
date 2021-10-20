@@ -162,43 +162,8 @@ func resourceTaikunBillingRuleRead(_ context.Context, data *schema.ResourceData,
 
 	rawBillingRule := response.GetPayload().Data[0]
 
-	labels := make([]map[string]interface{}, len(rawBillingRule.Labels))
-	for i, rawLabel := range rawBillingRule.Labels {
-		labels[i] = map[string]interface{}{
-			"key":   rawLabel.Label,
-			"value": rawLabel.Value,
-			"id":    i32toa(rawLabel.ID),
-		}
-	}
-
-	if err := data.Set("billing_credential_id", i32toa(rawBillingRule.OperationCredential.OperationCredentialID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("created_by", rawBillingRule.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawBillingRule.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("label", labels); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawBillingRule.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawBillingRule.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("metric_name", rawBillingRule.MetricName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawBillingRule.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("price", rawBillingRule.Price); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("type", rawBillingRule.Type); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunBillingRule(rawBillingRule))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -251,4 +216,29 @@ func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceDat
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunBillingRule(rawBillingRule *models.PrometheusRuleListDto) map[string]interface{} {
+
+	labels := make([]map[string]interface{}, len(rawBillingRule.Labels))
+	for i, rawLabel := range rawBillingRule.Labels {
+		labels[i] = map[string]interface{}{
+			"key":   rawLabel.Label,
+			"value": rawLabel.Value,
+			"id":    i32toa(rawLabel.ID),
+		}
+	}
+
+	return map[string]interface{}{
+		"billing_credential_id": i32toa(rawBillingRule.OperationCredential.OperationCredentialID),
+		"created_by":            rawBillingRule.CreatedBy,
+		"id":                    i32toa(rawBillingRule.ID),
+		"label":                 labels,
+		"last_modified":         rawBillingRule.LastModified,
+		"last_modified_by":      rawBillingRule.LastModifiedBy,
+		"name":                  rawBillingRule.Name,
+		"metric_name":           rawBillingRule.MetricName,
+		"price":                 rawBillingRule.Price,
+		"type":                  rawBillingRule.Type,
+	}
 }

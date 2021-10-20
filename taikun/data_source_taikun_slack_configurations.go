@@ -65,7 +65,7 @@ func dataSourceTaikunSlackConfigurationsRead(_ context.Context, data *schema.Res
 
 	slackConfigurations := make([]map[string]interface{}, len(slackConfigurationsList))
 	for i, rawSlackConfiguration := range slackConfigurationsList {
-		slackConfigurations[i] = flattenDataSourceTaikunSlackConfigurationsItem(rawSlackConfiguration)
+		slackConfigurations[i] = flattenTaikunSlackConfiguration(rawSlackConfiguration)
 	}
 
 	if err := data.Set("slack_configurations", slackConfigurations); err != nil {
@@ -75,16 +75,4 @@ func dataSourceTaikunSlackConfigurationsRead(_ context.Context, data *schema.Res
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunSlackConfigurationsItem(rawSlackConfiguration *models.SlackConfigurationDto) map[string]interface{} {
-	return map[string]interface{}{
-		"channel":           rawSlackConfiguration.Channel,
-		"id":                i32toa(rawSlackConfiguration.ID),
-		"name":              rawSlackConfiguration.Name,
-		"organization_id":   i32toa(rawSlackConfiguration.OrganizationID),
-		"organization_name": rawSlackConfiguration.OrganizationName,
-		"type":              rawSlackConfiguration.SlackType,
-		"url":               rawSlackConfiguration.URL,
-	}
 }

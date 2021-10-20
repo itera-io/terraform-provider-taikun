@@ -65,7 +65,7 @@ func dataSourceTaikunUsersRead(_ context.Context, data *schema.ResourceData, met
 
 	userList := make([]map[string]interface{}, len(rawUserList), len(rawUserList))
 	for i, rawUser := range rawUserList {
-		userList[i] = flattenDataSourceTaikunUserItem(rawUser)
+		userList[i] = flattenTaikunUser(rawUser)
 	}
 	if err := data.Set("users", userList); err != nil {
 		return diag.FromErr(err)
@@ -74,23 +74,4 @@ func dataSourceTaikunUsersRead(_ context.Context, data *schema.ResourceData, met
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunUserItem(rawUser *models.UserForListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"id":                         rawUser.ID,
-		"user_name":                  rawUser.Username,
-		"organization_id":            i32toa(rawUser.OrganizationID),
-		"organization_name":          rawUser.OrganizationName,
-		"role":                       rawUser.Role,
-		"email":                      rawUser.Email,
-		"display_name":               rawUser.DisplayName,
-		"email_confirmed":            rawUser.IsEmailConfirmed,
-		"email_notification_enabled": rawUser.IsEmailNotificationEnabled,
-		"is_csm":                     rawUser.IsCsm,
-		"is_owner":                   rawUser.Owner,
-		"user_disabled":              rawUser.IsLocked,
-		"approved_by_partner":        rawUser.IsApprovedByPartner,
-	}
 }

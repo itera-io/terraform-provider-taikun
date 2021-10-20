@@ -215,64 +215,9 @@ func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData
 
 	rawShowbackRule := response.GetPayload().Data[0]
 
-	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels))
-	for i, rawLabel := range rawShowbackRule.Labels {
-		labels[i] = map[string]interface{}{
-			"key":   rawLabel.Label,
-			"value": rawLabel.Value,
-		}
-	}
-
-	if err := data.Set("created_by", rawShowbackRule.CreatedBy); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunShowbackRule(rawShowbackRule))
+	if err != nil {
 		return diag.FromErr(err)
-	}
-	if err := data.Set("global_alert_limit", rawShowbackRule.GlobalAlertLimit); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawShowbackRule.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("kind", rawShowbackRule.Kind); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("label", labels); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawShowbackRule.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawShowbackRule.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("metric_name", rawShowbackRule.MetricName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawShowbackRule.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawShowbackRule.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawShowbackRule.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("price", rawShowbackRule.Price); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("project_alert_limit", rawShowbackRule.ProjectAlertLimit); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("type", rawShowbackRule.Type); err != nil {
-		return diag.FromErr(err)
-	}
-
-	if rawShowbackRule.ShowbackCredentialID != 0 {
-		if err := data.Set("showback_credential_id", i32toa(rawShowbackRule.ShowbackCredentialID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("showback_credential_name", rawShowbackRule.ShowbackCredentialName); err != nil {
-			return diag.FromErr(err)
-		}
 	}
 
 	data.SetId(i32toa(id))
@@ -333,4 +278,38 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceDa
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunShowbackRule(rawShowbackRule *models.ShowbackRulesListDto) map[string]interface{} {
+
+	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels))
+	for i, rawLabel := range rawShowbackRule.Labels {
+		labels[i] = map[string]interface{}{
+			"key":   rawLabel.Label,
+			"value": rawLabel.Value,
+		}
+	}
+
+	result := map[string]interface{}{
+		"created_by":          rawShowbackRule.CreatedBy,
+		"global_alert_limit":  rawShowbackRule.GlobalAlertLimit,
+		"id":                  i32toa(rawShowbackRule.ID),
+		"kind":                rawShowbackRule.Kind,
+		"label":               labels,
+		"last_modified":       rawShowbackRule.LastModified,
+		"last_modified_by":    rawShowbackRule.LastModifiedBy,
+		"metric_name":         rawShowbackRule.MetricName,
+		"name":                rawShowbackRule.Name,
+		"organization_id":     i32toa(rawShowbackRule.OrganizationID),
+		"organization_name":   rawShowbackRule.OrganizationName,
+		"price":               rawShowbackRule.Price,
+		"project_alert_limit": rawShowbackRule.ProjectAlertLimit,
+		"type":                rawShowbackRule.Type,
+	}
+
+	if rawShowbackRule.ShowbackCredentialID != 0 {
+		result["showback_credential_id"] = i32toa(rawShowbackRule.ShowbackCredentialID)
+		result["showback_credential_name"] = rawShowbackRule.ShowbackCredentialName
+	}
+	return result
 }

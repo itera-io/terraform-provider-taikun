@@ -73,7 +73,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 			return diag.FromErr(err)
 		}
 
-		accessProfiles[i] = flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile, sshResponse)
+		accessProfiles[i] = flattenTaikunAccessProfile(rawAccessProfile, sshResponse)
 	}
 	if err := data.Set("access_profiles", accessProfiles); err != nil {
 		return diag.FromErr(err)
@@ -82,56 +82,4 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunAccessProfilesItem(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
-
-	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
-	for i, rawDNSServer := range rawAccessProfile.DNSServers {
-		DNSServers[i] = map[string]interface{}{
-			"address": rawDNSServer.Address,
-			"id":      i32toa(rawDNSServer.ID),
-		}
-	}
-
-	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
-	for i, rawNTPServer := range rawAccessProfile.NtpServers {
-		NTPServers[i] = map[string]interface{}{
-			"address": rawNTPServer.Address,
-			"id":      i32toa(rawNTPServer.ID),
-		}
-	}
-
-	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
-	for i, rawProject := range rawAccessProfile.Projects {
-		projects[i] = map[string]interface{}{
-			"id":   i32toa(rawProject.ID),
-			"name": rawProject.Name,
-		}
-	}
-
-	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
-	for i, rawSSHUser := range sshResponse.Payload {
-		SSHUsers[i] = map[string]interface{}{
-			"id":         i32toa(rawSSHUser.ID),
-			"name":       rawSSHUser.Name,
-			"public_key": rawSSHUser.SSHPublicKey,
-		}
-	}
-
-	return map[string]interface{}{
-		"created_by":        rawAccessProfile.CreatedBy,
-		"dns_server":        DNSServers,
-		"http_proxy":        rawAccessProfile.HTTPProxy,
-		"id":                i32toa(rawAccessProfile.ID),
-		"is_locked":         rawAccessProfile.IsLocked,
-		"last_modified":     rawAccessProfile.LastModified,
-		"last_modified_by":  rawAccessProfile.LastModifiedBy,
-		"name":              rawAccessProfile.Name,
-		"ntp_server":        NTPServers,
-		"organization_id":   i32toa(rawAccessProfile.OrganizationID),
-		"organization_name": rawAccessProfile.OrganizationName,
-		"project":           projects,
-		"ssh_user":          SSHUsers,
-	}
 }

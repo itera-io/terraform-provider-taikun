@@ -247,58 +247,8 @@ func resourceTaikunCloudCredentialOpenStackRead(_ context.Context, data *schema.
 
 	rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
 
-	if err := data.Set("created_by", rawCloudCredentialOpenStack.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawCloudCredentialOpenStack.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawCloudCredentialOpenStack.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_default", rawCloudCredentialOpenStack.IsDefault); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawCloudCredentialOpenStack.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawCloudCredentialOpenStack.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawCloudCredentialOpenStack.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("user", rawCloudCredentialOpenStack.User); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("project_name", rawCloudCredentialOpenStack.Project); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("project_id", rawCloudCredentialOpenStack.TenantID); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("public_network_name", rawCloudCredentialOpenStack.PublicNetwork); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("availability_zone", rawCloudCredentialOpenStack.AvailabilityZone); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("domain", rawCloudCredentialOpenStack.Domain); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("region", rawCloudCredentialOpenStack.Region); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("volume_type_name", rawCloudCredentialOpenStack.VolumeType); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("imported_network_subnet_id", rawCloudCredentialOpenStack.InternalSubnetID); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawCloudCredentialOpenStack.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawCloudCredentialOpenStack.OrganizationName); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunCloudCredentialOpenStack(rawCloudCredentialOpenStack))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -341,4 +291,28 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 	}
 
 	return resourceTaikunCloudCredentialOpenStackRead(ctx, data, meta)
+}
+
+func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {
+
+	return map[string]interface{}{
+		"created_by":                 rawOpenStackCredential.CreatedBy,
+		"id":                         i32toa(rawOpenStackCredential.ID),
+		"is_locked":                  rawOpenStackCredential.IsLocked,
+		"is_default":                 rawOpenStackCredential.IsDefault,
+		"last_modified":              rawOpenStackCredential.LastModified,
+		"last_modified_by":           rawOpenStackCredential.LastModifiedBy,
+		"name":                       rawOpenStackCredential.Name,
+		"user":                       rawOpenStackCredential.User,
+		"project_name":               rawOpenStackCredential.Project,
+		"project_id":                 rawOpenStackCredential.TenantID,
+		"organization_id":            i32toa(rawOpenStackCredential.OrganizationID),
+		"organization_name":          rawOpenStackCredential.OrganizationName,
+		"public_network_name":        rawOpenStackCredential.PublicNetwork,
+		"availability_zone":          rawOpenStackCredential.AvailabilityZone,
+		"domain":                     rawOpenStackCredential.Domain,
+		"region":                     rawOpenStackCredential.Region,
+		"volume_type_name":           rawOpenStackCredential.VolumeType,
+		"imported_network_subnet_id": rawOpenStackCredential.InternalSubnetID,
+	}
 }

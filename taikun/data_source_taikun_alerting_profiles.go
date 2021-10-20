@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"github.com/itera-io/taikungoclient/client/alerting_integrations"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -62,7 +63,14 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, data *schema.Resour
 
 	alertingProfiles := make([]map[string]interface{}, len(alertingProfileDTOs))
 	for i, alertingProfileDTO := range alertingProfileDTOs {
-		alertingProfiles[i] = flattenDataSourceTaikunAlertingProfilesItem(alertingProfileDTO)
+
+		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
+		alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		alertingProfiles[i] = flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload)
 	}
 
 	if err := data.Set("alerting_profiles", alertingProfiles); err != nil {
@@ -72,22 +80,4 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, data *schema.Resour
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunAlertingProfilesItem(alertingProfileDTO *models.AlertingProfilesListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"created_by":               alertingProfileDTO.CreatedBy,
-		"emails":                   getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails),
-		"id":                       i32toa(alertingProfileDTO.ID),
-		"is_locked":                alertingProfileDTO.IsLocked,
-		"last_modified":            alertingProfileDTO.LastModified,
-		"last_modified_by":         alertingProfileDTO.LastModifiedBy,
-		"name":                     alertingProfileDTO.Name,
-		"organization_id":          i32toa(alertingProfileDTO.OrganizationID),
-		"organization_name":        alertingProfileDTO.OrganizationName,
-		"reminder":                 alertingProfileDTO.Reminder,
-		"slack_configuration_id":   i32toa(alertingProfileDTO.SlackConfigurationID),
-		"slack_configuration_name": alertingProfileDTO.SlackConfigurationName,
-		"webhook":                  getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks),
-	}
 }

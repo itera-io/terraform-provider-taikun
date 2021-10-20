@@ -64,7 +64,7 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 
 	kubernetesProfiles := make([]map[string]interface{}, len(kubernetesProfilesListDtos))
 	for i, rawKubernetesProfile := range kubernetesProfilesListDtos {
-		kubernetesProfiles[i] = flattenDataSourceTaikunKubernetesProfilesItem(rawKubernetesProfile)
+		kubernetesProfiles[i] = flattenTaikunKubernetesProfile(rawKubernetesProfile)
 	}
 	if err := data.Set("kubernetes_profiles", kubernetesProfiles); err != nil {
 		return diag.FromErr(err)
@@ -73,21 +73,4 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunKubernetesProfilesItem(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"bastion_proxy_enabled":   rawKubernetesProfile.ExposeNodePortOnBastion,
-		"created_by":              rawKubernetesProfile.CreatedBy,
-		"cni":                     rawKubernetesProfile.Cni,
-		"id":                      i32toa(rawKubernetesProfile.ID),
-		"is_locked":               rawKubernetesProfile.IsLocked,
-		"last_modified":           rawKubernetesProfile.LastModified,
-		"last_modified_by":        rawKubernetesProfile.LastModifiedBy,
-		"load_balancing_solution": getLoadBalancingSolution(rawKubernetesProfile.OctaviaEnabled, rawKubernetesProfile.TaikunLBEnabled),
-		"name":                    rawKubernetesProfile.Name,
-		"organization_id":         i32toa(rawKubernetesProfile.OrganizationID),
-		"organization_name":       rawKubernetesProfile.OrganizationName,
-	}
 }

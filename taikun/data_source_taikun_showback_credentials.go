@@ -64,7 +64,7 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.Res
 
 	showbackCredentials := make([]map[string]interface{}, len(showbackCredentialsList))
 	for i, rawShowbackCredential := range showbackCredentialsList {
-		showbackCredentials[i] = flattenDatasourceTaikunShowbackCredentialItem(rawShowbackCredential)
+		showbackCredentials[i] = flattenTaikunShowbackCredential(rawShowbackCredential)
 	}
 	if err := data.Set("showback_credentials", showbackCredentials); err != nil {
 		return diag.FromErr(err)
@@ -73,21 +73,4 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.Res
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDatasourceTaikunShowbackCredentialItem(rawShowbackCredential *models.ShowbackCredentialsListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"created_by":        rawShowbackCredential.CreatedBy,
-		"id":                i32toa(rawShowbackCredential.ID),
-		"is_locked":         rawShowbackCredential.IsLocked,
-		"last_modified":     rawShowbackCredential.LastModified,
-		"last_modified_by":  rawShowbackCredential.LastModifiedBy,
-		"name":              rawShowbackCredential.Name,
-		"organization_id":   i32toa(rawShowbackCredential.OrganizationID),
-		"organization_name": rawShowbackCredential.OrganizationName,
-		"password":          rawShowbackCredential.Password,
-		"url":               rawShowbackCredential.URL,
-		"username":          rawShowbackCredential.Username,
-	}
 }

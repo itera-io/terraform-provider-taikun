@@ -65,7 +65,7 @@ func dataSourceTaikunBackupCredentialsRead(_ context.Context, data *schema.Resou
 
 	backupCredentials := make([]map[string]interface{}, len(backupCredentialsList))
 	for i, rawBackupCredential := range backupCredentialsList {
-		backupCredentials[i] = flattenDataSourceTaikunBackupCredentialItem(rawBackupCredential)
+		backupCredentials[i] = flattenTaikunBackupCredential(rawBackupCredential)
 	}
 	if err := data.Set("backup_credentials", backupCredentials); err != nil {
 		return diag.FromErr(err)
@@ -74,22 +74,4 @@ func dataSourceTaikunBackupCredentialsRead(_ context.Context, data *schema.Resou
 	data.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenDataSourceTaikunBackupCredentialItem(rawBackupCredential *models.BackupCredentialsListDto) map[string]interface{} {
-
-	return map[string]interface{}{
-		"created_by":        rawBackupCredential.CreatedBy,
-		"id":                i32toa(rawBackupCredential.ID),
-		"is_locked":         rawBackupCredential.IsLocked,
-		"is_default":        rawBackupCredential.IsDefault,
-		"last_modified":     rawBackupCredential.LastModified,
-		"last_modified_by":  rawBackupCredential.LastModifiedBy,
-		"name":              rawBackupCredential.S3Name,
-		"organization_id":   i32toa(rawBackupCredential.OrganizationID),
-		"organization_name": rawBackupCredential.OrganizationName,
-		"s3_access_key_id":  rawBackupCredential.S3AccessKeyID,
-		"s3_region":         rawBackupCredential.S3Region,
-		"s3_endpoint":       rawBackupCredential.S3Endpoint,
-	}
 }

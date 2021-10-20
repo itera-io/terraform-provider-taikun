@@ -162,37 +162,8 @@ func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.Resour
 
 	rawShowbackCredential := response.GetPayload().Data[0]
 
-	if err := data.Set("created_by", rawShowbackCredential.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawShowbackCredential.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawShowbackCredential.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", rawShowbackCredential.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", rawShowbackCredential.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawShowbackCredential.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(rawShowbackCredential.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", rawShowbackCredential.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("password", rawShowbackCredential.Password); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("url", rawShowbackCredential.URL); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("username", rawShowbackCredential.Username); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunShowbackCredential(rawShowbackCredential))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -238,4 +209,21 @@ func resourceTaikunShowbackCredentialDelete(_ context.Context, data *schema.Reso
 
 	data.SetId("")
 	return nil
+}
+
+func flattenTaikunShowbackCredential(rawShowbackCredential *models.ShowbackCredentialsListDto) map[string]interface{} {
+
+	return map[string]interface{}{
+		"created_by":        rawShowbackCredential.CreatedBy,
+		"id":                i32toa(rawShowbackCredential.ID),
+		"is_locked":         rawShowbackCredential.IsLocked,
+		"last_modified":     rawShowbackCredential.LastModified,
+		"last_modified_by":  rawShowbackCredential.LastModifiedBy,
+		"name":              rawShowbackCredential.Name,
+		"organization_id":   i32toa(rawShowbackCredential.OrganizationID),
+		"organization_name": rawShowbackCredential.OrganizationName,
+		"password":          rawShowbackCredential.Password,
+		"url":               rawShowbackCredential.URL,
+		"username":          rawShowbackCredential.Username,
+	}
 }
