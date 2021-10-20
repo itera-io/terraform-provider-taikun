@@ -1,10 +1,8 @@
 resource "taikun_organization" "foo" {
-  # Required
   name          = "foo"
   full_name     = "Foo Organization"
   discount_rate = 42
 
-  # Optional
   vat_number                       = "CZ4495374355"
   email                            = "contact@foo.org"
   billing_email                    = "billing@foo.org"

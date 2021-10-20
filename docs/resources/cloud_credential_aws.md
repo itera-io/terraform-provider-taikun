@@ -8,17 +8,14 @@ description: |-   Taikun AWS Cloud Credential
 
 Taikun AWS Cloud Credential
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` resource you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_cloud_credential_aws" "foo" {
-  # Required
   name = "foo"
 
   access_key_id     = "access_key_id"
@@ -26,7 +23,6 @@ resource "taikun_cloud_credential_aws" "foo" {
   region            = "region"
   availability_zone = "availability_zone"
 
-  # Optional
   organization_id = "42"
   is_locked       = false
 }
@@ -46,13 +42,13 @@ resource "taikun_cloud_credential_aws" "foo" {
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the AWS cloud credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the AWS cloud credential.
+- **organization_id** (String) The ID of the organization which owns the AWS cloud credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the AWS cloud credential.
-- **id** (String) The id of the AWS cloud credential.
+- **id** (String) The ID of the AWS cloud credential.
 - **is_default** (Boolean) Indicates whether the AWS cloud credential is the default one.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the AWS cloud credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the AWS cloud credential.
 - **organization_name** (String) The name of the organization which owns the AWS cloud credential.

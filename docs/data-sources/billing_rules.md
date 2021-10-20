@@ -1,14 +1,14 @@
 ---
 page_title: "taikun_billing_rules Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of billing rules.
+description: |-   Retrieve all billing rules.
 ---
 
 # taikun_billing_rules (Data Source)
 
-Get the list of billing rules.
+Retrieve all billing rules.
 
-~> **Role Requirement** In order to use the `taikun_billing_rules` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_rules` data source you need a `Partner` account.
 
 ## Example Usage
 
@@ -22,7 +22,7 @@ data "taikun_billing_rules" "foo" {
 
 ### Read-Only
 
-- **billing_rules** (List of Object) List of billing rules. (see [below for nested schema](#nestedatt--billing_rules))
+- **billing_rules** (List of Object) List of retrieved billing rules. (see [below for nested schema](#nestedatt--billing_rules))
 
 <a id="nestedatt--billing_rules"></a>
 ### Nested Schema for `billing_rules`

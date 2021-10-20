@@ -8,21 +8,18 @@ description: |-   Taikun User
 
 Taikun User
 
-~> **Role Requirement** In order to use the `taikun_user` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_user` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_user" "foo" {
-  # Required
   user_name = "foo"
   email     = "email@domain.fr"
   role      = "User"
 
-  # Optional
   display_name        = "Foo"
   organization_id     = "42" # Optional for Partner and Admin
   user_disabled       = true
@@ -41,25 +38,24 @@ resource "taikun_user" "foo" {
 
 ### Optional
 
-- **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If new user is not approved by partner, he won't be able to login. Defaults to `true`.
-- **display_name** (String) The name of the user displayed in the upper right corner. Defaults to ` `.
-- **organization_id** (String) The id of the organization to which the user belongs.
+- **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If it hasn't, the user won't be able to login. Defaults to `true`.
+- **display_name** (String) The user's display name. Defaults to ` `.
+- **organization_id** (String) The ID of the user's organization.
 - **user_disabled** (Boolean) Indicates whether the user is locked or not. Defaults to `false`.
 
 ### Read-Only
 
 - **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed or not.
-- **email_notification_enabled** (Boolean) Indicates whether the user has chosen to receive notifications on his email or not.
+- **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email or not.
 - **id** (String) The UUID of the user.
 - **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager or not.
-- **is_owner** (Boolean) Indicates whether the user is the Owner of his organization.
-- **organization_name** (String) The name of the organization to which the user belongs.
+- **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
+- **organization_name** (String) The name of the user's organization.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_user.myuser 00000000-0000-0000-0000-000000000000
 ```

@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -12,7 +13,7 @@ import (
 func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the billing rule.",
+			Description: "The ID of the billing rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -23,13 +24,13 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"metric_name": {
-			Description:  "The name of the metric from Prometheus you want to bill.",
+			Description:  "The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 256),
 		},
 		"label": {
-			Description: "Labels linked to this billing rule.",
+			Description: "Labels linked to the billing rule.",
 			Type:        schema.TypeList,
 			Required:    true,
 			ForceNew:    true,
@@ -47,7 +48,7 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 						Required:    true,
 					},
 					"id": {
-						Description: "Id of the label.",
+						Description: "ID of the label.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
@@ -55,7 +56,7 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			},
 		},
 		"type": {
-			Description:  "Type of the billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
+			Description:  "Type of billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
@@ -67,23 +68,23 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.FloatAtLeast(0),
 		},
 		"created_by": {
-			Description: "The creator of the billing credential.",
+			Description: "The creator of the billing rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"billing_credential_id": {
-			Description:      "Id of the billing credential.",
+			Description:      "ID of the billing credential.",
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "Time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the billing credential.",
+			Description: "The last user to have modified the billing rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

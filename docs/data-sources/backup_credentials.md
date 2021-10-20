@@ -1,20 +1,21 @@
 ---
 page_title: "taikun_backup_credentials Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of backup credentials, optionally filtered by organization.
+description: |-   Retrieve all backup credentials.
 ---
 
 # taikun_backup_credentials (Data Source)
 
-Get the list of backup credentials, optionally filtered by organization.
+Retrieve all backup credentials.
 
-~> **Role Requirement** In order to use the `taikun_backup_credentials` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_backup_credentials` data source you need a `Manager` or `Partner` account.
+
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_backup_credentials" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```
@@ -24,11 +25,11 @@ data "taikun_backup_credentials" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **backup_credentials** (List of Object) (see [below for nested schema](#nestedatt--backup_credentials))
+- **backup_credentials** (List of Object) List of retrieved backup credentials. (see [below for nested schema](#nestedatt--backup_credentials))
 
 <a id="nestedatt--backup_credentials"></a>
 ### Nested Schema for `backup_credentials`

@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/itera-io/taikungoclient/client/users"
 	"regexp"
 
@@ -31,7 +32,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			),
 		},
 		"organization_id": {
-			Description:      "The id of the organization to which the user belongs.",
+			Description:      "The ID of the user's organization.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -39,7 +40,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "The name of the organization to which the user belongs.",
+			Description: "The name of the user's organization.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -56,7 +57,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsEmail,
 		},
 		"display_name": {
-			Description:  "The name of the user displayed in the upper right corner.",
+			Description:  "The user's display name.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			Default:      "",
@@ -68,7 +69,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"email_notification_enabled": {
-			Description: "Indicates whether the user has chosen to receive notifications on his email or not.",
+			Description: "Indicates whether the user has enabled notifications on their email or not.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -78,7 +79,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"is_owner": {
-			Description: "Indicates whether the user is the Owner of his organization.",
+			Description: "Indicates whether the user is the Owner of their organization.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -89,7 +90,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"approved_by_partner": {
-			Description: "Indicates whether the user account has been approved by a partner. If new user is not approved by partner, he won't be able to login.",
+			Description: "Indicates whether the user account has been approved by a partner. If it hasn't, the user won't be able to login.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     true,

@@ -1,24 +1,19 @@
 ---
 page_title: "taikun_billing_credentials Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of billing credentials, optionally filtered by organization.
+description: |-   Retrieve all billing credentials.
 ---
 
 # taikun_billing_credentials (Data Source)
 
-Get the list of billing credentials, optionally filtered by organization.
+Retrieve all billing credentials.
 
-~> **Role Requirement** In order to use the `taikun_billing_credentials` data source you need at least a `Partner`
-account
-
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+~> **Role Requirement** In order to use the `taikun_billing_credentials` data source you need a `Partner` account.
 
 ## Example Usage
 
 ```terraform
 data "taikun_billing_credentials" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```
@@ -28,11 +23,11 @@ data "taikun_billing_credentials" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **billing_credentials** (List of Object) (see [below for nested schema](#nestedatt--billing_credentials))
+- **billing_credentials** (List of Object) List of retrieved billing credentials. (see [below for nested schema](#nestedatt--billing_credentials))
 
 <a id="nestedatt--billing_credentials"></a>
 ### Nested Schema for `billing_credentials`

@@ -8,19 +8,16 @@ description: |-   Taikun Access Profile
 
 Taikun Access Profile
 
-~> **Role Requirement** In order to use the `taikun_access_profile` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_access_profile` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_access_profile" "foo" {
-  # Required
   name = "foo"
 
-  # Optional
   organization_id = "42" # Optional for Partner and Admin
   is_locked       = true
   http_proxy      = "proxy_url"
@@ -57,15 +54,15 @@ resource "taikun_access_profile" "foo" {
 - **http_proxy** (String) HTTP Proxy of the access profile.
 - **is_locked** (Boolean) Indicates whether the access profile is locked or not. Defaults to `false`.
 - **ntp_server** (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
-- **organization_id** (String) The id of the organization which owns the access profile.
-- **ssh_user** (Block List) List of SSH Users. (see [below for nested schema](#nestedblock--ssh_user))
+- **organization_id** (String) The ID of the organization which owns the access profile.
+- **ssh_user** (Block List) List of SSH users. (see [below for nested schema](#nestedblock--ssh_user))
 
 ### Read-Only
 
 - **created_by** (String) The creator of the access profile.
-- **id** (String) The id of the access profile.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the access profile.
+- **id** (String) The ID of the access profile.
+- **last_modified** (String) The time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the profile.
 - **organization_name** (String) The name of the organization which owns the access profile.
 - **project** (List of Object) List of associated projects. (see [below for nested schema](#nestedatt--project))
 
@@ -74,11 +71,11 @@ resource "taikun_access_profile" "foo" {
 
 Required:
 
-- **address** (String) Address of DNS server.
+- **address** (String) Address of the DNS server.
 
 Read-Only:
 
-- **id** (String) Id of DNS server.
+- **id** (String) ID of the DNS server.
 
 
 <a id="nestedblock--ntp_server"></a>
@@ -86,11 +83,11 @@ Read-Only:
 
 Required:
 
-- **address** (String) Address of NTP server.
+- **address** (String) Address of the NTP server.
 
 Read-Only:
 
-- **id** (String) Id of NTP server.
+- **id** (String) ID of the NTP server.
 
 
 <a id="nestedblock--ssh_user"></a>
@@ -98,12 +95,12 @@ Read-Only:
 
 Required:
 
-- **name** (String) Name of SSH User.
-- **public_key** (String) Public key of SSH User.
+- **name** (String) Name of the SSH user.
+- **public_key** (String) Public key of the SSH user.
 
 Read-Only:
 
-- **id** (String) Id of SSH User.
+- **id** (String) ID of the SSH user.
 
 
 <a id="nestedatt--project"></a>
@@ -119,6 +116,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_access_profile.myaccessprofile 42
 ```

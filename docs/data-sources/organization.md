@@ -1,20 +1,19 @@
 ---
 page_title: "taikun_organization Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Organization details
+description: |-   Get the details of an organization.
 ---
 
 # taikun_organization (Data Source)
 
-Organization details
+Get the details of an organization.
 
-~> **Role Requirement** In order to use the `taikun_organization` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_organization` data source you need a `Partner` account.
 
 ## Example Usage
 
 ```terraform
 data "taikun_organization" "foo" {
-  # Only specify ID with Partner or Admin credentials
   id = "42"
 }
 ```
@@ -24,29 +23,29 @@ data "taikun_organization" "foo" {
 
 ### Optional
 
-- **id** (String) ID
+- **id** (String) Organization's ID.
 
 ### Read-Only
 
-- **address** (String) Address
-- **billing_email** (String) Billing email
-- **city** (String) City
-- **cloud_credentials** (Number) Number of associated cloud credentials
-- **country** (String) Country
-- **created_at** (String) Time and date of creation
-- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included)
-- **email** (String) Email
-- **full_name** (String) Full name
-- **is_locked** (Boolean) Whether the organization is locked
-- **is_read_only** (Boolean) Whether the organization is in read-only mode
-- **let_managers_change_subscription** (Boolean) Allow subscription to be changed by managers
-- **name** (String) Name
-- **partner_id** (String) ID of the organization's partner
-- **partner_name** (String) Name of the organization's partner
-- **phone** (String) Phone number
-- **projects** (Number) Number of associated projects
-- **servers** (Number) Number of associated servers
-- **users** (Number) Number of associated users
-- **vat_number** (String) VAT number
+- **address** (String) Address.
+- **billing_email** (String) Billing email.
+- **city** (String) City.
+- **cloud_credentials** (Number) Number of associated cloud credentials.
+- **country** (String) Country.
+- **created_at** (String) Time and date of creation.
+- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included).
+- **email** (String) Email.
+- **full_name** (String) Full name.
+- **is_locked** (Boolean) Whether the organization is locked.
+- **is_read_only** (Boolean) Whether the organization is in read-only mode.
+- **let_managers_change_subscription** (Boolean) Allow subscription to be changed by managers.
+- **name** (String) Organization's name.
+- **partner_id** (String) ID of the organization's partner.
+- **partner_name** (String) Name of the organization's partner.
+- **phone** (String) Phone number.
+- **projects** (Number) Number of associated projects.
+- **servers** (Number) Number of associated servers.
+- **users** (Number) Number of associated users.
+- **vat_number** (String) VAT number.
 
 

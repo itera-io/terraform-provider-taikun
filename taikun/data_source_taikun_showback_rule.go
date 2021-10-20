@@ -16,7 +16,7 @@ func dataSourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunShowbackRule() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a showback rule by its id.",
+		Description: "Get a showback rule by its ID.",
 		ReadContext: dataSourceTaikunShowbackRuleRead,
 		Schema:      dataSourceTaikunShowbackRuleSchema(),
 	}

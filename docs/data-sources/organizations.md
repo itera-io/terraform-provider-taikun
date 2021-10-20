@@ -1,14 +1,14 @@
 ---
 page_title: "taikun_organizations Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Retrieve all organizations (only valid for Partner and Admin roles)
+description: |-   Retrieve all organizations.
 ---
 
 # taikun_organizations (Data Source)
 
-Retrieve all organizations (only valid for Partner and Admin roles)
+Retrieve all organizations.
 
-~> **Role Requirement** In order to use the `taikun_organizations` data source you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_organizations` data source you need a `Partner` account.
 
 ## Example Usage
 
@@ -22,7 +22,7 @@ data "taikun_organizations" "all" {
 
 ### Read-Only
 
-- **organizations** (List of Object) (see [below for nested schema](#nestedatt--organizations))
+- **organizations** (List of Object) List of retrieved organizations. (see [below for nested schema](#nestedatt--organizations))
 
 <a id="nestedatt--organizations"></a>
 ### Nested Schema for `organizations`

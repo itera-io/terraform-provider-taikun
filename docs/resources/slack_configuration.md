@@ -8,22 +8,19 @@ description: |-   Taikun Slack Configuration
 
 Taikun Slack Configuration
 
-~> **Role Requirement** In order to use the `taikun_slack_configuration` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_slack_configuration` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_slack_configuration" "foo" {
-  # Required
   name    = "foo"
   channel = "ci"
   url     = "https://hooks.myapp.example/ci"
   type    = "Alert" // or "General"
 
-  # Optional for Partner and Admin
   organization_id = "42"
 }
 ```
@@ -33,25 +30,24 @@ resource "taikun_slack_configuration" "foo" {
 
 ### Required
 
-- **channel** (String) Slack channel for notifications
-- **name** (String) Name
-- **type** (String) Alert (receive only alert-type of notification) or General (receive all notifications)
-- **url** (String) Webhook URL from Slack app
+- **channel** (String) Slack channel for notifications.
+- **name** (String) Name.
+- **type** (String) Alert (receive only alert-type of notification) or General (receive all notifications).
+- **url** (String) Webhook URL from Slack app.
 
 ### Optional
 
-- **organization_id** (String) Organization ID
+- **organization_id** (String) Organization ID.
 
 ### Read-Only
 
-- **id** (String) ID
-- **organization_name** (String) Organization Name
+- **id** (String) ID.
+- **organization_name** (String) Organization Name.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_slack_configuration.myslackconfig 42
 ```

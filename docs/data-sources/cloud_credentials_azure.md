@@ -1,24 +1,21 @@
 ---
 page_title: "taikun_cloud_credentials_azure Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of Azure cloud credentials, optionally filtered by organization.
+description: |-   Retrieve all Azure cloud credentials.
 ---
 
 # taikun_cloud_credentials_azure (Data Source)
 
-Get the list of Azure cloud credentials, optionally filtered by organization.
+Retrieve all Azure cloud credentials.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credentials_azure` data source you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credentials_azure` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_cloud_credentials_azure" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```
@@ -29,11 +26,11 @@ data "taikun_cloud_credentials_azure" "foo" {
 ### Optional
 
 - **id** (String) The ID of this resource.
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **cloud_credentials** (List of Object) (see [below for nested schema](#nestedatt--cloud_credentials))
+- **cloud_credentials** (List of Object) List of retrieved Azure cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
 
 <a id="nestedatt--cloud_credentials"></a>
 ### Nested Schema for `cloud_credentials`

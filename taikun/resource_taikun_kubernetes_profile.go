@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -12,12 +13,12 @@ import (
 func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the Kubernetes profile.",
+			Description: "The ID of the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"bastion_proxy_enabled": {
-			Description: "Exposes the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
+			Description: "Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -40,12 +41,12 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "Time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the Kubernetes profile.",
+			Description: "The last user to have modified the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -65,7 +66,7 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the Kubernetes profile.",
+			Description:      "The ID of the organization which owns the Kubernetes profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,

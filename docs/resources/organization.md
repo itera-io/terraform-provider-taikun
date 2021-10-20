@@ -8,18 +8,16 @@ description: |-   Taikun Organization
 
 Taikun Organization
 
-~> **Role Requirement** In order to use the `taikun_organization` resource you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_organization` resource you need a `Partner` account.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_organization" "foo" {
-  # Required
   name          = "foo"
   full_name     = "Foo Organization"
   discount_rate = 42
 
-  # Optional
   vat_number                       = "CZ4495374355"
   email                            = "contact@foo.org"
   billing_email                    = "billing@foo.org"
@@ -37,39 +35,38 @@ resource "taikun_organization" "foo" {
 
 ### Required
 
-- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included)
-- **full_name** (String) Full name
-- **name** (String) Name
+- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included).
+- **full_name** (String) Full name.
+- **name** (String) Organization's name.
 
 ### Optional
 
-- **address** (String) Address
-- **billing_email** (String) Billing email
-- **city** (String) City
-- **country** (String) Country
-- **email** (String) Email
-- **is_locked** (Boolean) Whether the organization is locked Defaults to `false`.
-- **let_managers_change_subscription** (Boolean) Allow subscription to be changed by managers Defaults to `true`.
-- **phone** (String) Phone number
-- **vat_number** (String) VAT number
+- **address** (String) Address.
+- **billing_email** (String) Billing email.
+- **city** (String) City.
+- **country** (String) Country.
+- **email** (String) Email.
+- **is_locked** (Boolean) Whether the organization is locked. Defaults to `false`.
+- **let_managers_change_subscription** (Boolean) Allow subscription to be changed by managers. Defaults to `true`.
+- **phone** (String) Phone number.
+- **vat_number** (String) VAT number.
 
 ### Read-Only
 
-- **cloud_credentials** (Number) Number of associated cloud credentials
-- **created_at** (String) Time and date of creation
-- **id** (String) ID
-- **is_read_only** (Boolean) Whether the organization is in read-only mode
-- **partner_id** (String) ID of the organization's partner
-- **partner_name** (String) Name of the organization's partner
-- **projects** (Number) Number of associated projects
-- **servers** (Number) Number of associated servers
-- **users** (Number) Number of associated users
+- **cloud_credentials** (Number) Number of associated cloud credentials.
+- **created_at** (String) Time and date of creation.
+- **id** (String) Organization's ID.
+- **is_read_only** (Boolean) Whether the organization is in read-only mode.
+- **partner_id** (String) ID of the organization's partner.
+- **partner_name** (String) Name of the organization's partner.
+- **projects** (Number) Number of associated projects.
+- **servers** (Number) Number of associated servers.
+- **users** (Number) Number of associated users.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_organization.myorganization 42
 ```

@@ -8,23 +8,20 @@ description: |-   Taikun Showback Rule
 
 Taikun Showback Rule
 
-~> **Role Requirement** In order to use the `taikun_showback_rule` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_showback_rule` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_showback_rule" "foo" {
-  # Required
   name        = "foo"
   price       = 1000
   metric_name = "my_metric_name"
   type        = "Sum"
   kind        = "General"
 
-  # Optional
   label {
     key   = "key"
     value = "value"
@@ -51,14 +48,14 @@ resource "taikun_showback_rule" "foo" {
 
 - **global_alert_limit** (Number) Set limit of alerts for all projects. Defaults to `0`.
 - **label** (Block List) Labels linked to this showback rule. (see [below for nested schema](#nestedblock--label))
-- **organization_id** (String) The id of the organization which owns the showback rule.
+- **organization_id** (String) The ID of the organization which owns the showback rule.
 - **project_alert_limit** (Number) Set limit of alerts for one project. Defaults to `0`.
 - **showback_credential_id** (String) Id of the showback rule.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the showback rule.
-- **id** (String) The id of the showback rule.
+- **id** (String) The ID of the showback rule.
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback rule.
 - **organization_name** (String) The name of the organization which owns the showback rule.
@@ -77,6 +74,5 @@ Required:
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_showback_rule.myrule 42
 ```

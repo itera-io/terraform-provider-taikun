@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,18 +12,19 @@ import (
 
 func dataSourceTaikunCloudCredentialsAWS() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of AWS cloud credentials, optionally filtered by organization.",
+		Description: "Retrieve all AWS cloud credentials.",
 		ReadContext: dataSourceTaikunCloudCredentialsAWSRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:      "Organization id filter.",
+				Description:      "Organization ID filter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
 			"cloud_credentials": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved AWS cloud credentials.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunCloudCredentialAWSSchema(),
 				},

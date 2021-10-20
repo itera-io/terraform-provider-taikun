@@ -17,7 +17,7 @@ func dataSourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunCloudCredentialAzure() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an Azure cloud credential by its id.",
+		Description: "Get an Azure cloud credential by its ID.",
 		ReadContext: dataSourceTaikunCloudCredentialAzureRead,
 		Schema:      dataSourceTaikunCloudCredentialAzureSchema(),
 	}

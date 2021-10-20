@@ -17,7 +17,7 @@ func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunOrganization() *schema.Resource {
 	return &schema.Resource{
-		Description: "Organization details",
+		Description: "Get the details of an organization.",
 		ReadContext: dataSourceTaikunOrganizationRead,
 		Schema:      dataSourceTaikunOrganizationSchema(),
 	}

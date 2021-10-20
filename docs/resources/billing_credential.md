@@ -8,23 +8,20 @@ description: |-   Taikun Billing Credential
 
 Taikun Billing Credential
 
-~> **Role Requirement** In order to use the `taikun_billing_credential` resource you need at least a `Partner` account
+~> **Role Requirement** In order to use the `taikun_billing_credential` resource you need a `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_billing_credential" "foo" {
-  # Required
   name                = "foo"
   prometheus_password = "password"
   prometheus_url      = "url"
   prometheus_username = "username"
 
-  # Optional
-  organization_id = "42" # Optional for Partner and Admin
+  organization_id = "42"
   is_locked       = true
 }
 ```
@@ -36,21 +33,21 @@ resource "taikun_billing_credential" "foo" {
 
 - **name** (String) The name of the billing credential.
 - **prometheus_password** (String, Sensitive) The prometheus password.
-- **prometheus_url** (String) The prometheus url.
+- **prometheus_url** (String) The prometheus URL.
 - **prometheus_username** (String) The prometheus username.
 
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the billing credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the billing credential.
+- **organization_id** (String) The ID of the organization which owns the billing credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the billing credential.
-- **id** (String) The id of the billing credential.
+- **id** (String) The ID of the billing credential.
 - **is_default** (Boolean) Indicates whether the billing credential is the organization's default or not.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the billing credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the billing credential.
 - **organization_name** (String) The name of the organization which owns the billing credential.
 
 ## Import
@@ -58,6 +55,5 @@ resource "taikun_billing_credential" "foo" {
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_billing_credential.mycredential 42
 ```

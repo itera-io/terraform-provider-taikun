@@ -1,14 +1,14 @@
 ---
 page_title: "taikun_backup_credential Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get a backup credential by its id.
+description: |-   Retrieve a backup credential by its ID.
 ---
 
 # taikun_backup_credential (Data Source)
 
-Get a backup credential by its id.
+Retrieve a backup credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_backup_credential` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_backup_credential` data source you need a `Manager` or `Partner` account.
 
 ## Example Usage
 
@@ -23,17 +23,17 @@ data "taikun_backup_credential" "foo" {
 
 ### Required
 
-- **id** (String) The id of the backup credential.
+- **id** (String) The ID of the backup credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the backup credential.
 - **is_default** (Boolean) Indicates whether the backup credential is the organization's default or not.
 - **is_locked** (Boolean) Indicates whether the backup credential is locked or not.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the backup credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the backup credential.
 - **name** (String) The name of the backup credential.
-- **organization_id** (String) The id of the organization which owns the backup credential.
+- **organization_id** (String) The ID of the organization which owns the backup credential.
 - **organization_name** (String) The name of the organization which owns the backup credential.
 - **s3_access_key_id** (String) The S3 Access Key ID.
 - **s3_endpoint** (String) The S3 endpoint URL.

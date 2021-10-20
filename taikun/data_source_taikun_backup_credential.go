@@ -17,7 +17,7 @@ func dataSourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunBackupCredential() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a backup credential by its id.",
+		Description: "Retrieve a backup credential by its ID.",
 		ReadContext: dataSourceTaikunBackupCredentialRead,
 		Schema:      dataSourceTaikunBackupCredentialSchema(),
 	}

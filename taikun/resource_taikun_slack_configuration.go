@@ -14,17 +14,17 @@ import (
 func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"channel": {
-			Description: "Slack channel for notifications",
+			Description: "Slack channel for notifications.",
 			Type:        schema.TypeString,
 			Required:    true,
 		},
 		"id": {
-			Description: "ID",
+			Description: "ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"name": {
-			Description: "Name",
+			Description: "Name.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.All(
@@ -36,25 +36,25 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			),
 		},
 		"organization_id": {
-			Description:      "Organization ID",
+			Description:      "Organization ID.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "Organization Name",
+			Description: "Organization Name.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"type": {
-			Description:  "Alert (receive only alert-type of notification) or General (receive all notifications)",
+			Description:  "Alert (receive only alert-type of notification) or General (receive all notifications).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Alert", "General"}, false),
 		},
 		"url": {
-			Description:  "Webhook URL from Slack app",
+			Description:  "Webhook URL from Slack app.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsURLWithHTTPorHTTPS,

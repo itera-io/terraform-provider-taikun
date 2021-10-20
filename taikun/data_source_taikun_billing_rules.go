@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient/client/prometheus"
@@ -10,11 +11,11 @@ import (
 
 func dataSourceTaikunBillingRules() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of billing rules.",
+		Description: "Retrieve all billing rules.",
 		ReadContext: dataSourceTaikunBillingRulesRead,
 		Schema: map[string]*schema.Schema{
 			"billing_rules": {
-				Description: "List of billing rules.",
+				Description: "List of retrieved billing rules.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{

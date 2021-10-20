@@ -16,7 +16,7 @@ func dataSourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunAccessProfile() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an access profiles by its id.",
+		Description: "Get an access profile by its ID.",
 		ReadContext: dataSourceTaikunAccessProfileRead,
 		Schema:      dataSourceTaikunAccessProfileSchema(),
 	}

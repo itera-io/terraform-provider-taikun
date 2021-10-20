@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,18 +12,19 @@ import (
 
 func dataSourceTaikunUsers() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of users, optionally filtered by organization.",
+		Description: "Retrieve all users.",
 		ReadContext: dataSourceTaikunUsersRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:      "Organization id filter.",
+				Description:      "Organization ID filter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
 			"users": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved users.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunUserSchema(),
 				},

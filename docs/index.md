@@ -5,7 +5,7 @@ description: |- The Taikun provider provides resources to interact with the Taik
 
 # Taikun Provider
 
-The Taikun provider provides resources to interact with the Taikun API.
+The Taikun provider provides resources and datasources to interact with the Taikun API.
 
 ## Example Usage
 
@@ -21,7 +21,8 @@ provider "taikun" {
 
 ### Optional
 
+- **api_host** (String) Taikun API host. Defaults to `api.taikun.dev`.
 - **email** (String) Taikun email. Conflicts with:`keycloak_email`. Required with:`password`.
-- **keycloak_email** (String) Taikun keycloak email. Conflicts with:`email`. Required with:`keycloak_password`.
-- **keycloak_password** (String, Sensitive) Taikun keycloak password. Conflicts with:`password`. Required with:`keycloak_email`.
+- **keycloak_email** (String) Taikun Keycloak email. Conflicts with:`email`. Required with:`keycloak_password`.
+- **keycloak_password** (String, Sensitive) Taikun Keycloak password. Conflicts with:`password`. Required with:`keycloak_email`.
 - **password** (String, Sensitive) Taikun password. Conflicts with:`keycloak_password`. Required with:`email`.

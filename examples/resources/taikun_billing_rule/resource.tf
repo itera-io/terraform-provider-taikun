@@ -6,7 +6,6 @@ resource "taikun_billing_credential" "foo" {
 }
 
 resource "taikun_billing_rule" "foo" {
-  # Required
   name        = "foo"
   metric_name = "coredns_forward_request_duration_seconds"
   price       = 1

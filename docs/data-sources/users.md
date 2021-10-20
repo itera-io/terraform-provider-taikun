@@ -1,23 +1,21 @@
 ---
 page_title: "taikun_users Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get the list of users, optionally filtered by organization.
+description: |-   Retrieve all users.
 ---
 
 # taikun_users (Data Source)
 
-Get the list of users, optionally filtered by organization.
+Retrieve all users.
 
-~> **Role Requirement** In order to use the `taikun_users` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_users` data source you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 data "taikun_users" "foo" {
-  # Optional
   organization_id = "42"
 }
 ```
@@ -27,11 +25,11 @@ data "taikun_users" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization id filter.
+- **organization_id** (String) Organization ID filter.
 
 ### Read-Only
 
-- **users** (List of Object) (see [below for nested schema](#nestedatt--users))
+- **users** (List of Object) List of retrieved users. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>
 ### Nested Schema for `users`

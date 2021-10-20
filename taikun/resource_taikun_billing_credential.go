@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -12,7 +13,7 @@ import (
 func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The id of the billing credential.",
+			Description: "The ID of the billing credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -39,14 +40,14 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"prometheus_url": {
-			Description:  "The prometheus url.",
+			Description:  "The prometheus URL.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
-			Description:      "The id of the organization which owns the billing credential.",
+			Description:      "The ID of the organization which owns the billing credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -75,12 +76,12 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"last_modified": {
-			Description: "Time of last modification.",
+			Description: "Time and date of last modification.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"last_modified_by": {
-			Description: "The last user who modified the billing credential.",
+			Description: "The last user to have modified the billing credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

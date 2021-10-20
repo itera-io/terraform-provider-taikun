@@ -1,15 +1,14 @@
 ---
 page_title: "taikun_cloud_credential_aws Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get an AWS cloud credential by its id.
+description: |-   Get an AWS cloud credential by its ID.
 ---
 
 # taikun_cloud_credential_aws (Data Source)
 
-Get an AWS cloud credential by its id.
+Get an AWS cloud credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` data source you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` data source you need a `Manager` or `Partner` account.
 
 ## Example Usage
 
@@ -24,7 +23,7 @@ data "taikun_cloud_credential_aws" "foo" {
 
 ### Required
 
-- **id** (String) The id of the AWS cloud credential.
+- **id** (String) The ID of the AWS cloud credential.
 
 ### Read-Only
 
@@ -32,10 +31,10 @@ data "taikun_cloud_credential_aws" "foo" {
 - **created_by** (String) The creator of the AWS cloud credential.
 - **is_default** (Boolean) Indicates whether the AWS cloud credential is the default one.
 - **is_locked** (Boolean) Indicates whether the AWS cloud credential is locked or not.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the AWS cloud credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the AWS cloud credential.
 - **name** (String) The name of the AWS cloud credential.
-- **organization_id** (String) The id of the organization which owns the AWS cloud credential.
+- **organization_id** (String) The ID of the organization which owns the AWS cloud credential.
 - **organization_name** (String) The name of the organization which owns the AWS cloud credential.
 - **region** (String) The AWS region.
 

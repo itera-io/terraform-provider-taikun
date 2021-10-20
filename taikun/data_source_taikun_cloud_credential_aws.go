@@ -17,7 +17,7 @@ func dataSourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunCloudCredentialAWS() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an AWS cloud credential by its id.",
+		Description: "Get an AWS cloud credential by its ID.",
 		ReadContext: dataSourceTaikunCloudCredentialAWSRead,
 		Schema:      dataSourceTaikunCloudCredentialAWSSchema(),
 	}

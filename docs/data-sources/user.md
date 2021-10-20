@@ -1,14 +1,14 @@
 ---
 page_title: "taikun_user Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get a user by its id.
+description: |-   Get a user by its ID.
 ---
 
 # taikun_user (Data Source)
 
-Get a user by its id.
+Get a user by its ID.
 
-~> **Role Requirement** In order to use the `taikun_user` data source you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_user` data source you need a `Manager` or `Partner` account.
 
 ## Example Usage
 
@@ -27,15 +27,15 @@ data "taikun_user" "foo" {
 
 ### Read-Only
 
-- **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If new user is not approved by partner, he won't be able to login.
-- **display_name** (String) The name of the user displayed in the upper right corner.
+- **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If it hasn't, the user won't be able to login.
+- **display_name** (String) The user's display name.
 - **email** (String) The email of the user.
 - **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed or not.
-- **email_notification_enabled** (Boolean) Indicates whether the user has chosen to receive notifications on his email or not.
+- **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email or not.
 - **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager or not.
-- **is_owner** (Boolean) Indicates whether the user is the Owner of his organization.
-- **organization_id** (String) The id of the organization to which the user belongs.
-- **organization_name** (String) The name of the organization to which the user belongs.
+- **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
+- **organization_id** (String) The ID of the user's organization.
+- **organization_name** (String) The name of the user's organization.
 - **role** (String) The role of the user.
 - **user_disabled** (Boolean) Indicates whether the user is locked or not.
 - **user_name** (String) The name of the user.

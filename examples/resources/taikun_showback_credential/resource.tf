@@ -1,11 +1,9 @@
 resource "taikun_showback_credential" "foo" {
-  # Required
   name     = "foo"
   password = "password"
   url      = "url"
   username = "username"
 
-  # Optional
-  organization_id = "42" # Optional for Partner and Admin
+  organization_id = "42"
   is_locked       = true
 }

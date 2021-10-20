@@ -137,7 +137,7 @@ func Provider() *schema.Provider {
 			},
 			"keycloak_email": {
 				Type:          schema.TypeString,
-				Description:   "Taikun keycloak email.",
+				Description:   "Taikun Keycloak email.",
 				Optional:      true,
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_KEYCLOAK_EMAIL", nil),
 				ConflictsWith: []string{"email"},
@@ -146,7 +146,7 @@ func Provider() *schema.Provider {
 			},
 			"keycloak_password": {
 				Type:          schema.TypeString,
-				Description:   "Taikun keycloak password.",
+				Description:   "Taikun Keycloak password.",
 				Optional:      true,
 				Sensitive:     true,
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_KEYCLOAK_PASSWORD", nil),

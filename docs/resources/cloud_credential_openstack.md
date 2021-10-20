@@ -8,22 +8,19 @@ description: |-   Taikun OpenStack Cloud Credential
 
 Taikun OpenStack Cloud Credential
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_openstack` resource you need at least a `Manager`
-account
+~> **Role Requirement** In order to use the `taikun_cloud_credential_openstack` resource you need a `Manager` or `Partner` account.
 
-!> **Import Network** If you choose to import network, DNS in profile created in Access Profiles will be IGNORED.
+!> **Import Network** If you choose to import a network, the Access Profile's DNS will be ignored.
 
-~> **Import Network** If you choose to import network, a router between the public network and the internal network must
+~> **Import Network** If you choose to import a network, a router between the public network and the internal network must
 already exist. There should be internal access on the internal network, either from the router or directly.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_cloud_credential_openstack" "foo" {
-  # Required
   name = "foo"
 
   user     = "user"
@@ -35,7 +32,6 @@ resource "taikun_cloud_credential_openstack" "foo" {
   public_network_name = "public_network_name"
   region              = "region"
 
-  # Optional
   availability_zone          = "availability_zone"
   volume_type_name           = "volume_type_name"
   imported_network_subnet_id = "imported_network_subnet_id"
@@ -54,25 +50,25 @@ resource "taikun_cloud_credential_openstack" "foo" {
 - **name** (String) The name of the OpenStack cloud credential.
 - **password** (String, Sensitive) The OpenStack password.
 - **project_name** (String) The OpenStack project name.
-- **public_network_name** (String) The name of the public OpenStack network which will be used.
+- **public_network_name** (String) The name of the public OpenStack network to use.
 - **region** (String) The OpenStack region.
-- **url** (String) The OpenStack authentication url.
+- **url** (String) The OpenStack authentication URL.
 - **user** (String) The OpenStack user.
 
 ### Optional
 
 - **availability_zone** (String) The OpenStack availability zone.
-- **imported_network_subnet_id** (String) The OpenStack subnet id in case you want to import network.
+- **imported_network_subnet_id** (String) The OpenStack network subnet ID to import a network.
 - **is_locked** (Boolean) Indicates whether the OpenStack cloud credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the OpenStack cloud credential.
+- **organization_id** (String) The ID of the organization which owns the OpenStack cloud credential.
 - **volume_type_name** (String) The OpenStack type of volume.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the OpenStack cloud credential.
-- **id** (String) The id of the OpenStack cloud credential.
+- **id** (String) The ID of the OpenStack cloud credential.
 - **is_default** (Boolean) Indicates whether the OpenStack cloud credential is the default one.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the OpenStack cloud credential.
+- **last_modified** (String) Time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the OpenStack cloud credential.
 - **organization_name** (String) The name of the organization which owns the OpenStack cloud credential.
-- **project_id** (String) The OpenStack project id.
+- **project_id** (String) The OpenStack project ID.

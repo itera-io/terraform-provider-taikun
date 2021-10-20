@@ -12,18 +12,19 @@ import (
 
 func dataSourceTaikunSlackConfigurations() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of slack configurations for your organization, or filter by organization if Partner or Admin.",
+		Description: "Retrieve all Slack configurations.",
 		ReadContext: dataSourceTaikunSlackConfigurationsRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
-				Description:      "Organization ID filter (for Partner and Admin roles).",
+				Description:      "Organization ID filter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
 			"slack_configurations": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved Slack configurations.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunSlackConfigurationSchema(),
 				},

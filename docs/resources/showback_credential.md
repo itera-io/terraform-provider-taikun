@@ -8,22 +8,19 @@ description: |-   Taikun Showback Credential
 
 Taikun Showback Credential
 
-~> **Role Requirement** In order to use the `taikun_showback_credential` resource you need at least a `Manager` account
+~> **Role Requirement** In order to use the `taikun_showback_credential` resource you need a `Manager` or `Partner` account.
 
--> **Organization ID** `organization_id` can be specified for Partner and Admin roles, otherwise defaults to the user's
-organization.
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_showback_credential" "foo" {
-  # Required
   name     = "foo"
   password = "password"
   url      = "url"
   username = "username"
 
-  # Optional
   organization_id = "42" # Optional for Partner and Admin
   is_locked       = true
 }
@@ -36,18 +33,18 @@ resource "taikun_showback_credential" "foo" {
 
 - **name** (String) The name of the showback credential.
 - **password** (String, Sensitive) The prometheus password or other credential.
-- **url** (String) Url of the source.
+- **url** (String) URL of the source.
 - **username** (String) The prometheus username or other credential.
 
 ### Optional
 
 - **is_locked** (Boolean) Indicates whether the showback credential is locked or not. Defaults to `false`.
-- **organization_id** (String) The id of the organization which owns the showback credential.
+- **organization_id** (String) The ID of the organization which owns the showback credential.
 
 ### Read-Only
 
 - **created_by** (String) The creator of the showback credential.
-- **id** (String) The id of the showback credential.
+- **id** (String) The ID of the showback credential.
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback credential.
 - **organization_name** (String) The name of the organization which owns the showback credential.
@@ -57,6 +54,5 @@ resource "taikun_showback_credential" "foo" {
 Import is supported using the following syntax:
 
 ```shell
-# import with Taikun ID
 terraform import taikun_showback_credential.mycredential 42
 ```

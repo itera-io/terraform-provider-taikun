@@ -1,12 +1,10 @@
 resource "taikun_showback_rule" "foo" {
-  # Required
   name        = "foo"
   price       = 1000
   metric_name = "my_metric_name"
   type        = "Sum"
   kind        = "General"
 
-  # Optional
   label {
     key   = "key"
     value = "value"

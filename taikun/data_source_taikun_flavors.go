@@ -14,7 +14,7 @@ import (
 
 func dataSourceTaikunFlavors() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get the list of flavors for a given cloud credential",
+		Description: "Retrieve flavors for a given cloud credential.",
 		ReadContext: dataSourceTaikunFlavorsRead,
 		Schema: map[string]*schema.Schema{
 			"cloud_credential_id": {
@@ -52,7 +52,7 @@ func dataSourceTaikunFlavors() *schema.Resource {
 				ValidateFunc: validation.IntBetween(2, 500),
 			},
 			"flavors": {
-				Description: "List of flavors.",
+				Description: "List of retrieved flavors.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{

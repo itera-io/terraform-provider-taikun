@@ -12,12 +12,13 @@ import (
 
 func dataSourceTaikunOrganizations() *schema.Resource {
 	return &schema.Resource{
-		Description: "Retrieve all organizations (only valid for Partner and Admin roles)",
+		Description: "Retrieve all organizations.",
 		ReadContext: dataSourceTaikunOrganizationsRead,
 		Schema: map[string]*schema.Schema{
 			"organizations": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Description: "List of retrieved organizations.",
+				Type:        schema.TypeList,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: dataSourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema()),
 				},
