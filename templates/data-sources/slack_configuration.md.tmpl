@@ -1,0 +1,19 @@
+---
+page_title: "{{.Type}} {{.Name}} - {{.ProviderName}}"
+subcategory: ""
+description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Type}} ({{.Name}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** In order to use the `taikun_slack_configuration` data source you need a `Manager` or `Partner` account.
+
+## Example Usage
+
+{{tffile "examples/data-sources/taikun_slack_configuration/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+
