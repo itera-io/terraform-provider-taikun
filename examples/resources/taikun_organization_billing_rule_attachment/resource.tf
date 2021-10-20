@@ -26,10 +26,8 @@ resource "taikun_organization" "foo" {
 }
 
 resource "taikun_organization_billing_rule_attachment" "foo" {
-  # Required
   billing_rule_id = resource.taikun_billing_rule.foo.id
   organization_id = resource.taikun_organization.foo.id
 
-  # Optional
   discount_rate = 100
 }

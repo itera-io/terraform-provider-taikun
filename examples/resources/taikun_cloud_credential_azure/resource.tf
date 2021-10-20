@@ -1,5 +1,4 @@
 resource "taikun_cloud_credential_azure" "foo" {
-  # Required
   name = "foo"
 
   client_id         = "client_id"
@@ -9,7 +8,6 @@ resource "taikun_cloud_credential_azure" "foo" {
   location          = "location"
   availability_zone = "availability_zone"
 
-  # Optional
   organization_id = "42"
   is_locked       = false
 }

@@ -1,5 +1,4 @@
 resource "taikun_cloud_credential_openstack" "foo" {
-  # Required
   name = "foo"
 
   user     = "user"
@@ -11,7 +10,6 @@ resource "taikun_cloud_credential_openstack" "foo" {
   public_network_name = "public_network_name"
   region              = "region"
 
-  # Optional
   availability_zone          = "availability_zone"
   volume_type_name           = "volume_type_name"
   imported_network_subnet_id = "imported_network_subnet_id"

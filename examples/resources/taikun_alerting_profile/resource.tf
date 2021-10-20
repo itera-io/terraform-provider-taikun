@@ -1,9 +1,7 @@
 resource "taikun_alerting_profile" "foo" {
-  # Required
   name     = "foo"
   reminder = "None"
 
-  # Optional
   emails = ["test@example.com", "test@example.org", "test@example.net"]
 
   is_locked = false

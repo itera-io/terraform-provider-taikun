@@ -1,8 +1,6 @@
 resource "taikun_access_profile" "foo" {
-  # Required
   name = "foo"
 
-  # Optional
   organization_id = "42" # Optional for Partner and Admin
   is_locked       = true
   http_proxy      = "proxy_url"
