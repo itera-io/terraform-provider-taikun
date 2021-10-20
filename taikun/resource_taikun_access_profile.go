@@ -98,7 +98,11 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 						Required:    true,
 						ValidateFunc: validation.All(
 							validation.StringLenBetween(3, 30),
-							validation.StringMatch(regexp.MustCompile("^[a-z_][a-z0-9_-]*[$]?"), "expect a valid linux user"),
+							validation.StringMatch(
+								regexp.MustCompile("^[a-z_][a-z0-9_-]*[$]?"),
+								"expect a valid linux user",
+							),
+							validation.StringNotInSlice([]string{"ubuntu"}, true),
 						),
 					},
 					"public_key": {
