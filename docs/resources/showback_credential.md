@@ -21,7 +21,7 @@ resource "taikun_showback_credential" "foo" {
   url      = "url"
   username = "username"
 
-  organization_id = "42" # Optional for Partner and Admin
+  organization_id = "42"
   is_locked       = true
 }
 ```
