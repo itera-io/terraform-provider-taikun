@@ -8,6 +8,7 @@ import (
 	"github.com/itera-io/taikungoclient/client/azure"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
+	"regexp"
 )
 
 func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
@@ -18,10 +19,16 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description:  "The name of the Azure cloud credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 30),
+			Description: "The name of the Azure cloud credential.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-]+$"),
+					"expected only alpha numeric characters or non alpha numeric (-)",
+				),
+			),
 		},
 		"subscription_id": {
 			Description:  "The Azure Subscription ID.",

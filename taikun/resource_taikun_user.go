@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"github.com/itera-io/taikungoclient/client/users"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,10 +19,16 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"user_name": {
-			Description:  "The name of the user.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 30),
+			Description: "The name of the user.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+					"expected only alpha numeric characters or non alpha numeric (_-.)",
+				),
+			),
 		},
 		"organization_id": {
 			Description:      "The id of the organization to which the user belongs.",

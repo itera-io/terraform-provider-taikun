@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,10 +24,16 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description:  "Name",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 40),
+			Description: "Name",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 40),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+					"expected only alpha numeric characters or non alpha numeric (_-.)",
+				),
+			),
 		},
 		"organization_id": {
 			Description:      "Organization ID",
