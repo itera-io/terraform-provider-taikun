@@ -164,49 +164,50 @@ func resourceTaikunBackupCredentialRead(_ context.Context, data *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Data) == 1 {
-		rawBackupCredential := response.GetPayload().Data[0]
-
-		if err := data.Set("created_by", rawBackupCredential.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawBackupCredential.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawBackupCredential.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_default", rawBackupCredential.IsDefault); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawBackupCredential.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawBackupCredential.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawBackupCredential.S3Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawBackupCredential.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawBackupCredential.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("s3_endpoint", rawBackupCredential.S3Endpoint); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("s3_region", rawBackupCredential.S3Region); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("s3_access_key_id", rawBackupCredential.S3AccessKeyID); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("backup credential with ID %d not found", id)
 	}
+
+	rawBackupCredential := response.GetPayload().Data[0]
+
+	if err := data.Set("created_by", rawBackupCredential.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawBackupCredential.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawBackupCredential.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_default", rawBackupCredential.IsDefault); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawBackupCredential.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawBackupCredential.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawBackupCredential.S3Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawBackupCredential.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawBackupCredential.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("s3_endpoint", rawBackupCredential.S3Endpoint); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("s3_region", rawBackupCredential.S3Region); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("s3_access_key_id", rawBackupCredential.S3AccessKeyID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }

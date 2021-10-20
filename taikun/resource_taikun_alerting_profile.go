@@ -171,79 +171,6 @@ func resourceTaikunAlertingProfile() *schema.Resource {
 	}
 }
 
-func resourceTaikunAlertingProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
-	response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("Alerting profile with ID %d not found", id)
-	}
-	alertingProfileDTO := response.Payload.Data[0]
-
-	alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
-	alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	alertingIntegrationDTOs := alertingIntegrationsResponse.Payload
-
-	if err := data.Set("created_by", alertingProfileDTO.CreatedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("emails", getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(alertingProfileDTO.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("integration", getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDTOs)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", alertingProfileDTO.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified", alertingProfileDTO.LastModified); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("last_modified_by", alertingProfileDTO.LastModifiedBy); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", alertingProfileDTO.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(alertingProfileDTO.OrganizationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_name", alertingProfileDTO.OrganizationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("reminder", alertingProfileDTO.Reminder); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("slack_configuration_id", i32toa(alertingProfileDTO.SlackConfigurationID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("slack_configuration_name", alertingProfileDTO.SlackConfigurationName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("webhook", getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(alertingProfileDTO.ID))
-
-	return nil
-}
-
 func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
@@ -321,6 +248,79 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 
+func resourceTaikunAlertingProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+	id, err := atoi32(data.Id())
+	data.SetId("")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
+	response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("alerting profile with ID %d not found", id)
+	}
+	alertingProfileDTO := response.Payload.Data[0]
+
+	alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
+	alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	alertingIntegrationDTOs := alertingIntegrationsResponse.Payload
+
+	if err := data.Set("created_by", alertingProfileDTO.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("emails", getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(alertingProfileDTO.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("integration", getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDTOs)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", alertingProfileDTO.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", alertingProfileDTO.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", alertingProfileDTO.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", alertingProfileDTO.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(alertingProfileDTO.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", alertingProfileDTO.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("reminder", alertingProfileDTO.Reminder); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("slack_configuration_id", i32toa(alertingProfileDTO.SlackConfigurationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("slack_configuration_name", alertingProfileDTO.SlackConfigurationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("webhook", getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(alertingProfileDTO.ID))
+
+	return nil
+}
+
 func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
@@ -392,7 +392,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 
-func resourceTaikunAlertingProfileDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())

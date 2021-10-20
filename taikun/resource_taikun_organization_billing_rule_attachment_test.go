@@ -101,14 +101,15 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 		if err != nil {
 			return err
 		}
+		if len(response.Payload.Data) != 1 {
+			return fmt.Errorf("billing rule with ID %d not found", billingRuleId)
+		}
 
-		if len(response.Payload.Data) == 1 {
-			rawBillingRule := response.GetPayload().Data[0]
+		rawBillingRule := response.GetPayload().Data[0]
 
-			for _, e := range rawBillingRule.BoundOrganizations {
-				if e.OrganizationID == organizationId {
-					return nil
-				}
+		for _, e := range rawBillingRule.BoundOrganizations {
+			if e.OrganizationID == organizationId {
+				return nil
 			}
 		}
 
@@ -136,14 +137,15 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 		if err != nil {
 			return err
 		}
+		if len(response.Payload.Data) != 1 {
+			return fmt.Errorf("billing rule with ID %d not found", billingRuleId)
+		}
 
-		if len(response.Payload.Data) == 1 {
-			rawBillingRule := response.GetPayload().Data[0]
+		rawBillingRule := response.GetPayload().Data[0]
 
-			for _, e := range rawBillingRule.BoundOrganizations {
-				if e.OrganizationID == organizationId {
-					return fmt.Errorf("organization_billing_rule_attachment exists (id = %s)", rs.Primary.ID)
-				}
+		for _, e := range rawBillingRule.BoundOrganizations {
+			if e.OrganizationID == organizationId {
+				return fmt.Errorf("organization_billing_rule_attachment exists (id = %s)", rs.Primary.ID)
 			}
 		}
 	}

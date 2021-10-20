@@ -89,7 +89,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 	return resourceTaikunOrganizationBillingRuleAttachmentRead(ctx, data, meta)
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())
@@ -102,25 +102,26 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(ctx context.Context, da
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("billing rule with ID %d not found", billingRuleId)
+	}
 
-	if len(response.Payload.Data) == 1 {
-		rawBillingRule := response.GetPayload().Data[0]
+	rawBillingRule := response.GetPayload().Data[0]
 
-		for _, e := range rawBillingRule.BoundOrganizations {
-			if e.OrganizationID == organizationId {
+	for _, e := range rawBillingRule.BoundOrganizations {
+		if e.OrganizationID == organizationId {
 
-				if err := data.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
-					return diag.FromErr(err)
-				}
-				if err := data.Set("organization_name", e.OrganizationName); err != nil {
-					return diag.FromErr(err)
-				}
-				if err := data.Set("billing_rule_id", i32toa(rawBillingRule.ID)); err != nil {
-					return diag.FromErr(err)
-				}
-				if err := data.Set("discount_rate", e.RuleDiscountRate); err != nil {
-					return diag.FromErr(err)
-				}
+			if err := data.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
+				return diag.FromErr(err)
+			}
+			if err := data.Set("organization_name", e.OrganizationName); err != nil {
+				return diag.FromErr(err)
+			}
+			if err := data.Set("billing_rule_id", i32toa(rawBillingRule.ID)); err != nil {
+				return diag.FromErr(err)
+			}
+			if err := data.Set("discount_rate", e.RuleDiscountRate); err != nil {
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -128,7 +129,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(ctx context.Context, da
 	return nil
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*apiClient)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())

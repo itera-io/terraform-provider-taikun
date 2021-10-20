@@ -33,7 +33,7 @@ func dataSourceTaikunSlackConfigurations() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunSlackConfigurationsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunSlackConfigurationsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 

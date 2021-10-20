@@ -178,106 +178,6 @@ func resourceTaikunAccessProfile() *schema.Resource {
 	}
 }
 
-func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	response, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if len(response.Payload.Data) == 1 {
-		rawAccessProfile := response.GetPayload().Data[0]
-
-		DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
-		for i, rawDNSServer := range rawAccessProfile.DNSServers {
-			DNSServers[i] = map[string]interface{}{
-				"address": rawDNSServer.Address,
-				"id":      i32toa(rawDNSServer.ID),
-			}
-		}
-
-		NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
-		for i, rawNTPServer := range rawAccessProfile.NtpServers {
-			NTPServers[i] = map[string]interface{}{
-				"address": rawNTPServer.Address,
-				"id":      i32toa(rawNTPServer.ID),
-			}
-		}
-
-		projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
-		for i, rawProject := range rawAccessProfile.Projects {
-			projects[i] = map[string]interface{}{
-				"id":   i32toa(rawProject.ID),
-				"name": rawProject.Name,
-			}
-		}
-
-		SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
-		for i, rawSSHUser := range sshResponse.Payload {
-			SSHUsers[i] = map[string]interface{}{
-				"id":         i32toa(rawSSHUser.ID),
-				"name":       rawSSHUser.Name,
-				"public_key": rawSSHUser.SSHPublicKey,
-			}
-		}
-
-		if err := data.Set("created_by", rawAccessProfile.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("dns_server", DNSServers); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("http_proxy", rawAccessProfile.HTTPProxy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawAccessProfile.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawAccessProfile.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawAccessProfile.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawAccessProfile.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawAccessProfile.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("ntp_server", NTPServers); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawAccessProfile.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawAccessProfile.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("project", projects); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("ssh_user", SSHUsers); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
-	}
-
-	return nil
-}
-
 func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
@@ -361,6 +261,107 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 	}
 
 	return resourceTaikunAccessProfileRead(ctx, data, meta)
+}
+
+func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+	id, err := atoi32(data.Id())
+	data.SetId("")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	response, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(response.Payload.Data) != 1 {
+		return diag.Errorf("access profile with ID %d not found", id)
+	}
+
+	rawAccessProfile := response.GetPayload().Data[0]
+
+	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
+	for i, rawDNSServer := range rawAccessProfile.DNSServers {
+		DNSServers[i] = map[string]interface{}{
+			"address": rawDNSServer.Address,
+			"id":      i32toa(rawDNSServer.ID),
+		}
+	}
+
+	NTPServers := make([]map[string]interface{}, len(rawAccessProfile.NtpServers))
+	for i, rawNTPServer := range rawAccessProfile.NtpServers {
+		NTPServers[i] = map[string]interface{}{
+			"address": rawNTPServer.Address,
+			"id":      i32toa(rawNTPServer.ID),
+		}
+	}
+
+	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
+	for i, rawProject := range rawAccessProfile.Projects {
+		projects[i] = map[string]interface{}{
+			"id":   i32toa(rawProject.ID),
+			"name": rawProject.Name,
+		}
+	}
+
+	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
+	for i, rawSSHUser := range sshResponse.Payload {
+		SSHUsers[i] = map[string]interface{}{
+			"id":         i32toa(rawSSHUser.ID),
+			"name":       rawSSHUser.Name,
+			"public_key": rawSSHUser.SSHPublicKey,
+		}
+	}
+
+	if err := data.Set("created_by", rawAccessProfile.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("dns_server", DNSServers); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("http_proxy", rawAccessProfile.HTTPProxy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawAccessProfile.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawAccessProfile.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawAccessProfile.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawAccessProfile.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawAccessProfile.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("ntp_server", NTPServers); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawAccessProfile.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawAccessProfile.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("project", projects); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("ssh_user", SSHUsers); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
+
+	return nil
 }
 
 func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

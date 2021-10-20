@@ -79,7 +79,7 @@ func dataSourceTaikunFlavors() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunFlavorsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunFlavorsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	cloudCredentialID, err := atoi32(data.Get("cloud_credential_id").(string))
 	if err != nil {

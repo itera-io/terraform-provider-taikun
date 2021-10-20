@@ -192,52 +192,53 @@ func resourceTaikunCloudCredentialAzureRead(_ context.Context, data *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Azure) == 1 {
-		rawCloudCredentialAzure := response.GetPayload().Azure[0]
-
-		if err := data.Set("created_by", rawCloudCredentialAzure.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawCloudCredentialAzure.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawCloudCredentialAzure.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_default", rawCloudCredentialAzure.IsDefault); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawCloudCredentialAzure.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawCloudCredentialAzure.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawCloudCredentialAzure.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("availability_zone", rawCloudCredentialAzure.AvailabilityZone); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("location", rawCloudCredentialAzure.Location); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("tenant_id", rawCloudCredentialAzure.TenantID); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("availability_zone", rawCloudCredentialAzure.AvailabilityZone); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawCloudCredentialAzure.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawCloudCredentialAzure.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Azure) != 1 {
+		return diag.Errorf("azure cloud credential with ID %d not found", id)
 	}
+
+	rawCloudCredentialAzure := response.GetPayload().Azure[0]
+
+	if err := data.Set("created_by", rawCloudCredentialAzure.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawCloudCredentialAzure.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawCloudCredentialAzure.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_default", rawCloudCredentialAzure.IsDefault); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawCloudCredentialAzure.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawCloudCredentialAzure.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawCloudCredentialAzure.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("availability_zone", rawCloudCredentialAzure.AvailabilityZone); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("location", rawCloudCredentialAzure.Location); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("tenant_id", rawCloudCredentialAzure.TenantID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("availability_zone", rawCloudCredentialAzure.AvailabilityZone); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawCloudCredentialAzure.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawCloudCredentialAzure.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }

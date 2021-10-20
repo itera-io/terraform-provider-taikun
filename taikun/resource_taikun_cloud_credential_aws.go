@@ -174,46 +174,47 @@ func resourceTaikunCloudCredentialAWSRead(_ context.Context, data *schema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	if len(response.Payload.Amazon) == 1 {
-		rawCloudCredentialAWS := response.GetPayload().Amazon[0]
-
-		if err := data.Set("created_by", rawCloudCredentialAWS.CreatedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("id", i32toa(rawCloudCredentialAWS.ID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_locked", rawCloudCredentialAWS.IsLocked); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("is_default", rawCloudCredentialAWS.IsDefault); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified", rawCloudCredentialAWS.LastModified); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("last_modified_by", rawCloudCredentialAWS.LastModifiedBy); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("name", rawCloudCredentialAWS.Name); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("availability_zone", rawCloudCredentialAWS.AvailabilityZone); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("region", rawCloudCredentialAWS.Region); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_id", i32toa(rawCloudCredentialAWS.OrganizationID)); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := data.Set("organization_name", rawCloudCredentialAWS.OrganizationName); err != nil {
-			return diag.FromErr(err)
-		}
-
-		data.SetId(i32toa(id))
+	if len(response.Payload.Amazon) != 1 {
+		return diag.Errorf("aws cloud credential with ID %d not found", id)
 	}
+
+	rawCloudCredentialAWS := response.GetPayload().Amazon[0]
+
+	if err := data.Set("created_by", rawCloudCredentialAWS.CreatedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("id", i32toa(rawCloudCredentialAWS.ID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_locked", rawCloudCredentialAWS.IsLocked); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("is_default", rawCloudCredentialAWS.IsDefault); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified", rawCloudCredentialAWS.LastModified); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("last_modified_by", rawCloudCredentialAWS.LastModifiedBy); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("name", rawCloudCredentialAWS.Name); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("availability_zone", rawCloudCredentialAWS.AvailabilityZone); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("region", rawCloudCredentialAWS.Region); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_id", i32toa(rawCloudCredentialAWS.OrganizationID)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("organization_name", rawCloudCredentialAWS.OrganizationName); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(i32toa(id))
 
 	return nil
 }
