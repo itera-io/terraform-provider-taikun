@@ -156,7 +156,7 @@ func resourceTaikunKubernetesProfileRead(_ context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("kubernetes profile with ID %d not found", id)
+		return nil
 	}
 
 	rawKubernetesProfile := response.GetPayload().Data[0]

@@ -157,7 +157,7 @@ func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.Resour
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("showback credential with ID %d not found", id)
+		return nil
 	}
 
 	rawShowbackCredential := response.GetPayload().Data[0]

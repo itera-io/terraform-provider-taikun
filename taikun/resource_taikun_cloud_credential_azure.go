@@ -193,7 +193,7 @@ func resourceTaikunCloudCredentialAzureRead(_ context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Azure) != 1 {
-		return diag.Errorf("azure cloud credential with ID %d not found", id)
+		return nil
 	}
 
 	rawCloudCredentialAzure := response.GetPayload().Azure[0]

@@ -162,7 +162,7 @@ func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("billing credential with ID %d not found", id)
+		return nil
 	}
 
 	rawBillingCredential := response.GetPayload().Data[0]

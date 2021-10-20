@@ -262,7 +262,7 @@ func resourceTaikunAlertingProfileRead(_ context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("alerting profile with ID %d not found", id)
+		return nil
 	}
 	alertingProfileDTO := response.Payload.Data[0]
 

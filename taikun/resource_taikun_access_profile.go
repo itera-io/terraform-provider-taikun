@@ -276,12 +276,13 @@ func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	if len(response.Payload.Data) != 1 {
+		return nil
+	}
+
 	sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("access profile with ID %d not found", id)
 	}
 
 	rawAccessProfile := response.GetPayload().Data[0]
