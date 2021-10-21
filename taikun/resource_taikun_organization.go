@@ -29,11 +29,6 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
-		"cloud_credentials": {
-			Description: "Number of associated cloud credentials.",
-			Type:        schema.TypeInt,
-			Computed:    true,
-		},
 		"country": {
 			Description: "Country.",
 			Type:        schema.TypeString,
@@ -117,11 +112,6 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 		},
 		"servers": {
 			Description: "Number of associated servers.",
-			Type:        schema.TypeInt,
-			Computed:    true,
-		},
-		"users": {
-			Description: "Number of associated users.",
 			Type:        schema.TypeInt,
 			Computed:    true,
 		},
@@ -280,7 +270,6 @@ func flattenTaikunOrganization(rawOrganization *models.OrganizationDetailsDto) m
 		"address":                          rawOrganization.Address,
 		"billing_email":                    rawOrganization.BillingEmail,
 		"city":                             rawOrganization.City,
-		"cloud_credentials":                rawOrganization.CloudCredentials,
 		"country":                          rawOrganization.Country,
 		"created_at":                       rawOrganization.CreatedAt,
 		"discount_rate":                    rawOrganization.DiscountRate,
@@ -296,7 +285,6 @@ func flattenTaikunOrganization(rawOrganization *models.OrganizationDetailsDto) m
 		"phone":                            rawOrganization.Phone,
 		"projects":                         rawOrganization.Projects,
 		"servers":                          rawOrganization.Servers,
-		"users":                            rawOrganization.Users,
 		"vat_number":                       rawOrganization.VatNumber,
 	}
 }

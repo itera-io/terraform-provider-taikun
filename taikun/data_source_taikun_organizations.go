@@ -20,7 +20,7 @@ func dataSourceTaikunOrganizations() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{
-					Schema: dataSourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema()),
+					Schema: dataSourceTaikunOrganizationSchema(),
 				},
 			},
 		},
@@ -33,25 +33,27 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, data *schema.ResourceD
 
 	params := organizations.NewOrganizationsListParams().WithV(ApiVersion)
 
-	var organizationsList []*models.OrganizationDetailsDto
+	var rawOrganizationsList []*models.OrganizationDetailsDto
 	for {
 		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		organizationsList = append(organizationsList, response.Payload.Data...)
-		if len(organizationsList) == int(response.Payload.TotalCount) {
+		rawOrganizationsList = append(rawOrganizationsList, response.Payload.Data...)
+		if len(rawOrganizationsList) == int(response.Payload.TotalCount) {
 			break
 		}
-		offset := int32(len(organizationsList))
+		offset := int32(len(rawOrganizationsList))
 		params = params.WithOffset(&offset)
 	}
 
-	organizations := make([]map[string]interface{}, len(organizationsList))
-	for i, rawOrganization := range organizationsList {
-		organizations[i] = flattenTaikunOrganization(rawOrganization)
+	organizationsList := make([]map[string]interface{}, len(rawOrganizationsList))
+	for i, rawOrganization := range rawOrganizationsList {
+		organizationsList[i] = flattenTaikunOrganization(rawOrganization)
+		organizationsList[i]["cloud_credentials"] = rawOrganization.CloudCredentials
+		organizationsList[i]["users"] = rawOrganization.Users
 	}
-	if err := data.Set("organizations", organizations); err != nil {
+	if err := data.Set("organizations", organizationsList); err != nil {
 		return diag.FromErr(err)
 	}
 
