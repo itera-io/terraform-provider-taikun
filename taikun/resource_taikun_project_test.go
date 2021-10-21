@@ -67,6 +67,7 @@ resource "taikun_project" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
   auto_upgrades = %t
+  expiration_date = "%s"
 }
 `
 
@@ -74,6 +75,7 @@ func TestAccResourceTaikunProject(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := randomTestName()
 	autoUpgrades := true
+	expirationDate := "01/04/2999"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -85,11 +87,13 @@ func TestAccResourceTaikunProject(t *testing.T) {
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
-					autoUpgrades),
+					autoUpgrades,
+					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrades", fmt.Sprint(autoUpgrades)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -106,6 +110,59 @@ func TestAccResourceTaikunProject(t *testing.T) {
 	})
 }
 
+func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := randomTestName()
+	autoUpgrades := true
+	expirationDate := "01/04/2999"
+	newExpirationDate := "07/02/3000"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					autoUpgrades,
+					expirationDate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrades", fmt.Sprint(autoUpgrades)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					autoUpgrades,
+					newExpirationDate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrades", fmt.Sprint(autoUpgrades)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", newExpirationDate),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+		},
+	})
+}
 func testAccCheckTaikunProjectExists(state *terraform.State) error {
 	apiClient := testAccProvider.Meta().(*apiClient)
 

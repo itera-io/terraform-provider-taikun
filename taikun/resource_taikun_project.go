@@ -43,6 +43,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"expiration_date": {
+			Description:      "Project's expiration date in RFC 3339 format: 'yyyy-mm-dd'.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: stringIsDate,
+		},
 		"id": {
 			Description: "Project ID.",
 			Type:        schema.TypeString,
@@ -79,7 +85,7 @@ func resourceTaikunProject() *schema.Resource {
 		Description:   "Taikun Project",
 		CreateContext: resourceTaikunProjectCreate,
 		ReadContext:   resourceTaikunProjectRead,
-		// UpdateContext: resourceTaikunProjectUpdate,
+		UpdateContext: resourceTaikunProjectUpdate,
 		DeleteContext: resourceTaikunProjectDelete,
 		Schema:        resourceTaikunProjectSchema(),
 		Importer: &schema.ResourceImporter{
@@ -130,6 +136,12 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	if autoUpgrades, autoUpgradesIsSet := data.GetOk("auto_upgrades"); autoUpgradesIsSet {
 		body.IsAutoUpgrade = autoUpgrades.(bool)
 	}
+	if expirationDate, expirationDateIsSet := data.GetOk("expiration_date"); expirationDateIsSet {
+		dateTime := dateToDateTime(expirationDate.(string))
+		body.ExpiredAt = &dateTime
+	} else {
+		body.ExpiredAt = nil
+	}
 	if kubernetesProfileID, kubernetesProfileIDIsSet := data.GetOk("kubernetes_profile_id"); kubernetesProfileIDIsSet {
 		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
 	}
@@ -149,7 +161,30 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// FIXME
+	apiClient := meta.(*apiClient)
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if data.HasChange("expiration_date") {
+		body := models.ProjectExtendLifeTimeCommand{
+			ProjectID: id,
+		}
+		if expirationDate, expirationDateIsSet := data.GetOk("expiration_date"); expirationDateIsSet {
+			dateTime := dateToDateTime(expirationDate.(string))
+			body.ExpireAt = &dateTime
+		} else {
+			body.ExpireAt = nil
+		}
+
+		params := projects.NewProjectsExtendLifeTimeParams().WithV(ApiVersion).WithBody(&body)
+		_, err := apiClient.client.Projects.ProjectsExtendLifeTime(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+	}
 	return resourceTaikunProjectRead(ctx, data, meta)
 }
 
@@ -176,8 +211,9 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 	return map[string]interface{}{
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
-		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
 		"auto_upgrades":         projectDetailsDTO.IsAutoUpgrade,
+		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
+		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
 		"name":                  projectDetailsDTO.ProjectName,
