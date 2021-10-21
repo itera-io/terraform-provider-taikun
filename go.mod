@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-docs v0.5.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.8.0
-	github.com/itera-io/taikungoclient v0.0.0-20211020004017-85203973cd0a
+	github.com/itera-io/taikungoclient v0.0.0-20211021143013-0eed0289f849
 )
 
 require (
