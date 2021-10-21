@@ -36,6 +36,13 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"auto_upgrades": {
+			Description: "Kubespray version will be automatically upgraded if new version is available",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
 		"id": {
 			Description: "Project ID",
 			Type:        schema.TypeString,
@@ -120,6 +127,9 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	if alertingProfileID, alertingProfileIDIsSet := data.GetOk("alerting_profile_id"); alertingProfileIDIsSet {
 		body.AlertingProfileID, _ = atoi32(alertingProfileID.(string))
 	}
+	if autoUpgrades, autoUpgradesIsSet := data.GetOk("auto_upgrades"); autoUpgradesIsSet {
+		body.IsAutoUpgrade = autoUpgrades.(bool)
+	}
 	if kubernetesProfileID, kubernetesProfileIDIsSet := data.GetOk("kubernetes_profile_id"); kubernetesProfileIDIsSet {
 		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
 	}
@@ -167,6 +177,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
+		"auto_upgrades":         projectDetailsDTO.IsAutoUpgrade,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
 		"name":                  projectDetailsDTO.ProjectName,

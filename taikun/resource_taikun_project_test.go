@@ -65,12 +65,15 @@ resource "taikun_cloud_credential_aws" "foo" {
 resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+
+  auto_upgrades = %t
 }
 `
 
 func TestAccResourceTaikunProject(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := randomTestName()
+	autoUpgrades := true
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -81,10 +84,12 @@ func TestAccResourceTaikunProject(t *testing.T) {
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
-					projectName),
+					projectName,
+					autoUpgrades),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrades", fmt.Sprint(autoUpgrades)),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
