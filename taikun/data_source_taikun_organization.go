@@ -12,12 +12,12 @@ func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
 	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema())
 	addOptionalFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
-	setFieldToSchema(dsSchema, "cloud_credentials", &schema.Schema{
+	setFieldInSchema(dsSchema, "cloud_credentials", &schema.Schema{
 		Description: "Number of associated cloud credentials.",
 		Type:        schema.TypeInt,
 		Computed:    true,
 	})
-	setFieldToSchema(dsSchema, "users", &schema.Schema{
+	setFieldInSchema(dsSchema, "users", &schema.Schema{
 		Description: "Number of associated users.",
 		Type:        schema.TypeInt,
 		Computed:    true,
