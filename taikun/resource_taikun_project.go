@@ -89,29 +89,12 @@ func resourceTaikunProjectRead(ctx context.Context, data *schema.ResourceData, m
 	params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
 	response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 	if err != nil {
-		return diag.FromErr(err)
+		return nil
 	}
 
 	projectDetailsDTO := response.Payload.Project
-	if err := data.Set("access_profile_id", i32toa(projectDetailsDTO.AccessProfileID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("alerting_profile_id", i32toa(projectDetailsDTO.AlertingProfileID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("cloud_credential_id", i32toa(projectDetailsDTO.CloudID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", id); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("kubernetes_profile_id", i32toa(projectDetailsDTO.KubernetesProfileID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", projectDetailsDTO.ProjectName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("organization_id", i32toa(projectDetailsDTO.OrganizationID)); err != nil {
+	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -172,4 +155,17 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 
 	data.SetId("")
 	return nil
+}
+
+// TODO change type of DTO if read endpoint is modified
+func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto) map[string]interface{} {
+	return map[string]interface{}{
+		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
+		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
+		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
+		"id":                    i32toa(projectDetailsDTO.ProjectID),
+		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
+		"name":                  projectDetailsDTO.ProjectName,
+		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
+	}
 }
