@@ -105,7 +105,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if response.Payload.TotalCount != 1 {
+	if len(response.Payload.Data) != 1 {
 		return nil
 	}
 
@@ -146,7 +146,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, da
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if organizationsListResponse.Payload.TotalCount != 1 {
+	if len(organizationsListResponse.Payload.Data) != 1 {
 		data.SetId("")
 		return nil
 	}
@@ -156,7 +156,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, da
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if billingRulesListResponse.Payload.TotalCount != 1 {
+	if len(billingRulesListResponse.Payload.Data) != 1 {
 		data.SetId("")
 		return nil
 	}
