@@ -215,7 +215,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("access_key_id") || data.HasChange("secret_access_key") || data.HasChange("name") {
+	if data.HasChanges("access_key_id", "secret_access_key", "name") {
 		updateBody := &models.UpdateAzureCommand{
 			ID:                id,
 			Name:              data.Get("name").(string),
