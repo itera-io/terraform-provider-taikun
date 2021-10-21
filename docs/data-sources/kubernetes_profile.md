@@ -37,5 +37,6 @@ data "taikun_kubernetes_profile" "foo" {
 - **name** (String) The name of the Kubernetes profile.
 - **organization_id** (String) The ID of the organization which owns the Kubernetes profile.
 - **organization_name** (String) The name of the organization which owns the Kubernetes profile.
+- **schedule_on_master** (Boolean) When enabled, the workload will also run on master nodes (not recommended).
 
 

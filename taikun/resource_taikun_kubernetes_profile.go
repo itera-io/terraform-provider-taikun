@@ -24,6 +24,13 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 			ForceNew:    true,
 		},
+		"schedule_on_master": {
+			Description: "When enabled, the workload will also run on master nodes (not recommended).",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
 		"created_by": {
 			Description: "The creator of the Kubernetes profile.",
 			Type:        schema.TypeString,
@@ -101,6 +108,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 	octaviaEnabled, taikunLBEnabled := parseLoadBalancingSolution(data.Get("load_balancing_solution").(string))
 	body := &models.CreateKubernetesProfileCommand{
 		Name:                    data.Get("name").(string),
+		AllowSchedulingOnMaster: data.Get("schedule_on_master").(bool),
 		TaikunLBEnabled:         taikunLBEnabled,
 		OctaviaEnabled:          octaviaEnabled,
 		ExposeNodePortOnBastion: data.Get("bastion_proxy_enabled").(bool),
@@ -225,5 +233,6 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *models.KubernetesProfi
 		"name":                    rawKubernetesProfile.Name,
 		"organization_id":         i32toa(rawKubernetesProfile.OrganizationID),
 		"organization_name":       rawKubernetesProfile.OrganizationName,
+		"schedule_on_master":      rawKubernetesProfile.AllowSchedulingOnMaster,
 	}
 }
