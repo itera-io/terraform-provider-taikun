@@ -172,7 +172,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 		if err != nil {
 			return diag.Errorf("showback_credential_id isn't valid: %s", data.Get("showback_credential_id").(string))
 		}
-		body.ShowbackCredentialID = showbackCredentialId
+		body.ShowbackCredentialID = &showbackCredentialId
 	}
 
 	rawLabelsList := data.Get("label").([]interface{})
@@ -307,8 +307,8 @@ func flattenTaikunShowbackRule(rawShowbackRule *models.ShowbackRulesListDto) map
 		"type":                rawShowbackRule.Type,
 	}
 
-	if rawShowbackRule.ShowbackCredentialID != 0 {
-		result["showback_credential_id"] = i32toa(rawShowbackRule.ShowbackCredentialID)
+	if rawShowbackRule.ShowbackCredentialID != nil {
+		result["showback_credential_id"] = i32toa(*rawShowbackRule.ShowbackCredentialID)
 		result["showback_credential_name"] = rawShowbackRule.ShowbackCredentialName
 	}
 	return result
