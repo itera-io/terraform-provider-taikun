@@ -105,8 +105,8 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if len(response.Payload.Data) != 1 {
-		return diag.Errorf("billing rule with ID %d not found", billingRuleId)
+	if response.Payload.TotalCount != 1 {
+		return nil
 	}
 
 	rawBillingRule := response.GetPayload().Data[0]
