@@ -63,6 +63,10 @@ func fixDatasourceSchemaFlags(schema map[string]*schema.Schema, required bool, k
 	}
 }
 
+func setFieldInSchema(schema map[string]*schema.Schema, key string, value *schema.Schema) {
+	schema[key] = value
+}
+
 func addRequiredFieldsToSchema(schema map[string]*schema.Schema, keys ...string) {
 	fixDatasourceSchemaFlags(schema, true, keys...)
 }

@@ -53,7 +53,6 @@ resource "taikun_organization" "foo" {
 
 ### Read-Only
 
-- **cloud_credentials** (Number) Number of associated cloud credentials.
 - **created_at** (String) Time and date of creation.
 - **id** (String) Organization's ID.
 - **is_read_only** (Boolean) Whether the organization is in read-only mode.
@@ -61,7 +60,6 @@ resource "taikun_organization" "foo" {
 - **partner_name** (String) Name of the organization's partner.
 - **projects** (Number) Number of associated projects.
 - **servers** (Number) Number of associated servers.
-- **users** (Number) Number of associated users.
 
 ## Import
 

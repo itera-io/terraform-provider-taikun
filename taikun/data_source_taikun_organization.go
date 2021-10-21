@@ -12,6 +12,16 @@ func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
 	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema())
 	addOptionalFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
+	setFieldInSchema(dsSchema, "cloud_credentials", &schema.Schema{
+		Description: "Number of associated cloud credentials.",
+		Type:        schema.TypeInt,
+		Computed:    true,
+	})
+	setFieldInSchema(dsSchema, "users", &schema.Schema{
+		Description: "Number of associated users.",
+		Type:        schema.TypeInt,
+		Computed:    true,
+	})
 	return dsSchema
 }
 
@@ -47,67 +57,12 @@ func dataSourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceDa
 
 	rawOrganization := response.GetPayload().Data[0]
 
-	if err := data.Set("address", rawOrganization.Address); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("billing_email", rawOrganization.BillingEmail); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("city", rawOrganization.City); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("cloud_credentials", rawOrganization.CloudCredentials); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("country", rawOrganization.Country); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("created_at", rawOrganization.CreatedAt); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("discount_rate", rawOrganization.DiscountRate); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("email", rawOrganization.Email); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("full_name", rawOrganization.FullName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("id", i32toa(rawOrganization.ID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("let_managers_change_subscription", rawOrganization.IsEligibleUpdateSubscription); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_locked", rawOrganization.IsLocked); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("is_read_only", rawOrganization.IsReadOnly); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("name", rawOrganization.Name); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("partner_id", i32toa(rawOrganization.PartnerID)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("partner_name", rawOrganization.PartnerName); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("phone", rawOrganization.Phone); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("projects", rawOrganization.Projects); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("servers", rawOrganization.Servers); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("users", rawOrganization.Users); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := data.Set("vat_number", rawOrganization.VatNumber); err != nil {
+	organizationMap := flattenTaikunOrganization(rawOrganization)
+	organizationMap["cloud_credentials"] = rawOrganization.CloudCredentials
+	organizationMap["users"] = rawOrganization.Users
+
+	err = setResourceDataFromMap(data, organizationMap)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
