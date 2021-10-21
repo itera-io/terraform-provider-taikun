@@ -3,11 +3,12 @@ package taikun
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"math/rand"
 	"net/mail"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -79,6 +80,19 @@ func stringIsEmail(i interface{}, path cty.Path) diag.Diagnostics {
 	_, err := mail.ParseAddress(v)
 	if err != nil {
 		return diag.FromErr(path.NewErrorf("expected an email"))
+	}
+
+	return nil
+}
+
+func stringIsDate(i interface{}, path cty.Path) diag.Diagnostics {
+	v, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	if _, err := time.Parse(time.RFC3339, v); len(v) != 10 || err != nil {
+		return diag.FromErr(path.NewErrorf("expected a valid date in the RFC 3339 format: 'yyyy-mm-dd'"))
 	}
 
 	return nil
