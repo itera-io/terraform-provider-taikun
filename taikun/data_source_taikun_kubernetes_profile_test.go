@@ -34,6 +34,7 @@ func TestAccDataSourceTaikunKubernetesProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "is_locked"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "bastion_proxy_enabled"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "load_balancing_solution"),
+					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "schedule_on_master"),
 				),
 			},
 		},
