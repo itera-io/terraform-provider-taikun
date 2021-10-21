@@ -38,6 +38,7 @@ resource "taikun_kubernetes_profile" "foo" {
 - **is_locked** (Boolean) Indicates whether the Kubernetes profile is locked or not. Defaults to `false`.
 - **load_balancing_solution** (String) Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud. Defaults to `Octavia`.
 - **organization_id** (String) The ID of the organization which owns the Kubernetes profile.
+- **schedule_on_master** (Boolean) When enabled, the workload will also run on master nodes (not recommended). Defaults to `false`.
 
 ### Read-Only
 

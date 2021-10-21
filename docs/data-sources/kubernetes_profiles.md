@@ -47,5 +47,6 @@ Read-Only:
 - **name** (String)
 - **organization_id** (String)
 - **organization_name** (String)
+- **schedule_on_master** (Boolean)
 
 
