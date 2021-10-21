@@ -187,7 +187,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("name") || data.HasChange("s3_access_key_id") || data.HasChange("s3_secret_access_key") {
+	if data.HasChanges("name", "s3_access_key_id", "s3_secret_access_key") {
 		updateBody := models.BackupCredentialsUpdateCommand{
 			ID:            id,
 			S3AccessKeyID: data.Get("s3_access_key_id").(string),

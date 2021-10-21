@@ -197,7 +197,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("access_key_id") || data.HasChange("secret_access_key") || data.HasChange("name") {
+	if data.HasChanges("access_key_id", "secret_access_key", "name") {
 		updateBody := &models.UpdateAwsCommand{
 			ID:                 id,
 			Name:               data.Get("name").(string),
