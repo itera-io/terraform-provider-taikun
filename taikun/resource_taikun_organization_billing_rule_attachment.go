@@ -92,9 +92,11 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())
+	id := data.Id()
+	data.SetId("")
+	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(id)
 	if err != nil {
-		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
+		return diag.Errorf("Error while reading taikun_organization_billing_rule_attachment : %s", err)
 	}
 
 	params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
@@ -110,7 +112,6 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data
 
 	for _, e := range rawBillingRule.BoundOrganizations {
 		if e.OrganizationID == organizationId {
-
 			if err := data.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
 				return diag.FromErr(err)
 			}
@@ -123,6 +124,8 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data
 			if err := data.Set("discount_rate", e.RuleDiscountRate); err != nil {
 				return diag.FromErr(err)
 			}
+			data.SetId(id)
+			break
 		}
 	}
 
