@@ -37,7 +37,6 @@ jobs:
     needs: build
     runs-on: self-hosted
     timeout-minutes: 15
-    concurrency: test-acc
     steps:
 
       - name: Set up Go
