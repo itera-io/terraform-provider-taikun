@@ -2,11 +2,12 @@ package taikun
 
 import (
 	"fmt"
-	"github.com/itera-io/taikungoclient/client/prometheus"
 	"math"
 	"math/rand"
 	"os"
 	"testing"
+
+	"github.com/itera-io/taikungoclient/client/prometheus"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -137,8 +138,8 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 		if err != nil {
 			return err
 		}
-		if len(response.Payload.Data) != 1 {
-			return fmt.Errorf("billing rule with ID %d not found", billingRuleId)
+		if response.Payload.TotalCount != 1 {
+			return nil
 		}
 
 		rawBillingRule := response.GetPayload().Data[0]
