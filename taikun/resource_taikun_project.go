@@ -14,7 +14,7 @@ import (
 func resourceTaikunProjectSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"access_profile_id": {
-			Description:      "ID of the project's access profile",
+			Description:      "ID of the project's access profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -22,34 +22,34 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"alerting_profile_id": {
-			Description:      "ID of the project's alerting profile",
+			Description:      "ID of the project's alerting profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true, // TODO alerting profile can be detached, maybe handle in Update?
 		},
-		"cloud_credential_id": {
-			Description:      "ID of the cloud credential used to store the project",
-			Type:             schema.TypeString,
-			Required:         true,
-			ValidateDiagFunc: stringIsInt,
-			ForceNew:         true,
-		},
 		"auto_upgrades": {
-			Description: "Kubespray version will be automatically upgraded if new version is available",
+			Description: "Kubespray version will be automatically upgraded if new version is available.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 			ForceNew:    true,
 		},
+		"cloud_credential_id": {
+			Description:      "ID of the cloud credential used to store the project.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
+		},
 		"id": {
-			Description: "Project ID",
+			Description: "Project ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"kubernetes_profile_id": {
-			Description:      "ID of the project's kubernetes profile",
+			Description:      "ID of the project's kubernetes profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
