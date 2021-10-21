@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient/client/organizations"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -133,11 +134,31 @@ func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*apiClient)
+	apiClient := meta.(*apiClient)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
+	}
+
+	organizationsListParams := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&organizationId)
+	organizationsListResponse, err := apiClient.client.Organizations.OrganizationsList(organizationsListParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if organizationsListResponse.Payload.TotalCount != 1 {
+		data.SetId("")
+		return nil
+	}
+
+	billingRulesListParams := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
+	billingRulesListResponse, err := apiClient.client.Prometheus.PrometheusListOfRules(billingRulesListParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if billingRulesListResponse.Payload.TotalCount != 1 {
+		data.SetId("")
+		return nil
 	}
 
 	body := &models.BindPrometheusOrganizationsCommand{
@@ -150,7 +171,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, da
 		PrometheusRuleID: billingRuleId,
 	}
 	params := prometheus.NewPrometheusBindOrganizationsParams().WithV(ApiVersion).WithBody(body)
-	_, err = client.client.Prometheus.PrometheusBindOrganizations(params, client)
+	_, err = apiClient.client.Prometheus.PrometheusBindOrganizations(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
