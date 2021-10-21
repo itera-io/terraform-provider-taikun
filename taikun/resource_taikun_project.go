@@ -86,7 +86,7 @@ func resourceTaikunProjectRead(ctx context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32)
+	params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
 	response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)

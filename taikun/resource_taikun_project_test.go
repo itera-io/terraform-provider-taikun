@@ -109,7 +109,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 			continue
 		}
 
-		params := projects.NewProjectsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID)
+		params := projects.NewProjectsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID) // TODO use WithID once implemented
 
 		response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
@@ -128,10 +128,10 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 			continue
 		}
 
-		params := projects.NewProjectsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID)
+		params := projects.NewProjectsListParams().WithV(ApiVersion).WithSearchID(&rs.Primary.ID) // TODO use WithID once implemented
 
 		response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
-		if err == nil && response.Payload.TotalCount != 0 {
+		if err == nil && len(response.Payload.Data) != 0 {
 			return fmt.Errorf("project still exists (id = %s)", rs.Primary.ID)
 		}
 	}
