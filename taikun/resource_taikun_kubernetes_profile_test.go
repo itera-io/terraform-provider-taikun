@@ -12,7 +12,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("taikun_kubernetes_profile", &resource.Sweeper{
-		Name: "taikun_kubernetes_profile",
+		Name:         "taikun_kubernetes_profile",
+		Dependencies: []string{"taikun_project"},
 		F: func(r string) error {
 
 			meta, err := sharedConfig()
