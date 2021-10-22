@@ -25,7 +25,6 @@ data "taikun_cloud_credentials_openstack" "foo" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
 - **organization_id** (String) Organization ID filter.
 
 ### Read-Only
