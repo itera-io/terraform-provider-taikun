@@ -13,7 +13,8 @@ import (
 
 func init() {
 	resource.AddTestSweepers("taikun_cloud_credential_openstack", &resource.Sweeper{
-		Name: "taikun_cloud_credential_openstack",
+		Name:         "taikun_cloud_credential_openstack",
+		Dependencies: []string{"taikun_project"},
 		F: func(r string) error {
 
 			meta, err := sharedConfig()
