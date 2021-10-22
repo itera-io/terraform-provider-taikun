@@ -33,7 +33,6 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			Description: "Labels linked to the billing rule.",
 			Type:        schema.TypeList,
 			Required:    true,
-			ForceNew:    true,
 			MinItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -114,23 +113,13 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 	}
 
 	body := &models.RuleCreateCommand{
+		Labels:                resourceTaikunBillingRuleLabelsToAdd(data),
 		Name:                  data.Get("name").(string),
 		MetricName:            data.Get("metric_name").(string),
 		Price:                 data.Get("price").(float64),
 		OperationCredentialID: billingCredentialId,
 		Type:                  getPrometheusType(data.Get("type").(string)),
 	}
-
-	rawLabelsList := data.Get("label").([]interface{})
-	LabelsList := make([]*models.PrometheusLabelListDto, len(rawLabelsList))
-	for i, e := range rawLabelsList {
-		rawLabel := e.(map[string]interface{})
-		LabelsList[i] = &models.PrometheusLabelListDto{
-			Label: rawLabel["key"].(string),
-			Value: rawLabel["value"].(string),
-		}
-	}
-	body.Labels = LabelsList
 
 	params := prometheus.NewPrometheusCreateParams().WithV(ApiVersion).WithBody(body)
 	createResult, err := apiClient.client.Prometheus.PrometheusCreate(params, apiClient)
@@ -185,6 +174,8 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 	}
 
 	body := &models.RuleForUpdateDto{
+		LabelsToAdd:           resourceTaikunBillingRuleLabelsToAdd(data),
+		LabelsToDelete:        resourceTaikunBillingRuleLabelsToDelete(data),
 		Name:                  data.Get("name").(string),
 		MetricName:            data.Get("metric_name").(string),
 		Price:                 data.Get("price").(float64),
@@ -216,6 +207,33 @@ func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceDat
 
 	data.SetId("")
 	return nil
+}
+
+func resourceTaikunBillingRuleLabelsToAdd(data *schema.ResourceData) []*models.PrometheusLabelListDto {
+	labels := data.Get("label").([]interface{})
+	labelsToAdd := make([]*models.PrometheusLabelListDto, len(labels))
+	for i, labelData := range labels {
+		label := labelData.(map[string]interface{})
+		labelsToAdd[i] = &models.PrometheusLabelListDto{
+			Label: label["key"].(string),
+			Value: label["value"].(string),
+		}
+	}
+	return labelsToAdd
+}
+
+func resourceTaikunBillingRuleLabelsToDelete(data *schema.ResourceData) []*models.PrometheusLabelDeleteDto {
+	oldLabelsData, _ := data.GetChange("label")
+	oldLabels := oldLabelsData.([]interface{})
+	labelsToDelete := make([]*models.PrometheusLabelDeleteDto, len(oldLabels))
+	for i, oldLabelData := range oldLabels {
+		oldLabel := oldLabelData.(map[string]interface{})
+		oldLabelID, _ := atoi32(oldLabel["id"].(string))
+		labelsToDelete[i] = &models.PrometheusLabelDeleteDto{
+			ID: oldLabelID,
+		}
+	}
+	return labelsToDelete
 }
 
 func flattenTaikunBillingRule(rawBillingRule *models.PrometheusRuleListDto) map[string]interface{} {
