@@ -44,7 +44,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"expiration_date": {
-			Description:      "Project's expiration date in RFC 3339 format: 'yyyy-mm-dd'.",
+			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsDate,
