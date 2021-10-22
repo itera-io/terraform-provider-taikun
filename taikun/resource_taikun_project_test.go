@@ -67,6 +67,7 @@ resource "taikun_project" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
   enable_auto_upgrade = %t
+  enable_monitoring = %t
   expiration_date = "%s"
 }
 `
@@ -75,6 +76,7 @@ func TestAccResourceTaikunProject(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := randomTestName()
 	enableAutoUpgrade := true
+	enableMonitoring := false
 	expirationDate := "01/04/2999"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -88,10 +90,12 @@ func TestAccResourceTaikunProject(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
+					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -114,6 +118,7 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := randomTestName()
 	enableAutoUpgrade := true
+	enableMonitoring := false
 	expirationDate := "01/04/2999"
 	newExpirationDate := "07/02/3000"
 
@@ -128,10 +133,12 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
+					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -147,10 +154,12 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
+					enableMonitoring,
 					newExpirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", newExpirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -163,6 +172,87 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 		},
 	})
 }
+
+func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := randomTestName()
+	enableAutoUpgrade := true
+	enableMonitoring := true
+	disableMonitoring := false
+	expirationDate := "01/04/2999"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					enableAutoUpgrade,
+					enableMonitoring,
+					expirationDate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					enableAutoUpgrade,
+					disableMonitoring,
+					expirationDate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(disableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					enableAutoUpgrade,
+					enableMonitoring,
+					expirationDate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckTaikunProjectExists(state *terraform.State) error {
 	apiClient := testAccProvider.Meta().(*apiClient)
 

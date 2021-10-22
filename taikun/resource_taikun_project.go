@@ -36,6 +36,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Default:     false,
 			ForceNew:    true,
 		},
+		"enable_monitoring": {
+			Description: "Kubernetes cluster monitoring.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
 		"cloud_credential_id": {
 			Description:      "ID of the cloud credential used to store the project.",
 			Type:             schema.TypeString,
@@ -136,6 +142,9 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	if enableAutoUpgrade, enableAutoUpgradeIsSet := data.GetOk("enable_auto_upgrade"); enableAutoUpgradeIsSet {
 		body.IsAutoUpgrade = enableAutoUpgrade.(bool)
 	}
+	if enableMonitoring, enableMonitoringIsSet := data.GetOk("enable_monitoring"); enableMonitoringIsSet {
+		body.IsMonitoringEnabled = enableMonitoring.(bool)
+	}
 	if expirationDate, expirationDateIsSet := data.GetOk("expiration_date"); expirationDateIsSet {
 		dateTime := dateToDateTime(expirationDate.(string))
 		body.ExpiredAt = &dateTime
@@ -167,6 +176,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if data.HasChange("enable_monitoring") {
+		body := models.MonitoringOperationsCommand{ProjectID: id}
+		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
+		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if data.HasChange("expiration_date") {
 		body := models.ProjectExtendLifeTimeCommand{
 			ProjectID: id,
@@ -177,14 +194,13 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		} else {
 			body.ExpireAt = nil
 		}
-
 		params := projects.NewProjectsExtendLifeTimeParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.client.Projects.ProjectsExtendLifeTime(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
 	}
+
 	return resourceTaikunProjectRead(ctx, data, meta)
 }
 
@@ -211,8 +227,9 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 	return map[string]interface{}{
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
-		"enable_auto_upgrade":   projectDetailsDTO.IsAutoUpgrade,
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
+		"enable_auto_upgrade":   projectDetailsDTO.IsAutoUpgrade,
+		"enable_monitoring":     projectDetailsDTO.IsMonitoringEnabled,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
