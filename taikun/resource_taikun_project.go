@@ -2,6 +2,10 @@ package taikun
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/itera-io/taikungoclient/client/backup"
+	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,6 +32,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true, // TODO alerting profile can be detached, maybe handle in Update?
+		},
+		"backup_credential_id": {
+			Description:      "ID of the backup credential. If unspecified, backups are disabled.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"enable_auto_upgrade": {
 			Description: "Kubespray version will be automatically upgraded if new version is available.",
@@ -100,7 +110,7 @@ func resourceTaikunProject() *schema.Resource {
 	}
 }
 
-func resourceTaikunProjectRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id := data.Id()
 	id32, err := atoi32(id)
@@ -139,6 +149,10 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	}
 	if alertingProfileID, alertingProfileIDIsSet := data.GetOk("alerting_profile_id"); alertingProfileIDIsSet {
 		body.AlertingProfileID, _ = atoi32(alertingProfileID.(string))
+	}
+	if backupCredentialID, backupCredentialIDIsSet := data.GetOk("backup_credential_id"); backupCredentialIDIsSet {
+		body.IsBackupEnabled = true
+		body.S3CredentialID, _ = atoi32(backupCredentialID.(string))
 	}
 	if enableAutoUpgrade, enableAutoUpgradeIsSet := data.GetOk("enable_auto_upgrade"); enableAutoUpgradeIsSet {
 		body.IsAutoUpgrade = enableAutoUpgrade.(bool)
@@ -185,6 +199,60 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 	}
+	if data.HasChange("backup_credential_id") {
+		//ALED
+		oldCredential, newCredential := data.GetChange("backup_credential_id")
+
+		oldCredentialID, _ := atoi32(oldCredential.(string))
+		newCredentialID, _ := atoi32(newCredential.(string))
+
+		disableBody := &models.DisableBackupCommand{
+			ProjectID:      id,
+			S3CredentialID: oldCredentialID,
+		}
+		disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
+		_, err = apiClient.client.Backup.BackupDisableBackup(disableParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// Wait for the backup to be disabled
+		disableStateConf := &resource.StateChangeConf{
+			Pending: []string{
+				strconv.FormatBool(true),
+			},
+			Target: []string{
+				strconv.FormatBool(false),
+			},
+			Refresh: func() (interface{}, string, error) {
+				params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
+				response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+				if err != nil {
+					return 0, "", err
+				}
+
+				return response, strconv.FormatBool(response.Payload.Project.IsBackupEnabled), nil
+			},
+			Timeout:                   5 * time.Minute,
+			Delay:                     10 * time.Second,
+			MinTimeout:                5 * time.Second,
+			ContinuousTargetOccurence: 2,
+		}
+		_, err = disableStateConf.WaitForStateContext(ctx)
+		if err != nil {
+			return diag.Errorf("Error waiting for project (%s) to disable backup: %s", data.Id(), err)
+		}
+
+		enableBody := &models.EnableBackupCommand{
+			ProjectID:      id,
+			S3CredentialID: newCredentialID,
+		}
+		enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
+		_, err = apiClient.client.Backup.BackupEnableBackup(enableParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if data.HasChange("expiration_date") {
 		body := models.ProjectExtendLifeTimeCommand{
 			ProjectID: id,
@@ -225,7 +293,7 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 
 // TODO change type of DTO if read endpoint is modified
 func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto) map[string]interface{} {
-	return map[string]interface{}{
+	projectMap := map[string]interface{}{
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
@@ -237,4 +305,10 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
 	}
+
+	if projectDetailsDTO.IsBackupEnabled {
+		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
+	}
+
+	return projectMap
 }
