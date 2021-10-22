@@ -19,7 +19,7 @@ resource "taikun_project" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 }
 
-data "taikun_projects" "foo" {
+data "taikun_projects" "all" {
 }
 `
 
@@ -37,14 +37,14 @@ func TestAccDataSourceTaikunProjects(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.taikun_projects.foo", "id", "all"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.#"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.0.name"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.0.access_profile_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.0.alerting_profile_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.0.cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.0.kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.foo", "projects.0.organization_id"),
+					resource.TestCheckResourceAttr("data.taikun_projects.all", "id", "all"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.#"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.name"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.access_profile_id"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.organization_id"),
 				),
 			},
 		},
@@ -68,9 +68,13 @@ resource "taikun_project" "foo" {
   count = %d
   name = "%s-${count.index}"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  organization_id = resource.taikun_organization.foo.id
 }
 
 data "taikun_projects" "foo" {
+  depends_on = [
+    resource.taikun_project.foo
+  ]
   organization_id = resource.taikun_organization.foo.id
 }
 `
