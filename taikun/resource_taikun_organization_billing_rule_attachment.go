@@ -60,12 +60,12 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 
 	billingRuleId, err := atoi32(data.Get("billing_rule_id").(string))
 	if err != nil {
-		return diag.Errorf("billing_rule_id isn't valid: %s", data.Get("billing_credential_id").(string))
+		return diag.Errorf("billing_rule_id isn't valid: %s", data.Get("billing_rule_id").(string))
 	}
 
 	organizationId, err := atoi32(data.Get("organization_id").(string))
 	if err != nil {
-		return diag.Errorf("organization_id isn't valid: %s", data.Get("billing_credential_id").(string))
+		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
 	}
 
 	body := &models.BindPrometheusOrganizationsCommand{
