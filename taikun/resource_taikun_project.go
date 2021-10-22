@@ -29,7 +29,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true, // TODO alerting profile can be detached, maybe handle in Update?
 		},
-		"auto_upgrades": {
+		"enable_auto_upgrade": {
 			Description: "Kubespray version will be automatically upgraded if new version is available.",
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -133,8 +133,8 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	if alertingProfileID, alertingProfileIDIsSet := data.GetOk("alerting_profile_id"); alertingProfileIDIsSet {
 		body.AlertingProfileID, _ = atoi32(alertingProfileID.(string))
 	}
-	if autoUpgrades, autoUpgradesIsSet := data.GetOk("auto_upgrades"); autoUpgradesIsSet {
-		body.IsAutoUpgrade = autoUpgrades.(bool)
+	if enableAutoUpgrade, enableAutoUpgradeIsSet := data.GetOk("enable_auto_upgrade"); enableAutoUpgradeIsSet {
+		body.IsAutoUpgrade = enableAutoUpgrade.(bool)
 	}
 	if expirationDate, expirationDateIsSet := data.GetOk("expiration_date"); expirationDateIsSet {
 		dateTime := dateToDateTime(expirationDate.(string))
@@ -211,7 +211,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 	return map[string]interface{}{
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
-		"auto_upgrades":         projectDetailsDTO.IsAutoUpgrade,
+		"enable_auto_upgrade":   projectDetailsDTO.IsAutoUpgrade,
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
