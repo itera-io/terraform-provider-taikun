@@ -3,11 +3,13 @@ package taikun
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"math/rand"
 	"net/mail"
 	"strconv"
 	"time"
+
+	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -79,6 +81,39 @@ func stringIsEmail(i interface{}, path cty.Path) diag.Diagnostics {
 	_, err := mail.ParseAddress(v)
 	if err != nil {
 		return diag.FromErr(path.NewErrorf("expected an email"))
+	}
+
+	return nil
+}
+
+func dateToDateTime(date string) strfmt.DateTime {
+	time, _ := time.Parse(time.RFC3339, dateToRfc3339DateTime(date))
+	return strfmt.DateTime(time)
+}
+
+func dateToRfc3339DateTime(date string) string {
+	return date[6:10] + "-" + date[3:5] + "-" + date[0:2] + "T00:00:00Z"
+}
+
+func rfc3339DateTimeToDate(date string) string {
+	if date == "" {
+		return date
+	}
+	return date[8:10] + "/" + date[5:7] + "/" + date[0:4]
+}
+
+func stringIsDate(i interface{}, path cty.Path) diag.Diagnostics {
+	v, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	if len(v) != 10 {
+		return diag.FromErr(path.NewErrorf("expected a valid date in the format: 'dd/mm/yyyy'"))
+	}
+
+	if _, err := time.Parse(time.RFC3339, dateToRfc3339DateTime(v)); len(v) != 10 || err != nil {
+		return diag.FromErr(path.NewErrorf("expected a valid date in the format: 'dd/mm/yyyy'"))
 	}
 
 	return nil

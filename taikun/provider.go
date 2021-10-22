@@ -103,6 +103,7 @@ func Provider() *schema.Provider {
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization":                         resourceTaikunOrganization(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
+			"taikun_project":                              resourceTaikunProject(),
 			"taikun_showback_credential":                  resourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        resourceTaikunShowbackRule(),
 			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
