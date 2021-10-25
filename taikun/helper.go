@@ -123,6 +123,10 @@ func randomTestName() string {
 	return randomName(testNamePrefix, 15)
 }
 
+func shortRandomTestName() string {
+	return randomName(testNamePrefix, 5)
+}
+
 func randomName(prefix string, length int) string {
 	return fmt.Sprintf("%s%s", prefix, acctest.RandString(length))
 }

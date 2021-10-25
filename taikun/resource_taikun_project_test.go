@@ -285,7 +285,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	backupCredentialName := randomTestName()
 	backupCredentialName2 := randomTestName()
-	projectName := "myproject"
+	projectName := shortRandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
