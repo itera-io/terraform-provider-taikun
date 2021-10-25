@@ -11,9 +11,16 @@ default: install
 build:
 	go build -o ${BINARY}
 
-install: build
+dockerbuild:
+	DOCKER_BUILDKIT=1 docker build --rm --target bin --output . .
+
+commoninstall:
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+
+install: build commoninstall
+
+dockerinstall: dockerbuild commoninstall
 
 test:
 	go test -i $(TEST) || exit 1
@@ -22,4 +29,4 @@ test:
 testacc: 
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
-.PHONY: build release install test testacc
+.PHONY: build dockerbuild commoninstall install dockerinstall test testacc
