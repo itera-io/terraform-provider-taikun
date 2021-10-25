@@ -12,23 +12,39 @@
 -	[Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
 -	[Go](https://golang.org/doc/install) >= 1.17
 
-## Building The Provider
+## <a name="build"></a> Building and installing the provider
 
-Clone repository to: `$GOPATH/src/github.com/itera-io/terraform-provider-taikun`
-
+Clone the repo to Go's `src` directory.
 ```sh
-$ mkdir -p $GOPATH/src/github.com/itera-io; cd $GOPATH/src/github.com/itera-io
-$ git clone git@github.com:itera-io/terraform-provider-taikun
+mkdir -p $GOPATH/src/github.com/itera-io
+git clone git@github.com:itera-io/terraform-provider-taikun $GOPATH/src/github.com/itera-io/terraform-provider-taikun
+cd $GOPATH/src/github.com/itera-io/terraform-provider-taikun
 ```
 
-Enter the provider directory and build the provider
-
+- If you have the Go toolchain installed on your machine, you can build and install the provider with the following command.
 ```sh
-$ cd $GOPATH/src/github.com/itera-io/terraform-provider-taikun
-$ go install
+make install
 ```
+- Otherwise, you can build the provider in a docker container.
+```sh
+make dockerinstall
+```
+
+Either way, the provider will be installed in `~/.terraform.d/plugins/itera-io/dev/taikun/`.
 
 ## Using the provider
+
+Until the provider is listed on Terraform's plugin registry, the provider must be installed locally (see [Building and installing the provider](#build)).
+To tell Terraform to retrieve the provider locally, use the following terraform configuration block.
+```tf
+terraform {¬
+  required_providers {¬
+    taikun = {¬
+      source  = "itera-io/dev/taikun"¬
+    }¬
+  }¬
+}¬
+```
 
 <!---
  
@@ -37,7 +53,7 @@ $ go install
 
 -->
 
-## Developing the Provider
+## Developing the provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
 
