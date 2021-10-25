@@ -26,15 +26,9 @@ func TestAccDataSourceTaikunKubernetesProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfileConfig, kubernetesProfileName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "name"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "created_by"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "is_locked"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "bastion_proxy_enabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "load_balancing_solution"),
-					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profile.foo", "schedule_on_master"),
+				Check: checkDataSourceStateMatchesResourceState(
+					"data.taikun_kubernetes_profile.foo",
+					"taikun_kubernetes_profile.foo",
 				),
 			},
 		},

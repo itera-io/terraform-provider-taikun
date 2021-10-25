@@ -36,15 +36,14 @@ func TestAccDataSourceTaikunCloudCredentialAzure(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "name"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "tenant_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "availability_zone"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "location"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "is_locked"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_azure.foo", "is_default"),
+				Check: checkDataSourceStateMatchesResourceStateWithIgnores(
+					"data.taikun_cloud_credential_azure.foo",
+					"taikun_cloud_credential_azure.foo",
+					map[string]struct{}{
+						"client_id":       {},
+						"subscription_id": {},
+						"client_secret":   {},
+					},
 				),
 			},
 		},

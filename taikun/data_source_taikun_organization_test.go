@@ -1,6 +1,9 @@
 package taikun
 
 import (
+	"fmt"
+	"math"
+	"math/rand"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -28,6 +31,64 @@ func TestAccDataSourceTaikunOrganization(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "projects"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "servers"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "users"),
+				),
+			},
+		},
+	})
+}
+
+const testAccDataSourceOrganizationNewConfig = `
+resource "taikun_organization" "foo" {
+  name = "%s"
+  full_name = "%s"
+  discount_rate = %f
+
+  vat_number = "%s"
+  email = "%s"
+  billing_email = "%s"
+  phone = "%s"
+  address = "%s"
+  city = "%s"
+  country = "%s"
+}
+
+data "taikun_organization" "foo" {
+  id = resource.taikun_organization.foo.id
+}
+`
+
+func TestAccDataSourceTaikunOrganizationNew(t *testing.T) {
+	name := randomTestName()
+	fullName := randomString()
+	discountRate := math.Round(rand.Float64()*10000) / 100
+	vatNumber := randomString()
+	email := "manager@example.org"
+	billingEmail := "billing@example.org"
+	phone := "+42424242424242"
+	address := "10 Downing Street"
+	city := "London"
+	country := "United Kingdom of Great Britain and Northern Ireland"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccDataSourceOrganizationNewConfig,
+					name,
+					fullName,
+					discountRate,
+					vatNumber,
+					email,
+					billingEmail,
+					phone,
+					address,
+					city,
+					country,
+				),
+				Check: checkDataSourceStateMatchesResourceState(
+					"data.taikun_organization.foo",
+					"taikun_organization.foo",
 				),
 			},
 		},

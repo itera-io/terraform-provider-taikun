@@ -34,14 +34,13 @@ func TestAccDataSourceTaikunCloudCredentialAWS(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "name"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "availability_zone"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "region"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "is_locked"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credential_aws.foo", "is_default"),
+				Check: checkDataSourceStateMatchesResourceStateWithIgnores(
+					"data.taikun_cloud_credential_aws.foo",
+					"taikun_cloud_credential_aws.foo",
+					map[string]struct{}{
+						"access_key_id":     {},
+						"secret_access_key": {},
+					},
 				),
 			},
 		},
