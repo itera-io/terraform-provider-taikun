@@ -34,16 +34,12 @@ func TestAccDataSourceTaikunBackupCredential(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "name"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "created_by"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "is_locked"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "is_default"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "s3_endpoint"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "s3_access_key_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credential.foo", "s3_region"),
+				Check: checkDataSourceStateMatchesResourceStateWithIgnores(
+					"data.taikun_backup_credential.foo",
+					"taikun_backup_credential.foo",
+					map[string]struct{}{
+						"s3_secret_access_key": {},
+					},
 				),
 			},
 		},
