@@ -101,7 +101,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"router_id_end_range": {
-			Description:  "Router ID end range (Only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Description:  "Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
@@ -109,7 +109,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"router_id_start_range", "taikun_lb_flavor"},
 		},
 		"router_id_start_range": {
-			Description:  "Router ID start range (Only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Description:  "Router ID start range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
@@ -117,7 +117,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"router_id_end_range", "taikun_lb_flavor"},
 		},
 		"taikun_lb_flavor": {
-			Description:  "OpenStack flavor for the Taikun Load Balancer (Only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Description:  "OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
