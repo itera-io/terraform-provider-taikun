@@ -65,6 +65,9 @@ resource "taikun_project" "foobar" {
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
 - **organization_id** (String) ID of the organization which owns the project.
+- **router_id_end_range** (Number) Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
+- **router_id_start_range** (Number) Router ID start range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
+- **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
 
 ### Read-Only
 

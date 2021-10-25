@@ -33,7 +33,7 @@ func init() {
 			desc += " " + s.Deprecated
 		}
 		if len(s.ConflictsWith) != 0 {
-			desc += " Conflicts with:"
+			desc += " Conflicts with: "
 			for index, element := range s.ConflictsWith {
 				desc += fmt.Sprintf("`%s`", element)
 				if index != len(s.ConflictsWith)-1 {
@@ -43,10 +43,10 @@ func init() {
 			desc += "."
 		}
 		if len(s.RequiredWith) != 0 {
-			desc += " Required with:"
+			desc += " Required with: "
 			for index, element := range s.RequiredWith {
 				desc += fmt.Sprintf("`%s`", element)
-				if index != len(s.ConflictsWith)-1 {
+				if index != len(s.RequiredWith)-1 {
 					desc += ", "
 				}
 			}

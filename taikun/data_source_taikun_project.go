@@ -11,6 +11,7 @@ func dataSourceTaikunProjectSchema() map[string]*schema.Schema {
 	projectSchema := dataSourceSchemaFromResourceSchema(resourceTaikunProjectSchema())
 	addRequiredFieldsToSchema(projectSchema, "id")
 	setValidateDiagFuncToSchema(projectSchema, "id", stringIsInt)
+	deleteFieldsFromSchema(projectSchema, "taikun_lb_flavor", "router_id_start_range", "router_id_end_range")
 	return projectSchema
 }
 
