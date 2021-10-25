@@ -68,6 +68,7 @@ resource "taikun_project" "foobar" {
 
 ### Read-Only
 
+- **alerting_profile_name** (String) Name of the project's alerting profile.
 - **id** (String) Project ID.
 
 ## Import

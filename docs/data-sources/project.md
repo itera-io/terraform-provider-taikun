@@ -27,6 +27,7 @@ data "taikun_project" "foo" {
 
 - **access_profile_id** (String) ID of the project's access profile.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
+- **alerting_profile_name** (String) Name of the project's alerting profile.
 - **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
 - **cloud_credential_id** (String) ID of the cloud credential used to store the project.
 - **enable_auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available.

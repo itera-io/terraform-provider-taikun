@@ -56,6 +56,7 @@ Read-Only:
 
 Read-Only:
 
+- **id** (String)
 - **token** (String)
 - **type** (String)
 - **url** (String)

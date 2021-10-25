@@ -36,6 +36,7 @@ Read-Only:
 
 - **access_profile_id** (String)
 - **alerting_profile_id** (String)
+- **alerting_profile_name** (String)
 - **backup_credential_id** (String)
 - **cloud_credential_id** (String)
 - **enable_auto_upgrade** (Boolean)
