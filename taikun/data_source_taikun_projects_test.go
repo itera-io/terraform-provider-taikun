@@ -30,7 +30,7 @@ func TestAccDataSourceTaikunProjects(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
@@ -88,7 +88,7 @@ func TestAccDataSourceTaikunProjectsWithFilter(t *testing.T) {
 	projectCount := 3
 	projectName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
