@@ -117,6 +117,40 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"quotas": {
+			Description: "Quotas Block of a project.",
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Required:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"cpu_units": {
+						Description: "Maximum CPU Units",
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+					},
+					"disk_size": {
+						Description: "Maximum disk size in GBs. Unlimited if unspecified.",
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+					},
+					"ram_size": {
+						Description: "Maximum ram size un GBs. Unlimited if unspecified.",
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"quota_id": {
+			Description: "ID of the project quota.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"router_id_end_range": {
 			Description:  "Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeInt,
