@@ -130,7 +130,8 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	apiClient := meta.(*apiClient)
 
 	body := models.CreateProjectCommand{
-		Name: data.Get("name").(string),
+		Name:         data.Get("name").(string),
+		IsKubernetes: true,
 	}
 	body.CloudCredentialID, _ = atoi32(data.Get("cloud_credential_id").(string))
 	if accessProfileID, accessProfileIDIsSet := data.GetOk("access_profile_id"); accessProfileIDIsSet {
