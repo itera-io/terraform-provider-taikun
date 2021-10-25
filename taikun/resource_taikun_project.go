@@ -100,6 +100,30 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"router_id_end_range": {
+			Description:  "Router ID end range (Only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 255),
+			RequiredWith: []string{"router_id_start_range", "taikun_lb_flavor"},
+		},
+		"router_id_start_range": {
+			Description:  "Router ID start range (Only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 255),
+			RequiredWith: []string{"router_id_end_range", "taikun_lb_flavor"},
+		},
+		"taikun_lb_flavor": {
+			Description:  "OpenStack flavor for the Taikun Load Balancer (Only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			RequiredWith: []string{"router_id_end_range", "router_id_start_range"},
+		},
 	}
 }
 
@@ -115,32 +139,6 @@ func resourceTaikunProject() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
-}
-
-func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id := data.Id()
-	id32, err := atoi32(id)
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
-	response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
-	if err != nil {
-		return nil
-	}
-
-	projectDetailsDTO := response.Payload.Project
-	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(id)
-
-	return nil
 }
 
 func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -180,6 +178,12 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		body.OrganizationID, _ = atoi32(organizationID.(string))
 	}
 
+	if taikunLBFlavor, taikunLBFlavorIsSet := data.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
+		body.TaikunLBFlavor = taikunLBFlavor.(string)
+		body.RouterIDStartRange = int32(data.Get("router_id_start_range").(int))
+		body.RouterIDEndRange = int32(data.Get("router_id_end_range").(int))
+	}
+
 	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body)
 	response, err := apiClient.client.Projects.ProjectsCreate(params, apiClient)
 	if err != nil {
@@ -189,6 +193,32 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	data.SetId(response.Payload.ID)
 
 	return resourceTaikunProjectRead(ctx, data, meta)
+}
+
+func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+	id := data.Id()
+	id32, err := atoi32(id)
+	data.SetId("")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
+	response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+	if err != nil {
+		return nil
+	}
+
+	projectDetailsDTO := response.Payload.Project
+	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(id)
+
+	return nil
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
