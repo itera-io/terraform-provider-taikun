@@ -46,7 +46,7 @@ func init() {
 			desc += " Required with:"
 			for index, element := range s.RequiredWith {
 				desc += fmt.Sprintf("`%s`", element)
-				if index != len(s.ConflictsWith)-1 {
+				if index != len(s.RequiredWith)-1 {
 					desc += ", "
 				}
 			}
