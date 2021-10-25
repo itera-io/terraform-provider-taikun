@@ -20,6 +20,9 @@ resource "taikun_project" "foo" {
 }
 
 data "taikun_projects" "all" {
+   depends_on = [
+    taikun_project.foo
+  ]
 }
 `
 
