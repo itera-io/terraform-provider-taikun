@@ -44,7 +44,6 @@ func TestAccDataSourceTaikunProjects(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.access_profile_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.alerting_profile_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.organization_id"),

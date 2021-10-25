@@ -33,21 +33,23 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "List of alerting integrations.",
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"id": {
+						Description: "The alerting integration's ID.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
 					"token": {
 						Description: "The token (required by Opsgenie, Pagerduty and Splunk).",
 						Type:        schema.TypeString,
 						Optional:    true,
 						Default:     "",
-						ForceNew:    true,
 					},
 					"type": {
 						Description: "The type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams).",
 						Type:        schema.TypeString,
 						Required:    true,
-						ForceNew:    true,
 						ValidateFunc: validation.StringInSlice([]string{
 							"Opsgenie",
 							"Pagerduty",
@@ -214,23 +216,8 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	data.SetId(response.Payload.ID)
 	id, _ := atoi32(response.Payload.ID)
 
-	if _, integrationIsSet := data.GetOk("integration"); integrationIsSet {
-		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(data)
-		for _, alertingIntegration := range alertingIntegrationDTOs {
-			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
-				AlertingIntegration: &models.AlertingIntegrationDto{
-					AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
-					Token:                   alertingIntegration.Token,
-					URL:                     alertingIntegration.URL,
-				},
-				AlertingProfileID: id,
-			}
-			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
-			_, err = apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
+	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if isLocked, isLockedIsSet := data.GetOk("is_locked"); isLockedIsSet && isLocked.(bool) {
@@ -350,6 +337,13 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		}
 	}
 
+	if err := resourceTaikunAlertingProfileUnsetIntegrations(data, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return resourceTaikunAlertingProfileRead(ctx, data, meta)
 }
 
@@ -368,6 +362,43 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.Resourc
 	}
 
 	data.SetId("")
+	return nil
+}
+
+func resourceTaikunAlertingProfileUnsetIntegrations(data *schema.ResourceData, apiClient *apiClient) error {
+	oldIntegrationsData, _ := data.GetChange("integration")
+	oldIntegrations := oldIntegrationsData.([]interface{})
+	for _, oldIntegrationData := range oldIntegrations {
+		oldIntegration := oldIntegrationData.(map[string]interface{})
+		oldIntegrationID, _ := atoi32(oldIntegration["id"].(string))
+		params := alerting_integrations.NewAlertingIntegrationsDeleteParams().WithV(ApiVersion).WithID(oldIntegrationID)
+		_, _, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsDelete(params, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunAlertingProfileSetIntegrations(data *schema.ResourceData, id int32, apiClient *apiClient) error {
+	if _, integrationIsSet := data.GetOk("integration"); integrationIsSet {
+		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(data)
+		for _, alertingIntegration := range alertingIntegrationDTOs {
+			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
+				AlertingIntegration: &models.AlertingIntegrationDto{
+					AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
+					Token:                   alertingIntegration.Token,
+					URL:                     alertingIntegration.URL,
+				},
+				AlertingProfileID: id,
+			}
+			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
+			_, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
@@ -401,6 +432,7 @@ func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs [
 	integrations := make([]map[string]interface{}, len(integrationDTOs))
 	for i, integrationDTO := range integrationDTOs {
 		integrations[i] = map[string]interface{}{
+			"id":    i32toa(integrationDTO.ID),
 			"token": integrationDTO.Token,
 			"type":  integrationDTO.AlertingIntegrationType,
 			"url":   integrationDTO.URL,

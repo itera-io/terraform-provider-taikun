@@ -104,6 +104,10 @@ Optional:
 
 - **token** (String) The token (required by Opsgenie, Pagerduty and Splunk). Defaults to ` `.
 
+Read-Only:
+
+- **id** (String) The alerting integration's ID.
+
 
 <a id="nestedblock--webhook"></a>
 ### Nested Schema for `webhook`

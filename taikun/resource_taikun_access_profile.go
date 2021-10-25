@@ -16,61 +16,15 @@ import (
 
 func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": {
-			Description: "The ID of the access profile.",
+		"created_by": {
+			Description: "The creator of the access profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"name": {
-			Description:  "The name of the access profile.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 30),
-		},
-		"organization_id": {
-			Description:      "The ID of the organization which owns the access profile.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ValidateDiagFunc: stringIsInt,
-		},
-		"organization_name": {
-			Description: "The name of the organization which owns the access profile.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"http_proxy": {
-			Description:  "HTTP Proxy of the access profile.",
-			Type:         schema.TypeString,
-			Optional:     true,
-			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-		},
-		"ntp_server": {
-			Description: "List of NTP servers.",
-			Type:        schema.TypeList,
-			Optional:    true,
-			ForceNew:    true,
-			MaxItems:    2,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"address": {
-						Description: "Address of the NTP server.",
-						Type:        schema.TypeString,
-						Required:    true,
-					},
-					"id": {
-						Description: "ID of the NTP server.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-				},
-			},
 		},
 		"dns_server": {
 			Description: "List of DNS servers.",
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			MaxItems:    2,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -87,11 +41,94 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"http_proxy": {
+			Description:  "HTTP Proxy of the access profile.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+		},
+		"id": {
+			Description: "The ID of the access profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"is_locked": {
+			Description: "Indicates whether the access profile is locked or not.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"last_modified": {
+			Description: "The time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description:  "The name of the access profile.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
+		},
+		"ntp_server": {
+			Description: "List of NTP servers.",
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    2,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"address": {
+						Description: "Address of the NTP server.",
+						Type:        schema.TypeString,
+						Required:    true,
+					},
+					"id": {
+						Description: "ID of the NTP server.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"organization_id": {
+			Description:      "The ID of the organization which owns the access profile.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the access profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"project": {
+			Description: "List of associated projects.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Description: "ID of associated project.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"name": {
+						Description: "Name of associated project.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+				},
+			},
+		},
 		"ssh_user": {
 			Description: "List of SSH users.",
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"name": {
@@ -121,46 +158,6 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"created_by": {
-			Description: "The creator of the access profile.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "The time and date of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user to have modified the profile.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"is_locked": {
-			Description: "Indicates whether the access profile is locked or not.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
-		"project": {
-			Description: "List of associated projects.",
-			Type:        schema.TypeList,
-			Computed:    true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"id": {
-						Description: "ID of associated project.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-					"name": {
-						Description: "Name of associated project.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -184,56 +181,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 	body := &models.UpsertAccessProfileCommand{
 		Name: data.Get("name").(string),
 	}
-
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
-	if organizationIDIsSet {
-		organizationId, err := atoi32(organizationIDData.(string))
-		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
-		}
-		body.OrganizationID = organizationId
-	}
-
-	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
-		body.HTTPProxy = proxy.(string)
-	}
-
-	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_user"); isSSHUsersSet {
-		rawSSHUsersList := SSHUsers.([]interface{})
-		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
-		for i, e := range rawSSHUsersList {
-			rawSSHUser := e.(map[string]interface{})
-			SSHUsersList[i] = &models.SSHUserCreateDto{
-				Name:         rawSSHUser["name"].(string),
-				SSHPublicKey: rawSSHUser["public_key"].(string),
-			}
-		}
-		body.SSHUsers = SSHUsersList
-	}
-
-	if NtpServers, isNTPServersSet := data.GetOk("ntp_server"); isNTPServersSet {
-		rawNtpServersList := NtpServers.([]interface{})
-		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
-		for i, e := range rawNtpServersList {
-			rawNtpServer := e.(map[string]interface{})
-			NTPServersList[i] = &models.NtpServerListDto{
-				Address: rawNtpServer["address"].(string),
-			}
-		}
-		body.NtpServers = NTPServersList
-	}
-
-	if DNSServers, isDNSServersSet := data.GetOk("dns_server"); isDNSServersSet {
-		rawDNSServersList := DNSServers.([]interface{})
-		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
-		for i, e := range rawDNSServersList {
-			rawDNSServer := e.(map[string]interface{})
-			DNSServersList[i] = &models.DNSServerListDto{
-				Address: rawDNSServer["address"].(string),
-			}
-		}
-		body.DNSServers = DNSServersList
-	}
+	resourceTaikunAccessProfileUpsertSetBody(data, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
 	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
@@ -312,29 +260,26 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		if !data.HasChangeExcept("is_locked") {
+			return resourceTaikunAccessProfileRead(ctx, data, meta)
+		}
 	}
 
-	if !data.HasChangeExcept("is_locked") {
-		return resourceTaikunAccessProfileRead(ctx, data, meta)
+	if err := resourceTaikunAccessProfileUpdateDeleteOldDNSServers(data, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := resourceTaikunAccessProfileUpdateDeleteOldNTPServers(data, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(data, apiClient); err != nil {
+		return diag.FromErr(err)
 	}
 
 	body := &models.UpsertAccessProfileCommand{
 		ID:   id,
 		Name: data.Get("name").(string),
 	}
-
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
-	if organizationIDIsSet {
-		organizationId, err := atoi32(organizationIDData.(string))
-		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
-		}
-		body.OrganizationID = organizationId
-	}
-
-	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
-		body.HTTPProxy = proxy.(string)
-	}
+	resourceTaikunAccessProfileUpsertSetBody(data, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
 	updateResponse, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
@@ -413,5 +358,93 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 		"organization_name": rawAccessProfile.OrganizationName,
 		"project":           projects,
 		"ssh_user":          SSHUsers,
+	}
+}
+
+func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(data *schema.ResourceData, apiClient *apiClient) error {
+	oldDNSServersData, _ := data.GetChange("dns_server")
+	oldDNSServers := oldDNSServersData.([]interface{})
+	for _, oldDNSServerData := range oldDNSServers {
+		oldDNSServer := oldDNSServerData.(map[string]interface{})
+		oldDNSServerID, _ := atoi32(oldDNSServer["id"].(string))
+		params := access_profiles.NewAccessProfilesDeleteDNSServerParams().WithV(ApiVersion).WithBody(&models.DNSServerDeleteCommand{ID: oldDNSServerID})
+		_, err := apiClient.client.AccessProfiles.AccessProfilesDeleteDNSServer(params, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(data *schema.ResourceData, apiClient *apiClient) error {
+	oldNTPServersData, _ := data.GetChange("ntp_server")
+	oldNTPServers := oldNTPServersData.([]interface{})
+	for _, oldNTPServerData := range oldNTPServers {
+		oldNTPServer := oldNTPServerData.(map[string]interface{})
+		oldNTPServerID, _ := atoi32(oldNTPServer["id"].(string))
+		params := access_profiles.NewAccessProfilesDeleteNtpServerParams().WithV(ApiVersion).WithBody(&models.NtpServerDeleteCommand{ID: oldNTPServerID})
+		_, err := apiClient.client.AccessProfiles.AccessProfilesDeleteNtpServer(params, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(data *schema.ResourceData, apiClient *apiClient) error {
+	oldSSHUsersData, _ := data.GetChange("ssh_user")
+	oldSSHUsers := oldSSHUsersData.([]interface{})
+	for _, oldSSHUserData := range oldSSHUsers {
+		oldSSHUser := oldSSHUserData.(map[string]interface{})
+		oldSSHUserID, _ := atoi32(oldSSHUser["id"].(string))
+		params := ssh_users.NewSSHUsersDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteSSHUserCommand{ID: oldSSHUserID})
+		_, err := apiClient.client.SSHUsers.SSHUsersDelete(params, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunAccessProfileUpsertSetBody(data *schema.ResourceData, body *models.UpsertAccessProfileCommand) {
+	if DNSServers, isDNSServersSet := data.GetOk("dns_server"); isDNSServersSet {
+		rawDNSServersList := DNSServers.([]interface{})
+		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
+		for i, e := range rawDNSServersList {
+			rawDNSServer := e.(map[string]interface{})
+			DNSServersList[i] = &models.DNSServerListDto{
+				Address: rawDNSServer["address"].(string),
+			}
+		}
+		body.DNSServers = DNSServersList
+	}
+	if NtpServers, isNTPServersSet := data.GetOk("ntp_server"); isNTPServersSet {
+		rawNtpServersList := NtpServers.([]interface{})
+		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
+		for i, e := range rawNtpServersList {
+			rawNtpServer := e.(map[string]interface{})
+			NTPServersList[i] = &models.NtpServerListDto{
+				Address: rawNtpServer["address"].(string),
+			}
+		}
+		body.NtpServers = NTPServersList
+	}
+	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+		body.OrganizationID, _ = atoi32(organizationIDData.(string))
+	}
+	if proxy, isProxySet := data.GetOk("http_proxy"); isProxySet {
+		body.HTTPProxy = proxy.(string)
+	}
+	if SSHUsers, isSSHUsersSet := data.GetOk("ssh_user"); isSSHUsersSet {
+		rawSSHUsersList := SSHUsers.([]interface{})
+		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
+		for i, e := range rawSSHUsersList {
+			rawSSHUser := e.(map[string]interface{})
+			SSHUsersList[i] = &models.SSHUserCreateDto{
+				Name:         rawSSHUser["name"].(string),
+				SSHPublicKey: rawSSHUser["public_key"].(string),
+			}
+		}
+		body.SSHUsers = SSHUsersList
 	}
 }

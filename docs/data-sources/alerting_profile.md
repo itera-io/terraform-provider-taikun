@@ -46,6 +46,7 @@ data "taikun_alerting_profile" "foo" {
 
 Read-Only:
 
+- **id** (String)
 - **token** (String)
 - **type** (String)
 - **url** (String)

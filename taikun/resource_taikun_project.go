@@ -2,15 +2,17 @@ package taikun
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/itera-io/taikungoclient/client/backup"
 	"regexp"
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/itera-io/taikungoclient/client/backup"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient/client/alerting_profiles"
 	"github.com/itera-io/taikungoclient/client/projects"
 	"github.com/itera-io/taikungoclient/client/servers"
 	"github.com/itera-io/taikungoclient/models"
@@ -30,9 +32,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:      "ID of the project's alerting profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
-			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
-			ForceNew:         true, // TODO alerting profile can be detached, maybe handle in Update?
+		},
+		"alerting_profile_name": {
+			Description: "Name of the project's alerting profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
 		},
 		"backup_credential_id": {
 			Description:      "ID of the backup credential. If unspecified, backups are disabled.",
@@ -198,6 +203,23 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if data.HasChange("alerting_profile_id") {
+		body := models.AttachDetachAlertingProfileCommand{
+			ProjectID: id,
+		}
+		detachParams := alerting_profiles.NewAlertingProfilesDetachParams().WithV(ApiVersion).WithBody(&body)
+		if _, err := apiClient.client.AlertingProfiles.AlertingProfilesDetach(detachParams, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+		if newAlertingProfileIDData, newAlertingProfileIDProvided := data.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
+			newAlertingProfileID, _ := atoi32(newAlertingProfileIDData.(string))
+			body.AlertingProfileID = newAlertingProfileID
+			attachParams := alerting_profiles.NewAlertingProfilesAttachParams().WithV(ApiVersion).WithBody(&body)
+			if _, err := apiClient.client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
 	if data.HasChange("enable_monitoring") {
 		body := models.MonitoringOperationsCommand{ProjectID: id}
 		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
@@ -311,7 +333,7 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto) map[string]interface{} {
 	projectMap := map[string]interface{}{
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
-		"alerting_profile_id":   i32toa(projectDetailsDTO.AlertingProfileID),
+		"alerting_profile_name": projectDetailsDTO.AlertingProfileName,
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
 		"enable_auto_upgrade":   projectDetailsDTO.IsAutoUpgrade,
 		"enable_monitoring":     projectDetailsDTO.IsMonitoringEnabled,
@@ -320,6 +342,11 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
+	}
+
+	var nullID int32
+	if projectDetailsDTO.AlertingProfileID != nullID {
+		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.AlertingProfileID)
 	}
 
 	if projectDetailsDTO.IsBackupEnabled {
