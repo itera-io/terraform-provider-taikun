@@ -37,13 +37,13 @@ Either way, the provider will be installed in `~/.terraform.d/plugins/itera-io/d
 Until the provider is listed on Terraform's plugin registry, the provider must be installed locally (see [Building and installing the provider](#build)).
 To tell Terraform to retrieve the provider locally, use the following terraform configuration block.
 ```tf
-terraform {¬
-  required_providers {¬
-    taikun = {¬
-      source  = "itera-io/dev/taikun"¬
-    }¬
-  }¬
-}¬
+terraform {
+  required_providers {
+    taikun = {
+      source  = "itera-io/dev/taikun"
+    }
+  }
+}
 ```
 
 <!---
