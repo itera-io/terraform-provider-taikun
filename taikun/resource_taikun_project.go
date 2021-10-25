@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/backup"
+	"github.com/itera-io/taikungoclient/client/flavors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -45,6 +46,13 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Optional:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
+		"cloud_credential_id": {
+			Description:      "ID of the cloud credential used to store the project.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
+		},
 		"enable_auto_upgrade": {
 			Description: "Kubespray version will be automatically upgraded if new version is available.",
 			Type:        schema.TypeBool,
@@ -58,18 +66,20 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
-		"cloud_credential_id": {
-			Description:      "ID of the cloud credential used to store the project.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ValidateDiagFunc: stringIsInt,
-			ForceNew:         true,
-		},
 		"expiration_date": {
 			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsDate,
+		},
+		"flavors": {
+			Description: "List of flavors bound to the project.",
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Default:     []string{},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 		"id": {
 			Description: "Project ID.",
@@ -154,6 +164,13 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		IsKubernetes: true,
 	}
 	body.CloudCredentialID, _ = atoi32(data.Get("cloud_credential_id").(string))
+	flavorsData := data.Get("flavors").(*schema.Set).List()
+	flavors := make([]string, len(flavorsData))
+	for i, flavorData := range flavorsData {
+		flavors[i] = flavorData.(string)
+	}
+	body.Flavors = flavors
+
 	if accessProfileID, accessProfileIDIsSet := data.GetOk("access_profile_id"); accessProfileIDIsSet {
 		body.AccessProfileID, _ = atoi32(accessProfileID.(string))
 	}
@@ -216,7 +233,11 @@ func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, met
 	}
 
 	projectDetailsDTO := response.Payload.Project
-	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO))
+	boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.ProjectID, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, boundFlavorDTOs))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -248,14 +269,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			if _, err := apiClient.client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
-		}
-	}
-	if data.HasChange("enable_monitoring") {
-		body := models.MonitoringOperationsCommand{ProjectID: id}
-		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
 		}
 	}
 	if data.HasChange("backup_credential_id") {
@@ -321,6 +334,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			}
 		}
 	}
+	if data.HasChange("enable_monitoring") {
+		body := models.MonitoringOperationsCommand{ProjectID: id}
+		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
+		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if data.HasChange("expiration_date") {
 		body := models.ProjectExtendLifeTimeCommand{
 			ProjectID: id,
@@ -334,6 +355,37 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		params := projects.NewProjectsExtendLifeTimeParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.client.Projects.ProjectsExtendLifeTime(params, apiClient)
 		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if data.HasChange("flavors") {
+		oldFlavorData, newFlavorData := data.GetChange("flavors")
+		oldFlavors := oldFlavorData.(*schema.Set)
+		newFlavors := newFlavorData.(*schema.Set)
+		flavorsToUnbind := oldFlavors.Difference(newFlavors)
+		flavorsToBind := newFlavors.Difference(oldFlavors).List()
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(id, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		var flavorBindingsToUndo []int32
+		for _, boundFlavorDTO := range boundFlavorDTOs {
+			if flavorsToUnbind.Contains(boundFlavorDTO.Name) {
+				flavorBindingsToUndo = append(flavorBindingsToUndo, boundFlavorDTO.ID)
+			}
+		}
+		unbindBody := models.UnbindFlavorFromProjectCommand{Ids: flavorBindingsToUndo}
+		unbindParams := flavors.NewFlavorsUnbindFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
+		if _, err := apiClient.client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+		flavorsToBindNames := make([]string, len(flavorsToBind))
+		for i, flavorToBind := range flavorsToBind {
+			flavorsToBindNames[i] = flavorToBind.(string)
+		}
+		bindBody := models.BindFlavorToProjectCommand{ProjectID: id, Flavors: flavorsToBindNames}
+		bindParams := flavors.NewFlavorsBindToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
+		if _, err := apiClient.client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -360,7 +412,12 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 }
 
 // TODO change type of DTO if read endpoint is modified
-func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto) map[string]interface{} {
+func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto) map[string]interface{} {
+	flavors := make([]string, len(boundFlavorDTOs))
+	for i, boundFlavorDTO := range boundFlavorDTOs {
+		flavors[i] = boundFlavorDTO.Name
+	}
+
 	projectMap := map[string]interface{}{
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_name": projectDetailsDTO.AlertingProfileName,
@@ -368,6 +425,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 		"enable_auto_upgrade":   projectDetailsDTO.IsAutoUpgrade,
 		"enable_monitoring":     projectDetailsDTO.IsMonitoringEnabled,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
+		"flavors":               flavors,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
 		"name":                  projectDetailsDTO.ProjectName,
@@ -384,4 +442,22 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto)
 	}
 
 	return projectMap
+}
+
+func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundFlavorsForProjectsListDto, error) {
+	var boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto
+	for {
+		boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
+		response, err := apiClient.client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
+		if err != nil {
+			return nil, err
+		}
+		boundFlavorDTOs = append(boundFlavorDTOs, response.Payload.Data...)
+		boundFlavorDTOsCount := int32(len(boundFlavorDTOs))
+		if boundFlavorDTOsCount == response.Payload.TotalCount {
+			break
+		}
+		boundFlavorsParams = boundFlavorsParams.WithOffset(&boundFlavorDTOsCount)
+	}
+	return boundFlavorDTOs, nil
 }
