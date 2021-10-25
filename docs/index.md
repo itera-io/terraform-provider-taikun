@@ -22,7 +22,7 @@ provider "taikun" {
 ### Optional
 
 - **api_host** (String) Taikun API host. Defaults to `api.taikun.dev`.
-- **email** (String) Taikun email. Conflicts with:`keycloak_email`. Required with:`password`.
-- **keycloak_email** (String) Taikun Keycloak email. Conflicts with:`email`. Required with:`keycloak_password`.
-- **keycloak_password** (String, Sensitive) Taikun Keycloak password. Conflicts with:`password`. Required with:`keycloak_email`.
-- **password** (String, Sensitive) Taikun password. Conflicts with:`keycloak_password`. Required with:`email`.
+- **email** (String) Taikun email. Conflicts with: `keycloak_email`. Required with: `password`.
+- **keycloak_email** (String) Taikun Keycloak email. Conflicts with: `email`. Required with: `keycloak_password`.
+- **keycloak_password** (String, Sensitive) Taikun Keycloak password. Conflicts with: `password`. Required with: `keycloak_email`.
+- **password** (String, Sensitive) Taikun password. Conflicts with: `keycloak_password`. Required with: `email`.
