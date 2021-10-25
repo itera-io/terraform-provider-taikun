@@ -200,57 +200,66 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 	if data.HasChange("backup_credential_id") {
-		//ALED
-		oldCredential, newCredential := data.GetChange("backup_credential_id")
+		oldCredential, _ := data.GetChange("backup_credential_id")
 
-		oldCredentialID, _ := atoi32(oldCredential.(string))
-		newCredentialID, _ := atoi32(newCredential.(string))
+		if oldCredential != "" {
 
-		disableBody := &models.DisableBackupCommand{
-			ProjectID:      id,
-			S3CredentialID: oldCredentialID,
-		}
-		disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
-		_, err = apiClient.client.Backup.BackupDisableBackup(disableParams, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+			oldCredentialID, _ := atoi32(oldCredential.(string))
 
-		// Wait for the backup to be disabled
-		disableStateConf := &resource.StateChangeConf{
-			Pending: []string{
-				strconv.FormatBool(true),
-			},
-			Target: []string{
-				strconv.FormatBool(false),
-			},
-			Refresh: func() (interface{}, string, error) {
-				params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
-				response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
-				if err != nil {
-					return 0, "", err
-				}
+			disableBody := &models.DisableBackupCommand{
+				ProjectID:      id,
+				S3CredentialID: oldCredentialID,
+			}
+			disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
+			_, err = apiClient.client.Backup.BackupDisableBackup(disableParams, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-				return response, strconv.FormatBool(response.Payload.Project.IsBackupEnabled), nil
-			},
-			Timeout:                   5 * time.Minute,
-			Delay:                     10 * time.Second,
-			MinTimeout:                5 * time.Second,
-			ContinuousTargetOccurence: 2,
-		}
-		_, err = disableStateConf.WaitForStateContext(ctx)
-		if err != nil {
-			return diag.Errorf("Error waiting for project (%s) to disable backup: %s", data.Id(), err)
 		}
 
-		enableBody := &models.EnableBackupCommand{
-			ProjectID:      id,
-			S3CredentialID: newCredentialID,
-		}
-		enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
-		_, err = apiClient.client.Backup.BackupEnableBackup(enableParams, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
+		newCredential, newCredentialIsSet := data.GetOk("backup_credential_id")
+
+		if newCredentialIsSet {
+
+			newCredentialID, _ := atoi32(newCredential.(string))
+
+			// Wait for the backup to be disabled
+			disableStateConf := &resource.StateChangeConf{
+				Pending: []string{
+					strconv.FormatBool(true),
+				},
+				Target: []string{
+					strconv.FormatBool(false),
+				},
+				Refresh: func() (interface{}, string, error) {
+					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
+					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+					if err != nil {
+						return 0, "", err
+					}
+
+					return response, strconv.FormatBool(response.Payload.Project.IsBackupEnabled), nil
+				},
+				Timeout:                   5 * time.Minute,
+				Delay:                     2 * time.Second,
+				MinTimeout:                5 * time.Second,
+				ContinuousTargetOccurence: 1,
+			}
+			_, err = disableStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return diag.Errorf("Error waiting for project (%s) to disable backup: %s", data.Id(), err)
+			}
+
+			enableBody := &models.EnableBackupCommand{
+				ProjectID:      id,
+				S3CredentialID: newCredentialID,
+			}
+			enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
+			_, err = apiClient.client.Backup.BackupEnableBackup(enableParams, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 	if data.HasChange("expiration_date") {

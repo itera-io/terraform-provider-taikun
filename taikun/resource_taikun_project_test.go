@@ -285,7 +285,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	backupCredentialName := randomTestName()
 	backupCredentialName2 := randomTestName()
-	projectName := randomTestName()
+	projectName := "myproject"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
@@ -367,7 +367,33 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-					resource.TestCheckNoResourceAttr("taikun_project.foo", "backup_credential_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "backup_credential_id", ""),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectToggleBackupConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					backupCredentialName,
+					os.Getenv("S3_ENDPOINT"),
+					os.Getenv("S3_REGION"),
+					backupCredentialName2,
+					os.Getenv("S3_ENDPOINT"),
+					os.Getenv("S3_REGION"),
+					projectName,
+					"backup_credential_id = resource.taikun_backup_credential.foo.id",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "alerting_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttrPair("taikun_project.foo", "backup_credential_id", "taikun_backup_credential.foo", "id"),
 				),
 			},
 		},
