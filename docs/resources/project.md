@@ -33,6 +33,16 @@ resource "taikun_kubernetes_profile" "foo" {
   name = "foo"
 }
 
+data "taikun_flavors" "small" {
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  min_cpu             = 2
+  max_cpu             = 8
+}
+
+locals {
+  flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
+}
+
 resource "taikun_project" "foobar" {
   name                = "foobar"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
@@ -44,6 +54,8 @@ resource "taikun_project" "foobar" {
   expiration_date     = "21/12/2012"
   enable_auto_upgrade = true
   enable_monitoring   = true
+
+  flavors = local.flavors
 }
 ```
 
@@ -63,6 +75,7 @@ resource "taikun_project" "foobar" {
 - **enable_auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available. Defaults to `false`.
 - **enable_monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
+- **flavors** (Set of String) List of flavors bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
 - **organization_id** (String) ID of the organization which owns the project.
 - **router_id_end_range** (Number) Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.

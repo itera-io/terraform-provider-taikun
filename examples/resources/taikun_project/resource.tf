@@ -16,6 +16,16 @@ resource "taikun_kubernetes_profile" "foo" {
   name = "foo"
 }
 
+data "taikun_flavors" "small" {
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  min_cpu             = 2
+  max_cpu             = 8
+}
+
+locals {
+  flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
+}
+
 resource "taikun_project" "foobar" {
   name                = "foobar"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
@@ -27,4 +37,6 @@ resource "taikun_project" "foobar" {
   expiration_date     = "21/12/2012"
   enable_auto_upgrade = true
   enable_monitoring   = true
+
+  flavors = local.flavors
 }
