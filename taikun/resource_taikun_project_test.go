@@ -391,6 +391,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 		},
 	})
 }
+
 func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := randomTestName()
@@ -590,6 +591,70 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttrPair("taikun_project.foo", "backup_credential_id", "taikun_backup_credential.foo", "id"),
 				),
+			},
+		},
+	})
+}
+
+const testAccResourceTaikunProjectConfigWithFlavors = `
+resource "taikun_cloud_credential_aws" "foo" {
+  name = "%s"
+  availability_zone = "%s"
+}
+
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  min_cpu = %d
+  max_cpu = %d
+}
+
+locals {
+  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+}
+
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+
+  flavors = local.flavors
+}
+`
+
+func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := randomTestName()
+	cpuCount := 2
+	newCpuCount := 8
+	checkFunc := resource.ComposeTestCheckFunc(
+		testAccCheckTaikunProjectExists,
+		resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+		resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+		resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+		resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+		resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+		resource.TestCheckResourceAttrPair("taikun_project.foo", "flavors.#", "data.taikun_flavors.foo", "flavors.#"),
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					cpuCount, cpuCount,
+					projectName),
+				Check: checkFunc,
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					newCpuCount, newCpuCount,
+					projectName),
+				Check: checkFunc,
 			},
 		},
 	})
