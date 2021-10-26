@@ -2,7 +2,7 @@ resource "taikun_access_profile" "foo" {
   name = "foo"
 
   organization_id = "42"
-  is_locked       = true
+  lock            = true
   http_proxy      = "proxy_url"
 
   ssh_user {

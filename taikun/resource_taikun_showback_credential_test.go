@@ -2,13 +2,14 @@ package taikun
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/showback"
 	"github.com/itera-io/taikungoclient/models"
-	"os"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -56,7 +57,7 @@ func init() {
 const testAccResourceTaikunShowbackCredentialConfig = `
 resource "taikun_showback_credential" "foo" {
   name            = "%s"
-  is_locked       = %t
+  lock       = %t
 
   password = "%s"
   url = "%s"
@@ -83,7 +84,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
-					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "url"),
@@ -118,7 +119,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
-					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "url"),
@@ -136,7 +137,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
-					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "password"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "url"),

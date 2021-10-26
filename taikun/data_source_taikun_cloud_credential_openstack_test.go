@@ -11,7 +11,7 @@ const testAccDataSourceTaikunCloudCredentialOpenStackConfig = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 
-  is_locked       = %t
+  lock       = %t
 }
 
 data "taikun_cloud_credential_openstack" "foo" {

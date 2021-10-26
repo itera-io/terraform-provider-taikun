@@ -36,7 +36,7 @@ data "taikun_users" "foo" {
 
 Read-Only:
 
-- **approved_by_partner** (Boolean)
+- **disable** (Boolean)
 - **display_name** (String)
 - **email** (String)
 - **email_confirmed** (Boolean)
@@ -46,8 +46,8 @@ Read-Only:
 - **is_owner** (Boolean)
 - **organization_id** (String)
 - **organization_name** (String)
+- **partner_approval** (Boolean)
 - **role** (String)
-- **user_disabled** (Boolean)
 - **user_name** (String)
 
 

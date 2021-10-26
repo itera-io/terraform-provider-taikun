@@ -15,5 +15,5 @@ resource "taikun_cloud_credential_openstack" "foo" {
   imported_network_subnet_id = "imported_network_subnet_id"
 
   organization_id = "42"
-  is_locked       = false
+  lock            = false
 }

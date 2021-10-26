@@ -57,7 +57,7 @@ func init() {
 const testAccResourceTaikunBillingRuleConfig = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
-  is_locked       = false
+  lock       = false
 
   prometheus_password = "%s"
   prometheus_url = "%s"
@@ -163,7 +163,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 const testAccResourceTaikunBillingRuleConfigUpdateLabels = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
-  is_locked       = false
+  lock       = false
 
   prometheus_password = "%s"
   prometheus_url = "%s"

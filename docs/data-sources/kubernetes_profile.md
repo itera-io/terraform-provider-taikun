@@ -27,13 +27,13 @@ data "taikun_kubernetes_profile" "foo" {
 
 ### Read-Only
 
-- **bastion_proxy_enabled** (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.
+- **bastion_proxy** (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.
 - **cni** (String) Container Network Interface(CNI) of the Kubernetes profile.
 - **created_by** (String) The creator of the Kubernetes profile.
-- **is_locked** (Boolean) Indicates whether the Kubernetes profile is locked or not.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the Kubernetes profile.
 - **load_balancing_solution** (String) Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.
+- **lock** (Boolean) Indicates whether to lock the Kubernetes profile.
 - **name** (String) The name of the Kubernetes profile.
 - **organization_id** (String) The ID of the organization which owns the Kubernetes profile.
 - **organization_name** (String) The name of the organization which owns the Kubernetes profile.

@@ -58,7 +58,7 @@ func init() {
 const testAccResourceTaikunAccessProfileConfig = `
 resource "taikun_access_profile" "foo" {
   name            = "%s"
-  is_locked       = %t
+  lock       = %t
 
   ssh_user {
     name       = "oui_oui"
@@ -96,7 +96,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),
@@ -132,7 +132,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),
@@ -150,7 +150,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),
@@ -170,7 +170,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 const testAccResourceTaikunAccessProfileConfigUpdate = `
 resource "taikun_access_profile" "foo" {
   name            = "%s"
-  is_locked       = %t
+  lock       = %t
 
   ssh_user {
     name       = "oui_oui"
@@ -207,7 +207,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.1.address", "8.8.4.4"),
@@ -225,7 +225,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "1.1.1.1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ntp_server.#", "1"),

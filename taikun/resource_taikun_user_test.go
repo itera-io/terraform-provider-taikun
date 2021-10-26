@@ -60,8 +60,8 @@ resource "taikun_user" "foo" {
   role      = "%s"
 
   display_name        = "%s"
-  user_disabled       = %t
-  approved_by_partner = %t
+  disable       = %t
+  partner_approval = %t
 }
 `
 
@@ -93,8 +93,8 @@ func TestAccResourceTaikunUser(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
 					resource.TestCheckResourceAttr("taikun_user.foo", "role", role),
 					resource.TestCheckResourceAttr("taikun_user.foo", "display_name", displayName),
-					resource.TestCheckResourceAttr("taikun_user.foo", "user_disabled", fmt.Sprint(userDisabled)),
-					resource.TestCheckResourceAttr("taikun_user.foo", "approved_by_partner", fmt.Sprint(approvedByPartner)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "disable", fmt.Sprint(userDisabled)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "partner_approval", fmt.Sprint(approvedByPartner)),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "id"),
@@ -147,8 +147,8 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
 					resource.TestCheckResourceAttr("taikun_user.foo", "role", role),
 					resource.TestCheckResourceAttr("taikun_user.foo", "display_name", displayName),
-					resource.TestCheckResourceAttr("taikun_user.foo", "user_disabled", fmt.Sprint(userDisabled)),
-					resource.TestCheckResourceAttr("taikun_user.foo", "approved_by_partner", fmt.Sprint(approvedByPartner)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "disable", fmt.Sprint(userDisabled)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "partner_approval", fmt.Sprint(approvedByPartner)),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "id"),
@@ -173,8 +173,8 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", newEmail),
 					resource.TestCheckResourceAttr("taikun_user.foo", "role", newRole),
 					resource.TestCheckResourceAttr("taikun_user.foo", "display_name", newDisplayName),
-					resource.TestCheckResourceAttr("taikun_user.foo", "user_disabled", fmt.Sprint(newUserDisabled)),
-					resource.TestCheckResourceAttr("taikun_user.foo", "approved_by_partner", fmt.Sprint(newApprovedByPartner)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "disable", fmt.Sprint(newUserDisabled)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "partner_approval", fmt.Sprint(newApprovedByPartner)),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "id"),

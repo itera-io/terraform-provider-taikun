@@ -118,7 +118,7 @@ resource "taikun_alerting_profile" "foo" {
   reminder = "%s"
   slack_configuration_id = resource.taikun_slack_configuration.foo.id
 
-  is_locked = %t
+  lock = %t
 
   # emails:
   %s
@@ -166,7 +166,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "is_locked", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
@@ -223,7 +223,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "is_locked", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
@@ -246,7 +246,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", newAlertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", newReminder),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "is_locked", fmt.Sprint(newIsLocked)),
+					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(newIsLocked)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(newNumberOfEmails)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(newNumberOfWebhooks)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
@@ -318,7 +318,7 @@ integration {
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "is_locked", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
@@ -343,7 +343,7 @@ integration {
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "is_locked", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),

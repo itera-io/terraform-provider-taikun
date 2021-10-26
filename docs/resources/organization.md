@@ -25,8 +25,8 @@ resource "taikun_organization" "foo" {
   address                          = "Foo 42"
   city                             = "Praha"
   country                          = "Czechia"
-  is_locked                        = false
-  let_managers_change_subscription = true
+  lock                             = false
+  managers_can_change_subscription = true
 }
 ```
 
@@ -46,8 +46,8 @@ resource "taikun_organization" "foo" {
 - **city** (String) City.
 - **country** (String) Country.
 - **email** (String) Email.
-- **is_locked** (Boolean) Whether the organization is locked. Defaults to `false`.
-- **let_managers_change_subscription** (Boolean) Allow subscription to be changed by managers. Defaults to `true`.
+- **lock** (Boolean) Indicates whether to lock the organization. Defaults to `false`.
+- **managers_can_change_subscription** (Boolean) Allow subscription to be changed by managers. Defaults to `true`.
 - **phone** (String) Phone number.
 - **vat_number** (String) VAT number.
 

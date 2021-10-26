@@ -22,7 +22,7 @@ resource "taikun_showback_credential" "foo" {
   username = "username"
 
   organization_id = "42"
-  is_locked       = true
+  lock            = true
 }
 ```
 
@@ -38,7 +38,7 @@ resource "taikun_showback_credential" "foo" {
 
 ### Optional
 
-- **is_locked** (Boolean) Indicates whether the showback credential is locked or not. Defaults to `false`.
+- **lock** (Boolean) Indicates whether to lock the showback credential. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the showback credential.
 
 ### Read-Only

@@ -2,13 +2,14 @@ package taikun
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"os"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -57,7 +58,7 @@ func init() {
 const testAccResourceTaikunBackupCredentialConfig = `
 resource "taikun_backup_credential" "foo" {
   name            = "%s"
-  is_locked       = %t
+  lock       = %t
 
   s3_endpoint = "%s"
   s3_region   = "%s"
@@ -86,7 +87,7 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
@@ -118,7 +119,7 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
@@ -138,7 +139,7 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
@@ -171,7 +172,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),
@@ -191,7 +192,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_backup_credential.foo", "is_default"),

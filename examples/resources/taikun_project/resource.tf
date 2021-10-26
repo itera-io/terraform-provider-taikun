@@ -34,9 +34,9 @@ resource "taikun_project" "foobar" {
   alerting_profile_id   = resource.taikun_alerting_profile.foo.id
   kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
 
-  expiration_date     = "21/12/2012"
-  enable_auto_upgrade = true
-  enable_monitoring   = true
+  expiration_date = "21/12/2012"
+  auto_upgrade    = true
+  monitoring      = true
 
   quota_cpu_units = 64
   quota_disk_size = 1024

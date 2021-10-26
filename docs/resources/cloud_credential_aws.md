@@ -24,7 +24,7 @@ resource "taikun_cloud_credential_aws" "foo" {
   availability_zone = "availability_zone"
 
   organization_id = "42"
-  is_locked       = false
+  lock            = false
 }
 ```
 
@@ -41,7 +41,7 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 ### Optional
 
-- **is_locked** (Boolean) Indicates whether the AWS cloud credential is locked or not. Defaults to `false`.
+- **lock** (Boolean) Indicates whether to lock the AWS cloud credential. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the AWS cloud credential.
 
 ### Read-Only

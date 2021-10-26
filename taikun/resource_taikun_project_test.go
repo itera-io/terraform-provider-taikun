@@ -66,8 +66,8 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
-  enable_auto_upgrade = %t
-  enable_monitoring = %t
+  auto_upgrade = %t
+  monitoring = %t
   expiration_date = "%s"
 }
 `
@@ -94,8 +94,8 @@ func TestAccResourceTaikunProject(t *testing.T) {
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -136,8 +136,8 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -156,8 +156,8 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					newExpirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", newExpirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -193,8 +193,8 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -213,8 +213,8 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(disableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(disableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -233,8 +233,8 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -264,8 +264,8 @@ resource "taikun_project" "foo" {
 
   alerting_profile_id = resource.taikun_alerting_profile.foo.id
 
-  enable_auto_upgrade = %t
-  enable_monitoring = %t
+  auto_upgrade = %t
+  monitoring = %t
   expiration_date = "%s"
 }
 `
@@ -285,8 +285,8 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
-  enable_auto_upgrade = %t
-  enable_monitoring = %t
+  auto_upgrade = %t
+  monitoring = %t
   expiration_date = "%s"
 }
 `
@@ -313,8 +313,8 @@ resource "taikun_project" "foo" {
 
   alerting_profile_id = resource.taikun_alerting_profile.%s.id
 
-  enable_auto_upgrade = %t
-  enable_monitoring = %t
+  auto_upgrade = %t
+  monitoring = %t
   expiration_date = "%s"
 }
 `
@@ -351,8 +351,8 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_name", alertingProfileName),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -378,8 +378,8 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_name", newAlertingProfileName),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -416,8 +416,8 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 					expirationDate),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -439,8 +439,8 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_id", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
-					resource.TestCheckResourceAttr("taikun_project.foo", "enable_monitoring", fmt.Sprint(enableMonitoring)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
+					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -507,8 +507,8 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -532,8 +532,8 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -557,8 +557,8 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -582,8 +582,8 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),

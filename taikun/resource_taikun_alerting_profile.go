@@ -66,8 +66,8 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"is_locked": {
-			Description: "Whether the profile is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the profile.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -220,7 +220,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	if isLocked, isLockedIsSet := data.GetOk("is_locked"); isLockedIsSet && isLocked.(bool) {
+	if isLocked, isLockedIsSet := data.GetOk("lock"); isLockedIsSet && isLocked.(bool) {
 		body := models.AlertingProfilesLockManagerCommand{
 			ID:   id,
 			Mode: "lock",
@@ -307,10 +307,10 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		data.SetId(response.Payload.ID)
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		body := models.AlertingProfilesLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
@@ -494,7 +494,7 @@ func flattenTaikunAlertingProfile(alertingProfileDTO *models.AlertingProfilesLis
 		"emails":                   getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails),
 		"id":                       i32toa(alertingProfileDTO.ID),
 		"integration":              getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDto),
-		"is_locked":                alertingProfileDTO.IsLocked,
+		"lock":                     alertingProfileDTO.IsLocked,
 		"last_modified":            alertingProfileDTO.LastModified,
 		"last_modified_by":         alertingProfileDTO.LastModifiedBy,
 		"name":                     alertingProfileDTO.Name,

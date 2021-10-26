@@ -51,9 +51,9 @@ resource "taikun_project" "foobar" {
   alerting_profile_id   = resource.taikun_alerting_profile.foo.id
   kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
 
-  expiration_date     = "21/12/2012"
-  enable_auto_upgrade = true
-  enable_monitoring   = true
+  expiration_date = "21/12/2012"
+  auto_upgrade    = true
+  monitoring      = true
 
   quota_cpu_units = 64
   quota_disk_size = 1024
@@ -75,13 +75,13 @@ resource "taikun_project" "foobar" {
 
 - **access_profile_id** (String) ID of the project's access profile.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
+- **auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available. Defaults to `false`.
 - **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
-- **enable_auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available. Defaults to `false`.
-- **enable_monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
+- **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.
 - **quota_cpu_units** (Number) Maximum CPU units.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.

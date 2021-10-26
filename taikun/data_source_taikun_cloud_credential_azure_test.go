@@ -14,7 +14,7 @@ resource "taikun_cloud_credential_azure" "foo" {
   availability_zone = "%s"
   location = "%s"
 
-  is_locked       = %t
+  lock       = %t
 }
 
 data "taikun_cloud_credential_azure" "foo" {

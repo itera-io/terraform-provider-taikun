@@ -30,9 +30,9 @@ data "taikun_cloud_credential_aws" "foo" {
 - **availability_zone** (String) The AWS availability zone for the region.
 - **created_by** (String) The creator of the AWS cloud credential.
 - **is_default** (Boolean) Indicates whether the AWS cloud credential is the default one.
-- **is_locked** (Boolean) Indicates whether the AWS cloud credential is locked or not.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the AWS cloud credential.
+- **lock** (Boolean) Indicates whether to lock the AWS cloud credential.
 - **name** (String) The name of the AWS cloud credential.
 - **organization_id** (String) The ID of the organization which owns the AWS cloud credential.
 - **organization_name** (String) The name of the organization which owns the AWS cloud credential.

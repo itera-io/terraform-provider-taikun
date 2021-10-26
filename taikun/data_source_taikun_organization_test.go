@@ -26,7 +26,7 @@ func TestAccDataSourceTaikunOrganization(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "discount_rate"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "name"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "full_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "is_locked"),
+					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "lock"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "is_read_only"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "projects"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "servers"),

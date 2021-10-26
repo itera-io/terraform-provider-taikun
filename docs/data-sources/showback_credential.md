@@ -28,9 +28,9 @@ data "taikun_showback_credential" "foo" {
 ### Read-Only
 
 - **created_by** (String) The creator of the showback credential.
-- **is_locked** (Boolean) Indicates whether the showback credential is locked or not.
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback credential.
+- **lock** (Boolean) Indicates whether to lock the showback credential.
 - **name** (String) The name of the showback credential.
 - **organization_id** (String) The ID of the organization which owns the showback credential.
 - **organization_name** (String) The name of the organization which owns the showback credential.

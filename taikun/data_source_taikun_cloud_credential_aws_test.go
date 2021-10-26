@@ -13,7 +13,7 @@ resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
   availability_zone = "%s"
 
-  is_locked       = %t
+  lock       = %t
 }
 
 data "taikun_cloud_credential_aws" "foo" {

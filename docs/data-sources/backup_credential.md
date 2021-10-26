@@ -28,10 +28,10 @@ data "taikun_backup_credential" "foo" {
 ### Read-Only
 
 - **created_by** (String) The creator of the backup credential.
-- **is_default** (Boolean) Indicates whether the backup credential is the organization's default or not.
-- **is_locked** (Boolean) Indicates whether the backup credential is locked or not.
+- **is_default** (Boolean) Indicates whether the backup credential is the organization's default.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the backup credential.
+- **lock** (Boolean) Indicates whether to lock the backup credential.
 - **name** (String) The name of the backup credential.
 - **organization_id** (String) The ID of the organization which owns the backup credential.
 - **organization_name** (String) The name of the organization which owns the backup credential.

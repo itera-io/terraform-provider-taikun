@@ -20,9 +20,9 @@ resource "taikun_kubernetes_profile" "foo" {
 
   organization_id         = "42"
   load_balancing_solution = "Taikun"
-  bastion_proxy_enabled   = true
+  bastion_proxy           = true
   schedule_on_master      = false
-  is_locked               = true
+  lock                    = true
 }
 ```
 
@@ -35,9 +35,9 @@ resource "taikun_kubernetes_profile" "foo" {
 
 ### Optional
 
-- **bastion_proxy_enabled** (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`. Defaults to `false`.
-- **is_locked** (Boolean) Indicates whether the Kubernetes profile is locked or not. Defaults to `false`.
+- **bastion_proxy** (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`. Defaults to `false`.
 - **load_balancing_solution** (String) Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud. Defaults to `Octavia`.
+- **lock** (Boolean) Indicates whether to lock the Kubernetes profile. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the Kubernetes profile.
 - **schedule_on_master** (Boolean) When enabled, the workload will also run on master nodes (not recommended). Defaults to `false`.
 

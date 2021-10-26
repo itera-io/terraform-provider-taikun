@@ -9,5 +9,5 @@ resource "taikun_cloud_credential_azure" "foo" {
   availability_zone = "availability_zone"
 
   organization_id = "42"
-  is_locked       = false
+  lock            = false
 }

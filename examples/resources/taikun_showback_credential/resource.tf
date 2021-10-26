@@ -5,5 +5,5 @@ resource "taikun_showback_credential" "foo" {
   username = "username"
 
   organization_id = "42"
-  is_locked       = true
+  lock            = true
 }

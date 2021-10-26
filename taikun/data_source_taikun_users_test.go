@@ -33,8 +33,8 @@ func TestAccDataSourceTaikunUsers(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_notification_enabled"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_csm"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_owner"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.user_disabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.approved_by_partner"),
+					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.disable"),
+					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.partner_approval"),
 				),
 			},
 		},
@@ -54,8 +54,8 @@ resource "taikun_user" "foo" {
   role      = "%s"
 
   display_name        = "%s"
-  user_disabled       = false
-  approved_by_partner = true
+  disable       = false
+  partner_approval = true
   organization_id = resource.taikun_organization.foo.id
 }
 
@@ -102,8 +102,8 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_notification_enabled"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_csm"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_owner"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.user_disabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.approved_by_partner"),
+					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.disable"),
+					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.partner_approval"),
 				),
 			},
 		},

@@ -26,7 +26,7 @@ resource "taikun_cloud_credential_azure" "foo" {
   availability_zone = "availability_zone"
 
   organization_id = "42"
-  is_locked       = false
+  lock            = false
 }
 ```
 
@@ -45,7 +45,7 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 ### Optional
 
-- **is_locked** (Boolean) Indicates whether the Azure cloud credential is locked or not. Defaults to `false`.
+- **lock** (Boolean) Indicates whether to lock the Azure cloud credential. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the Azure cloud credential.
 
 ### Read-Only

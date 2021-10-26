@@ -28,14 +28,14 @@ data "taikun_project" "foo" {
 - **access_profile_id** (String) ID of the project's access profile.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
 - **alerting_profile_name** (String) Name of the project's alerting profile.
+- **auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available.
 - **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
 - **cloud_credential_id** (String) ID of the cloud credential used to store the project.
-- **enable_auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available.
-- **enable_monitoring** (Boolean) Kubernetes cluster monitoring.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
 - **lock** (Boolean) Indicates whether to lock the project.
+- **monitoring** (Boolean) Kubernetes cluster monitoring.
 - **name** (String) Project name.
 - **organization_id** (String) ID of the organization which owns the project.
 - **quota_cpu_units** (Number) Maximum CPU units.
