@@ -601,21 +601,17 @@ resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
   availability_zone = "%s"
 }
-
 data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   min_cpu = %d
   max_cpu = %d
 }
-
 locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
-
 resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-
   flavors = local.flavors
 }
 `
@@ -655,6 +651,127 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 					newCpuCount, newCpuCount,
 					projectName),
 				Check: checkFunc,
+			},
+		},
+	})
+}
+
+const testAccResourceTaikunProjectQuotaConfig = `
+resource "taikun_cloud_credential_aws" "foo" {
+  name = "%s"
+  availability_zone = "%s"
+}
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  %s
+}
+`
+
+func TestAccResourceTaikunProjectQuota(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := shortRandomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					`
+					quota_cpu_units = 500
+					quota_disk_size = 200
+					`,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "500"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "200"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					`
+					quota_cpu_units = 501
+					quota_ram_size = 200
+					`,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "501"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "200"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					"",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "0"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "0"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "0"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					`
+					quota_cpu_units = 502
+					quota_disk_size = 201
+					quota_ram_size = 201
+					`,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "502"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "201"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "201"),
+				),
 			},
 		},
 	})
