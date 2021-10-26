@@ -76,7 +76,9 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "List of flavors bound to the project.",
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Default:     []string{},
+			DefaultFunc: func() (interface{}, error) {
+				return []interface{}{}, nil
+			},
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 			},
