@@ -370,25 +370,29 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		var flavorBindingsToUndo []int32
-		for _, boundFlavorDTO := range boundFlavorDTOs {
-			if flavorsToUnbind.Contains(boundFlavorDTO.Name) {
-				flavorBindingsToUndo = append(flavorBindingsToUndo, boundFlavorDTO.ID)
+		if flavorsToUnbind.Len() != 0 {
+			var flavorBindingsToUndo []int32
+			for _, boundFlavorDTO := range boundFlavorDTOs {
+				if flavorsToUnbind.Contains(boundFlavorDTO.Name) {
+					flavorBindingsToUndo = append(flavorBindingsToUndo, boundFlavorDTO.ID)
+				}
+			}
+			unbindBody := models.UnbindFlavorFromProjectCommand{Ids: flavorBindingsToUndo}
+			unbindParams := flavors.NewFlavorsUnbindFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
+			if _, err := apiClient.client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
+				return diag.FromErr(err)
 			}
 		}
-		unbindBody := models.UnbindFlavorFromProjectCommand{Ids: flavorBindingsToUndo}
-		unbindParams := flavors.NewFlavorsUnbindFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
-		if _, err := apiClient.client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
-			return diag.FromErr(err)
-		}
-		flavorsToBindNames := make([]string, len(flavorsToBind))
-		for i, flavorToBind := range flavorsToBind {
-			flavorsToBindNames[i] = flavorToBind.(string)
-		}
-		bindBody := models.BindFlavorToProjectCommand{ProjectID: id, Flavors: flavorsToBindNames}
-		bindParams := flavors.NewFlavorsBindToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
-		if _, err := apiClient.client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
-			return diag.FromErr(err)
+		if len(flavorsToBind) != 0 {
+			flavorsToBindNames := make([]string, len(flavorsToBind))
+			for i, flavorToBind := range flavorsToBind {
+				flavorsToBindNames[i] = flavorToBind.(string)
+			}
+			bindBody := models.BindFlavorToProjectCommand{ProjectID: id, Flavors: flavorsToBindNames}
+			bindParams := flavors.NewFlavorsBindToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
+			if _, err := apiClient.client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
