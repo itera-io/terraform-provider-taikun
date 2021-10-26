@@ -216,7 +216,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 
 	data.SetId(response.Payload.ID)
 
-	return resourceTaikunProjectRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunProjectRead, ctx, data, meta)
 }
 
 func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -396,7 +396,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	return resourceTaikunProjectRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunProjectRead, ctx, data, meta)
 }
 
 func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -186,7 +186,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 		}
 	}
 
-	return resourceTaikunOrganizationRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunOrganizationRead, ctx, data, meta)
 }
 
 func resourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -245,7 +245,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceTaikunOrganizationRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunOrganizationRead, ctx, data, meta)
 }
 
 func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

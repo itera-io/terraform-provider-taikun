@@ -3,13 +3,14 @@ package taikun
 import (
 	"context"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/openstack"
 	"github.com/itera-io/taikungoclient/models"
-	"regexp"
 )
 
 func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
@@ -226,7 +227,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *sch
 		}
 	}
 
-	return resourceTaikunCloudCredentialOpenStackRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunCloudCredentialOpenStackRead, ctx, data, meta)
 }
 
 func resourceTaikunCloudCredentialOpenStackRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -290,7 +291,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		}
 	}
 
-	return resourceTaikunCloudCredentialOpenStackRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunCloudCredentialOpenStackRead, ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {

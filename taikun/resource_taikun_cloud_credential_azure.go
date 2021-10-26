@@ -3,13 +3,14 @@ package taikun
 import (
 	"context"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/azure"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"regexp"
 )
 
 func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
@@ -177,7 +178,7 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 		}
 	}
 
-	return resourceTaikunCloudCredentialAzureRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunCloudCredentialAzureRead, ctx, data, meta)
 }
 
 func resourceTaikunCloudCredentialAzureRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -241,7 +242,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	return resourceTaikunCloudCredentialAzureRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunCloudCredentialAzureRead, ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {

@@ -102,7 +102,7 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 
 	data.SetId(i32toa(response.Payload))
 
-	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunSlackConfigurationRead, ctx, data, meta)
 }
 
 func resourceTaikunSlackConfigurationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -167,7 +167,7 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.Re
 
 	data.SetId(i32toa(response.Payload))
 
-	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunSlackConfigurationRead, ctx, data, meta)
 }
 
 func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

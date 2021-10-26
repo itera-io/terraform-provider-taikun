@@ -3,8 +3,9 @@ package taikun
 import (
 	"context"
 
-	"github.com/itera-io/taikungoclient/client/users"
 	"regexp"
+
+	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -155,10 +156,10 @@ func resourceTaikunUserCreate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return resourceTaikunUserRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunUserRead, ctx, data, meta)
 }
 
-func resourceTaikunUserRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunUserRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id := data.Id()
 	data.SetId("")
@@ -202,7 +203,7 @@ func resourceTaikunUserUpdate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return resourceTaikunUserRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunUserRead, ctx, data, meta)
 }
 
 func resourceTaikunUserDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

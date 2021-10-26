@@ -129,7 +129,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 
 	data.SetId(createResult.Payload.ID)
 
-	return resourceTaikunBillingRuleRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunBillingRuleRead, ctx, data, meta)
 }
 
 func resourceTaikunBillingRuleRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -189,7 +189,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return resourceTaikunBillingRuleRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunBillingRuleRead, ctx, data, meta)
 }
 
 func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
