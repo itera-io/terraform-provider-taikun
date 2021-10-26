@@ -42,6 +42,7 @@ Read-Only:
 - **enable_auto_upgrade** (Boolean)
 - **enable_monitoring** (Boolean)
 - **expiration_date** (String)
+- **flavors** (Set of String)
 - **id** (String)
 - **kubernetes_profile_id** (String)
 - **name** (String)

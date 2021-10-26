@@ -33,6 +33,7 @@ data "taikun_project" "foo" {
 - **enable_auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available.
 - **enable_monitoring** (Boolean) Kubernetes cluster monitoring.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
+- **flavors** (Set of String) List of flavors bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
 - **name** (String) Project name.
 - **organization_id** (String) ID of the organization which owns the project.
