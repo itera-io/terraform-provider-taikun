@@ -55,6 +55,10 @@ resource "taikun_project" "foobar" {
   enable_auto_upgrade = true
   enable_monitoring   = true
 
+  quota_cpu_units = 64
+  quota_disk_size = 1024
+  quota_ram_size  = 256
+
   flavors = local.flavors
 }
 ```
@@ -78,6 +82,9 @@ resource "taikun_project" "foobar" {
 - **flavors** (Set of String) List of flavors bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
 - **organization_id** (String) ID of the organization which owns the project.
+- **quota_cpu_units** (Number) Maximum CPU units.
+- **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
+- **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
 - **router_id_end_range** (Number) Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
 - **router_id_start_range** (Number) Router ID start range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
 - **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
@@ -86,6 +93,7 @@ resource "taikun_project" "foobar" {
 
 - **alerting_profile_name** (String) Name of the project's alerting profile.
 - **id** (String) Project ID.
+- **quota_id** (String) ID of the project quota.
 
 ## Import
 

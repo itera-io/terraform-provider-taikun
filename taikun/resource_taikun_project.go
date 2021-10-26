@@ -120,7 +120,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"quota_cpu_units": {
-			Description: "Maximum CPU Units",
+			Description: "Maximum CPU units.",
 			Type:        schema.TypeInt,
 			Optional:    true,
 		},
@@ -135,7 +135,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"quota_ram_size": {
-			Description: "Maximum ram size un GBs. Unlimited if unspecified.",
+			Description: "Maximum RAM size in GBs. Unlimited if unspecified.",
 			Type:        schema.TypeInt,
 			Optional:    true,
 		},

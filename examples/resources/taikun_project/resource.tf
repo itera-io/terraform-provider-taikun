@@ -38,5 +38,9 @@ resource "taikun_project" "foobar" {
   enable_auto_upgrade = true
   enable_monitoring   = true
 
+  quota_cpu_units = 64
+  quota_disk_size = 1024
+  quota_ram_size  = 256
+
   flavors = local.flavors
 }
