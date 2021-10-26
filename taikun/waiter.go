@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -35,12 +36,13 @@ func readAfterUpdateWithRetries(readFunc readFunc, ctx context.Context, data *sc
 
 func readAfterOpWithRetries(readFunc readFunc, ctx context.Context, data *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
 	retryErr := resource.RetryContext(ctx, getReadAfterOpTimeout(isUpdate), func() *resource.RetryError {
-		readErr := readFunc(ctx, data, meta)
-		if readErr != nil {
-			return resource.NonRetryableError(nil) // FIXME pass read error
+		readDiagnostics := readFunc(ctx, data, meta)
+		if readDiagnostics != nil {
+			readErrors := diagnosticsToString(readDiagnostics)
+			return resource.NonRetryableError(errors.New(readErrors))
 		}
 		if data.Id() == "" {
-			return resource.RetryableError(nil)
+			return resource.RetryableError(errors.New("failed to read after create/update"))
 		}
 		return nil
 	})
@@ -50,5 +52,5 @@ func readAfterOpWithRetries(readFunc readFunc, ctx context.Context, data *schema
 		}
 		return diag.Errorf("timed out reading newly created resource")
 	}
-	return nil // FIXME pass read error
+	return diag.FromErr(retryErr)
 }
