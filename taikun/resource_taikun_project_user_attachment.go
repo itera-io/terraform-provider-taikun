@@ -3,10 +3,11 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/itera-io/taikungoclient/client/projects"
 	"github.com/itera-io/taikungoclient/client/user_projects"
 	"github.com/itera-io/taikungoclient/client/users"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,7 +75,7 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, data *schema
 	id := fmt.Sprintf("%d/%s", projectId, userId)
 	data.SetId(id)
 
-	return resourceTaikunProjectUserAttachmentRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunProjectUserAttachmentRead, ctx, data, meta)
 }
 
 func resourceTaikunProjectUserAttachmentRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

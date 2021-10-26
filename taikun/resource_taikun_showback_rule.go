@@ -3,12 +3,13 @@ package taikun
 import (
 	"context"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/showback"
 	"github.com/itera-io/taikungoclient/models"
-	"regexp"
 )
 
 func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
@@ -194,7 +195,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(createResult.Payload.ID)
 
-	return resourceTaikunShowbackRuleRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunShowbackRuleRead, ctx, data, meta)
 }
 
 func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -260,7 +261,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return resourceTaikunShowbackRuleRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunShowbackRuleRead, ctx, data, meta)
 }
 
 func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

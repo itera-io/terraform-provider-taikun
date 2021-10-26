@@ -208,7 +208,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 		}
 	}
 
-	return resourceTaikunAccessProfileRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunAccessProfileRead, ctx, data, meta)
 }
 
 func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -289,7 +289,7 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 
 	data.SetId(updateResponse.Payload.ID)
 
-	return resourceTaikunAccessProfileRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunAccessProfileRead, ctx, data, meta)
 }
 
 func resourceTaikunAccessProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

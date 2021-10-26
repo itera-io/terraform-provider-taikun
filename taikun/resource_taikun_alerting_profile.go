@@ -232,7 +232,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	return resourceTaikunAlertingProfileRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunAlertingProfileRead, ctx, data, meta)
 }
 
 func resourceTaikunAlertingProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -344,7 +344,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return resourceTaikunAlertingProfileRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunAlertingProfileRead, ctx, data, meta)
 }
 
 func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

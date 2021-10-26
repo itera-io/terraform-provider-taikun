@@ -138,7 +138,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 		if err != nil {
 			return err
 		}
-		if response.Payload.TotalCount != 1 {
+		if len(response.Payload.Data) == 0 {
 			return nil
 		}
 

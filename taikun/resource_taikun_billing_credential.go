@@ -146,7 +146,7 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return resourceTaikunBillingCredentialRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunBillingCredentialRead, ctx, data, meta)
 }
 
 func resourceTaikunBillingCredentialRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -196,7 +196,7 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return resourceTaikunBillingCredentialRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunBillingCredentialRead, ctx, data, meta)
 }
 
 func resourceTaikunBillingCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

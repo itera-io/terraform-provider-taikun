@@ -87,7 +87,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 	id := fmt.Sprintf("%d/%d", organizationId, billingRuleId)
 	data.SetId(id)
 
-	return resourceTaikunOrganizationBillingRuleAttachmentRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunOrganizationBillingRuleAttachmentRead, ctx, data, meta)
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

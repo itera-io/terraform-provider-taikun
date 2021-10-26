@@ -148,7 +148,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return resourceTaikunKubernetesProfileRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunKubernetesProfileRead, ctx, data, meta)
 }
 
 func resourceTaikunKubernetesProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -199,7 +199,7 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return resourceTaikunKubernetesProfileRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunKubernetesProfileRead, ctx, data, meta)
 }
 
 func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -149,7 +149,7 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	return resourceTaikunBackupCredentialRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunBackupCredentialRead, ctx, data, meta)
 }
 
 func resourceTaikunBackupCredentialRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -213,7 +213,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	return resourceTaikunBackupCredentialRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunBackupCredentialRead, ctx, data, meta)
 }
 
 func resourceTaikunBackupCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

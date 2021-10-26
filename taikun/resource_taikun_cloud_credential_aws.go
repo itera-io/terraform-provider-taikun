@@ -3,13 +3,14 @@ package taikun
 import (
 	"context"
 
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/aws"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"regexp"
 )
 
 func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
@@ -159,7 +160,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return resourceTaikunCloudCredentialAWSRead(ctx, data, meta)
+	return readAfterCreateWithRetries(resourceTaikunCloudCredentialAWSRead, ctx, data, meta)
 }
 
 func resourceTaikunCloudCredentialAWSRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -223,7 +224,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return resourceTaikunCloudCredentialAWSRead(ctx, data, meta)
+	return readAfterUpdateWithRetries(resourceTaikunCloudCredentialAWSRead, ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {
