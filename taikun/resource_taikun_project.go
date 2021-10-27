@@ -166,6 +166,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			MaxItems:    1,
 			Optional:    true,
+			Set:         hashAttributes("name", "disk_size", "flavor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -174,6 +175,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Kubemaster server",
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Set:         hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -182,6 +184,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Kubeworker server",
 			Type:        schema.TypeSet,
 			Optional:    true,
+			Set:         hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -199,7 +202,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 
 func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
 	serverSchema := taikunServerBasicSchema()
-	serverSchema["kubernetes_node_labels"] = &schema.Schema{
+	serverSchema["kubernetes_node_label"] = &schema.Schema{
 		Description: "Attach Kubernetes node labels.",
 		Type:        schema.TypeList,
 		Optional:    true,
@@ -405,18 +408,18 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	bastionsList, bastionsListIsSet := data.GetOk("server_bastion")
-	kubeMastersList, kubeMastersListIsSet := data.GetOk("server_kubemaster")
-	kubeWorkersList, kubeWorkersListIsSet := data.GetOk("server_kubeworker")
+	bastions, bastionsIsSet := data.GetOk("server_bastion")
+	kubeMasters, kubeMastersIsSet := data.GetOk("server_kubemaster")
+	kubeWorkers, kubeWorkersIsSet := data.GetOk("server_kubeworker")
 
 	// Check if the project is not empty
-	if bastionsListIsSet || kubeMastersListIsSet || kubeWorkersListIsSet {
+	if bastionsIsSet || kubeMastersIsSet || kubeWorkersIsSet {
 		// Servers
 
 		// TODO Checks
 
 		// Bastion
-		bastion := bastionsList.([]interface{})[0].(map[string]interface{})
+		bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
 		serverCreateBody := &models.ServerForCreateDto{
 			Count:                1,
 			DiskSize:             int64(bastion["disk_size"].(int)),
@@ -428,18 +431,21 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 
 		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-		_, err = apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+		serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		//TODO Save ID?
-		//serverCreateResponse.Payload.ID
+		bastion["id"] = serverCreateResponse.Payload.ID
+		err = data.Set("server_bastion", []map[string]interface{}{bastion})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-		for range kubeMastersList.([]interface{}) {
+		for range kubeMasters.(*schema.Set).List() {
 			//TODO
 		}
 
-		for range kubeWorkersList.([]interface{}) {
+		for range kubeWorkers.(*schema.Set).List() {
 			//TODO
 		}
 
