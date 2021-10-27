@@ -34,7 +34,7 @@ Either way, the provider will be installed in `~/.terraform.d/plugins/itera-io/d
 
 ## Using the provider
 
-Until the provider is listed on Terraform's plugin registry, the provider must be installed locally (see [Building and installing the provider](#build)).
+Until the provider is listed on Terraform's plugin [registry](https://registry.terraform.io/browse/providers), the provider must be installed locally (see [Building and installing the provider](#build)).
 To tell Terraform to retrieve the provider locally, use the following terraform configuration block.
 ```tf
 terraform {
