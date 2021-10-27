@@ -81,6 +81,7 @@ resource "taikun_project" "foobar" {
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
+- **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.
 - **quota_cpu_units** (Number) Maximum CPU units.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.

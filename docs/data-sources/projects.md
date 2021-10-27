@@ -45,6 +45,7 @@ Read-Only:
 - **flavors** (Set of String)
 - **id** (String)
 - **kubernetes_profile_id** (String)
+- **lock** (Boolean)
 - **name** (String)
 - **organization_id** (String)
 - **quota_cpu_units** (Number)
