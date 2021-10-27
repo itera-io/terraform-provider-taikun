@@ -26,5 +26,5 @@ func dataSourceTaikunCloudCredentialAWS() *schema.Resource {
 func dataSourceTaikunCloudCredentialAWSRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
 
-	return resourceTaikunCloudCredentialAWSRead(ctx, data, meta)
+	return generateResourceTaikunCloudCredentialAWSRead(false)(ctx, data, meta)
 }
