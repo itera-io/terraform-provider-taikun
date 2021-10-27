@@ -28,10 +28,10 @@ data "taikun_billing_credential" "foo" {
 ### Read-Only
 
 - **created_by** (String) The creator of the billing credential.
-- **is_default** (Boolean) Indicates whether the billing credential is the organization's default or not.
-- **is_locked** (Boolean) Indicates whether the billing credential is locked or not.
+- **is_default** (Boolean) Indicates whether the billing credential is the organization's default.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the billing credential.
+- **lock** (Boolean) Indicates whether to lock the billing credential.
 - **name** (String) The name of the billing credential.
 - **organization_id** (String) The ID of the organization which owns the billing credential.
 - **organization_name** (String) The name of the organization which owns the billing credential.

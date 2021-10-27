@@ -4,7 +4,7 @@ resource "taikun_alerting_profile" "foo" {
 
   emails = ["test@example.com", "test@example.org", "test@example.net"]
 
-  is_locked = false
+  lock = false
 
   organization_id = resource.taikun_organization.foo.id
 

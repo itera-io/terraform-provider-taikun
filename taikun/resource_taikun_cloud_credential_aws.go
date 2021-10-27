@@ -75,8 +75,8 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the AWS cloud credential is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the AWS cloud credential.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -143,7 +143,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -212,10 +212,10 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.CloudLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
@@ -232,7 +232,7 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsL
 	return map[string]interface{}{
 		"created_by":        rawAWSCredential.CreatedBy,
 		"id":                i32toa(rawAWSCredential.ID),
-		"is_locked":         rawAWSCredential.IsLocked,
+		"lock":              rawAWSCredential.IsLocked,
 		"is_default":        rawAWSCredential.IsDefault,
 		"last_modified":     rawAWSCredential.LastModified,
 		"last_modified_by":  rawAWSCredential.LastModifiedBy,

@@ -3,7 +3,7 @@ resource "taikun_kubernetes_profile" "foo" {
 
   organization_id         = "42"
   load_balancing_solution = "Taikun"
-  bastion_proxy_enabled   = true
+  bastion_proxy           = true
   schedule_on_master      = false
-  is_locked               = true
+  lock                    = true
 }

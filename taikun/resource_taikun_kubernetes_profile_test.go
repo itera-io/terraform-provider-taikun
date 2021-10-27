@@ -2,12 +2,13 @@ package taikun
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/models"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -56,7 +57,7 @@ func init() {
 const testAccResourceTaikunKubernetesProfileConfig = `
 resource "taikun_kubernetes_profile" "foo" {
 	name = "%s"
-    is_locked = %t
+    lock = %t
 }
 `
 
@@ -73,12 +74,12 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "schedule_on_master", "false"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy_enabled"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
 				),
 			},
 			{
@@ -103,12 +104,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "schedule_on_master", "false"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy_enabled"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
 				),
 			},
 			{
@@ -116,12 +117,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "schedule_on_master", "false"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy_enabled"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
 				),
 			},
 		},

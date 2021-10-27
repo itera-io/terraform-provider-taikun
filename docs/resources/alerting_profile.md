@@ -21,7 +21,7 @@ resource "taikun_alerting_profile" "foo" {
 
   emails = ["test@example.com", "test@example.org", "test@example.net"]
 
-  is_locked = false
+  lock = false
 
   organization_id = resource.taikun_organization.foo.id
 
@@ -78,7 +78,7 @@ resource "taikun_alerting_profile" "foo" {
 
 - **emails** (List of String) The list of emails to notify.
 - **integration** (Block List) List of alerting integrations. (see [below for nested schema](#nestedblock--integration))
-- **is_locked** (Boolean) Whether the profile is locked or not. Defaults to `false`.
+- **lock** (Boolean) Indicates whether to lock the profile. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the profile.
 - **slack_configuration_id** (String) The ID of the Slack configuration to notify. Defaults to `0`.
 - **webhook** (Block Set) The list of webhooks to notify. (see [below for nested schema](#nestedblock--webhook))

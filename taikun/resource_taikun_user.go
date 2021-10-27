@@ -84,14 +84,14 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
-		"user_disabled": {
-			Description: "Indicates whether the user is locked or not.",
+		"disable": {
+			Description: "Indicates whether to lock the user.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
-		"approved_by_partner": {
-			Description: "Indicates whether the user account has been approved by a partner. If it hasn't, the user won't be able to login.",
+		"partner_approval": {
+			Description: "Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     true,
@@ -146,8 +146,8 @@ func resourceTaikunUserCreate(ctx context.Context, data *schema.ResourceData, me
 		Role:                getUserRole(data.Get("role").(string)),
 		Username:            data.Get("user_name").(string),
 		DisplayName:         data.Get("display_name").(string),
-		Disable:             data.Get("user_disabled").(bool),
-		IsApprovedByPartner: data.Get("approved_by_partner").(bool),
+		Disable:             data.Get("disable").(bool),
+		IsApprovedByPartner: data.Get("partner_approval").(bool),
 	}
 
 	updateUserParams := users.NewUsersUpdateUserParams().WithV(ApiVersion).WithBody(updateUserBody)
@@ -193,8 +193,8 @@ func resourceTaikunUserUpdate(ctx context.Context, data *schema.ResourceData, me
 		Username:            data.Get("user_name").(string),
 		Email:               data.Get("email").(string),
 		Role:                getUserRole(data.Get("role").(string)),
-		Disable:             data.Get("user_disabled").(bool),
-		IsApprovedByPartner: data.Get("approved_by_partner").(bool),
+		Disable:             data.Get("disable").(bool),
+		IsApprovedByPartner: data.Get("partner_approval").(bool),
 	}
 
 	updateUserParams := users.NewUsersUpdateUserParams().WithV(ApiVersion).WithBody(body)
@@ -233,7 +233,7 @@ func flattenTaikunUser(rawUser *models.UserForListDto) map[string]interface{} {
 		"email_notification_enabled": rawUser.IsEmailNotificationEnabled,
 		"is_csm":                     rawUser.IsCsm,
 		"is_owner":                   rawUser.Owner,
-		"user_disabled":              rawUser.IsLocked,
-		"approved_by_partner":        rawUser.IsApprovedByPartner,
+		"disable":                    rawUser.IsLocked,
+		"partner_approval":           rawUser.IsApprovedByPartner,
 	}
 }

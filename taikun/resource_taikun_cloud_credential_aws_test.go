@@ -2,13 +2,14 @@ package taikun
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"os"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -59,7 +60,7 @@ resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
   availability_zone = "%s"
 
-  is_locked       = %t
+  lock       = %t
 }
 `
 
@@ -84,7 +85,7 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),
@@ -115,7 +116,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),
@@ -134,7 +135,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),
@@ -166,7 +167,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),
@@ -185,7 +186,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),

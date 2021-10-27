@@ -5,5 +5,5 @@ resource "taikun_billing_credential" "foo" {
   prometheus_username = "username"
 
   organization_id = "42"
-  is_locked       = true
+  lock            = true
 }

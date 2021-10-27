@@ -18,8 +18,8 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
-  enable_auto_upgrade = %t
-  enable_monitoring = %t
+  auto_upgrade = %t
+  monitoring = %t
   expiration_date = "%s"
 }
 

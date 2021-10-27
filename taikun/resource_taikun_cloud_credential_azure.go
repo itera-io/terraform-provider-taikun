@@ -91,8 +91,8 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the Azure cloud credential is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the Azure cloud credential.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -161,7 +161,7 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -230,10 +230,10 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.CloudLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
@@ -250,7 +250,7 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentia
 	return map[string]interface{}{
 		"created_by":        rawAzureCredential.CreatedBy,
 		"id":                i32toa(rawAzureCredential.ID),
-		"is_locked":         rawAzureCredential.IsLocked,
+		"lock":              rawAzureCredential.IsLocked,
 		"is_default":        rawAzureCredential.IsDefault,
 		"last_modified":     rawAzureCredential.LastModified,
 		"last_modified_by":  rawAzureCredential.LastModifiedBy,

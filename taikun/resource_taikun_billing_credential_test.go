@@ -2,13 +2,14 @@ package taikun
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"os"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -57,7 +58,7 @@ func init() {
 const testAccResourceTaikunBillingCredentialConfig = `
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
-  is_locked       = %t
+  lock       = %t
 
   prometheus_password = "%s"
   prometheus_url = "%s"
@@ -78,7 +79,7 @@ func TestAccResourceTaikunBillingCredential(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
@@ -107,7 +108,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
@@ -119,7 +120,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
-					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_password"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),

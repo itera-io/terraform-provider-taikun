@@ -64,14 +64,14 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the backup credential is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the backup credential.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"is_default": {
-			Description: "Indicates whether the backup credential is the organization's default or not.",
+			Description: "Indicates whether the backup credential is the organization's default.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -132,7 +132,7 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.Reso
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -201,10 +201,10 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.BackupLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := s3_credentials.NewS3CredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.S3Credentials.S3CredentialsLockManager(lockParams, apiClient)
@@ -238,7 +238,7 @@ func flattenTaikunBackupCredential(rawBackupCredential *models.BackupCredentials
 	return map[string]interface{}{
 		"created_by":        rawBackupCredential.CreatedBy,
 		"id":                i32toa(rawBackupCredential.ID),
-		"is_locked":         rawBackupCredential.IsLocked,
+		"lock":              rawBackupCredential.IsLocked,
 		"is_default":        rawBackupCredential.IsDefault,
 		"last_modified":     rawBackupCredential.LastModified,
 		"last_modified_by":  rawBackupCredential.LastModifiedBy,

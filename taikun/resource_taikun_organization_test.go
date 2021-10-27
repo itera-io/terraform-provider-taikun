@@ -72,9 +72,9 @@ resource "taikun_organization" "foo" {
   city = "%s"
   country = "%s"
 
-  is_locked = %t
+  lock = %t
 
-  let_managers_change_subscription = %t
+  managers_can_change_subscription = %t
 }
 `
 
@@ -123,8 +123,8 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(address)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(city)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(country)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", fmt.Sprint(isLocked)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "managers_can_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
 			{
@@ -193,8 +193,8 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(address)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(city)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(country)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", fmt.Sprint(isLocked)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "managers_can_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
 			{
@@ -223,8 +223,8 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(newAddress)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(newCity)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(newCountry)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "is_locked", fmt.Sprint(newIsLocked)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "let_managers_change_subscription", fmt.Sprint(newLetManagersChangeSubscription)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(newIsLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "managers_can_change_subscription", fmt.Sprint(newLetManagersChangeSubscription)),
 				),
 			},
 		},

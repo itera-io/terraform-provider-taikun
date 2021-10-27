@@ -36,14 +36,14 @@ data "taikun_kubernetes_profiles" "foo" {
 
 Read-Only:
 
-- **bastion_proxy_enabled** (Boolean)
+- **bastion_proxy** (Boolean)
 - **cni** (String)
 - **created_by** (String)
 - **id** (String)
-- **is_locked** (Boolean)
 - **last_modified** (String)
 - **last_modified_by** (String)
 - **load_balancing_solution** (String)
+- **lock** (Boolean)
 - **name** (String)
 - **organization_id** (String)
 - **organization_name** (String)

@@ -17,7 +17,7 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"bastion_proxy_enabled": {
+		"bastion_proxy": {
 			Description: "Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -41,8 +41,8 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the Kubernetes profile is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the Kubernetes profile.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -111,7 +111,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 		AllowSchedulingOnMaster: data.Get("schedule_on_master").(bool),
 		TaikunLBEnabled:         taikunLBEnabled,
 		OctaviaEnabled:          octaviaEnabled,
-		ExposeNodePortOnBastion: data.Get("bastion_proxy_enabled").(bool),
+		ExposeNodePortOnBastion: data.Get("bastion_proxy").(bool),
 	}
 
 	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
@@ -131,7 +131,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -187,10 +187,10 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.KubernetesProfilesLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := kubernetes_profiles.NewKubernetesProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.KubernetesProfiles.KubernetesProfilesLockManager(lockParams, apiClient)
@@ -222,11 +222,11 @@ func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.Resou
 func flattenTaikunKubernetesProfile(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"bastion_proxy_enabled":   rawKubernetesProfile.ExposeNodePortOnBastion,
+		"bastion_proxy":           rawKubernetesProfile.ExposeNodePortOnBastion,
 		"created_by":              rawKubernetesProfile.CreatedBy,
 		"cni":                     rawKubernetesProfile.Cni,
 		"id":                      i32toa(rawKubernetesProfile.ID),
-		"is_locked":               rawKubernetesProfile.IsLocked,
+		"lock":                    rawKubernetesProfile.IsLocked,
 		"last_modified":           rawKubernetesProfile.LastModified,
 		"last_modified_by":        rawKubernetesProfile.LastModifiedBy,
 		"load_balancing_solution": getLoadBalancingSolution(rawKubernetesProfile.OctaviaEnabled, rawKubernetesProfile.TaikunLBEnabled),

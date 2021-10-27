@@ -61,14 +61,14 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"let_managers_change_subscription": {
+		"managers_can_change_subscription": {
 			Description: "Allow subscription to be changed by managers.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     true,
 		},
-		"is_locked": {
-			Description: "Whether the organization is locked.",
+		"lock": {
+			Description: "Indicates whether to lock the organization.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -148,7 +148,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 		DiscountRate:                 data.Get("discount_rate").(float64),
 		Email:                        data.Get("email").(string),
 		FullName:                     data.Get("full_name").(string),
-		IsEligibleUpdateSubscription: data.Get("let_managers_change_subscription").(bool),
+		IsEligibleUpdateSubscription: data.Get("managers_can_change_subscription").(bool),
 		Name:                         data.Get("name").(string),
 		Phone:                        data.Get("phone").(string),
 		VatNumber:                    data.Get("vat_number").(string),
@@ -162,7 +162,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(createResult.GetPayload().ID)
 
-	if isLocked, isLockedIsSet := data.GetOk("is_locked"); isLockedIsSet {
+	if isLocked, isLockedIsSet := data.GetOk("lock"); isLockedIsSet {
 		id, _ := atoi32(createResult.GetPayload().ID)
 		updateLockBody := &models.UpdateOrganizationCommand{
 			Address:                      body.Address,
@@ -232,8 +232,8 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 		Email:                        data.Get("email").(string),
 		FullName:                     data.Get("full_name").(string),
 		ID:                           id,
-		IsEligibleUpdateSubscription: data.Get("let_managers_change_subscription").(bool),
-		IsLocked:                     data.Get("is_locked").(bool),
+		IsEligibleUpdateSubscription: data.Get("managers_can_change_subscription").(bool),
+		IsLocked:                     data.Get("lock").(bool),
 		Name:                         data.Get("name").(string),
 		Phone:                        data.Get("phone").(string),
 		VatNumber:                    data.Get("vat_number").(string),
@@ -276,8 +276,8 @@ func flattenTaikunOrganization(rawOrganization *models.OrganizationDetailsDto) m
 		"email":                            rawOrganization.Email,
 		"full_name":                        rawOrganization.FullName,
 		"id":                               i32toa(rawOrganization.ID),
-		"let_managers_change_subscription": rawOrganization.IsEligibleUpdateSubscription,
-		"is_locked":                        rawOrganization.IsLocked,
+		"managers_can_change_subscription": rawOrganization.IsEligibleUpdateSubscription,
+		"lock":                             rawOrganization.IsLocked,
 		"is_read_only":                     rawOrganization.IsReadOnly,
 		"name":                             rawOrganization.Name,
 		"partner_id":                       i32toa(rawOrganization.PartnerID),

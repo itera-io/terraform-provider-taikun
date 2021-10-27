@@ -2,13 +2,14 @@ package taikun
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
-	"os"
-	"strings"
-	"testing"
 )
 
 func init() {
@@ -58,7 +59,7 @@ const testAccResourceTaikunCloudCredentialOpenStackConfig = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 
-  is_locked       = %t
+  lock       = %t
 }
 `
 
@@ -85,7 +86,7 @@ func TestAccResourceTaikunCloudCredentialOpenStack(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "region", os.Getenv("OS_REGION_NAME")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "project_id"),
@@ -119,7 +120,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "region", os.Getenv("OS_REGION_NAME")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "project_id"),
@@ -141,7 +142,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "region", os.Getenv("OS_REGION_NAME")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "is_locked", "true"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "project_id"),
@@ -176,7 +177,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "region", os.Getenv("OS_REGION_NAME")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "project_id"),
@@ -198,7 +199,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "region", os.Getenv("OS_REGION_NAME")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "is_locked", "false"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_openstack.foo", "project_id"),

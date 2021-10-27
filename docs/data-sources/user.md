@@ -27,7 +27,7 @@ data "taikun_user" "foo" {
 
 ### Read-Only
 
-- **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If it hasn't, the user won't be able to login.
+- **disable** (Boolean) Indicates whether to lock the user.
 - **display_name** (String) The user's display name.
 - **email** (String) The email of the user.
 - **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed or not.
@@ -36,8 +36,8 @@ data "taikun_user" "foo" {
 - **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
 - **organization_id** (String) The ID of the user's organization.
 - **organization_name** (String) The name of the user's organization.
+- **partner_approval** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
 - **role** (String) The role of the user.
-- **user_disabled** (Boolean) Indicates whether the user is locked or not.
 - **user_name** (String) The name of the user.
 
 

@@ -36,9 +36,9 @@ data "taikun_organization" "foo" {
 - **discount_rate** (Number) Discount rate, must be between 0 and 100 (included).
 - **email** (String) Email.
 - **full_name** (String) Full name.
-- **is_locked** (Boolean) Whether the organization is locked.
 - **is_read_only** (Boolean) Whether the organization is in read-only mode.
-- **let_managers_change_subscription** (Boolean) Allow subscription to be changed by managers.
+- **lock** (Boolean) Indicates whether to lock the organization.
+- **managers_can_change_subscription** (Boolean) Allow subscription to be changed by managers.
 - **name** (String) Organization's name.
 - **partner_id** (String) ID of the organization's partner.
 - **partner_name** (String) Name of the organization's partner.

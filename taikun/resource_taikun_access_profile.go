@@ -52,8 +52,8 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the access profile is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the access profile.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -191,7 +191,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -250,17 +250,17 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 
 	id, err := atoi32(data.Id())
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.AccessProfilesLockManagementCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if !data.HasChangeExcept("is_locked") {
+		if !data.HasChangeExcept("lock") {
 			return resourceTaikunAccessProfileRead(ctx, data, meta)
 		}
 	}
@@ -349,7 +349,7 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 		"dns_server":        DNSServers,
 		"http_proxy":        rawAccessProfile.HTTPProxy,
 		"id":                i32toa(rawAccessProfile.ID),
-		"is_locked":         rawAccessProfile.IsLocked,
+		"lock":              rawAccessProfile.IsLocked,
 		"last_modified":     rawAccessProfile.LastModified,
 		"last_modified_by":  rawAccessProfile.LastModifiedBy,
 		"name":              rawAccessProfile.Name,

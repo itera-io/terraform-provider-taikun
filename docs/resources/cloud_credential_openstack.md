@@ -37,7 +37,7 @@ resource "taikun_cloud_credential_openstack" "foo" {
   imported_network_subnet_id = "imported_network_subnet_id"
 
   organization_id = "42"
-  is_locked       = false
+  lock            = false
 }
 ```
 
@@ -59,7 +59,7 @@ resource "taikun_cloud_credential_openstack" "foo" {
 
 - **availability_zone** (String) The OpenStack availability zone.
 - **imported_network_subnet_id** (String) The OpenStack network subnet ID to import a network.
-- **is_locked** (Boolean) Indicates whether the OpenStack cloud credential is locked or not. Defaults to `false`.
+- **lock** (Boolean) Indicates whether to lock the OpenStack cloud credential. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the OpenStack cloud credential.
 - **volume_type_name** (String) The OpenStack type of volume.
 

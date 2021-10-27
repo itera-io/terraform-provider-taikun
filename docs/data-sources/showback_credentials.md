@@ -38,9 +38,9 @@ Read-Only:
 
 - **created_by** (String)
 - **id** (String)
-- **is_locked** (Boolean)
 - **last_modified** (String)
 - **last_modified_by** (String)
+- **lock** (Boolean)
 - **name** (String)
 - **organization_id** (String)
 - **organization_name** (String)

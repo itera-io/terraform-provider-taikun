@@ -55,14 +55,14 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
-		"enable_auto_upgrade": {
+		"auto_upgrade": {
 			Description: "Kubespray version will be automatically upgraded if new version is available.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 			ForceNew:    true,
 		},
-		"enable_monitoring": {
+		"monitoring": {
 			Description: "Kubernetes cluster monitoring.",
 			Type:        schema.TypeBool,
 			Optional:    true,
@@ -211,10 +211,10 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		body.IsBackupEnabled = true
 		body.S3CredentialID, _ = atoi32(backupCredentialID.(string))
 	}
-	if enableAutoUpgrade, enableAutoUpgradeIsSet := data.GetOk("enable_auto_upgrade"); enableAutoUpgradeIsSet {
+	if enableAutoUpgrade, enableAutoUpgradeIsSet := data.GetOk("auto_upgrade"); enableAutoUpgradeIsSet {
 		body.IsAutoUpgrade = enableAutoUpgrade.(bool)
 	}
-	if enableMonitoring, enableMonitoringIsSet := data.GetOk("enable_monitoring"); enableMonitoringIsSet {
+	if enableMonitoring, enableMonitoringIsSet := data.GetOk("monitoring"); enableMonitoringIsSet {
 		body.IsMonitoringEnabled = enableMonitoring.(bool)
 	}
 	if expirationDate, expirationDateIsSet := data.GetOk("expiration_date"); expirationDateIsSet {
@@ -424,7 +424,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			}
 		}
 	}
-	if data.HasChange("enable_monitoring") {
+	if data.HasChange("monitoring") {
 		body := models.MonitoringOperationsCommand{ProjectID: id}
 		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
@@ -557,8 +557,8 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_name": projectDetailsDTO.AlertingProfileName,
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
-		"enable_auto_upgrade":   projectDetailsDTO.IsAutoUpgrade,
-		"enable_monitoring":     projectDetailsDTO.IsMonitoringEnabled,
+		"auto_upgrade":          projectDetailsDTO.IsAutoUpgrade,
+		"monitoring":            projectDetailsDTO.IsMonitoringEnabled,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"flavors":               flavors,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),

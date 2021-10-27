@@ -20,10 +20,10 @@ resource "taikun_user" "foo" {
   email     = "email@domain.fr"
   role      = "User"
 
-  display_name        = "Foo"
-  organization_id     = "42"
-  user_disabled       = true
-  approved_by_partner = true
+  display_name     = "Foo"
+  organization_id  = "42"
+  disable          = true
+  partner_approval = true
 }
 ```
 
@@ -38,10 +38,10 @@ resource "taikun_user" "foo" {
 
 ### Optional
 
-- **approved_by_partner** (Boolean) Indicates whether the user account has been approved by a partner. If it hasn't, the user won't be able to login. Defaults to `true`.
+- **disable** (Boolean) Indicates whether to lock the user. Defaults to `false`.
 - **display_name** (String) The user's display name. Defaults to ` `.
 - **organization_id** (String) The ID of the user's organization.
-- **user_disabled** (Boolean) Indicates whether the user is locked or not. Defaults to `false`.
+- **partner_approval** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login. Defaults to `true`.
 
 ### Read-Only
 

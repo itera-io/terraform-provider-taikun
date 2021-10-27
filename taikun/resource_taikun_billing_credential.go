@@ -59,14 +59,14 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the billing credential is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the billing credential.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"is_default": {
-			Description: "Indicates whether the billing credential is the organization's default or not.",
+			Description: "Indicates whether the billing credential is the organization's default.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -129,7 +129,7 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -184,10 +184,10 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.OperationCredentialLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.OpsCredentials.OpsCredentialsLockManager(lockParams, apiClient)
@@ -221,7 +221,7 @@ func flattenTaikunBillingCredential(rawOperationCredential *models.OperationCred
 	return map[string]interface{}{
 		"created_by":          rawOperationCredential.CreatedBy,
 		"id":                  i32toa(rawOperationCredential.ID),
-		"is_locked":           rawOperationCredential.IsLocked,
+		"lock":                rawOperationCredential.IsLocked,
 		"is_default":          rawOperationCredential.IsDefault,
 		"last_modified":       rawOperationCredential.LastModified,
 		"last_modified_by":    rawOperationCredential.LastModifiedBy,

@@ -6,5 +6,5 @@ resource "taikun_backup_credential" "foo" {
   s3_region            = "s3_region"
 
   organization_id = "42"
-  is_locked       = true
+  lock            = true
 }

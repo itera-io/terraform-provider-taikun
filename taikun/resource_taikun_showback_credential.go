@@ -59,8 +59,8 @@ func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the showback credential is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the showback credential.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -124,7 +124,7 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -179,10 +179,10 @@ func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.ShowbackCredentialLockCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := showback.NewShowbackLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.Showback.ShowbackLockManager(lockParams, apiClient)
@@ -216,7 +216,7 @@ func flattenTaikunShowbackCredential(rawShowbackCredential *models.ShowbackCrede
 	return map[string]interface{}{
 		"created_by":        rawShowbackCredential.CreatedBy,
 		"id":                i32toa(rawShowbackCredential.ID),
-		"is_locked":         rawShowbackCredential.IsLocked,
+		"lock":              rawShowbackCredential.IsLocked,
 		"last_modified":     rawShowbackCredential.LastModified,
 		"last_modified_by":  rawShowbackCredential.LastModifiedBy,
 		"name":              rawShowbackCredential.Name,

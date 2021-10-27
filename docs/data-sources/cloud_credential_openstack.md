@@ -32,9 +32,9 @@ data "taikun_cloud_credential_openstack" "foo" {
 - **domain** (String) The OpenStack domain.
 - **imported_network_subnet_id** (String) The OpenStack network subnet ID to import a network.
 - **is_default** (Boolean) Indicates whether the OpenStack cloud credential is the default one.
-- **is_locked** (Boolean) Indicates whether the OpenStack cloud credential is locked or not.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the OpenStack cloud credential.
+- **lock** (Boolean) Indicates whether to lock the OpenStack cloud credential.
 - **name** (String) The name of the OpenStack cloud credential.
 - **organization_id** (String) The ID of the organization which owns the OpenStack cloud credential.
 - **organization_name** (String) The name of the organization which owns the OpenStack cloud credential.

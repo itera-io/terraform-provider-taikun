@@ -19,7 +19,7 @@ resource "taikun_access_profile" "foo" {
   name = "foo"
 
   organization_id = "42"
-  is_locked       = true
+  lock            = true
   http_proxy      = "proxy_url"
 
   ssh_user {
@@ -52,7 +52,7 @@ resource "taikun_access_profile" "foo" {
 
 - **dns_server** (Block List, Max: 2) List of DNS servers. (see [below for nested schema](#nestedblock--dns_server))
 - **http_proxy** (String) HTTP Proxy of the access profile.
-- **is_locked** (Boolean) Indicates whether the access profile is locked or not. Defaults to `false`.
+- **lock** (Boolean) Indicates whether to lock the access profile. Defaults to `false`.
 - **ntp_server** (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
 - **organization_id** (String) The ID of the organization which owns the access profile.
 - **ssh_user** (Block List) List of SSH users. (see [below for nested schema](#nestedblock--ssh_user))

@@ -123,8 +123,8 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"is_locked": {
-			Description: "Indicates whether the OpenStack cloud credential is locked or not.",
+		"lock": {
+			Description: "Indicates whether to lock the OpenStack cloud credential.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -210,7 +210,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *sch
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("is_locked").(bool)
+	locked := data.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -279,10 +279,10 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		}
 	}
 
-	if data.HasChange("is_locked") {
+	if data.HasChange("lock") {
 		lockBody := models.CloudLockManagerCommand{
 			ID:   id,
-			Mode: getLockMode(data.Get("is_locked").(bool)),
+			Mode: getLockMode(data.Get("lock").(bool)),
 		}
 		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
 		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
@@ -299,7 +299,7 @@ func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.Openst
 	return map[string]interface{}{
 		"created_by":                 rawOpenStackCredential.CreatedBy,
 		"id":                         i32toa(rawOpenStackCredential.ID),
-		"is_locked":                  rawOpenStackCredential.IsLocked,
+		"lock":                       rawOpenStackCredential.IsLocked,
 		"is_default":                 rawOpenStackCredential.IsDefault,
 		"last_modified":              rawOpenStackCredential.LastModified,
 		"last_modified_by":           rawOpenStackCredential.LastModifiedBy,

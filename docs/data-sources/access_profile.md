@@ -30,9 +30,9 @@ data "taikun_access_profile" "foo" {
 - **created_by** (String) The creator of the access profile.
 - **dns_server** (List of Object) List of DNS servers. (see [below for nested schema](#nestedatt--dns_server))
 - **http_proxy** (String) HTTP Proxy of the access profile.
-- **is_locked** (Boolean) Indicates whether the access profile is locked or not.
 - **last_modified** (String) The time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the profile.
+- **lock** (Boolean) Indicates whether to lock the access profile.
 - **name** (String) The name of the access profile.
 - **ntp_server** (List of Object) List of NTP servers. (see [below for nested schema](#nestedatt--ntp_server))
 - **organization_id** (String) The ID of the organization which owns the access profile.

@@ -20,7 +20,7 @@ resource "taikun_alerting_profile" "foo" {
   reminder = "%s"
   slack_configuration_id = resource.taikun_slack_configuration.foo.id
 
-  is_locked = %t
+  lock = %t
 
   # emails:
   %s
