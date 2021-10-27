@@ -131,10 +131,14 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(isAfterUpdateOr
 					return diag.FromErr(err)
 				}
 				data.SetId(id)
-				break
+				return nil
 			}
 		}
 
+		if isAfterUpdateOrCreate {
+			data.SetId(id)
+			return diag.Errorf(notFoundAfterCreateOrUpdateError)
+		}
 		return nil
 	}
 }
