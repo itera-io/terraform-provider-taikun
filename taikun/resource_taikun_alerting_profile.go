@@ -163,7 +163,7 @@ func resourceTaikunAlertingProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Alerting Profile",
 		CreateContext: resourceTaikunAlertingProfileCreate,
-		ReadContext:   resourceTaikunAlertingProfileRead,
+		ReadContext:   generateResourceTaikunAlertingProfileRead(false),
 		UpdateContext: resourceTaikunAlertingProfileUpdate,
 		DeleteContext: resourceTaikunAlertingProfileDelete,
 		Schema:        resourceTaikunAlertingProfileSchema(),
@@ -232,41 +232,47 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunAlertingProfileRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunAlertingProfileRead(true), ctx, data, meta)
 }
 
-func resourceTaikunAlertingProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunAlertingProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
-	response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
+		response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+		alertingProfileDTO := response.Payload.Data[0]
+
+		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
+		alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = setResourceDataFromMap(data, flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(alertingProfileDTO.ID))
+
 		return nil
 	}
-	alertingProfileDTO := response.Payload.Data[0]
-
-	alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
-	alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = setResourceDataFromMap(data, flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(alertingProfileDTO.ID))
-
-	return nil
 }
 
 func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -344,7 +350,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunAlertingProfileRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileRead(true), ctx, data, meta)
 }
 
 func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
