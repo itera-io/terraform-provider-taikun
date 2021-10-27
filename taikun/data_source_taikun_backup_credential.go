@@ -26,5 +26,5 @@ func dataSourceTaikunBackupCredential() *schema.Resource {
 func dataSourceTaikunBackupCredentialRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
 
-	return resourceTaikunBackupCredentialRead(ctx, data, meta)
+	return generateResourceTaikunBackupCredentialRead(false)(ctx, data, meta)
 }
