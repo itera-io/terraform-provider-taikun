@@ -228,7 +228,7 @@ func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.
 		if len(response.Payload.Data) != 1 {
 			if isAfterUpdateOrCreate {
 				data.SetId(i32toa(id))
-				return diag.Errorf("notFoundAfterCreateOrUpdateError")
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
 		}
