@@ -94,7 +94,7 @@ func resourceTaikunBillingRule() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Billing Rule",
 		CreateContext: resourceTaikunBillingRuleCreate,
-		ReadContext:   resourceTaikunBillingRuleRead,
+		ReadContext:   generateResourceTaikunBillingRuleRead(false),
 		UpdateContext: resourceTaikunBillingRuleUpdate,
 		DeleteContext: resourceTaikunBillingRuleDelete,
 		Schema:        resourceTaikunBillingRuleSchema(),
@@ -129,36 +129,42 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 
 	data.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(resourceTaikunBillingRuleRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBillingRuleRead(true), ctx, data, meta)
 }
 
-func resourceTaikunBillingRuleRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunBillingRuleRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
-	response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
+		response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawBillingRule := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunBillingRule(rawBillingRule))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawBillingRule := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunBillingRule(rawBillingRule))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -189,7 +195,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunBillingRuleRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBillingRuleRead(true), ctx, data, meta)
 }
 
 func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
