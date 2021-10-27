@@ -47,5 +47,9 @@ Read-Only:
 - **kubernetes_profile_id** (String)
 - **name** (String)
 - **organization_id** (String)
+- **quota_cpu_units** (Number)
+- **quota_disk_size** (Number)
+- **quota_id** (String)
+- **quota_ram_size** (Number)
 
 

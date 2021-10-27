@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/itera-io/taikungoclient/client/project_quotas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/backup"
 	"github.com/itera-io/taikungoclient/client/flavors"
@@ -117,6 +119,26 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"quota_cpu_units": {
+			Description: "Maximum CPU units.",
+			Type:        schema.TypeInt,
+			Optional:    true,
+		},
+		"quota_disk_size": {
+			Description: "Maximum disk size in GBs. Unlimited if unspecified.",
+			Type:        schema.TypeInt,
+			Optional:    true,
+		},
+		"quota_id": {
+			Description: "ID of the project quota.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"quota_ram_size": {
+			Description: "Maximum RAM size in GBs. Unlimited if unspecified.",
+			Type:        schema.TypeInt,
+			Optional:    true,
+		},
 		"router_id_end_range": {
 			Description:  "Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeInt,
@@ -216,6 +238,46 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 
 	data.SetId(response.Payload.ID)
 
+	quotaCPU, quotaCPUIsSet := data.GetOk("quota_cpu_units")
+	quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size")
+	quotaRAM, quotaRAMIsSet := data.GetOk("quota_ram_size")
+	if quotaCPUIsSet || quotaDiskIsSet || quotaRAMIsSet {
+
+		quotaEditBody := &models.ProjectQuotaUpdateDto{
+			IsCPUUnlimited:      true,
+			IsRAMUnlimited:      true,
+			IsDiskSizeUnlimited: true,
+		}
+
+		if quotaCPUIsSet {
+			quotaEditBody.CPU = int64(quotaCPU.(int))
+			quotaEditBody.IsCPUUnlimited = false
+		}
+
+		if quotaDiskIsSet {
+			quotaEditBody.DiskSize = int64(quotaDisk.(int))
+			quotaEditBody.IsDiskSizeUnlimited = false
+		}
+
+		if quotaRAMIsSet {
+			quotaEditBody.RAM = int64(quotaRAM.(int))
+			quotaEditBody.IsDiskSizeUnlimited = false
+		}
+
+		projectId, _ := atoi32(response.Payload.ID)
+
+		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectId) // TODO use /api/v1/projects endpoint?
+		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+
+		if err == nil {
+			quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(response.Payload.Project.QuotaID).WithBody(quotaEditBody)
+			_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return readAfterCreateWithRetries(resourceTaikunProjectRead, ctx, data, meta)
 }
 
@@ -235,11 +297,22 @@ func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, met
 	}
 
 	projectDetailsDTO := response.Payload.Project
+
 	boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.ProjectID, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, boundFlavorDTOs))
+
+	quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
+	quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if len(quotaResponse.Payload.Data) != 1 {
+		return nil
+	}
+
+	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, boundFlavorDTOs, quotaResponse.Payload.Data[0]))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -396,10 +469,41 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
+	if data.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
+		quotaId, _ := atoi32(data.Get("quota_id").(string))
+
+		quotaEditBody := &models.ProjectQuotaUpdateDto{
+			IsCPUUnlimited:      true,
+			IsRAMUnlimited:      true,
+			IsDiskSizeUnlimited: true,
+		}
+
+		if quotaCPU, quotaCPUIsSet := data.GetOk("quota_cpu_units"); quotaCPUIsSet {
+			quotaEditBody.CPU = int64(quotaCPU.(int))
+			quotaEditBody.IsCPUUnlimited = false
+		}
+
+		if quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size"); quotaDiskIsSet {
+			quotaEditBody.DiskSize = int64(quotaDisk.(int))
+			quotaEditBody.IsDiskSizeUnlimited = false
+		}
+
+		if quotaRAM, quotaRAMIsSet := data.GetOk("quota_ram_size"); quotaRAMIsSet {
+			quotaEditBody.RAM = int64(quotaRAM.(int))
+			quotaEditBody.IsRAMUnlimited = false
+		}
+
+		quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaId).WithBody(quotaEditBody)
+		_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return readAfterUpdateWithRetries(resourceTaikunProjectRead, ctx, data, meta)
 }
 
-func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())
@@ -418,7 +522,7 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 }
 
 // TODO change type of DTO if read endpoint is modified
-func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto) map[string]interface{} {
+func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
 		flavors[i] = boundFlavorDTO.Name
@@ -436,6 +540,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
+		"quota_id":              i32toa(projectDetailsDTO.QuotaID),
 	}
 
 	var nullID int32
@@ -445,6 +550,18 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 
 	if projectDetailsDTO.IsBackupEnabled {
 		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
+	}
+
+	if !projectQuotaDTO.IsCPUUnlimited {
+		projectMap["quota_cpu_units"] = projectQuotaDTO.CPU
+	}
+
+	if !projectQuotaDTO.IsDiskSizeUnlimited {
+		projectMap["quota_disk_size"] = projectQuotaDTO.DiskSize
+	}
+
+	if !projectQuotaDTO.IsRAMUnlimited {
+		projectMap["quota_ram_size"] = projectQuotaDTO.RAM
 	}
 
 	return projectMap

@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"github.com/itera-io/taikungoclient/client/project_quotas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -59,11 +60,22 @@ func dataSourceTaikunProjectsRead(ctx context.Context, data *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectEntityDTO.ID, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		projects[i] = flattenTaikunProject(response.Payload.Project, boundFlavorDTOs)
+
+		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&response.Payload.Project.QuotaID)
+		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(quotaResponse.Payload.Data) != 1 {
+			return nil
+		}
+
+		projects[i] = flattenTaikunProject(response.Payload.Project, boundFlavorDTOs, quotaResponse.Payload.Data[0])
 	}
 	if err := data.Set("projects", projects); err != nil {
 		return diag.FromErr(err)
