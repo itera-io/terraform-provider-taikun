@@ -495,7 +495,7 @@ func generateResourceTaikunProjectRead(isAfterUpdateOrCreate bool) schema.ReadCo
 			return nil
 		}
 
-		err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, boundFlavorDTOs, quotaResponse.Payload.Data[0]))
+		err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, response.Payload.Data, boundFlavorDTOs, quotaResponse.Payload.Data[0]))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -705,11 +705,31 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	// TODO Purge all the servers
-
 	unlockedMode := getLockMode(false)
 	unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
 	apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
+
+	// TODO Purge all the servers
+
+	serverIds := make([]int32, 0)
+	if bastions, bastionsIsSet := data.GetOk("server_bastion"); bastionsIsSet {
+		for _, bastion := range bastions.(*schema.Set).List() {
+			bastionMap := bastion.(map[string]interface{})
+			bastionId, _ := atoi32(bastionMap["id"].(string))
+			serverIds = append(serverIds, bastionId)
+		}
+	}
+
+	deleteServerBody := &models.DeleteServerCommand{
+		ProjectID: id,
+		ServerIds: serverIds,
+	}
+	deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+	_, _, err = apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	//TODO WAIT??
 
 	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
@@ -725,7 +745,7 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 }
 
 // TODO change type of DTO if read endpoint is modified
-func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
+func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, serverListDTO []*models.ServerListDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
 		flavors[i] = boundFlavorDTO.Name
@@ -746,6 +766,26 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
 		"quota_id":              i32toa(projectDetailsDTO.QuotaID),
 	}
+
+	bastions := make([]map[string]interface{}, 0)
+	for _, server := range serverListDTO {
+		// Bastion
+		if server.Role == "Bastion" {
+			bastions = append(bastions, map[string]interface{}{
+				"created_by":        server.CreatedBy,
+				"disk_size":         server.DiskSize,
+				"flavor":            server.OpenstackFlavor,
+				"id":                i32toa(server.ID),
+				"ip":                server.IPAddress,
+				"kubernetes_health": server.KubernetesHealth,
+				"last_modified":     server.LastModified,
+				"last_modified_by":  server.LastModifiedBy,
+				"name":              server.Name,
+				"status":            server.Status,
+			})
+		}
+	}
+	projectMap["server_bastion"] = bastions
 
 	var nullID int32
 	if projectDetailsDTO.AlertingProfileID != nullID {
