@@ -212,7 +212,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 }
 
 func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
 		data.SetId("")

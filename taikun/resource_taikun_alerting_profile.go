@@ -236,7 +236,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 }
 
 func generateResourceTaikunAlertingProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
 		data.SetId("")

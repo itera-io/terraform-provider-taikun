@@ -97,7 +97,7 @@ func resourceTaikunBackupCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Backup Credential",
 		CreateContext: resourceTaikunBackupCredentialCreate,
-		ReadContext:   resourceTaikunBackupCredentialRead,
+		ReadContext:   generateResourceTaikunBackupCredentialRead(false),
 		UpdateContext: resourceTaikunBackupCredentialUpdate,
 		DeleteContext: resourceTaikunBackupCredentialDelete,
 		Schema:        resourceTaikunBackupCredentialSchema(),
@@ -149,35 +149,41 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunBackupCredentialRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBackupCredentialRead(true), ctx, data, meta)
 }
 
-func resourceTaikunBackupCredentialRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunBackupCredentialRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.S3Credentials.S3CredentialsList(s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		response, err := apiClient.client.S3Credentials.S3CredentialsList(s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawBackupCredential := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunBackupCredential(rawBackupCredential))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawBackupCredential := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunBackupCredential(rawBackupCredential))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -213,7 +219,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunBackupCredentialRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBackupCredentialRead(true), ctx, data, meta)
 }
 
 func resourceTaikunBackupCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
