@@ -92,7 +92,7 @@ func resourceTaikunKubernetesProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Kubernetes Profile",
 		CreateContext: resourceTaikunKubernetesProfileCreate,
-		ReadContext:   resourceTaikunKubernetesProfileRead,
+		ReadContext:   generateResourceTaikunKubernetesProfileRead(false),
 		UpdateContext: resourceTaikunKubernetesProfileUpdate,
 		DeleteContext: resourceTaikunKubernetesProfileDelete,
 		Schema:        resourceTaikunKubernetesProfileSchema(),
@@ -148,35 +148,41 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunKubernetesProfileRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunKubernetesProfileRead(true), ctx, data, meta)
 }
 
-func resourceTaikunKubernetesProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunKubernetesProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawKubernetesProfile := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunKubernetesProfile(rawKubernetesProfile))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawKubernetesProfile := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunKubernetesProfile(rawKubernetesProfile))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -199,7 +205,7 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunKubernetesProfileRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunKubernetesProfileRead(true), ctx, data, meta)
 }
 
 func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
