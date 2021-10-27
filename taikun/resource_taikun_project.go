@@ -176,7 +176,7 @@ func resourceTaikunProject() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Project",
 		CreateContext: resourceTaikunProjectCreate,
-		ReadContext:   resourceTaikunProjectRead,
+		ReadContext:   generateResourceTaikunProjectRead(false),
 		UpdateContext: resourceTaikunProjectUpdate,
 		DeleteContext: resourceTaikunProjectDelete,
 		Schema:        resourceTaikunProjectSchema(),
@@ -293,48 +293,58 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunProjectRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
 }
 
-func resourceTaikunProjectRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id := data.Id()
-	id32, err := atoi32(id)
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunProjectRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id := data.Id()
+		id32, err := atoi32(id)
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
-	response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
-	if err != nil {
+		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
+		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+		if err != nil {
+			if isAfterUpdateOrCreate {
+				data.SetId(id)
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		projectDetailsDTO := response.Payload.Project
+
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.ProjectID, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
+		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(quotaResponse.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(id)
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, boundFlavorDTOs, quotaResponse.Payload.Data[0]))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(id)
+
 		return nil
 	}
-
-	projectDetailsDTO := response.Payload.Project
-
-	boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.ProjectID, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
-	quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(quotaResponse.Payload.Data) != 1 {
-		return nil
-	}
-
-	err = setResourceDataFromMap(data, flattenTaikunProject(projectDetailsDTO, boundFlavorDTOs, quotaResponse.Payload.Data[0]))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(id)
-
-	return nil
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -525,7 +535,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunProjectRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(false), ctx, data, meta)
 }
 
 func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
