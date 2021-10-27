@@ -161,6 +161,16 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntBetween(1, 255),
 			RequiredWith: []string{"router_id_end_range", "taikun_lb_flavor"},
 		},
+		"server_bastion": {
+			Description: "Server Bastion",
+			Type:        schema.TypeSet,
+			MinItems:    1,
+			MaxItems:    1,
+			Required:    true,
+			Elem: &schema.Resource{
+				Schema: taikunServerSchema(),
+			},
+		},
 		"taikun_lb_flavor": {
 			Description:  "OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeString,
@@ -168,6 +178,69 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			RequiredWith: []string{"router_id_end_range", "router_id_start_range"},
+		},
+	}
+}
+
+func taikunBasicServerSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"created_by": {
+			Description: "The creator of the server.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"disk_size": {
+			Description: "Disk Size",
+			Type:        schema.TypeInt,
+			Required:    true,
+		},
+		"flavor": {
+			Description:  "Flavor",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"id": {
+			Description: "ID of the server",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"ip": {
+			Description: "IP of the server",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"kubernetes_health": {
+			Description: "Kubernetes health of the server",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "The time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the server.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description: "Name of the server",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-]+$"),
+					"expected only alpha numeric characters or non alpha numeric (-)",
+				),
+			),
+		},
+		"status": {
+			Description: "Status of the server",
+			Type:        schema.TypeString,
+			Computed:    true,
 		},
 	}
 }
@@ -292,6 +365,28 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 	}
+
+	// Servers
+
+	// Bastion
+	bastion := data.Get("server_bastion").([]interface{})[0].(map[string]interface{})
+	serverCreateBody := &models.ServerForCreateDto{
+		Count:                1,
+		DiskSize:             int64(bastion["disk_size"].(int)),
+		Flavor:               bastion["flavor"].(string),
+		KubernetesNodeLabels: nil,
+		Name:                 bastion["name"].(string),
+		ProjectID:            projectID,
+		Role:                 100,
+	}
+
+	serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+	_, err = apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	//TODO Save ID?
+	//serverCreateResponse.Payload.ID
 
 	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
 }
@@ -546,12 +641,13 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	// TODO purge
+	// TODO Purge all the servers
 
 	unlockedMode := getLockMode(false)
 	unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
 	apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
 
+	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
 	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
 	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
