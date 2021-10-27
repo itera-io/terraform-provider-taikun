@@ -162,13 +162,28 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"router_id_end_range", "taikun_lb_flavor"},
 		},
 		"server_bastion": {
-			Description: "Server Bastion",
+			Description: "Bastion server",
 			Type:        schema.TypeSet,
-			MinItems:    1,
 			MaxItems:    1,
-			Required:    true,
+			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
+			},
+		},
+		"server_kubemaster": {
+			Description: "Kubemaster server",
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
+			},
+		},
+		"server_kubeworker": {
+			Description: "Kubeworker server",
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
 		},
 		"taikun_lb_flavor": {
@@ -180,6 +195,30 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"router_id_end_range", "router_id_start_range"},
 		},
 	}
+}
+
+func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
+	serverSchema := taikunServerBasicSchema()
+	serverSchema["kubernetes_node_labels"] = &schema.Schema{
+		Description: "Attach Kubernetes node labels.",
+		Type:        schema.TypeList,
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Description: "Kubernetes node label key.",
+					Type:        schema.TypeString,
+					Required:    true,
+				},
+				"value": {
+					Description: "Kubernetes node label value.",
+					Type:        schema.TypeString,
+					Required:    true,
+				},
+			},
+		},
+	}
+	return serverSchema
 }
 
 func taikunServerBasicSchema() map[string]*schema.Schema {
