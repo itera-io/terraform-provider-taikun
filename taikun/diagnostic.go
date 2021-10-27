@@ -6,6 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
+const notFoundAfterCreateOrUpdateError = "notFoundAfterCreateOrUpdateError"
+
 func diagnosticsToString(diagnostics diag.Diagnostics) string {
 	stringBuilder := strings.Builder{}
 	for _, diagnostic := range diagnostics {

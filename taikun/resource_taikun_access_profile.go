@@ -165,7 +165,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Access Profile",
 		CreateContext: resourceTaikunAccessProfileCreate,
-		ReadContext:   resourceTaikunAccessProfileRead,
+		ReadContext:   generateResourceTaikunAccessProfileRead(false),
 		UpdateContext: resourceTaikunAccessProfileUpdate,
 		DeleteContext: resourceTaikunAccessProfileDelete,
 		Schema:        resourceTaikunAccessProfileSchema(),
@@ -208,41 +208,47 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunAccessProfileRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
 }
 
-func resourceTaikunAccessProfileRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+		response, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	if len(response.Payload.Data) != 1 {
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf("notFoundAfterCreateOrUpdateError")
+			}
+			return nil
+		}
+
+		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		rawAccessProfile := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunAccessProfile(rawAccessProfile, sshResponse))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	rawAccessProfile := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunAccessProfile(rawAccessProfile, sshResponse))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -261,7 +267,7 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 			return diag.FromErr(err)
 		}
 		if !data.HasChangeExcept("lock") {
-			return resourceTaikunAccessProfileRead(ctx, data, meta)
+			return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
 		}
 	}
 
@@ -289,7 +295,7 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 
 	data.SetId(updateResponse.Payload.ID)
 
-	return readAfterUpdateWithRetries(resourceTaikunAccessProfileRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
 }
 
 func resourceTaikunAccessProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
