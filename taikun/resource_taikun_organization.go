@@ -127,7 +127,7 @@ func resourceTaikunOrganization() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Organization",
 		CreateContext: resourceTaikunOrganizationCreate,
-		ReadContext:   resourceTaikunOrganizationRead,
+		ReadContext:   generateResourceTaikunOrganizationRead(false),
 		UpdateContext: resourceTaikunOrganizationUpdate,
 		DeleteContext: resourceTaikunOrganizationDelete,
 		Schema:        resourceTaikunOrganizationSchema(),
@@ -186,33 +186,39 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunOrganizationRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunOrganizationRead(true), ctx, data, meta)
 }
 
-func resourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id := data.Id()
-	id32, _ := atoi32(data.Id())
-	data.SetId("")
+func generateResourceTaikunOrganizationRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id := data.Id()
+		id32, _ := atoi32(data.Id())
+		data.SetId("")
 
-	response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(id)
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawOrganization := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunOrganization(rawOrganization))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(id)
+
 		return nil
 	}
-
-	rawOrganization := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunOrganization(rawOrganization))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(id)
-
-	return nil
 }
 
 func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -245,7 +251,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunOrganizationRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunOrganizationRead(true), ctx, data, meta)
 }
 
 func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
