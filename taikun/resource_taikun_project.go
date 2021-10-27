@@ -406,7 +406,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	}
 
 	bastionsList, bastionsListIsSet := data.GetOk("server_bastion")
-	kubeMastersList, kubeMastersListIsSet := data.GetOk("server_kubemasters")
+	kubeMastersList, kubeMastersListIsSet := data.GetOk("server_kubemaster")
 	kubeWorkersList, kubeWorkersListIsSet := data.GetOk("server_kubeworker")
 
 	// Check if the project is not empty
