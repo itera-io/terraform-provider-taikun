@@ -261,6 +261,10 @@ func generateResourceTaikunAlertingProfileRead(isAfterUpdateOrCreate bool) schem
 		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
 		alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
 		if err != nil {
+			if _, ok := err.(*alerting_integrations.AlertingIntegrationsListNotFound); ok && isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
 			return diag.FromErr(err)
 		}
 
