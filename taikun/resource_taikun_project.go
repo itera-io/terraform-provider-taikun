@@ -546,11 +546,19 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: true}
+	// TODO purge
+
+	unlockedMode := getLockMode(false)
+	unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
+	apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
+
+	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
 	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
 	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
+
+	// TODO force delete if special conditions are met?
 
 	data.SetId("")
 	return nil
