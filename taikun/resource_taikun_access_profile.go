@@ -235,6 +235,10 @@ func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.
 
 		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
 		if err != nil {
+			if _, ok := err.(*ssh_users.SSHUsersListNotFound); ok && isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
 			return diag.FromErr(err)
 		}
 
