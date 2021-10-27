@@ -43,6 +43,12 @@ func init() {
 
 			for _, e := range projectList {
 				if strings.HasPrefix(e.Name, testNamePrefix) {
+					// unlock
+					unlockedMode := getLockMode(false)
+					unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
+					apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
+
+					// delete
 					params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteProjectCommand{ProjectID: e.ID})
 					_, _, err = apiClient.client.Projects.ProjectsDelete(params, apiClient)
 					if err != nil {
