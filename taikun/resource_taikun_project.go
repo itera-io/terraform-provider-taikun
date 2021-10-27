@@ -405,27 +405,46 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	// Servers
+	bastionsList, bastionsListIsSet := data.GetOk("server_bastion")
+	kubeMastersList, kubeMastersListIsSet := data.GetOk("server_kubemasters")
+	kubeWorkersList, kubeWorkersListIsSet := data.GetOk("server_kubeworker")
 
-	// Bastion
-	bastion := data.Get("server_bastion").([]interface{})[0].(map[string]interface{})
-	serverCreateBody := &models.ServerForCreateDto{
-		Count:                1,
-		DiskSize:             int64(bastion["disk_size"].(int)),
-		Flavor:               bastion["flavor"].(string),
-		KubernetesNodeLabels: nil,
-		Name:                 bastion["name"].(string),
-		ProjectID:            projectID,
-		Role:                 100,
-	}
+	// Check if the project is not empty
+	if bastionsListIsSet || kubeMastersListIsSet || kubeWorkersListIsSet {
+		// Servers
 
-	serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-	_, err = apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
+		// TODO Checks
+
+		// Bastion
+		bastion := bastionsList.([]interface{})[0].(map[string]interface{})
+		serverCreateBody := &models.ServerForCreateDto{
+			Count:                1,
+			DiskSize:             int64(bastion["disk_size"].(int)),
+			Flavor:               bastion["flavor"].(string),
+			KubernetesNodeLabels: nil,
+			Name:                 bastion["name"].(string),
+			ProjectID:            projectID,
+			Role:                 100,
+		}
+
+		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+		_, err = apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		//TODO Save ID?
+		//serverCreateResponse.Payload.ID
+
+		for range kubeMastersList.([]interface{}) {
+			//TODO
+		}
+
+		for range kubeWorkersList.([]interface{}) {
+			//TODO
+		}
+
+		//TODO Commit
 	}
-	//TODO Save ID?
-	//serverCreateResponse.Payload.ID
 
 	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
 }
