@@ -124,7 +124,7 @@ func resourceTaikunCloudCredentialAzure() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Azure Cloud Credential",
 		CreateContext: resourceTaikunCloudCredentialAzureCreate,
-		ReadContext:   resourceTaikunCloudCredentialAzureRead,
+		ReadContext:   generateResourceTaikunCloudCredentialAzureRead(false),
 		UpdateContext: resourceTaikunCloudCredentialAzureUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialAzureSchema(),
@@ -178,35 +178,41 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunCloudCredentialAzureRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureRead(true), ctx, data, meta)
 }
 
-func resourceTaikunCloudCredentialAzureRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunCloudCredentialAzureRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Azure) != 1 {
+		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Azure) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawCloudCredentialAzure := response.GetPayload().Azure[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawCloudCredentialAzure := response.GetPayload().Azure[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -242,7 +248,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunCloudCredentialAzureRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureRead(true), ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {

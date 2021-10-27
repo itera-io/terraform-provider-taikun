@@ -135,7 +135,7 @@ func resourceTaikunShowbackRule() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Showback Rule",
 		CreateContext: resourceTaikunShowbackRuleCreate,
-		ReadContext:   resourceTaikunShowbackRuleRead,
+		ReadContext:   generateResourceTaikunShowbackRuleRead(false),
 		UpdateContext: resourceTaikunShowbackRuleUpdate,
 		DeleteContext: resourceTaikunShowbackRuleDelete,
 		Schema:        resourceTaikunShowbackRuleSchema(),
@@ -195,35 +195,41 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(resourceTaikunShowbackRuleRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleRead(true), ctx, data, meta)
 }
 
-func resourceTaikunShowbackRuleRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunShowbackRuleRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.Showback.ShowbackRulesList(showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		response, err := apiClient.client.Showback.ShowbackRulesList(showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawShowbackRule := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunShowbackRule(rawShowbackRule))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawShowbackRule := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunShowbackRule(rawShowbackRule))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -261,7 +267,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunShowbackRuleRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleRead(true), ctx, data, meta)
 }
 
 func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

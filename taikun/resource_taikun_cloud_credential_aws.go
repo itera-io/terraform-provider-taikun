@@ -108,7 +108,7 @@ func resourceTaikunCloudCredentialAWS() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun AWS Cloud Credential",
 		CreateContext: resourceTaikunCloudCredentialAWSCreate,
-		ReadContext:   resourceTaikunCloudCredentialAWSRead,
+		ReadContext:   generateResourceTaikunCloudCredentialAWSRead(false),
 		UpdateContext: resourceTaikunCloudCredentialAWSUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialAWSSchema(),
@@ -160,35 +160,41 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunCloudCredentialAWSRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSRead(true), ctx, data, meta)
 }
 
-func resourceTaikunCloudCredentialAWSRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunCloudCredentialAWSRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Amazon) != 1 {
+		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Amazon) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawCloudCredentialAWS := response.GetPayload().Amazon[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawCloudCredentialAWS := response.GetPayload().Amazon[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -224,7 +230,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunCloudCredentialAWSRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSRead(true), ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {

@@ -156,7 +156,7 @@ func resourceTaikunCloudCredentialOpenStack() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun OpenStack Cloud Credential",
 		CreateContext: resourceTaikunCloudCredentialOpenStackCreate,
-		ReadContext:   resourceTaikunCloudCredentialOpenStackRead,
+		ReadContext:   generateResourceTaikunCloudCredentialOpenStackRead(false),
 		UpdateContext: resourceTaikunCloudCredentialOpenStackUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialOpenStackSchema(),
@@ -227,35 +227,41 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *sch
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunCloudCredentialOpenStackRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialOpenStackRead(true), ctx, data, meta)
 }
 
-func resourceTaikunCloudCredentialOpenStackRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunCloudCredentialOpenStackRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Openstack) != 1 {
+		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Openstack) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialOpenStack(rawCloudCredentialOpenStack))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunCloudCredentialOpenStack(rawCloudCredentialOpenStack))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -291,7 +297,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunCloudCredentialOpenStackRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialOpenStackRead(true), ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {

@@ -41,7 +41,7 @@ func resourceTaikunProjectUserAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Project - User Attachment",
 		CreateContext: resourceTaikunProjectUserAttachmentCreate,
-		ReadContext:   resourceTaikunProjectUserAttachmentRead,
+		ReadContext:   generateResourceTaikunProjectUserAttachmentRead(false),
 		DeleteContext: resourceTaikunProjectUserAttachmentDelete,
 		Schema:        resourceTaikunProjectUserAttachmentSchema(),
 	}
@@ -75,47 +75,53 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, data *schema
 	id := fmt.Sprintf("%d/%s", projectId, userId)
 	data.SetId(id)
 
-	return readAfterCreateWithRetries(resourceTaikunProjectUserAttachmentRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunProjectUserAttachmentRead(true), ctx, data, meta)
 }
 
-func resourceTaikunProjectUserAttachmentRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+func generateResourceTaikunProjectUserAttachmentRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
 
-	id := data.Id()
-	data.SetId("")
-	projectId, userId, err := parseProjectUserAttachmentId(id)
-	if err != nil {
-		return diag.Errorf("Error while reading taikun_project_user_attachment : %s", err)
-	}
+		id := data.Id()
+		data.SetId("")
+		projectId, userId, err := parseProjectUserAttachmentId(id)
+		if err != nil {
+			return diag.Errorf("Error while reading taikun_project_user_attachment : %s", err)
+		}
 
-	params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-	response, err := apiClient.client.Users.UsersList(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
+		response, err := apiClient.client.Users.UsersList(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(id)
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawUser := response.GetPayload().Data[0]
+
+		for _, e := range rawUser.BoundProjects {
+			if e.ProjectID == projectId {
+				if err := data.Set("project_id", i32toa(e.ProjectID)); err != nil {
+					return diag.FromErr(err)
+				}
+				if err := data.Set("project_name", e.ProjectName); err != nil {
+					return diag.FromErr(err)
+				}
+				if err := data.Set("user_id", rawUser.ID); err != nil {
+					return diag.FromErr(err)
+				}
+				data.SetId(id)
+				break
+			}
+		}
+
 		return nil
 	}
-
-	rawUser := response.GetPayload().Data[0]
-
-	for _, e := range rawUser.BoundProjects {
-		if e.ProjectID == projectId {
-			if err := data.Set("project_id", i32toa(e.ProjectID)); err != nil {
-				return diag.FromErr(err)
-			}
-			if err := data.Set("project_name", e.ProjectName); err != nil {
-				return diag.FromErr(err)
-			}
-			if err := data.Set("user_id", rawUser.ID); err != nil {
-				return diag.FromErr(err)
-			}
-			data.SetId(id)
-			break
-		}
-	}
-
-	return nil
 }
 
 func resourceTaikunProjectUserAttachmentDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

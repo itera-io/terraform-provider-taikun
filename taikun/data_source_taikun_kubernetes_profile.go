@@ -25,5 +25,5 @@ func dataSourceTaikunKubernetesProfile() *schema.Resource {
 func dataSourceTaikunKubernetesProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
 
-	return resourceTaikunKubernetesProfileRead(ctx, data, meta)
+	return generateResourceTaikunKubernetesProfileRead(false)(ctx, data, meta)
 }

@@ -66,7 +66,7 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Slack Configuration",
 		CreateContext: resourceTaikunSlackConfigurationCreate,
-		ReadContext:   resourceTaikunSlackConfigurationRead,
+		ReadContext:   generateResourceTaikunSlackConfigurationRead(false),
 		UpdateContext: resourceTaikunSlackConfigurationUpdate,
 		DeleteContext: resourceTaikunSlackConfigurationDelete,
 		Importer: &schema.ResourceImporter{
@@ -102,37 +102,43 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 
 	data.SetId(i32toa(response.Payload))
 
-	return readAfterCreateWithRetries(resourceTaikunSlackConfigurationRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationRead(true), ctx, data, meta)
 }
 
-func resourceTaikunSlackConfigurationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+func generateResourceTaikunSlackConfigurationRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
-	response, err := apiClient.client.Slack.SlackList(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
+		response, err := apiClient.client.Slack.SlackList(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawSlackConfiguration := response.Payload.Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunSlackConfiguration(rawSlackConfiguration))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawSlackConfiguration := response.Payload.Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunSlackConfiguration(rawSlackConfiguration))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -167,7 +173,7 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.Re
 
 	data.SetId(i32toa(response.Payload))
 
-	return readAfterUpdateWithRetries(resourceTaikunSlackConfigurationRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationRead(true), ctx, data, meta)
 }
 
 func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

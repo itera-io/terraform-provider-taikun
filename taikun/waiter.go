@@ -22,27 +22,27 @@ func timedOut(err error) bool {
 	return ok && timeoutErr.LastError == nil
 }
 
-type readFunc func(context.Context, *schema.ResourceData, interface{}) diag.Diagnostics
-
-func readAfterCreateWithRetries(readFunc readFunc, ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readAfterCreateWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	isUpdate := false
 	return readAfterOpWithRetries(readFunc, ctx, data, meta, isUpdate)
 }
 
-func readAfterUpdateWithRetries(readFunc readFunc, ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readAfterUpdateWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	isUpdate := true
 	return readAfterOpWithRetries(readFunc, ctx, data, meta, isUpdate)
 }
 
-func readAfterOpWithRetries(readFunc readFunc, ctx context.Context, data *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
+func readAfterOpWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, data *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
 	retryErr := resource.RetryContext(ctx, getReadAfterOpTimeout(isUpdate), func() *resource.RetryError {
 		readDiagnostics := readFunc(ctx, data, meta)
 		if readDiagnostics != nil {
+
+			if readDiagnostics[0].Summary == notFoundAfterCreateOrUpdateError {
+				return resource.RetryableError(errors.New("failed to read after create/update"))
+			}
+
 			readErrors := diagnosticsToString(readDiagnostics)
 			return resource.NonRetryableError(errors.New(readErrors))
-		}
-		if data.Id() == "" {
-			return resource.RetryableError(errors.New("failed to read after create/update"))
 		}
 		return nil
 	})

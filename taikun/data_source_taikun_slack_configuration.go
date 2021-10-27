@@ -24,5 +24,5 @@ func dataSourceTaikunSlackConfiguration() *schema.Resource {
 
 func dataSourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
-	return resourceTaikunSlackConfigurationRead(ctx, data, meta)
+	return generateResourceTaikunSlackConfigurationRead(false)(ctx, data, meta)
 }

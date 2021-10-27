@@ -25,5 +25,5 @@ func dataSourceTaikunShowbackRule() *schema.Resource {
 func dataSourceTaikunShowbackRuleRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
 
-	return resourceTaikunShowbackRuleRead(ctx, data, meta)
+	return generateResourceTaikunShowbackRuleRead(false)(ctx, data, meta)
 }

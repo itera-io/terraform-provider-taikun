@@ -87,7 +87,7 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Showback Credential",
 		CreateContext: resourceTaikunShowbackCredentialCreate,
-		ReadContext:   resourceTaikunShowbackCredentialRead,
+		ReadContext:   generateResourceTaikunShowbackCredentialRead(false),
 		UpdateContext: resourceTaikunShowbackCredentialUpdate,
 		DeleteContext: resourceTaikunShowbackCredentialDelete,
 		Schema:        resourceTaikunShowbackCredentialSchema(),
@@ -141,35 +141,41 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterCreateWithRetries(resourceTaikunShowbackCredentialRead, ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackCredentialRead(true), ctx, data, meta)
 }
 
-func resourceTaikunShowbackCredentialRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
-	data.SetId("")
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func generateResourceTaikunShowbackCredentialRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+		apiClient := meta.(*apiClient)
+		id, err := atoi32(data.Id())
+		data.SetId("")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	response, err := apiClient.client.Showback.ShowbackCredentialsList(showback.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(response.Payload.Data) != 1 {
+		response, err := apiClient.client.Showback.ShowbackCredentialsList(showback.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(response.Payload.Data) != 1 {
+			if isAfterUpdateOrCreate {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
+		rawShowbackCredential := response.GetPayload().Data[0]
+
+		err = setResourceDataFromMap(data, flattenTaikunShowbackCredential(rawShowbackCredential))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		data.SetId(i32toa(id))
+
 		return nil
 	}
-
-	rawShowbackCredential := response.GetPayload().Data[0]
-
-	err = setResourceDataFromMap(data, flattenTaikunShowbackCredential(rawShowbackCredential))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(i32toa(id))
-
-	return nil
 }
 
 func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -191,7 +197,7 @@ func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterUpdateWithRetries(resourceTaikunShowbackCredentialRead, ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackCredentialRead(true), ctx, data, meta)
 }
 
 func resourceTaikunShowbackCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
