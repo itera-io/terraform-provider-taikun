@@ -168,7 +168,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:    1,
 			Required:    true,
 			Elem: &schema.Resource{
-				Schema: taikunServerSchema(),
+				Schema: taikunBasicServerSchema(),
 			},
 		},
 		"taikun_lb_flavor": {
