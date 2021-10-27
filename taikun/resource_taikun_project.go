@@ -168,7 +168,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:    1,
 			Required:    true,
 			Elem: &schema.Resource{
-				Schema: taikunBasicServerSchema(),
+				Schema: taikunServerBasicSchema(),
 			},
 		},
 		"taikun_lb_flavor": {
@@ -182,7 +182,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 	}
 }
 
-func taikunBasicServerSchema() map[string]*schema.Schema {
+func taikunServerBasicSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"created_by": {
 			Description: "The creator of the server.",
@@ -190,28 +190,28 @@ func taikunBasicServerSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"disk_size": {
-			Description: "Disk Size",
+			Description: "The server's disk size.",
 			Type:        schema.TypeInt,
 			Required:    true,
 		},
 		"flavor": {
-			Description:  "Flavor",
+			Description:  "The server's flavor.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"id": {
-			Description: "ID of the server",
+			Description: "ID of the server.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"ip": {
-			Description: "IP of the server",
+			Description: "IP of the server.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"kubernetes_health": {
-			Description: "Kubernetes health of the server",
+			Description: "Kubernetes health of the server.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -226,7 +226,7 @@ func taikunBasicServerSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description: "Name of the server",
+			Description: "Name of the server.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.All(
@@ -238,7 +238,7 @@ func taikunBasicServerSchema() map[string]*schema.Schema {
 			),
 		},
 		"status": {
-			Description: "Status of the server",
+			Description: "Server status.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
