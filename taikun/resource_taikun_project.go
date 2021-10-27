@@ -98,6 +98,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"lock": {
+			Description: "Indicates whether to lock the project.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
 		"name": {
 			Description: "Project name.",
 			Type:        schema.TypeString,
@@ -237,6 +243,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	}
 
 	data.SetId(response.Payload.ID)
+	projectID, _ := atoi32(response.Payload.ID)
 
 	quotaCPU, quotaCPUIsSet := data.GetOk("quota_cpu_units")
 	quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size")
@@ -264,9 +271,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 			quotaEditBody.IsDiskSizeUnlimited = false
 		}
 
-		projectId, _ := atoi32(response.Payload.ID)
-
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectId) // TODO use /api/v1/projects endpoint?
+		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
 		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 
 		if err == nil {
@@ -275,6 +280,16 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 			if err != nil {
 				return diag.FromErr(err)
 			}
+		}
+	}
+
+	lock := data.Get("lock").(bool)
+	if lock {
+		lockMode := getLockMode(lock)
+		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&projectID).WithMode(&lockMode)
+		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -469,6 +484,16 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
+	if data.HasChange("lock") {
+		lock := data.Get("lock").(bool)
+		lockMode := getLockMode(lock)
+		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
+		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if data.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
 		quotaId, _ := atoi32(data.Get("quota_id").(string))
 
@@ -511,7 +536,7 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
+	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: true}
 	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
 	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
@@ -538,6 +563,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 		"flavors":               flavors,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
+		"lock":                  projectDetailsDTO.IsLocked,
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
 		"quota_id":              i32toa(projectDetailsDTO.QuotaID),

@@ -488,7 +488,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 	projectName := shortRandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t); testAccPreCheckS3(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
 		Steps: []resource.TestStep{
@@ -673,7 +673,7 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 	projectName := shortRandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
 		Steps: []resource.TestStep{
@@ -771,6 +771,91 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "502"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "201"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "201"),
+				),
+			},
+		},
+	})
+}
+
+const testAccResourceTaikunProjectLockConfig = `
+resource "taikun_cloud_credential_aws" "foo" {
+  name = "%s"
+  availability_zone = "%s"
+}
+
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  lock = %t
+}
+`
+
+func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := shortRandomTestName()
+	locked := true
+	unlocked := false
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					locked,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(locked)),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					unlocked,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(unlocked)),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					locked,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(locked)),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "enable_monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
 			},
 		},
