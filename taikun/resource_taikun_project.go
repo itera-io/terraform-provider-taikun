@@ -278,7 +278,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.All(
-				validation.StringLenBetween(3, 30),
+				validation.StringLenBetween(1, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-zA-Z0-9-]+$"),
 					"expected only alpha numeric characters or non alpha numeric (-)",
@@ -462,8 +462,30 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 
-		for range kubeMasters.(*schema.Set).List() {
-			//TODO
+		kubeMastersList := kubeMasters.(*schema.Set).List()
+		for _, kubeMaster := range kubeMastersList {
+			kubeMasterMap := kubeMaster.(map[string]interface{})
+
+			serverCreateBody := &models.ServerForCreateDto{
+				Count:                1,
+				DiskSize:             int64(kubeMasterMap["disk_size"].(int)),
+				Flavor:               kubeMasterMap["flavor"].(string),
+				KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeMasterMap),
+				Name:                 kubeMasterMap["name"].(string),
+				ProjectID:            projectID,
+				Role:                 200,
+			}
+
+			serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+			serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			kubeMasterMap["id"] = serverCreateResponse.Payload.ID
+		}
+		err = data.Set("server_kubemaster", kubeMastersList)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 
 		for range kubeWorkers.(*schema.Set).List() {
@@ -768,6 +790,14 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		}
 	}
 
+	if kubeMasters, kubeMastersIsSet := data.GetOk("server_kubemaster"); kubeMastersIsSet {
+		for _, kubeMaster := range kubeMasters.(*schema.Set).List() {
+			kubeMasterMap := kubeMaster.(map[string]interface{})
+			kubeMasterId, _ := atoi32(kubeMasterMap["id"].(string))
+			serverIds = append(serverIds, kubeMasterId)
+		}
+	}
+
 	if len(serverIds) != 0 {
 		deleteServerBody := &models.DeleteServerCommand{
 			ProjectID: id,
@@ -818,24 +848,41 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	}
 
 	bastions := make([]map[string]interface{}, 0)
+	kubeMasters := make([]map[string]interface{}, 0)
 	for _, server := range serverListDTO {
+		serverMap := map[string]interface{}{
+			"created_by":        server.CreatedBy,
+			"disk_size":         server.DiskSize,
+			"flavor":            server.OpenstackFlavor,
+			"id":                i32toa(server.ID),
+			"ip":                server.IPAddress,
+			"kubernetes_health": server.KubernetesHealth,
+			"last_modified":     server.LastModified,
+			"last_modified_by":  server.LastModifiedBy,
+			"name":              server.Name,
+			"status":            server.Status,
+		}
 		// Bastion
 		if server.Role == "Bastion" {
-			bastions = append(bastions, map[string]interface{}{
-				"created_by":        server.CreatedBy,
-				"disk_size":         server.DiskSize,
-				"flavor":            server.OpenstackFlavor,
-				"id":                i32toa(server.ID),
-				"ip":                server.IPAddress,
-				"kubernetes_health": server.KubernetesHealth,
-				"last_modified":     server.LastModified,
-				"last_modified_by":  server.LastModifiedBy,
-				"name":              server.Name,
-				"status":            server.Status,
-			})
+			bastions = append(bastions, serverMap)
+		} else {
+			labels := make([]map[string]interface{}, len(server.KubernetesNodeLabels))
+			for i, rawLabel := range server.KubernetesNodeLabels {
+				labels[i] = map[string]interface{}{
+					"key":   rawLabel.Key,
+					"value": rawLabel.Value,
+				}
+			}
+			serverMap["kubernetes_node_label"] = labels
+
+			if server.Role == "Kubemaster" {
+				kubeMasters = append(kubeMasters, serverMap)
+			}
+			//TODO WORKER
 		}
 	}
 	projectMap["server_bastion"] = bastions
+	projectMap["server_kubemaster"] = kubeMasters
 
 	var nullID int32
 	if projectDetailsDTO.AlertingProfileID != nullID {
@@ -877,4 +924,21 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 		boundFlavorsParams = boundFlavorsParams.WithOffset(&boundFlavorDTOsCount)
 	}
 	return boundFlavorDTOs, nil
+}
+
+func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []*models.KubernetesNodeLabelsDto {
+	labels, labelsAreSet := data["kubernetes_node_label"]
+	if !labelsAreSet {
+		return []*models.KubernetesNodeLabelsDto{}
+	}
+	labelsList := labels.([]interface{})
+	labelsToAdd := make([]*models.KubernetesNodeLabelsDto, len(labelsList))
+	for i, labelData := range labelsList {
+		label := labelData.(map[string]interface{})
+		labelsToAdd[i] = &models.KubernetesNodeLabelsDto{
+			Key:   label["key"].(string),
+			Value: label["value"].(string),
+		}
+	}
+	return labelsToAdd
 }
