@@ -3,10 +3,11 @@ package taikun
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 
@@ -168,7 +169,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			MaxItems:     1,
 			Optional:     true,
-			ForceNew:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
 			Set:          hashAttributes("name", "disk_size", "flavor"),
 			Elem: &schema.Resource{
@@ -179,7 +179,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Kubemaster server.",
 			Type:         schema.TypeSet,
 			Optional:     true,
-			ForceNew:     true,
 			RequiredWith: []string{"server_bastion", "server_kubeworker"},
 			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
 			Elem: &schema.Resource{
@@ -312,6 +311,18 @@ func resourceTaikunProject() *schema.Resource {
 						return fmt.Errorf("there must be an odd number of server_kubemaster (currently %d)", set.Len())
 					}
 					return nil
+				},
+			),
+			customdiff.ForceNewIfChange(
+				"server_kubemaster",
+				func(ctx context.Context, old, new, meta interface{}) bool {
+					return old.(*schema.Set).Len() != 0
+				},
+			),
+			customdiff.ForceNewIfChange(
+				"server_bastion",
+				func(ctx context.Context, old, new, meta interface{}) bool {
+					return old.(*schema.Set).Len() != 0
 				},
 			),
 		),
