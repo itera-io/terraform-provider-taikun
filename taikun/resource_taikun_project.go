@@ -429,70 +429,14 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	bastions, bastionsIsSet := data.GetOk("server_bastion")
-	kubeMasters, kubeMastersIsSet := data.GetOk("server_kubemaster")
-	kubeWorkers, kubeWorkersIsSet := data.GetOk("server_kubeworker")
+	_, bastionsIsSet := data.GetOk("server_bastion")
 
 	// Check if the project is not empty
-	if bastionsIsSet || kubeMastersIsSet || kubeWorkersIsSet {
-		// Servers
-
-		// TODO Checks
-
-		// Bastion
-		bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
-		serverCreateBody := &models.ServerForCreateDto{
-			Count:                1,
-			DiskSize:             int64(bastion["disk_size"].(int)),
-			Flavor:               bastion["flavor"].(string),
-			KubernetesNodeLabels: nil,
-			Name:                 bastion["name"].(string),
-			ProjectID:            projectID,
-			Role:                 100,
-		}
-
-		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-		serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+	if bastionsIsSet {
+		err = resourceTaikunProjectSetServers(data, apiClient, projectID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		bastion["id"] = serverCreateResponse.Payload.ID
-		err = data.Set("server_bastion", []map[string]interface{}{bastion})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		kubeMastersList := kubeMasters.(*schema.Set).List()
-		for _, kubeMaster := range kubeMastersList {
-			kubeMasterMap := kubeMaster.(map[string]interface{})
-
-			serverCreateBody := &models.ServerForCreateDto{
-				Count:                1,
-				DiskSize:             int64(kubeMasterMap["disk_size"].(int)),
-				Flavor:               kubeMasterMap["flavor"].(string),
-				KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeMasterMap),
-				Name:                 kubeMasterMap["name"].(string),
-				ProjectID:            projectID,
-				Role:                 200,
-			}
-
-			serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-			serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			kubeMasterMap["id"] = serverCreateResponse.Payload.ID
-		}
-		err = data.Set("server_kubemaster", kubeMastersList)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		for range kubeWorkers.(*schema.Set).List() {
-			//TODO
-		}
-
-		//TODO Commit
 	}
 
 	lock := data.Get("lock").(bool)
@@ -747,7 +691,16 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	if data.HasChange("server_kuberworker") {
+	old, _ := data.GetChange("server_bastion")
+	oldSet := old.(*schema.Set)
+
+	// The project was empty before
+	if oldSet.Len() == 0 {
+		err = resourceTaikunProjectSetServers(data, apiClient, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	} else if data.HasChange("server_kubeworker") {
 		// TODO DELETE
 		// TODO CREATE
 		// TODO COMMIT
@@ -924,6 +877,73 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 		boundFlavorsParams = boundFlavorsParams.WithOffset(&boundFlavorDTOsCount)
 	}
 	return boundFlavorDTOs, nil
+}
+
+func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+
+	bastions := data.Get("server_bastion")
+	kubeMasters := data.Get("server_kubemaster")
+	kubeWorkers := data.Get("server_kubeworker")
+	// Servers
+
+	// TODO Checks
+
+	// Bastion
+	bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
+	serverCreateBody := &models.ServerForCreateDto{
+		Count:                1,
+		DiskSize:             int64(bastion["disk_size"].(int)),
+		Flavor:               bastion["flavor"].(string),
+		KubernetesNodeLabels: nil,
+		Name:                 bastion["name"].(string),
+		ProjectID:            projectID,
+		Role:                 100,
+	}
+
+	serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+	serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+	if err != nil {
+		return err
+	}
+	bastion["id"] = serverCreateResponse.Payload.ID
+	err = data.Set("server_bastion", []map[string]interface{}{bastion})
+	if err != nil {
+		return err
+	}
+
+	kubeMastersList := kubeMasters.(*schema.Set).List()
+	for _, kubeMaster := range kubeMastersList {
+		kubeMasterMap := kubeMaster.(map[string]interface{})
+
+		serverCreateBody := &models.ServerForCreateDto{
+			Count:                1,
+			DiskSize:             int64(kubeMasterMap["disk_size"].(int)),
+			Flavor:               kubeMasterMap["flavor"].(string),
+			KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeMasterMap),
+			Name:                 kubeMasterMap["name"].(string),
+			ProjectID:            projectID,
+			Role:                 200,
+		}
+
+		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+		serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+		if err != nil {
+			return err
+		}
+		kubeMasterMap["id"] = serverCreateResponse.Payload.ID
+	}
+	err = data.Set("server_kubemaster", kubeMastersList)
+	if err != nil {
+		return err
+	}
+
+	for range kubeWorkers.(*schema.Set).List() {
+		//TODO
+	}
+
+	//TODO Commit
+
+	return nil
 }
 
 func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []*models.KubernetesNodeLabelsDto {
