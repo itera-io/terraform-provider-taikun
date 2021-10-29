@@ -177,6 +177,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Kubemaster server",
 			Type:        schema.TypeSet,
 			Optional:    true,
+			ForceNew:    true,
 			Set:         hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
