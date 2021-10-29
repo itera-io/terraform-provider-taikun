@@ -2,6 +2,8 @@ package taikun
 
 import (
 	"context"
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"regexp"
 	"strconv"
 	"time"
@@ -295,6 +297,19 @@ func resourceTaikunProject() *schema.Resource {
 		UpdateContext: resourceTaikunProjectUpdate,
 		DeleteContext: resourceTaikunProjectDelete,
 		Schema:        resourceTaikunProjectSchema(),
+		CustomizeDiff: customdiff.All(
+			customdiff.ValidateValue(
+				"server_kubemaster",
+				func(ctx context.Context, value, meta interface{}) error {
+					set := value.(*schema.Set)
+
+					if set.Len() != 0 && set.Len()%2 != 1 {
+						return fmt.Errorf("there must be an odd number of server_kubemaster (currently %d)", set.Len())
+					}
+					return nil
+				},
+			),
+		),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
