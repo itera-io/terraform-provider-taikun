@@ -720,16 +720,18 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		}
 	}
 
-	deleteServerBody := &models.DeleteServerCommand{
-		ProjectID: id,
-		ServerIds: serverIds,
+	if len(serverIds) != 0 {
+		deleteServerBody := &models.DeleteServerCommand{
+			ProjectID: id,
+			ServerIds: serverIds,
+		}
+		deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+		_, _, err = apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-	_, _, err = apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	//TODO WAIT??
+	//TODO WAIT project pending??
 
 	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
