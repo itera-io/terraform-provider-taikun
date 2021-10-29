@@ -418,16 +418,6 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	lock := data.Get("lock").(bool)
-	if lock {
-		lockMode := getLockMode(lock)
-		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&projectID).WithMode(&lockMode)
-		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
 	bastions, bastionsIsSet := data.GetOk("server_bastion")
 	kubeMasters, kubeMastersIsSet := data.GetOk("server_kubemaster")
 	kubeWorkers, kubeWorkersIsSet := data.GetOk("server_kubeworker")
@@ -470,6 +460,16 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 
 		//TODO Commit
+	}
+
+	lock := data.Get("lock").(bool)
+	if lock {
+		lockMode := getLockMode(lock)
+		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&projectID).WithMode(&lockMode)
+		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
