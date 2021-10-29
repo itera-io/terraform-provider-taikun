@@ -725,9 +725,19 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	unlockedMode := getLockMode(false)
-	unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
-	apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
+	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
+	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if response.Payload.Project.IsLocked {
+		unlockedMode := getLockMode(false)
+		unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
+		if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	// TODO Purge all the servers
 
