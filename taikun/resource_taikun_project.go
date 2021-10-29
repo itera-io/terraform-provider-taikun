@@ -696,9 +696,11 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 
 	// The project was empty before
 	if oldSet.Len() == 0 {
-		err = resourceTaikunProjectSetServers(data, apiClient, id)
-		if err != nil {
-			return diag.FromErr(err)
+		if data.HasChange("server_bastion") {
+			err = resourceTaikunProjectSetServers(data, apiClient, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	} else if data.HasChange("server_kubeworker") {
 		// TODO DELETE
