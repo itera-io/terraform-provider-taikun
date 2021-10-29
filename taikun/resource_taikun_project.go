@@ -168,6 +168,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			MaxItems:    1,
 			Optional:    true,
+			ForceNew:    true,
 			Set:         hashAttributes("name", "disk_size", "flavor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
