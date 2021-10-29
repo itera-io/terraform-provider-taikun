@@ -750,6 +750,13 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 			serverIds = append(serverIds, kubeMasterId)
 		}
 	}
+	if kubeWorkers, kubeWorkersIsSet := data.GetOk("server_kubeworker"); kubeWorkersIsSet {
+		for _, kubeWorker := range kubeWorkers.(*schema.Set).List() {
+			kubeWorkerMap := kubeWorker.(map[string]interface{})
+			kubeWorkerId, _ := atoi32(kubeWorkerMap["id"].(string))
+			serverIds = append(serverIds, kubeWorkerId)
+		}
+	}
 
 	if len(serverIds) != 0 {
 		deleteServerBody := &models.DeleteServerCommand{
@@ -802,6 +809,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 
 	bastions := make([]map[string]interface{}, 0)
 	kubeMasters := make([]map[string]interface{}, 0)
+	kubeWorkers := make([]map[string]interface{}, 0)
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
 			"created_by":        server.CreatedBy,
@@ -830,12 +838,14 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 
 			if server.Role == "Kubemaster" {
 				kubeMasters = append(kubeMasters, serverMap)
+			} else {
+				kubeWorkers = append(kubeWorkers, serverMap)
 			}
-			//TODO WORKER
 		}
 	}
 	projectMap["server_bastion"] = bastions
 	projectMap["server_kubemaster"] = kubeMasters
+	projectMap["server_kubeworker"] = kubeWorkers
 
 	var nullID int32
 	if projectDetailsDTO.AlertingProfileID != nullID {
@@ -937,8 +947,29 @@ func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiCl
 		return err
 	}
 
-	for range kubeWorkers.(*schema.Set).List() {
-		//TODO
+	kubeWorkersList := kubeWorkers.(*schema.Set).List()
+	for _, kubeWorker := range kubeWorkersList {
+		kubeWorkerMap := kubeWorker.(map[string]interface{})
+
+		serverCreateBody := &models.ServerForCreateDto{
+			Count:                1,
+			DiskSize:             int64(kubeWorkerMap["disk_size"].(int)),
+			Flavor:               kubeWorkerMap["flavor"].(string),
+			KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap),
+			Name:                 kubeWorkerMap["name"].(string),
+			ProjectID:            projectID,
+			Role:                 300,
+		}
+		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+		serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+		if err != nil {
+			return err
+		}
+		kubeWorkerMap["id"] = serverCreateResponse.Payload.ID
+	}
+	err = data.Set("server_kubeworker", kubeWorkersList)
+	if err != nil {
+		return err
 	}
 
 	//TODO Commit
