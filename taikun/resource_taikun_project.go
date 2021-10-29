@@ -42,6 +42,13 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"auto_upgrade": {
+			Description: "Kubespray version will be automatically upgraded if new version is available.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
 		"backup_credential_id": {
 			Description:      "ID of the backup credential. If unspecified, backups are disabled.",
 			Type:             schema.TypeString,
@@ -54,19 +61,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Required:         true,
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
-		},
-		"auto_upgrade": {
-			Description: "Kubespray version will be automatically upgraded if new version is available.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			ForceNew:    true,
-		},
-		"monitoring": {
-			Description: "Kubernetes cluster monitoring.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
 		},
 		"expiration_date": {
 			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
@@ -100,6 +94,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 		},
 		"lock": {
 			Description: "Indicates whether to lock the project.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"monitoring": {
+			Description: "Kubernetes cluster monitoring.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
