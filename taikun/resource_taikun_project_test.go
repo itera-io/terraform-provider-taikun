@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/projects"
+	"github.com/itera-io/taikungoclient/client/servers"
 	"github.com/itera-io/taikungoclient/models"
 )
 
@@ -43,12 +44,21 @@ func init() {
 
 			for _, e := range projectList {
 				if strings.HasPrefix(e.Name, testNamePrefix) {
-					// unlock
-					unlockedMode := getLockMode(false)
-					unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
-					apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
 
-					// delete
+					readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(e.ID)
+					response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+					if err != nil {
+						return err
+					}
+
+					if response.Payload.Project.IsLocked {
+						unlockedMode := getLockMode(false)
+						unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
+						if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+							return err
+						}
+					}
+
 					params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteProjectCommand{ProjectID: e.ID})
 					_, _, err = apiClient.client.Projects.ProjectsDelete(params, apiClient)
 					if err != nil {
