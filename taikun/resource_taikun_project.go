@@ -164,7 +164,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"router_id_end_range", "taikun_lb_flavor"},
 		},
 		"server_bastion": {
-			Description:  "Bastion server",
+			Description:  "Bastion server.",
 			Type:         schema.TypeSet,
 			MaxItems:     1,
 			Optional:     true,
@@ -176,7 +176,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			},
 		},
 		"server_kubemaster": {
-			Description:  "Kubemaster server",
+			Description:  "Kubemaster server.",
 			Type:         schema.TypeSet,
 			Optional:     true,
 			ForceNew:     true,
@@ -187,7 +187,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			},
 		},
 		"server_kubeworker": {
-			Description:  "Kubeworker server",
+			Description:  "Kubeworker server.",
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
@@ -472,6 +472,8 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
+	//TODO WAIT?
+
 	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
 }
 
@@ -672,7 +674,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			}
 		}
 	}
-
 	if data.HasChange("lock") {
 		lock := data.Get("lock").(bool)
 		lockMode := getLockMode(lock)
@@ -682,7 +683,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 	}
-
 	if data.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
 		quotaId, _ := atoi32(data.Get("quota_id").(string))
 
@@ -712,6 +712,13 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	if data.HasChange("server_kuberworker") {
+		// TODO DELETE
+		// TODO CREATE
+		// TODO COMMIT
+		// TODO WAIT
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(false), ctx, data, meta)
