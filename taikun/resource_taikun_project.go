@@ -327,6 +327,10 @@ func resourceTaikunProject() *schema.Resource {
 				},
 			),
 		),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(60 * time.Minute),
+			Update: schema.DefaultTimeout(60 * time.Minute),
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -454,7 +458,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating"}, apiClient, projectID); err != nil {
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -733,7 +737,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating"}, apiClient, id); err != nil {
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -873,7 +877,7 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingDelete", "PendingPurge", "Deleting", "Purging"}, apiClient, id); err != nil {
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
 		return diag.FromErr(err)
 	}
 

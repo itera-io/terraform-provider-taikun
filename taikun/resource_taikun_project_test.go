@@ -878,6 +878,81 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 	})
 }
 
+const testAccResourceTaikunProjectMinimal = `
+resource "taikun_cloud_credential_openstack" "foo" {
+  name = "%s"
+}
+
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  min_cpu = 2
+  max_cpu = 2
+  max_ram = 8
+}
+locals {
+  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+}
+
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  flavors = local.flavors
+
+  server_bastion {
+     name = "b"
+     disk_size = 30
+     flavor = local.flavors[0]
+  }
+  server_kubeworker {
+     name = "w"
+     disk_size = 30
+     flavor = local.flavors[0]
+  }
+  server_kubemaster {
+     name = "m"
+     disk_size = 30
+     flavor = local.flavors[0]
+  }
+}
+`
+
+func TestAccResourceTaikunProjectMinimal(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := shortRandomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectMinimal,
+					cloudCredentialName,
+					projectName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "server_bastion.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubeworker.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubemaster.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "taikun_project.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckTaikunProjectExists(state *terraform.State) error {
 	apiClient := testAccProvider.Meta().(*apiClient)
 
