@@ -99,7 +99,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, data *schema.ResourceDa
 		KubeConfigRoleID:       getKubeconfigRoleID(data.Get("role").(string)),
 		Name:                   data.Get("name").(string),
 	}
-	projectID, err := atoi32(data.Get("projectID").(string))
+	projectID, err := atoi32(data.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
