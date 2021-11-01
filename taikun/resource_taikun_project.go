@@ -316,13 +316,13 @@ func resourceTaikunProject() *schema.Resource {
 			customdiff.ForceNewIfChange(
 				"server_kubemaster",
 				func(ctx context.Context, old, new, meta interface{}) bool {
-					return old.(*schema.Set).Len() != 0
+					return old.(*schema.Set).Len() != 0 && new.(*schema.Set).Len() != 0
 				},
 			),
 			customdiff.ForceNewIfChange(
 				"server_bastion",
 				func(ctx context.Context, old, new, meta interface{}) bool {
-					return old.(*schema.Set).Len() != 0
+					return old.(*schema.Set).Len() != 0 && new.(*schema.Set).Len() != 0
 				},
 			),
 		),
@@ -691,13 +691,28 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	old, _ := data.GetChange("server_bastion")
-	oldSet := old.(*schema.Set)
+	if data.HasChange("server_bastion") {
+		o, n := data.GetChange("server_bastion")
+		oldSet := o.(*schema.Set)
+		newSet := n.(*schema.Set)
 
-	// The project was empty before
-	if oldSet.Len() == 0 {
-		if data.HasChange("server_bastion") {
+		if oldSet.Len() == 0 {
+			// The project was empty before
 			err = resourceTaikunProjectSetServers(data, apiClient, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else if newSet.Len() == 0 {
+			// Purge
+			oldKubeMasters, _ := data.GetChange("server_kubemaster")
+			oldKubeWorkers, _ := data.GetChange("server_kubeworker")
+			err = resourceTaikunProjectPurgeServers(
+				o,
+				oldKubeMasters,
+				oldKubeWorkers,
+				apiClient,
+				id,
+			)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -706,8 +721,9 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		// TODO DELETE
 		// TODO CREATE
 		// TODO COMMIT
-		// TODO WAIT
 	}
+
+	// TODO WAIT
 
 	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(false), ctx, data, meta)
 }
@@ -734,42 +750,16 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 		}
 	}
 
-	// TODO Purge all the servers
-
-	serverIds := make([]int32, 0)
-	if bastions, bastionsIsSet := data.GetOk("server_bastion"); bastionsIsSet {
-		for _, bastion := range bastions.(*schema.Set).List() {
-			bastionMap := bastion.(map[string]interface{})
-			bastionId, _ := atoi32(bastionMap["id"].(string))
-			serverIds = append(serverIds, bastionId)
-		}
-	}
-
-	if kubeMasters, kubeMastersIsSet := data.GetOk("server_kubemaster"); kubeMastersIsSet {
-		for _, kubeMaster := range kubeMasters.(*schema.Set).List() {
-			kubeMasterMap := kubeMaster.(map[string]interface{})
-			kubeMasterId, _ := atoi32(kubeMasterMap["id"].(string))
-			serverIds = append(serverIds, kubeMasterId)
-		}
-	}
-	if kubeWorkers, kubeWorkersIsSet := data.GetOk("server_kubeworker"); kubeWorkersIsSet {
-		for _, kubeWorker := range kubeWorkers.(*schema.Set).List() {
-			kubeWorkerMap := kubeWorker.(map[string]interface{})
-			kubeWorkerId, _ := atoi32(kubeWorkerMap["id"].(string))
-			serverIds = append(serverIds, kubeWorkerId)
-		}
-	}
-
-	if len(serverIds) != 0 {
-		deleteServerBody := &models.DeleteServerCommand{
-			ProjectID: id,
-			ServerIds: serverIds,
-		}
-		deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-		_, _, err = apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	// Purge all the servers
+	err = resourceTaikunProjectPurgeServers(
+		data.Get("server_bastion"),
+		data.Get("server_kubemaster"),
+		data.Get("server_kubeworker"),
+		apiClient,
+		id,
+	)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 	//TODO WAIT project pending??
 
@@ -889,6 +879,40 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 		boundFlavorsParams = boundFlavorsParams.WithOffset(&boundFlavorDTOsCount)
 	}
 	return boundFlavorDTOs, nil
+}
+
+func resourceTaikunProjectPurgeServers(bastions interface{}, kubeMasters interface{}, kubeWorkers interface{}, apiClient *apiClient, projectID int32) error {
+	serverIds := make([]int32, 0)
+	for _, bastion := range bastions.(*schema.Set).List() {
+		bastionMap := bastion.(map[string]interface{})
+		bastionId, _ := atoi32(bastionMap["id"].(string))
+		serverIds = append(serverIds, bastionId)
+	}
+
+	for _, kubeMaster := range kubeMasters.(*schema.Set).List() {
+		kubeMasterMap := kubeMaster.(map[string]interface{})
+		kubeMasterId, _ := atoi32(kubeMasterMap["id"].(string))
+		serverIds = append(serverIds, kubeMasterId)
+	}
+
+	for _, kubeWorker := range kubeWorkers.(*schema.Set).List() {
+		kubeWorkerMap := kubeWorker.(map[string]interface{})
+		kubeWorkerId, _ := atoi32(kubeWorkerMap["id"].(string))
+		serverIds = append(serverIds, kubeWorkerId)
+	}
+
+	if len(serverIds) != 0 {
+		deleteServerBody := &models.DeleteServerCommand{
+			ProjectID: projectID,
+			ServerIds: serverIds,
+		}
+		deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+		_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiClient, projectID int32) error {
