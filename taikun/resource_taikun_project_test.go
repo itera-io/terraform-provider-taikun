@@ -920,7 +920,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := shortRandomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
