@@ -657,8 +657,65 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		if data.HasChange("server_kubeworker") {
-			// TODO DELETE
-			// TODO CREATE
+			o, n := data.GetChange("server_kubeworker")
+			oldSet := o.(*schema.Set)
+			newSet := n.(*schema.Set)
+			toAdd := newSet.Difference(oldSet)
+			toDel := oldSet.Difference(newSet)
+
+			// Delete
+			if toDel.Len() != 0 {
+				serverIds := make([]int32, 0)
+
+				for _, kubeWorker := range toDel.List() {
+					kubeWorkerMap := kubeWorker.(map[string]interface{})
+					kubeWorkerId, _ := atoi32(kubeWorkerMap["id"].(string))
+					serverIds = append(serverIds, kubeWorkerId)
+				}
+
+				deleteServerBody := &models.DeleteServerCommand{
+					ProjectID: id,
+					ServerIds: serverIds,
+				}
+				deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+				_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+			// Create
+			if toAdd.Len() != 0 {
+
+				kubeWorkersList := oldSet.Intersection(newSet)
+
+				for _, kubeWorker := range toAdd.List() {
+					kubeWorkerMap := kubeWorker.(map[string]interface{})
+
+					serverCreateBody := &models.ServerForCreateDto{
+						Count:                1,
+						DiskSize:             int64(kubeWorkerMap["disk_size"].(int)),
+						Flavor:               kubeWorkerMap["flavor"].(string),
+						KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap),
+						Name:                 kubeWorkerMap["name"].(string),
+						ProjectID:            id,
+						Role:                 300,
+					}
+					serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
+					serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					kubeWorkerMap["id"] = serverCreateResponse.Payload.ID
+
+					kubeWorkersList.Add(kubeWorkerMap)
+				}
+
+				err = data.Set("server_kubeworker", kubeWorkersList)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
 			// TODO COMMIT
 		}
 	}
