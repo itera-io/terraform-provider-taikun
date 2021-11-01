@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -55,6 +56,26 @@ func init() {
 						unlockedMode := getLockMode(false)
 						unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
 						if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+							return err
+						}
+					}
+
+					serverIds := make([]int32, 0)
+					for _, e := range response.Payload.Data {
+						serverIds = append(serverIds, e.ID)
+					}
+					if len(serverIds) != 0 {
+						deleteServerBody := &models.DeleteServerCommand{
+							ProjectID: e.ID,
+							ServerIds: serverIds,
+						}
+						deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+						_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+						if err != nil {
+							return err
+						}
+
+						if err := resourceTaikunProjectWaitForStatus(context.Background(), []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, e.ID); err != nil {
 							return err
 						}
 					}
