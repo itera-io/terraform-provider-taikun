@@ -294,3 +294,16 @@ func getAWSRegion(region string) models.AwsRegion {
 		return 25
 	}
 }
+
+func getKubeconfigRoleID(role string) int32 {
+	switch role {
+	case "cluster-admin":
+		return 1
+	case "admin":
+		return 2
+	case "edit":
+		return 3
+	default: // view
+		return 4
+	}
+}
