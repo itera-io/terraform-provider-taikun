@@ -37,7 +37,7 @@ jobs:
     name: Acceptance Tests
     needs: build
     runs-on: self-hosted
-    timeout-minutes: 15
+    timeout-minutes: 70
     steps:
 
       - name: Set up Go
