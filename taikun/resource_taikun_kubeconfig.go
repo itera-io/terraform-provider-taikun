@@ -23,6 +23,11 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 				"personal",
 			}, false),
 		},
+		"id": {
+			Description: "The kubeconfig's ID.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"name": {
 			Description:  "Kubeconfig's name.",
 			Type:         schema.TypeString,
