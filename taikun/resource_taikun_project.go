@@ -438,6 +438,10 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		if err := resourceTaikunProjectCommit(apiClient, projectID); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	lock := data.Get("lock").(bool)
@@ -450,7 +454,9 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	//TODO WAIT?
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating"}, apiClient, projectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
 }
@@ -634,6 +640,11 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			if err := resourceTaikunProjectSetServers(data, apiClient, id); err != nil {
 				return diag.FromErr(err)
 			}
+
+			if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
+				return diag.FromErr(err)
+			}
+
 		} else if newSet.Len() == 0 {
 			// Purge
 			oldKubeMasters, _ := data.GetChange("server_kubemaster")
@@ -716,17 +727,21 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 				}
 			}
 
-			// TODO COMMIT
+			if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
-	// TODO WAIT
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating"}, apiClient, id); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(false), ctx, data, meta)
 }
 
 func resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
-	if err := resourceTaikunProjectUpdateToggleMonitoring(data, apiClient); err != nil {
+	if err := resourceTaikunProjectUpdateToggleMonitoring(ctx, data, apiClient); err != nil {
 		return err
 	}
 	if err := resourceTaikunProjectUpdateToggleBackup(ctx, data, apiClient); err != nil {
@@ -735,13 +750,17 @@ func resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx context.Context, d
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleMonitoring(data *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
 	if data.HasChange("monitoring") {
 		projectID, _ := atoi32(data.Id())
 		body := models.MonitoringOperationsCommand{ProjectID: projectID}
 		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
 		if err != nil {
+			return err
+		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableMonitoring", "DisableMonitoring"}, apiClient, projectID); err != nil {
 			return err
 		}
 	}
@@ -812,11 +831,15 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 				return err
 			}
 		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableBackup", "DisableBackup"}, apiClient, projectID); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())
@@ -849,7 +872,10 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	//TODO WAIT project pending??
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingDelete", "PendingPurge", "Deleting", "Purging"}, apiClient, id); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
@@ -857,8 +883,6 @@ func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, m
 	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
-
-	// TODO force delete if special conditions are met?
 
 	data.SetId("")
 	return nil
@@ -1008,9 +1032,6 @@ func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiCl
 	bastions := data.Get("server_bastion")
 	kubeMasters := data.Get("server_kubemaster")
 	kubeWorkers := data.Get("server_kubeworker")
-	// Servers
-
-	// TODO Checks
 
 	// Bastion
 	bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
@@ -1086,8 +1107,42 @@ func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiCl
 		return err
 	}
 
-	//TODO Commit
+	return nil
+}
 
+func resourceTaikunProjectCommit(apiClient *apiClient, projectID int32) error {
+	params := projects.NewProjectsCommitParams().WithV(ApiVersion).WithProjectID(projectID)
+	_, err := apiClient.client.Projects.ProjectsCommit(params, apiClient)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *apiClient, projectID int32) error {
+
+	createStateConf := &resource.StateChangeConf{
+		Pending: pendingList,
+		Target:  targetList,
+		Refresh: func() (interface{}, string, error) {
+			params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
+			resp, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+			if err != nil {
+				return nil, "", err
+			}
+			fmt.Println(resp.Payload.Project.ProjectStatus)
+			return resp, resp.Payload.Project.ProjectStatus, nil
+		},
+		Timeout:                   40 * time.Minute,
+		Delay:                     5 * time.Second,
+		MinTimeout:                10 * time.Second,
+		ContinuousTargetOccurence: 2,
+	}
+
+	_, err := createStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return fmt.Errorf("error waiting for project (%d) to be in status %s: %s", projectID, targetList, err)
+	}
 	return nil
 }
 
