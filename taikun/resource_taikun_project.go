@@ -260,8 +260,9 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 		"disk_size": {
 			Description:  "The server's disk size in GBs.",
 			Type:         schema.TypeInt,
-			Required:     true,
+			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(30),
+			Default:      30,
 		},
 		"flavor": {
 			Description:  "The server's flavor.",
