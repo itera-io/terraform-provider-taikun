@@ -750,7 +750,56 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(false), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
+}
+
+func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*apiClient)
+
+	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
+	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if response.Payload.Project.IsLocked {
+		unlockedMode := getLockMode(false)
+		unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
+		if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// Purge all the servers
+	err = resourceTaikunProjectPurgeServers(
+		data.Get("server_bastion"),
+		data.Get("server_kubemaster"),
+		data.Get("server_kubeworker"),
+		apiClient,
+		id,
+	)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Delete the project
+	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
+	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
+	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId("")
+	return nil
 }
 
 func resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
@@ -849,55 +898,6 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 			return err
 		}
 	}
-	return nil
-}
-
-func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
-
-	id, err := atoi32(data.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
-	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if response.Payload.Project.IsLocked {
-		unlockedMode := getLockMode(false)
-		unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
-		if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	// Purge all the servers
-	err = resourceTaikunProjectPurgeServers(
-		data.Get("server_bastion"),
-		data.Get("server_kubemaster"),
-		data.Get("server_kubeworker"),
-		apiClient,
-		id,
-	)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
-		return diag.FromErr(err)
-	}
-
-	// Delete the project
-	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
-	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId("")
 	return nil
 }
 
