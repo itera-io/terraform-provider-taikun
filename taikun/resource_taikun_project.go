@@ -219,11 +219,25 @@ func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
 					Description: "Kubernetes node label key.",
 					Type:        schema.TypeString,
 					Required:    true,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(1, 63),
+						validation.StringMatch(
+							regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+							"expected only alpha numeric characters or non alpha numeric (_-.)",
+						),
+					),
 				},
 				"value": {
 					Description: "Kubernetes node label value.",
 					Type:        schema.TypeString,
 					Required:    true,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(1, 63),
+						validation.StringMatch(
+							regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+							"expected only alpha numeric characters or non alpha numeric (_-.)",
+						),
+					),
 				},
 			},
 		},
