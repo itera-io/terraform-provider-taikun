@@ -239,7 +239,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"disk_size": {
-			Description: "The server's disk size.",
+			Description: "The server's disk size in GBs.",
 			Type:        schema.TypeInt,
 			Required:    true,
 		},
@@ -704,7 +704,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 
 					serverCreateBody := &models.ServerForCreateDto{
 						Count:                1,
-						DiskSize:             int64(kubeWorkerMap["disk_size"].(int)),
+						DiskSize:             gibiByteToByte(kubeWorkerMap["disk_size"].(int)),
 						Flavor:               kubeWorkerMap["flavor"].(string),
 						KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap),
 						Name:                 kubeWorkerMap["name"].(string),
@@ -917,7 +917,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
 			"created_by":        server.CreatedBy,
-			"disk_size":         server.DiskSize,
+			"disk_size":         byteToGibiByte(server.DiskSize),
 			"flavor":            server.OpenstackFlavor,
 			"id":                i32toa(server.ID),
 			"ip":                server.IPAddress,
@@ -1037,7 +1037,7 @@ func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiCl
 	bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
 	serverCreateBody := &models.ServerForCreateDto{
 		Count:                1,
-		DiskSize:             int64(bastion["disk_size"].(int)),
+		DiskSize:             gibiByteToByte(bastion["disk_size"].(int)),
 		Flavor:               bastion["flavor"].(string),
 		KubernetesNodeLabels: nil,
 		Name:                 bastion["name"].(string),
@@ -1062,7 +1062,7 @@ func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiCl
 
 		serverCreateBody := &models.ServerForCreateDto{
 			Count:                1,
-			DiskSize:             int64(kubeMasterMap["disk_size"].(int)),
+			DiskSize:             gibiByteToByte(kubeMasterMap["disk_size"].(int)),
 			Flavor:               kubeMasterMap["flavor"].(string),
 			KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeMasterMap),
 			Name:                 kubeMasterMap["name"].(string),
@@ -1088,7 +1088,7 @@ func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiCl
 
 		serverCreateBody := &models.ServerForCreateDto{
 			Count:                1,
-			DiskSize:             int64(kubeWorkerMap["disk_size"].(int)),
+			DiskSize:             gibiByteToByte(kubeWorkerMap["disk_size"].(int)),
 			Flavor:               kubeWorkerMap["flavor"].(string),
 			KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap),
 			Name:                 kubeWorkerMap["name"].(string),
