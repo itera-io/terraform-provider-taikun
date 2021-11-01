@@ -34,6 +34,7 @@ data "taikun_projects" "foo" {
 
 Read-Only:
 
+- **access_ip** (String)
 - **access_profile_id** (String)
 - **alerting_profile_id** (String)
 - **alerting_profile_name** (String)
@@ -52,5 +53,74 @@ Read-Only:
 - **quota_disk_size** (Number)
 - **quota_id** (String)
 - **quota_ram_size** (Number)
+- **server_bastion** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_bastion))
+- **server_kubemaster** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster))
+- **server_kubeworker** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker))
+
+<a id="nestedobjatt--projects--server_bastion"></a>
+### Nested Schema for `projects.server_bastion`
+
+Read-Only:
+
+- **created_by** (String)
+- **disk_size** (Number)
+- **flavor** (String)
+- **id** (String)
+- **ip** (String)
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **status** (String)
+
+
+<a id="nestedobjatt--projects--server_kubemaster"></a>
+### Nested Schema for `projects.server_kubemaster`
+
+Read-Only:
+
+- **created_by** (String)
+- **disk_size** (Number)
+- **flavor** (String)
+- **id** (String)
+- **ip** (String)
+- **kubernetes_node_label** (List of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster--kubernetes_node_label))
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **status** (String)
+
+<a id="nestedobjatt--projects--server_kubemaster--kubernetes_node_label"></a>
+### Nested Schema for `projects.server_kubemaster.kubernetes_node_label`
+
+Read-Only:
+
+- **key** (String)
+- **value** (String)
+
+
+
+<a id="nestedobjatt--projects--server_kubeworker"></a>
+### Nested Schema for `projects.server_kubeworker`
+
+Read-Only:
+
+- **created_by** (String)
+- **disk_size** (Number)
+- **flavor** (String)
+- **id** (String)
+- **ip** (String)
+- **kubernetes_node_label** (List of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker--kubernetes_node_label))
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **status** (String)
+
+<a id="nestedobjatt--projects--server_kubeworker--kubernetes_node_label"></a>
+### Nested Schema for `projects.server_kubeworker.kubernetes_node_label`
+
+Read-Only:
+
+- **key** (String)
+- **value** (String)
 
 

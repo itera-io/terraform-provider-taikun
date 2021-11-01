@@ -43,4 +43,18 @@ resource "taikun_project" "foobar" {
   quota_ram_size  = 256
 
   flavors = local.flavors
+
+  server_bastion {
+    name   = "b"
+    flavor = local.flavors[0]
+  }
+  server_kubemaster {
+    name   = "m"
+    flavor = local.flavors[0]
+  }
+  server_kubeworker {
+    name      = "w"
+    flavor    = local.flavors[0]
+    disk_size = 30
+  }
 }
