@@ -27,6 +27,11 @@ import (
 
 func resourceTaikunProjectSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"access_ip": {
+			Description: "Public IP address of the bastion.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"access_profile_id": {
 			Description:      "ID of the project's access profile.",
 			Type:             schema.TypeString,
@@ -909,6 +914,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	}
 
 	projectMap := map[string]interface{}{
+		"access_ip":             projectDetailsDTO.AccessIP,
 		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
 		"alerting_profile_name": projectDetailsDTO.AlertingProfileName,
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
