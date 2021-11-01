@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -529,77 +530,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			}
 		}
 	}
-	if data.HasChange("backup_credential_id") {
-		oldCredential, _ := data.GetChange("backup_credential_id")
-
-		if oldCredential != "" {
-
-			oldCredentialID, _ := atoi32(oldCredential.(string))
-
-			disableBody := &models.DisableBackupCommand{
-				ProjectID:      id,
-				S3CredentialID: oldCredentialID,
-			}
-			disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
-			_, err = apiClient.client.Backup.BackupDisableBackup(disableParams, apiClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-		}
-
-		newCredential, newCredentialIsSet := data.GetOk("backup_credential_id")
-
-		if newCredentialIsSet {
-
-			newCredentialID, _ := atoi32(newCredential.(string))
-
-			// Wait for the backup to be disabled
-			disableStateConf := &resource.StateChangeConf{
-				Pending: []string{
-					strconv.FormatBool(true),
-				},
-				Target: []string{
-					strconv.FormatBool(false),
-				},
-				Refresh: func() (interface{}, string, error) {
-					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
-					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
-					if err != nil {
-						return 0, "", err
-					}
-
-					return response, strconv.FormatBool(response.Payload.Project.IsBackupEnabled), nil
-				},
-				Timeout:                   5 * time.Minute,
-				Delay:                     2 * time.Second,
-				MinTimeout:                5 * time.Second,
-				ContinuousTargetOccurence: 1,
-			}
-			_, err = disableStateConf.WaitForStateContext(ctx)
-			if err != nil {
-				return diag.Errorf("Error waiting for project (%s) to disable backup: %s", data.Id(), err)
-			}
-
-			enableBody := &models.EnableBackupCommand{
-				ProjectID:      id,
-				S3CredentialID: newCredentialID,
-			}
-			enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
-			_, err = apiClient.client.Backup.BackupEnableBackup(enableParams, apiClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-	if data.HasChange("monitoring") {
-		body := models.MonitoringOperationsCommand{ProjectID: id}
-		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
 	if data.HasChange("expiration_date") {
 		body := models.ProjectExtendLifeTimeCommand{
 			ProjectID: id,
@@ -698,8 +628,10 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 
 		if oldSet.Len() == 0 {
 			// The project was empty before
-			err = resourceTaikunProjectSetServers(data, apiClient, id)
-			if err != nil {
+			if err := resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx, data, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+			if err := resourceTaikunProjectSetServers(data, apiClient, id); err != nil {
 				return diag.FromErr(err)
 			}
 		} else if newSet.Len() == 0 {
@@ -716,16 +648,115 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			if err := resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx, data, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
 		}
-	} else if data.HasChange("server_kubeworker") {
-		// TODO DELETE
-		// TODO CREATE
-		// TODO COMMIT
+	} else {
+		if err := resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx, data, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+		if data.HasChange("server_kubeworker") {
+			// TODO DELETE
+			// TODO CREATE
+			// TODO COMMIT
+		}
 	}
 
 	// TODO WAIT
 
 	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(false), ctx, data, meta)
+}
+
+func resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
+	if err := resourceTaikunProjectUpdateToggleMonitoring(data, apiClient); err != nil {
+		return err
+	}
+	if err := resourceTaikunProjectUpdateToggleBackup(ctx, data, apiClient); err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectUpdateToggleMonitoring(data *schema.ResourceData, apiClient *apiClient) error {
+	if data.HasChange("monitoring") {
+		projectID, _ := atoi32(data.Id())
+		body := models.MonitoringOperationsCommand{ProjectID: projectID}
+		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
+		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
+	if data.HasChange("backup_credential_id") {
+		projectID, _ := atoi32(data.Id())
+		oldCredential, _ := data.GetChange("backup_credential_id")
+
+		if oldCredential != "" {
+
+			oldCredentialID, _ := atoi32(oldCredential.(string))
+
+			disableBody := &models.DisableBackupCommand{
+				ProjectID:      projectID,
+				S3CredentialID: oldCredentialID,
+			}
+			disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
+			_, err := apiClient.client.Backup.BackupDisableBackup(disableParams, apiClient)
+			if err != nil {
+				return err
+			}
+
+		}
+
+		newCredential, newCredentialIsSet := data.GetOk("backup_credential_id")
+
+		if newCredentialIsSet {
+
+			newCredentialID, _ := atoi32(newCredential.(string))
+
+			// Wait for the backup to be disabled
+			disableStateConf := &resource.StateChangeConf{
+				Pending: []string{
+					strconv.FormatBool(true),
+				},
+				Target: []string{
+					strconv.FormatBool(false),
+				},
+				Refresh: func() (interface{}, string, error) {
+					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+					if err != nil {
+						return 0, "", err
+					}
+
+					return response, strconv.FormatBool(response.Payload.Project.IsBackupEnabled), nil
+				},
+				Timeout:                   5 * time.Minute,
+				Delay:                     2 * time.Second,
+				MinTimeout:                5 * time.Second,
+				ContinuousTargetOccurence: 1,
+			}
+			_, err := disableStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return errors.New(fmt.Sprintf("Error waiting for project (%s) to disable backup: %s", data.Id(), err))
+			}
+
+			enableBody := &models.EnableBackupCommand{
+				ProjectID:      projectID,
+				S3CredentialID: newCredentialID,
+			}
+			enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
+			_, err = apiClient.client.Backup.BackupEnableBackup(enableParams, apiClient)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func resourceTaikunProjectDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
