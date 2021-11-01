@@ -259,11 +259,6 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"kubernetes_health": {
-			Description: "Kubernetes health of the server.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
 		"last_modified": {
 			Description: "The time and date of last modification.",
 			Type:        schema.TypeString,
@@ -920,16 +915,15 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	kubeWorkers := make([]map[string]interface{}, 0)
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
-			"created_by":        server.CreatedBy,
-			"disk_size":         byteToGibiByte(server.DiskSize),
-			"flavor":            server.OpenstackFlavor,
-			"id":                i32toa(server.ID),
-			"ip":                server.IPAddress,
-			"kubernetes_health": server.KubernetesHealth,
-			"last_modified":     server.LastModified,
-			"last_modified_by":  server.LastModifiedBy,
-			"name":              server.Name,
-			"status":            server.Status,
+			"created_by":       server.CreatedBy,
+			"disk_size":        byteToGibiByte(server.DiskSize),
+			"flavor":           server.OpenstackFlavor,
+			"id":               i32toa(server.ID),
+			"ip":               server.IPAddress,
+			"last_modified":    server.LastModified,
+			"last_modified_by": server.LastModifiedBy,
+			"name":             server.Name,
+			"status":           server.Status,
 		}
 		// Bastion
 		if server.Role == "Bastion" {
