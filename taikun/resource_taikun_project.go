@@ -1148,7 +1148,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 			if err != nil {
 				return nil, "", err
 			}
-			fmt.Println(resp.Payload.Project.ProjectStatus)
+
 			return resp, resp.Payload.Project.ProjectStatus, nil
 		},
 		Timeout:                   40 * time.Minute,
