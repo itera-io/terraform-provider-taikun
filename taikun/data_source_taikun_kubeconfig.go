@@ -11,6 +11,7 @@ func dataSourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 	kubeconfigSchema := dataSourceSchemaFromResourceSchema(resourceTaikunKubeconfigSchema())
 	addRequiredFieldsToSchema(kubeconfigSchema, "id")
 	setValidateDiagFuncToSchema(kubeconfigSchema, "id", stringIsInt)
+	deleteFieldsFromSchema(kubeconfigSchema, "role")
 	return kubeconfigSchema
 }
 
