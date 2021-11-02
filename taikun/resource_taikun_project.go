@@ -342,6 +342,30 @@ func resourceTaikunProject() *schema.Resource {
 					return old.(*schema.Set).Len() != 0 && new.(*schema.Set).Len() != 0
 				},
 			),
+			func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+
+				names := make([]string, 0)
+
+				for _, attribute := range []string{"server_bastion", "server_kubeworker", "server_kubemaster"} {
+					if servers, serversIsSet := d.GetOk(attribute); serversIsSet {
+						serversSet := servers.(*schema.Set)
+						for _, server := range serversSet.List() {
+							serverMap := server.(map[string]interface{})
+							names = append(names, serverMap["name"].(string))
+						}
+					}
+				}
+
+				visitedMap := make(map[string]bool, 0)
+				for _, name := range names {
+					if visitedMap[name] {
+						return fmt.Errorf("server names must be unique: %s", name)
+					}
+					visitedMap[name] = true
+				}
+
+				return nil
+			},
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
