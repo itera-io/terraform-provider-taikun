@@ -171,6 +171,7 @@ func resourceTaikunKubeconfigDelete(ctx context.Context, data *schema.ResourceDa
 
 func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto) map[string]interface{} {
 	kubeconfigMap := map[string]interface{}{
+		"id":           i32toa(kubeconfigDTO.ID),
 		"name":         kubeconfigDTO.ServiceAccountName,
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
 		"project_name": kubeconfigDTO.ProjectName,
