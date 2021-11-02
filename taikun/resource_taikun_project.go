@@ -514,6 +514,10 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if err := resourceTaikunProjectUnlockIfLocked(id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
 	if data.HasChange("alerting_profile_id") {
 		body := models.AttachDetachAlertingProfileCommand{
 			ProjectID: id,
@@ -580,15 +584,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			if _, err := apiClient.client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
-		}
-	}
-	if data.HasChange("lock") {
-		lock := data.Get("lock").(bool)
-		lockMode := getLockMode(lock)
-		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
-		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
 		}
 	}
 	if data.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
@@ -713,6 +708,15 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	if data.Get("lock").(bool) {
+		lockMode := getLockMode(true)
+		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
+		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return readAfterUpdateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
 }
 
@@ -724,18 +728,8 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id) // TODO use /api/v1/projects endpoint?
-	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
-	if err != nil {
+	if err := resourceTaikunProjectUnlockIfLocked(id, apiClient); err != nil {
 		return diag.FromErr(err)
-	}
-
-	if response.Payload.Project.IsLocked {
-		unlockedMode := getLockMode(false)
-		unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&unlockedMode)
-		if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
-			return diag.FromErr(err)
-		}
 	}
 
 	// Purge all the servers
@@ -762,6 +756,24 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 	}
 
 	data.SetId("")
+	return nil
+}
+
+func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) error {
+	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+	if err != nil {
+		return err
+	}
+
+	if response.Payload.Project.IsLocked {
+		unlockedMode := getLockMode(false)
+		unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&projectID).WithMode(&unlockedMode)
+		if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
