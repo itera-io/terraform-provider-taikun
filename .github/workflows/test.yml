@@ -9,6 +9,7 @@ on:
       - 'main'
     paths-ignore:
       - 'README.md'
+concurrency: test-acc
 
 jobs:
   build:
