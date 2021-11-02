@@ -106,11 +106,11 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, data *schema.ResourceDa
 	body.ProjectID = projectID
 
 	params := kube_config.NewKubeConfigCreateParams().WithV(ApiVersion).WithBody(&body)
-	if _, err := apiClient.client.KubeConfig.KubeConfigCreate(params, apiClient); err != nil {
+	response, err := apiClient.client.KubeConfig.KubeConfigCreate(params, apiClient)
+	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	// TODO get id from response
+	data.SetId(response.Payload.ID)
 
 	return readAfterCreateWithRetries(generateResourceTaikunKubeconfigRead(true), ctx, data, meta)
 }
