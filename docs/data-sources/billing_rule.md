@@ -35,7 +35,7 @@ data "taikun_billing_rule" "foo" {
 - **metric_name** (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
 - **name** (String) The name of the billing rule.
 - **price** (Number) The price in CZK per selected unit.
-- **type** (String) Type of billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)
+- **type** (String) The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 <a id="nestedatt--label"></a>
 ### Nested Schema for `label`

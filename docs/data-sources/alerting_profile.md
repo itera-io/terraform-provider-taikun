@@ -36,7 +36,7 @@ data "taikun_alerting_profile" "foo" {
 - **name** (String) The alerting profile's name.
 - **organization_id** (String) The ID of the organization which owns the profile.
 - **organization_name** (String) The name of the organization which owns the profile.
-- **reminder** (String) The frequency of notifications (HalfHour, Hourly, Daily or None).
+- **reminder** (String) The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.
 - **slack_configuration_id** (String) The ID of the Slack configuration to notify.
 - **slack_configuration_name** (String) The name of the Slack configuration to notify.
 - **webhook** (Set of Object) The list of webhooks to notify. (see [below for nested schema](#nestedatt--webhook))

@@ -38,13 +38,13 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 256),
 		},
 		"kind": {
-			Description:  "Type of the showback rule. `General` (data source is taikun) or `External` (data source is external see `showback_credential_id`)",
+			Description:  "The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"General", "External"}, false),
 		},
 		"type": {
-			Description:  "Type of the showback rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
+			Description:  "The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),

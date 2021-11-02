@@ -33,7 +33,7 @@ resource "taikun_user" "foo" {
 ### Required
 
 - **email** (String) The email of the user.
-- **role** (String) The role of the user.
+- **role** (String) The role of the user: `Manager` or `User`.
 - **user_name** (String) The name of the user.
 
 ### Optional

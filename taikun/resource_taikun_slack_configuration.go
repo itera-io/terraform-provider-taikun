@@ -48,7 +48,7 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"type": {
-			Description:  "Alert (receive only alert-type of notification) or General (receive all notifications).",
+			Description:  "The type of notifications to receive: `Alert` (only alert-type notifications) or `General` (all notifications).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Alert", "General"}, false),

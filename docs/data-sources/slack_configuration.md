@@ -31,7 +31,7 @@ data "taikun_slack_configuration" "foo" {
 - **name** (String) Name.
 - **organization_id** (String) Organization ID.
 - **organization_name** (String) Organization Name.
-- **type** (String) Alert (receive only alert-type of notification) or General (receive all notifications).
+- **type** (String) The type of notifications to receive: `Alert` (only alert-type notifications) or `General` (all notifications).
 - **url** (String) Webhook URL from Slack app.
 
 

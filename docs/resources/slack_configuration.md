@@ -32,7 +32,7 @@ resource "taikun_slack_configuration" "foo" {
 
 - **channel** (String) Slack channel for notifications.
 - **name** (String) Name.
-- **type** (String) Alert (receive only alert-type of notification) or General (receive all notifications).
+- **type** (String) The type of notifications to receive: `Alert` (only alert-type notifications) or `General` (all notifications).
 - **url** (String) Webhook URL from Slack app.
 
 ### Optional
