@@ -665,6 +665,10 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 				if err != nil {
 					return diag.FromErr(err)
 				}
+
+				if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting"}, apiClient, id); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 			// Create
 			if toAdd.Len() != 0 {
@@ -697,10 +701,10 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 				if err != nil {
 					return diag.FromErr(err)
 				}
-			}
 
-			if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
-				return diag.FromErr(err)
+				if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
