@@ -1038,22 +1038,13 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 
 func resourceTaikunProjectPurgeServers(bastions interface{}, kubeMasters interface{}, kubeWorkers interface{}, apiClient *apiClient, projectID int32) error {
 	serverIds := make([]int32, 0)
-	for _, bastion := range bastions.(*schema.Set).List() {
-		bastionMap := bastion.(map[string]interface{})
-		bastionId, _ := atoi32(bastionMap["id"].(string))
-		serverIds = append(serverIds, bastionId)
-	}
 
-	for _, kubeMaster := range kubeMasters.(*schema.Set).List() {
-		kubeMasterMap := kubeMaster.(map[string]interface{})
-		kubeMasterId, _ := atoi32(kubeMasterMap["id"].(string))
-		serverIds = append(serverIds, kubeMasterId)
-	}
-
-	for _, kubeWorker := range kubeWorkers.(*schema.Set).List() {
-		kubeWorkerMap := kubeWorker.(map[string]interface{})
-		kubeWorkerId, _ := atoi32(kubeWorkerMap["id"].(string))
-		serverIds = append(serverIds, kubeWorkerId)
+	for _, data := range []interface{}{bastions, kubeMasters, kubeMasters} {
+		for _, server := range data.(*schema.Set).List() {
+			serverMap := server.(map[string]interface{})
+			serverId, _ := atoi32(serverMap["id"].(string))
+			serverIds = append(serverIds, serverId)
+		}
 	}
 
 	if len(serverIds) != 0 {
