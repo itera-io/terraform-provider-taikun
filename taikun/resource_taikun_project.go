@@ -666,7 +666,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 					return diag.FromErr(err)
 				}
 
-				if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting"}, apiClient, id); err != nil {
+				if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting", "PendingDelete"}, apiClient, id); err != nil {
 					return diag.FromErr(err)
 				}
 			}
