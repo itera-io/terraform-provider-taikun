@@ -435,7 +435,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 
 		if quotaRAMIsSet {
 			quotaEditBody.RAM = int64(quotaRAM.(int))
-			quotaEditBody.IsDiskSizeUnlimited = false
+			quotaEditBody.IsRAMUnlimited = false
 		}
 
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
