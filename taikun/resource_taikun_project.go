@@ -439,6 +439,10 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	lock := data.Get("lock").(bool)
 	if lock {
 		lockMode := getLockMode(lock)
@@ -447,10 +451,6 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		if err != nil {
 			return diag.FromErr(err)
 		}
-	}
-
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
-		return diag.FromErr(err)
 	}
 
 	return readAfterCreateWithRetries(generateResourceTaikunProjectRead(true), ctx, data, meta)
