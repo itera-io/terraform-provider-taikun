@@ -97,7 +97,7 @@ resource "taikun_project" "foobar" {
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.
-- **quota_cpu_units** (Number) Maximum CPU units.
+- **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
 - **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
 - **router_id_end_range** (Number) Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.

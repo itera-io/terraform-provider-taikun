@@ -39,7 +39,7 @@ data "taikun_project" "foo" {
 - **monitoring** (Boolean) Kubernetes cluster monitoring.
 - **name** (String) Project name.
 - **organization_id** (String) ID of the organization which owns the project.
-- **quota_cpu_units** (Number) Maximum CPU units.
+- **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
 - **quota_id** (String) ID of the project quota.
 - **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.

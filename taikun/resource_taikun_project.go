@@ -135,7 +135,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"quota_cpu_units": {
-			Description: "Maximum CPU units.",
+			Description: "Maximum CPU units. Unlimited if unspecified.",
 			Type:        schema.TypeInt,
 			Optional:    true,
 		},
