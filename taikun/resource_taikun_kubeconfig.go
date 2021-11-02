@@ -48,7 +48,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"role": {
-			Description: "Kubeconfig's role.",
+			Description: "Kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
