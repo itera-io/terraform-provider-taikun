@@ -412,41 +412,16 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	data.SetId(response.Payload.ID)
 	projectID, _ := atoi32(response.Payload.ID)
 
-	quotaCPU, quotaCPUIsSet := data.GetOk("quota_cpu_units")
-	quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size")
-	quotaRAM, quotaRAMIsSet := data.GetOk("quota_ram_size")
+	_, quotaCPUIsSet := data.GetOk("quota_cpu_units")
+	_, quotaDiskIsSet := data.GetOk("quota_disk_size")
+	_, quotaRAMIsSet := data.GetOk("quota_ram_size")
 	if quotaCPUIsSet || quotaDiskIsSet || quotaRAMIsSet {
-
-		quotaEditBody := &models.ProjectQuotaUpdateDto{
-			IsCPUUnlimited:      true,
-			IsRAMUnlimited:      true,
-			IsDiskSizeUnlimited: true,
-		}
-
-		if quotaCPUIsSet {
-			quotaEditBody.CPU = int64(quotaCPU.(int))
-			quotaEditBody.IsCPUUnlimited = false
-		}
-
-		if quotaDiskIsSet {
-			quotaEditBody.DiskSize = int64(quotaDisk.(int))
-			quotaEditBody.IsDiskSizeUnlimited = false
-		}
-
-		if quotaRAMIsSet {
-			quotaEditBody.RAM = int64(quotaRAM.(int))
-			quotaEditBody.IsRAMUnlimited = false
-		}
 
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
 		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 
-		if err == nil {
-			quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(response.Payload.Project.QuotaID).WithBody(quotaEditBody)
-			_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		if err = resourceTaikunProjectEditQuotas(data, apiClient, response.Payload.Project.QuotaID); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -619,30 +594,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 	if data.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
 		quotaId, _ := atoi32(data.Get("quota_id").(string))
 
-		quotaEditBody := &models.ProjectQuotaUpdateDto{
-			IsCPUUnlimited:      true,
-			IsRAMUnlimited:      true,
-			IsDiskSizeUnlimited: true,
-		}
-
-		if quotaCPU, quotaCPUIsSet := data.GetOk("quota_cpu_units"); quotaCPUIsSet {
-			quotaEditBody.CPU = int64(quotaCPU.(int))
-			quotaEditBody.IsCPUUnlimited = false
-		}
-
-		if quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size"); quotaDiskIsSet {
-			quotaEditBody.DiskSize = int64(quotaDisk.(int))
-			quotaEditBody.IsDiskSizeUnlimited = false
-		}
-
-		if quotaRAM, quotaRAMIsSet := data.GetOk("quota_ram_size"); quotaRAMIsSet {
-			quotaEditBody.RAM = int64(quotaRAM.(int))
-			quotaEditBody.IsRAMUnlimited = false
-		}
-
-		quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaId).WithBody(quotaEditBody)
-		_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
-		if err != nil {
+		if err := resourceTaikunProjectEditQuotas(data, apiClient, quotaId); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -904,6 +856,37 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableBackup", "DisableBackup"}, apiClient, projectID); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectEditQuotas(data *schema.ResourceData, apiClient *apiClient, quotaID int32) error {
+
+	quotaEditBody := &models.ProjectQuotaUpdateDto{
+		IsCPUUnlimited:      true,
+		IsRAMUnlimited:      true,
+		IsDiskSizeUnlimited: true,
+	}
+
+	if quotaCPU, quotaCPUIsSet := data.GetOk("quota_cpu_units"); quotaCPUIsSet {
+		quotaEditBody.CPU = int64(quotaCPU.(int))
+		quotaEditBody.IsCPUUnlimited = false
+	}
+
+	if quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size"); quotaDiskIsSet {
+		quotaEditBody.DiskSize = int64(quotaDisk.(int))
+		quotaEditBody.IsDiskSizeUnlimited = false
+	}
+
+	if quotaRAM, quotaRAMIsSet := data.GetOk("quota_ram_size"); quotaRAMIsSet {
+		quotaEditBody.RAM = int64(quotaRAM.(int))
+		quotaEditBody.IsRAMUnlimited = false
+	}
+
+	quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaID).WithBody(quotaEditBody)
+	_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
+	if err != nil {
+		return err
 	}
 	return nil
 }
