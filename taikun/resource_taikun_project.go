@@ -86,7 +86,8 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 				return []interface{}{}, nil
 			},
 			Elem: &schema.Schema{
-				Type: schema.TypeString,
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 		"id": {
@@ -136,14 +137,16 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"quota_cpu_units": {
-			Description: "Maximum CPU units. Unlimited if unspecified.",
-			Type:        schema.TypeInt,
-			Optional:    true,
+			Description:  "Maximum CPU units. Unlimited if unspecified.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_disk_size": {
-			Description: "Maximum disk size in GBs. Unlimited if unspecified.",
-			Type:        schema.TypeInt,
-			Optional:    true,
+			Description:  "Maximum disk size in GBs. Unlimited if unspecified.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_id": {
 			Description: "ID of the project quota.",
@@ -151,9 +154,10 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"quota_ram_size": {
-			Description: "Maximum RAM size in GBs. Unlimited if unspecified.",
-			Type:        schema.TypeInt,
-			Optional:    true,
+			Description:  "Maximum RAM size in GBs. Unlimited if unspecified.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"router_id_end_range": {
 			Description:  "Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
