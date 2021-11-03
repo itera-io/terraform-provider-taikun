@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -962,7 +963,6 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 		serverMap := map[string]interface{}{
 			"created_by":       server.CreatedBy,
 			"disk_size":        byteToGibiByte(server.DiskSize),
-			"flavor":           server.OpenstackFlavor,
 			"id":               i32toa(server.ID),
 			"ip":               server.IPAddress,
 			"last_modified":    server.LastModified,
@@ -970,6 +970,16 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 			"name":             server.Name,
 			"status":           server.Status,
 		}
+
+		switch strings.ToLower(server.CloudType) {
+		case "aws":
+			serverMap["flavor"] = server.AwsInstanceType
+		case "azure":
+			serverMap["flavor"] = server.AzureVMSize
+		case "openstack":
+			serverMap["flavor"] = server.OpenstackFlavor
+		}
+
 		// Bastion
 		if server.Role == "Bastion" {
 			bastions = append(bastions, serverMap)
