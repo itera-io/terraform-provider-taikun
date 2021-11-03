@@ -1049,7 +1049,7 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 func resourceTaikunProjectPurgeServers(bastions interface{}, kubeMasters interface{}, kubeWorkers interface{}, apiClient *apiClient, projectID int32) error {
 	serverIds := make([]int32, 0)
 
-	for _, data := range []interface{}{bastions, kubeMasters, kubeMasters} {
+	for _, data := range []interface{}{bastions, kubeMasters, kubeWorkers} {
 		for _, server := range data.(*schema.Set).List() {
 			serverMap := server.(map[string]interface{})
 			serverId, _ := atoi32(serverMap["id"].(string))
