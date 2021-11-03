@@ -55,7 +55,7 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			},
 		},
 		"type": {
-			Description:  "Type of billing rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)",
+			Description:  "The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),

@@ -58,7 +58,7 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"load_balancing_solution": {
-			Description:  "Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.",
+			Description:  "The load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			Default:      "Octavia",

@@ -37,7 +37,7 @@ data "taikun_user" "foo" {
 - **organization_id** (String) The ID of the user's organization.
 - **organization_name** (String) The name of the user's organization.
 - **partner_approval** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
-- **role** (String) The role of the user.
+- **role** (String) The role of the user: `Manager` or `User`.
 - **user_name** (String) The name of the user.
 
 

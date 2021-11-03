@@ -29,7 +29,7 @@ data "taikun_showback_rule" "foo" {
 
 - **created_by** (String) The creator of the showback rule.
 - **global_alert_limit** (Number) Set limit of alerts for all projects.
-- **kind** (String) Type of the showback rule. `General` (data source is taikun) or `External` (data source is external see `showback_credential_id`)
+- **kind** (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
 - **label** (List of Object) Labels linked to this showback rule. (see [below for nested schema](#nestedatt--label))
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback rule.
@@ -41,7 +41,7 @@ data "taikun_showback_rule" "foo" {
 - **project_alert_limit** (Number) Set limit of alerts for one project.
 - **showback_credential_id** (String) Id of the showback rule.
 - **showback_credential_name** (String) Name of the showback rule.
-- **type** (String) Type of the showback rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)
+- **type** (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 <a id="nestedatt--label"></a>
 ### Nested Schema for `label`

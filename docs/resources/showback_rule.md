@@ -38,11 +38,11 @@ resource "taikun_showback_rule" "foo" {
 
 ### Required
 
-- **kind** (String) Type of the showback rule. `General` (data source is taikun) or `External` (data source is external see `showback_credential_id`)
+- **kind** (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
 - **metric_name** (String) The metric name.
 - **name** (String) The name of the showback rule.
 - **price** (Number) Billing in CZK per selected unit.
-- **type** (String) Type of the showback rule. `Count` (calculate package as unit) or `Sum` (calculate per quantity)
+- **type** (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 ### Optional
 

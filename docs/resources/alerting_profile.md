@@ -72,7 +72,7 @@ resource "taikun_alerting_profile" "foo" {
 ### Required
 
 - **name** (String) The alerting profile's name.
-- **reminder** (String) The frequency of notifications (HalfHour, Hourly, Daily or None).
+- **reminder** (String) The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.
 
 ### Optional
 
@@ -97,7 +97,7 @@ resource "taikun_alerting_profile" "foo" {
 
 Required:
 
-- **type** (String) The type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams).
+- **type** (String) The type of integration: `Opsgenie`, `Pagerduty`, `Splunk` or `MicrosoftTeams`.
 - **url** (String) The alerting integration's URL.
 
 Optional:

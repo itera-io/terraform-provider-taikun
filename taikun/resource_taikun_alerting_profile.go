@@ -47,7 +47,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 						Default:     "",
 					},
 					"type": {
-						Description: "The type of integration (Opsgenie, Pagerduty, Splunk or MicrosoftTeams).",
+						Description: "The type of integration: `Opsgenie`, `Pagerduty`, `Splunk` or `MicrosoftTeams`.",
 						Type:        schema.TypeString,
 						Required:    true,
 						ValidateFunc: validation.StringInSlice([]string{
@@ -101,7 +101,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"reminder": {
-			Description: "The frequency of notifications (HalfHour, Hourly, Daily or None).",
+			Description: "The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.StringInSlice([]string{

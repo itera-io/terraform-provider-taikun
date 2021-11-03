@@ -32,7 +32,7 @@ data "taikun_kubernetes_profile" "foo" {
 - **created_by** (String) The creator of the Kubernetes profile.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the Kubernetes profile.
-- **load_balancing_solution** (String) Load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.
+- **load_balancing_solution** (String) The load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.
 - **lock** (Boolean) Indicates whether to lock the Kubernetes profile.
 - **name** (String) The name of the Kubernetes profile.
 - **organization_id** (String) The ID of the organization which owns the Kubernetes profile.

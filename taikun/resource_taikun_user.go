@@ -46,7 +46,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"role": {
-			Description:  "The role of the user.",
+			Description:  "The role of the user: `Manager` or `User`.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringInSlice([]string{"User", "Manager"}, false),
