@@ -199,7 +199,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
 			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
 			Elem: &schema.Resource{
-				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
+				Schema: taikunServerKubeworkerSchema(),
 			},
 		},
 		"taikun_lb_flavor": {
@@ -213,12 +213,19 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 	}
 }
 
+func taikunServerKubeworkerSchema() map[string]*schema.Schema {
+	kubeworkerSchema := taikunServerSchemaWithKubernetesNodeLabels()
+	removeForceNewsFromSchema(kubeworkerSchema)
+	return kubeworkerSchema
+}
+
 func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
 	serverSchema := taikunServerBasicSchema()
 	serverSchema["kubernetes_node_label"] = &schema.Schema{
 		Description: "Attach Kubernetes node labels.",
 		Type:        schema.TypeList,
 		Optional:    true,
+		ForceNew:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"key": {
@@ -262,6 +269,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Description:  "The server's disk size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(30),
 			Default:      30,
 		},
@@ -269,6 +277,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Description:  "The server's flavor.",
 			Type:         schema.TypeString,
 			Required:     true,
+			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"id": {
@@ -295,6 +304,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Description: "Name of the server.",
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			ValidateFunc: validation.All(
 				validation.StringLenBetween(1, 30),
 				validation.StringMatch(
@@ -329,18 +339,6 @@ func resourceTaikunProject() *schema.Resource {
 						return fmt.Errorf("there must be an odd number of server_kubemaster (currently %d)", set.Len())
 					}
 					return nil
-				},
-			),
-			customdiff.ForceNewIfChange(
-				"server_kubemaster",
-				func(ctx context.Context, old, new, meta interface{}) bool {
-					return old.(*schema.Set).Len() != 0 && new.(*schema.Set).Len() != 0
-				},
-			),
-			customdiff.ForceNewIfChange(
-				"server_bastion",
-				func(ctx context.Context, old, new, meta interface{}) bool {
-					return old.(*schema.Set).Len() != 0 && new.(*schema.Set).Len() != 0
 				},
 			),
 			func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
