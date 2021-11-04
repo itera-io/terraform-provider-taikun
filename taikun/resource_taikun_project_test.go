@@ -973,6 +973,13 @@ resource "taikun_kubeconfig" "cluster_admin" {
 }
 
 data "taikun_kubeconfigs" "foo" {
+  depends_on = [
+    taikun_kubeconfig.view,
+    taikun_kubeconfig.edit,
+    taikun_kubeconfig.admin,
+    taikun_kubeconfig.cluster_admin,
+  ]
+
   project_id = resource.taikun_project.foo.id
 }
 `
