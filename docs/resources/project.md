@@ -60,6 +60,20 @@ resource "taikun_project" "foobar" {
   quota_ram_size  = 256
 
   flavors = local.flavors
+
+  server_bastion {
+    name   = "b"
+    flavor = local.flavors[0]
+  }
+  server_kubemaster {
+    name   = "m"
+    flavor = local.flavors[0]
+  }
+  server_kubeworker {
+    name      = "w"
+    flavor    = local.flavors[0]
+    disk_size = 30
+  }
 }
 ```
 
@@ -83,18 +97,117 @@ resource "taikun_project" "foobar" {
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.
-- **quota_cpu_units** (Number) Maximum CPU units.
+- **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
 - **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
 - **router_id_end_range** (Number) Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
 - **router_id_start_range** (Number) Router ID start range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
+- **server_bastion** (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
+- **server_kubemaster** (Block Set) Kubemaster server. Required with: `server_bastion`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_kubemaster))
+- **server_kubeworker** (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
 - **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- **access_ip** (String) Public IP address of the bastion.
 - **alerting_profile_name** (String) Name of the project's alerting profile.
 - **id** (String) Project ID.
 - **quota_id** (String) ID of the project quota.
+
+<a id="nestedblock--server_bastion"></a>
+### Nested Schema for `server_bastion`
+
+Required:
+
+- **flavor** (String) The server's flavor.
+- **name** (String) Name of the server.
+
+Optional:
+
+- **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
+
+Read-Only:
+
+- **created_by** (String) The creator of the server.
+- **id** (String) ID of the server.
+- **ip** (String) IP of the server.
+- **last_modified** (String) The time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the server.
+- **status** (String) Server status.
+
+
+<a id="nestedblock--server_kubemaster"></a>
+### Nested Schema for `server_kubemaster`
+
+Required:
+
+- **flavor** (String) The server's flavor.
+- **name** (String) Name of the server.
+
+Optional:
+
+- **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
+- **kubernetes_node_label** (Block List) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
+
+Read-Only:
+
+- **created_by** (String) The creator of the server.
+- **id** (String) ID of the server.
+- **ip** (String) IP of the server.
+- **last_modified** (String) The time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the server.
+- **status** (String) Server status.
+
+<a id="nestedblock--server_kubemaster--kubernetes_node_label"></a>
+### Nested Schema for `server_kubemaster.kubernetes_node_label`
+
+Required:
+
+- **key** (String) Kubernetes node label key.
+- **value** (String) Kubernetes node label value.
+
+
+
+<a id="nestedblock--server_kubeworker"></a>
+### Nested Schema for `server_kubeworker`
+
+Required:
+
+- **flavor** (String) The server's flavor.
+- **name** (String) Name of the server.
+
+Optional:
+
+- **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
+- **kubernetes_node_label** (Block List) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+
+Read-Only:
+
+- **created_by** (String) The creator of the server.
+- **id** (String) ID of the server.
+- **ip** (String) IP of the server.
+- **last_modified** (String) The time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the server.
+- **status** (String) Server status.
+
+<a id="nestedblock--server_kubeworker--kubernetes_node_label"></a>
+### Nested Schema for `server_kubeworker.kubernetes_node_label`
+
+Required:
+
+- **key** (String) Kubernetes node label key.
+- **value** (String) Kubernetes node label value.
+
+
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- **create** (String)
+- **update** (String)
 
 ## Import
 

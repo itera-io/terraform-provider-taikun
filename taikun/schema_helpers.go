@@ -63,6 +63,12 @@ func fixDatasourceSchemaFlags(schema map[string]*schema.Schema, required bool, k
 	}
 }
 
+func removeForceNewsFromSchema(schema map[string]*schema.Schema) {
+	for _, v := range schema {
+		v.ForceNew = false
+	}
+}
+
 func setFieldInSchema(schema map[string]*schema.Schema, key string, value *schema.Schema) {
 	schema[key] = value
 }

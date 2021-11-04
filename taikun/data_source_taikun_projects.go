@@ -75,7 +75,7 @@ func dataSourceTaikunProjectsRead(ctx context.Context, data *schema.ResourceData
 			return nil
 		}
 
-		projects[i] = flattenTaikunProject(response.Payload.Project, boundFlavorDTOs, quotaResponse.Payload.Data[0])
+		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, boundFlavorDTOs, quotaResponse.Payload.Data[0])
 	}
 	if err := data.Set("projects", projects); err != nil {
 		return diag.FromErr(err)

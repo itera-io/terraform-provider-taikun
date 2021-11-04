@@ -25,6 +25,7 @@ data "taikun_project" "foo" {
 
 ### Read-Only
 
+- **access_ip** (String) Public IP address of the bastion.
 - **access_profile_id** (String) ID of the project's access profile.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
 - **alerting_profile_name** (String) Name of the project's alerting profile.
@@ -38,9 +39,78 @@ data "taikun_project" "foo" {
 - **monitoring** (Boolean) Kubernetes cluster monitoring.
 - **name** (String) Project name.
 - **organization_id** (String) ID of the organization which owns the project.
-- **quota_cpu_units** (Number) Maximum CPU units.
+- **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
 - **quota_id** (String) ID of the project quota.
 - **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
+- **server_bastion** (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
+- **server_kubemaster** (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
+- **server_kubeworker** (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
+
+<a id="nestedatt--server_bastion"></a>
+### Nested Schema for `server_bastion`
+
+Read-Only:
+
+- **created_by** (String)
+- **disk_size** (Number)
+- **flavor** (String)
+- **id** (String)
+- **ip** (String)
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **status** (String)
+
+
+<a id="nestedatt--server_kubemaster"></a>
+### Nested Schema for `server_kubemaster`
+
+Read-Only:
+
+- **created_by** (String)
+- **disk_size** (Number)
+- **flavor** (String)
+- **id** (String)
+- **ip** (String)
+- **kubernetes_node_label** (List of Object) (see [below for nested schema](#nestedobjatt--server_kubemaster--kubernetes_node_label))
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **status** (String)
+
+<a id="nestedobjatt--server_kubemaster--kubernetes_node_label"></a>
+### Nested Schema for `server_kubemaster.kubernetes_node_label`
+
+Read-Only:
+
+- **key** (String)
+- **value** (String)
+
+
+
+<a id="nestedatt--server_kubeworker"></a>
+### Nested Schema for `server_kubeworker`
+
+Read-Only:
+
+- **created_by** (String)
+- **disk_size** (Number)
+- **flavor** (String)
+- **id** (String)
+- **ip** (String)
+- **kubernetes_node_label** (List of Object) (see [below for nested schema](#nestedobjatt--server_kubeworker--kubernetes_node_label))
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **status** (String)
+
+<a id="nestedobjatt--server_kubeworker--kubernetes_node_label"></a>
+### Nested Schema for `server_kubeworker.kubernetes_node_label`
+
+Read-Only:
+
+- **key** (String)
+- **value** (String)
 
 

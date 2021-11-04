@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/projects"
+	"github.com/itera-io/taikungoclient/client/servers"
 	"github.com/itera-io/taikungoclient/models"
 )
 
@@ -43,12 +45,41 @@ func init() {
 
 			for _, e := range projectList {
 				if strings.HasPrefix(e.Name, testNamePrefix) {
-					// unlock
-					unlockedMode := getLockMode(false)
-					unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
-					apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient)
 
-					// delete
+					readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(e.ID)
+					response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+					if err != nil {
+						return err
+					}
+
+					if response.Payload.Project.IsLocked {
+						unlockedMode := getLockMode(false)
+						unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
+						if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+							return err
+						}
+					}
+
+					serverIds := make([]int32, 0)
+					for _, e := range response.Payload.Data {
+						serverIds = append(serverIds, e.ID)
+					}
+					if len(serverIds) != 0 {
+						deleteServerBody := &models.DeleteServerCommand{
+							ProjectID: e.ID,
+							ServerIds: serverIds,
+						}
+						deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+						_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+						if err != nil {
+							return err
+						}
+
+						if err := resourceTaikunProjectWaitForStatus(context.Background(), []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, e.ID); err != nil {
+							return err
+						}
+					}
+
 					params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteProjectCommand{ProjectID: e.ID})
 					_, _, err = apiClient.client.Projects.ProjectsDelete(params, apiClient)
 					if err != nil {
@@ -863,6 +894,81 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
+			},
+		},
+	})
+}
+
+const testAccResourceTaikunProjectMinimal = `
+resource "taikun_cloud_credential_openstack" "foo" {
+  name = "%s"
+}
+
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  min_cpu = 2
+  max_cpu = 2
+  max_ram = 8
+}
+locals {
+  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+}
+
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  flavors = local.flavors
+
+  server_bastion {
+     name = "b"
+     disk_size = 30
+     flavor = local.flavors[0]
+  }
+  server_kubeworker {
+     name = "w"
+     disk_size = 30
+     flavor = local.flavors[0]
+  }
+  server_kubemaster {
+     name = "m"
+     disk_size = 30
+     flavor = local.flavors[0]
+  }
+}
+`
+
+func TestAccResourceTaikunProjectMinimal(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := shortRandomTestName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectMinimal,
+					cloudCredentialName,
+					projectName,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "server_bastion.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubeworker.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubemaster.#", "1"),
+				),
+			},
+			{
+				ResourceName:      "taikun_project.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

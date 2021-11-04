@@ -58,6 +58,14 @@ func mebiByteToGibiByte(x int32) int32 {
 	return x / 1024
 }
 
+func gibiByteToByte(x int) int64 {
+	return int64(1073741824 * x)
+}
+
+func byteToGibiByte(x int64) int64 {
+	return x / 1073741824
+}
+
 func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
 	v, ok := i.(string)
 	if !ok {
