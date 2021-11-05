@@ -935,6 +935,53 @@ resource "taikun_project" "foo" {
      flavor = local.flavors[0]
   }
 }
+
+resource "taikun_kubeconfig" "view" {
+  project_id = resource.taikun_project.foo.id
+
+  name = "view-all"
+
+  role = "view"
+  access_scope = "all"
+}
+
+resource "taikun_kubeconfig" "edit" {
+  project_id = resource.taikun_project.foo.id
+
+  name = "edit-all"
+
+  role = "edit"
+  access_scope = "all"
+}
+
+resource "taikun_kubeconfig" "admin" {
+  project_id = resource.taikun_project.foo.id
+
+  name = "admin-managers"
+
+  role = "admin"
+  access_scope = "managers"
+}
+
+resource "taikun_kubeconfig" "cluster_admin" {
+  project_id = resource.taikun_project.foo.id
+
+  name = "cluster-admin-personal"
+
+  role = "cluster-admin"
+  access_scope = "personal"
+}
+
+data "taikun_kubeconfigs" "foo" {
+  depends_on = [
+    taikun_kubeconfig.view,
+    taikun_kubeconfig.edit,
+    taikun_kubeconfig.admin,
+    taikun_kubeconfig.cluster_admin,
+  ]
+
+  project_id = resource.taikun_project.foo.id
+}
 `
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
@@ -963,6 +1010,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_bastion.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubeworker.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubemaster.#", "1"),
+					resource.TestCheckResourceAttr("data.taikun_kubeconfigs.foo", "kubeconfigs.#", "4"),
 				),
 			},
 			{
