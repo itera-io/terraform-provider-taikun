@@ -271,7 +271,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		return diag.FromErr(err)
 	}
 
-	if data.HasChanges("username", "password", "name") {
+	if data.HasChanges("user", "password", "name") {
 		updateBody := &models.UpdateOpenStackCommand{
 			ID:                id,
 			Name:              data.Get("name").(string),
