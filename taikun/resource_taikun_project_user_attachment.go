@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strings"
 
 	"github.com/itera-io/taikungoclient/client/projects"
@@ -17,10 +18,11 @@ import (
 func resourceTaikunProjectUserAttachmentSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"user_id": {
-			Description: "ID of the user.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:  "ID of the user.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"project_id": {
 			Description:      "ID of the project.",
