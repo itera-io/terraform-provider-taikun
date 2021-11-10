@@ -106,25 +106,6 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"project": {
-			Description: "List of associated projects.",
-			Type:        schema.TypeList,
-			Computed:    true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"id": {
-						Description: "ID of associated project.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-					"name": {
-						Description: "Name of associated project.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
-				},
-			},
-		},
 		"ssh_user": {
 			Description: "List of SSH users.",
 			Type:        schema.TypeList,
@@ -337,14 +318,6 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 		}
 	}
 
-	projects := make([]map[string]interface{}, len(rawAccessProfile.Projects))
-	for i, rawProject := range rawAccessProfile.Projects {
-		projects[i] = map[string]interface{}{
-			"id":   i32toa(rawProject.ID),
-			"name": rawProject.Name,
-		}
-	}
-
 	SSHUsers := make([]map[string]interface{}, len(sshResponse.Payload))
 	for i, rawSSHUser := range sshResponse.Payload {
 		SSHUsers[i] = map[string]interface{}{
@@ -366,7 +339,6 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 		"ntp_server":        NTPServers,
 		"organization_id":   i32toa(rawAccessProfile.OrganizationID),
 		"organization_name": rawAccessProfile.OrganizationName,
-		"project":           projects,
 		"ssh_user":          SSHUsers,
 	}
 }
