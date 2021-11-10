@@ -64,7 +64,6 @@ resource "taikun_access_profile" "foo" {
 - **last_modified** (String) The time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the profile.
 - **organization_name** (String) The name of the organization which owns the access profile.
-- **project** (List of Object) List of associated projects. (see [below for nested schema](#nestedatt--project))
 
 <a id="nestedblock--dns_server"></a>
 ### Nested Schema for `dns_server`
@@ -101,15 +100,6 @@ Required:
 Read-Only:
 
 - **id** (String) ID of the SSH user.
-
-
-<a id="nestedatt--project"></a>
-### Nested Schema for `project`
-
-Read-Only:
-
-- **id** (String)
-- **name** (String)
 
 ## Import
 

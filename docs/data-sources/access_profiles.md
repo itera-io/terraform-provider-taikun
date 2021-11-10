@@ -47,7 +47,6 @@ Read-Only:
 - **ntp_server** (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ntp_server))
 - **organization_id** (String)
 - **organization_name** (String)
-- **project** (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--project))
 - **ssh_user** (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ssh_user))
 
 <a id="nestedobjatt--access_profiles--dns_server"></a>
@@ -66,15 +65,6 @@ Read-Only:
 
 - **address** (String)
 - **id** (String)
-
-
-<a id="nestedobjatt--access_profiles--project"></a>
-### Nested Schema for `access_profiles.project`
-
-Read-Only:
-
-- **id** (String)
-- **name** (String)
 
 
 <a id="nestedobjatt--access_profiles--ssh_user"></a>
