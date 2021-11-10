@@ -28,7 +28,6 @@ func TestAccDataSourceTaikunUsers(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.role"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.display_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_confirmed"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_notification_enabled"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_csm"),
