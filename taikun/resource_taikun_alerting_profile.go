@@ -22,6 +22,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "The list of emails to notify.",
 			Type:        schema.TypeList,
 			Optional:    true,
+			Computed:    true,
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		"id": {
