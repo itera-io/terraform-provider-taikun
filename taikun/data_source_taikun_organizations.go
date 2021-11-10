@@ -51,6 +51,8 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, data *schema.ResourceD
 	for i, rawOrganization := range rawOrganizationsList {
 		organizationsList[i] = flattenTaikunOrganization(rawOrganization)
 		organizationsList[i]["cloud_credentials"] = rawOrganization.CloudCredentials
+		organizationsList[i]["projects"] = rawOrganization.Projects
+		organizationsList[i]["servers"] = rawOrganization.Servers
 		organizationsList[i]["users"] = rawOrganization.Users
 	}
 	if err := data.Set("organizations", organizationsList); err != nil {

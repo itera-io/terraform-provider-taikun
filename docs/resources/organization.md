@@ -58,8 +58,6 @@ resource "taikun_organization" "foo" {
 - **is_read_only** (Boolean) Whether the organization is in read-only mode.
 - **partner_id** (String) ID of the organization's partner.
 - **partner_name** (String) Name of the organization's partner.
-- **projects** (Number) Number of associated projects.
-- **servers** (Number) Number of associated servers.
 
 ## Import
 

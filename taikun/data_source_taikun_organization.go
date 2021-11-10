@@ -22,6 +22,16 @@ func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
 		Type:        schema.TypeInt,
 		Computed:    true,
 	})
+	setFieldInSchema(dsSchema, "projects", &schema.Schema{
+		Description: "Number of associated projects.",
+		Type:        schema.TypeInt,
+		Computed:    true,
+	})
+	setFieldInSchema(dsSchema, "servers", &schema.Schema{
+		Description: "Number of associated servers.",
+		Type:        schema.TypeInt,
+		Computed:    true,
+	})
 	return dsSchema
 }
 
@@ -59,6 +69,8 @@ func dataSourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceDa
 
 	organizationMap := flattenTaikunOrganization(rawOrganization)
 	organizationMap["cloud_credentials"] = rawOrganization.CloudCredentials
+	organizationMap["projects"] = rawOrganization.Projects
+	organizationMap["servers"] = rawOrganization.Servers
 	organizationMap["users"] = rawOrganization.Users
 
 	err = setResourceDataFromMap(data, organizationMap)

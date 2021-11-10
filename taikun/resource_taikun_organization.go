@@ -105,16 +105,6 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
-		"projects": {
-			Description: "Number of associated projects.",
-			Type:        schema.TypeInt,
-			Computed:    true,
-		},
-		"servers": {
-			Description: "Number of associated servers.",
-			Type:        schema.TypeInt,
-			Computed:    true,
-		},
 		"vat_number": {
 			Description: "VAT number.",
 			Type:        schema.TypeString,
@@ -289,8 +279,6 @@ func flattenTaikunOrganization(rawOrganization *models.OrganizationDetailsDto) m
 		"partner_id":                       i32toa(rawOrganization.PartnerID),
 		"partner_name":                     rawOrganization.PartnerName,
 		"phone":                            rawOrganization.Phone,
-		"projects":                         rawOrganization.Projects,
-		"servers":                          rawOrganization.Servers,
 		"vat_number":                       rawOrganization.VatNumber,
 	}
 }

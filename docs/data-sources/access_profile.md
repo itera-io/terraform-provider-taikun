@@ -37,7 +37,6 @@ data "taikun_access_profile" "foo" {
 - **ntp_server** (List of Object) List of NTP servers. (see [below for nested schema](#nestedatt--ntp_server))
 - **organization_id** (String) The ID of the organization which owns the access profile.
 - **organization_name** (String) The name of the organization which owns the access profile.
-- **project** (List of Object) List of associated projects. (see [below for nested schema](#nestedatt--project))
 - **ssh_user** (List of Object) List of SSH users. (see [below for nested schema](#nestedatt--ssh_user))
 
 <a id="nestedatt--dns_server"></a>
@@ -56,15 +55,6 @@ Read-Only:
 
 - **address** (String)
 - **id** (String)
-
-
-<a id="nestedatt--project"></a>
-### Nested Schema for `project`
-
-Read-Only:
-
-- **id** (String)
-- **name** (String)
 
 
 <a id="nestedatt--ssh_user"></a>
