@@ -3,10 +3,11 @@ package taikun
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/client/backup"
 	"regexp"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient/client/backup"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,14 +17,14 @@ import (
 func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"cron_period": {
-			Description:      "How often you want to do a backup.",
+			Description:      "Frequency of backups.",
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
 			ValidateDiagFunc: stringIsCron,
 		},
 		"excluded_namespaces": {
-			Description: "Namespaces that will be excluded from the backup",
+			Description: "Namespaces excluded from the backups.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -33,7 +34,7 @@ func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		"included_namespaces": {
-			Description: "Namespaces that will be included in the backup",
+			Description: "Namespaces included in the backups.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -62,14 +63,14 @@ func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"retention_period": {
-			Description: "How long you want to keep the backup.",
+			Description: "How long to store the backups.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "720h",
 			ForceNew:    true,
 			ValidateFunc: validation.StringMatch(
 				regexp.MustCompile("^(((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)?((0*[1-9][0-9]*)s)|((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)((\\d+)s)?|((0*[1-9][0-9]*)h)((\\d+)m)?((\\d+)s)?)$"),
-				"The string must follow the HMS format.",
+				"The retention period must follow the HMS format, for example: `10h30m15s`, `48h5s` or `360h`.",
 			),
 		},
 	}
