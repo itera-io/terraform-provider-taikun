@@ -181,15 +181,6 @@ func getShowbackType(showbackType string) models.ShowbackType {
 	return 200
 }
 
-func getLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string {
-	if octaviaEnabled {
-		return "Octavia"
-	} else if taikunLBEnabled {
-		return "Taikun"
-	}
-	return "None"
-}
-
 func getUserRole(role string) models.UserRole {
 	if role == "User" {
 		return 400
@@ -198,10 +189,25 @@ func getUserRole(role string) models.UserRole {
 	return 200
 }
 
-func parseLoadBalancingSolution(loadBalancingSolution string) (bool, bool) {
-	if loadBalancingSolution == "Octavia" {
+const (
+	loadBalancerOctavia = "Octavia"
+	loadBalancerTaikun  = "Taikun"
+	loadBalancerNone    = "None"
+)
+
+func getLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string {
+	if octaviaEnabled {
+		return loadBalancerOctavia
+	} else if taikunLBEnabled {
+		return loadBalancerTaikun
+	}
+	return loadBalancerNone
+}
+
+func parseLoadBalancingSolution(loadBalancingSolution string) (octaviaEnabled bool, taikunLBEnabled bool) {
+	if loadBalancingSolution == loadBalancerOctavia {
 		return true, false
-	} else if loadBalancingSolution == "Taikun" {
+	} else if loadBalancingSolution == loadBalancerTaikun {
 		return false, true
 	}
 	return false, false
@@ -307,3 +313,9 @@ func getKubeconfigRoleID(role string) int32 {
 		return 4
 	}
 }
+
+const (
+	cloudTypeAWS       = "AWS"
+	cloudTypeAzure     = "Azure"
+	cloudTypeOpenStack = "OpenStack"
+)
