@@ -103,7 +103,7 @@ func stringIsCron(i interface{}, path cty.Path) diag.Diagnostics {
 
 	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
 	if _, err := parser.Parse(v); err != nil {
-		return diag.FromErr(path.NewErrorf("expected a valid cron expression"))
+		return diag.FromErr(path.NewErrorf("expected a valid cron period"))
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/backup"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,6 +67,10 @@ func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     "720h",
 			ForceNew:    true,
+			ValidateFunc: validation.StringMatch(
+				regexp.MustCompile("^(((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)?((0*[1-9][0-9]*)s)|((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)((\\d+)s)?|((0*[1-9][0-9]*)h)((\\d+)m)?((\\d+)s)?)$"),
+				"The string must follow the HMS format.",
+			),
 		},
 	}
 }
