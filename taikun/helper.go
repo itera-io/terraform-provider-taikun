@@ -3,6 +3,7 @@ package taikun
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"math/rand"
 	"net/mail"
 	"strconv"
@@ -89,6 +90,20 @@ func stringIsEmail(i interface{}, path cty.Path) diag.Diagnostics {
 	_, err := mail.ParseAddress(v)
 	if err != nil {
 		return diag.FromErr(path.NewErrorf("expected an email"))
+	}
+
+	return nil
+}
+
+func stringIsCron(i interface{}, path cty.Path) diag.Diagnostics {
+	v, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
+	if _, err := parser.Parse(v); err != nil {
+		return diag.FromErr(path.NewErrorf("expected a valid cron expression"))
 	}
 
 	return nil

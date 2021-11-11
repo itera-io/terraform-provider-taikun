@@ -15,10 +15,11 @@ import (
 func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"cron_period": {
-			Description: "How often you want to do a backup.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+			Description:      "How often you want to do a backup.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: stringIsCron,
 		},
 		"excluded_namespaces": {
 			Description: "Namespaces that will be excluded from the backup",
