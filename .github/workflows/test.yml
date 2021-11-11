@@ -1,15 +1,14 @@
 name: Tests
 on:
-  workflow_dispatch:
   pull_request:
-    paths-ignore:
-      - 'README.md'
   push:
     branches:
       - 'main'
     paths-ignore:
       - 'README.md'
-concurrency: test-acc
+      - 'docs/**'
+      - 'examples/**'
+      - 'templates/**'
 
 jobs:
   build:
@@ -39,6 +38,8 @@ jobs:
     needs: build
     runs-on: self-hosted
     timeout-minutes: 70
+    concurrency: test-acc
+    continue-on-error: true
     steps:
 
       - name: Set up Go
