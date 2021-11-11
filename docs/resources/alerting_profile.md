@@ -15,6 +15,15 @@ Taikun Alerting Profile
 ## Example Usage
 
 ```terraform
+resource "taikun_slack_configuration" "foo" {
+  name    = "foo"
+  channel = "ci"
+  url     = "https://hooks.myapp.example/ci"
+  type    = "Alert"
+
+  organization_id = "42"
+}
+
 resource "taikun_alerting_profile" "foo" {
   name     = "foo"
   reminder = "None"
@@ -23,7 +32,9 @@ resource "taikun_alerting_profile" "foo" {
 
   lock = false
 
-  organization_id = resource.taikun_organization.foo.id
+  slack_configuration_id = resource.taikun_slack_configuration.foo.id
+
+  organization_id = "42"
 
   webhook {
     url = "https://www.example.com"
