@@ -622,9 +622,9 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 	}
 
 	if data.HasChange("server_bastion") {
-		o, n := data.GetChange("server_bastion")
-		oldSet := o.(*schema.Set)
-		newSet := n.(*schema.Set)
+		oldBastions, newBastions := data.GetChange("server_bastion")
+		oldSet := oldBastions.(*schema.Set)
+		newSet := newBastions.(*schema.Set)
 
 		if oldSet.Len() == 0 {
 			// The project was empty before
@@ -643,13 +643,8 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			// Purge
 			oldKubeMasters, _ := data.GetChange("server_kubemaster")
 			oldKubeWorkers, _ := data.GetChange("server_kubeworker")
-			err = resourceTaikunProjectPurgeServers(
-				o,
-				oldKubeMasters,
-				oldKubeWorkers,
-				apiClient,
-				id,
-			)
+			serversToPurge := resourceTaikunProjectFlattenServersData(oldBastions, oldKubeMasters, oldKubeWorkers)
+			err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -759,20 +754,19 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	// Purge all the servers
-	err = resourceTaikunProjectPurgeServers(
+	serversToPurge := resourceTaikunProjectFlattenServersData(
 		data.Get("server_bastion"),
 		data.Get("server_kubemaster"),
 		data.Get("server_kubeworker"),
-		apiClient,
-		id,
 	)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
-		return diag.FromErr(err)
+	if len(serversToPurge) != 0 {
+		err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// Delete the project
@@ -1048,15 +1042,13 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 	return boundFlavorDTOs, nil
 }
 
-func resourceTaikunProjectPurgeServers(bastions interface{}, kubeMasters interface{}, kubeWorkers interface{}, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *apiClient, projectID int32) error {
 	serverIds := make([]int32, 0)
 
-	for _, data := range []interface{}{bastions, kubeMasters, kubeWorkers} {
-		for _, server := range data.(*schema.Set).List() {
-			serverMap := server.(map[string]interface{})
-			serverId, _ := atoi32(serverMap["id"].(string))
-			serverIds = append(serverIds, serverId)
-		}
+	for _, server := range serversToPurge {
+		serverMap := server.(map[string]interface{})
+		serverId, _ := atoi32(serverMap["id"].(string))
+		serverIds = append(serverIds, serverId)
 	}
 
 	if len(serverIds) != 0 {
@@ -1071,6 +1063,14 @@ func resourceTaikunProjectPurgeServers(bastions interface{}, kubeMasters interfa
 		}
 	}
 	return nil
+}
+
+func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMastersData interface{}, kubeWorkersData interface{}) []interface{} {
+	var servers []interface{}
+	servers = append(servers, bastionsData.(*schema.Set).List()...)
+	servers = append(servers, kubeMastersData.(*schema.Set).List()...)
+	servers = append(servers, kubeWorkersData.(*schema.Set).List()...)
+	return servers
 }
 
 func resourceTaikunProjectSetServers(data *schema.ResourceData, apiClient *apiClient, projectID int32) error {
@@ -1166,7 +1166,6 @@ func resourceTaikunProjectCommit(apiClient *apiClient, projectID int32) error {
 }
 
 func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *apiClient, projectID int32) error {
-
 	createStateConf := &resource.StateChangeConf{
 		Pending: pendingList,
 		Target:  targetList,
