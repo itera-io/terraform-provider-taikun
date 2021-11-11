@@ -11,6 +11,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
+	"github.com/itera-io/taikungoclient/client/cloud_credentials"
+	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -428,6 +430,10 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		body.TaikunLBFlavor = taikunLBFlavor.(string)
 		body.RouterIDStartRange = int32(data.Get("router_id_start_range").(int))
 		body.RouterIDEndRange = int32(data.Get("router_id_end_range").(int))
+	}
+
+	if err := resourceTaikunProjectValidateKubernetesProfileLB(data, apiClient); err != nil {
+		return diag.FromErr(err)
 	}
 
 	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body)
@@ -1207,4 +1213,64 @@ func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []
 		}
 	}
 	return labelsToAdd
+}
+
+func resourceTaikunProjectValidateKubernetesProfileLB(data *schema.ResourceData, apiClient *apiClient) error {
+	if kubernetesProfileIDData, kubernetesProfileIsSet := data.GetOk("kubernetes_profile_id"); kubernetesProfileIsSet {
+		kubernetesProfileID, _ := atoi32(kubernetesProfileIDData.(string))
+		lbSolution, err := resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID, apiClient)
+		if err != nil {
+			return err
+		}
+		if lbSolution == loadBalancerNone {
+			return nil
+		}
+
+		cloudCredentialID, _ := atoi32(data.Get("cloud_credential_id").(string))
+		cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
+		if err != nil {
+			return err
+		}
+		if cloudType != cloudTypeOpenStack {
+			return fmt.Errorf("If %s load balancer is enabled, cloud type should be OpenStack; is %s", lbSolution, cloudType)
+		}
+
+		if lbSolution == loadBalancerTaikun {
+			if _, taikunLBFlavorIsSet := data.GetOk("taikun_lb_flavor"); !taikunLBFlavorIsSet {
+				return fmt.Errorf("If Taikun load balancer is enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor must be set")
+			}
+		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *apiClient) (string, error) {
+	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&kubernetesProfileID)
+	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
+	if err != nil {
+		return "", err
+	}
+	if len(response.Payload.Data) == 0 {
+		return "", fmt.Errorf("kubernetes profile with ID %d not found", kubernetesProfileID)
+	}
+	kubernetesProfile := response.Payload.Data[0]
+	return getLoadBalancingSolution(kubernetesProfile.OctaviaEnabled, kubernetesProfile.TaikunLBEnabled), nil
+}
+
+func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiClient) (string, error) {
+	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
+	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+	if err != nil {
+		return "", err
+	}
+	if len(response.Payload.Amazon) == 1 {
+		return cloudTypeAWS, nil
+	}
+	if len(response.Payload.Azure) == 1 {
+		return cloudTypeAzure, nil
+	}
+	if len(response.Payload.Openstack) == 1 {
+		return cloudTypeOpenStack, nil
+	}
+	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
