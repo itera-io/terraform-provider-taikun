@@ -1222,23 +1222,20 @@ func resourceTaikunProjectValidateKubernetesProfileLB(data *schema.ResourceData,
 		if err != nil {
 			return err
 		}
-		if lbSolution == loadBalancerNone {
-			return nil
-		}
-
-		cloudCredentialID, _ := atoi32(data.Get("cloud_credential_id").(string))
-		cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
-		if err != nil {
-			return err
-		}
-		if cloudType != cloudTypeOpenStack {
-			return fmt.Errorf("If %s load balancer is enabled, cloud type should be OpenStack; is %s", lbSolution, cloudType)
-		}
-
 		if lbSolution == loadBalancerTaikun {
+			cloudCredentialID, _ := atoi32(data.Get("cloud_credential_id").(string))
+			cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
+			if err != nil {
+				return err
+			}
 			if _, taikunLBFlavorIsSet := data.GetOk("taikun_lb_flavor"); !taikunLBFlavorIsSet {
 				return fmt.Errorf("If Taikun load balancer is enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor must be set")
 			}
+			if cloudType != cloudTypeOpenStack {
+				return fmt.Errorf("If Taikun load balancer is enabled, cloud type should be OpenStack; is %s", cloudType)
+			}
+		} else if _, taikunLBFlavorIsSet := data.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
+			return fmt.Errorf("If Taikun load balancer is not enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor should not be set")
 		}
 	}
 	return nil
