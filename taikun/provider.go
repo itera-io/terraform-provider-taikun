@@ -82,6 +82,8 @@ func Provider() *schema.Provider {
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),
 			"taikun_kubernetes_profiles":         dataSourceTaikunKubernetesProfiles(),
+			"taikun_opa_profile":                 dataSourceTaikunOPAProfile(),
+			"taikun_opa_profiles":                dataSourceTaikunOPAProfiles(),
 			"taikun_organization":                dataSourceTaikunOrganization(),
 			"taikun_organizations":               dataSourceTaikunOrganizations(),
 			"taikun_project":                     dataSourceTaikunProject(),
