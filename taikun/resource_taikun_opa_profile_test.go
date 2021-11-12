@@ -89,7 +89,7 @@ func TestAccResourceTaikunOPAProfile(t *testing.T) {
 					false,
 					"",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "false"),
@@ -131,7 +131,7 @@ func TestAccResourceTaikunOPAProfileLock(t *testing.T) {
 					true,
 					"",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "false"),
@@ -155,7 +155,7 @@ func TestAccResourceTaikunOPAProfileLock(t *testing.T) {
 					true,
 					"",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "true"),
@@ -192,7 +192,7 @@ func TestAccResourceTaikunOPAProfileUpdate(t *testing.T) {
 					true,
 					"forbidden_tags = [\"tag1\", \"tag2\"]",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "false"),
@@ -219,7 +219,7 @@ func TestAccResourceTaikunOPAProfileUpdate(t *testing.T) {
 					true,
 					"forbidden_tags = [\"tag3\"]",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "false"),

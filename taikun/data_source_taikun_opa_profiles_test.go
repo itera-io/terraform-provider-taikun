@@ -41,7 +41,7 @@ func TestAccDataSourceTaikunOPAProfiles(t *testing.T) {
 					false,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_opa_profiles.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_opa_profiles.all", "opa_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_opa_profiles.all", "opa_profiles.0.name"),
@@ -106,7 +106,7 @@ func TestAccDataSourceTaikunOPAProfilesWithFilter(t *testing.T) {
 					false,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_opa_profiles.all", "opa_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_opa_profiles.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_opa_profiles.all", "opa_profiles.#"),
