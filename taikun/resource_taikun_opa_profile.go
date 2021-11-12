@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -263,22 +262,13 @@ func resourceTaikunOPAProfileDelete(_ context.Context, data *schema.ResourceData
 
 func flattenTaikunOPAProfile(rawOPAProfile *models.OpaProfileListDto) map[string]interface{} {
 
-	var ingressWhitelist []string
-	_ = json.Unmarshal([]byte(rawOPAProfile.IngressWhitelist), &ingressWhitelist)
-
-	var forbiddenTags []string
-	_ = json.Unmarshal([]byte(rawOPAProfile.ForbidSpecificTags), &forbiddenTags)
-
-	var allowedRepos []string
-	_ = json.Unmarshal([]byte(rawOPAProfile.AllowedRepo), &allowedRepos)
-
 	return map[string]interface{}{
-		"allowed_repos":           allowedRepos,
+		"allowed_repos":           rawOPAProfile.AllowedRepo,
 		"forbid_node_port":        rawOPAProfile.ForbidNodePort,
 		"forbid_http_ingress":     rawOPAProfile.ForbidHTTPIngress,
-		"forbidden_tags":          forbiddenTags,
+		"forbidden_tags":          rawOPAProfile.ForbidSpecificTags,
 		"id":                      i32toa(rawOPAProfile.ID),
-		"ingress_whitelist":       ingressWhitelist,
+		"ingress_whitelist":       rawOPAProfile.IngressWhitelist,
 		"is_default":              rawOPAProfile.IsDefault,
 		"lock":                    rawOPAProfile.IsLocked,
 		"name":                    rawOPAProfile.Name,
