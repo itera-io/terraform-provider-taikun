@@ -98,7 +98,7 @@ func TestAccResourceTaikunShowbackRule(t *testing.T) {
 					kind,
 					projectLimit,
 					globalLimit),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "metric_name", metricName),
@@ -152,7 +152,7 @@ func TestAccResourceTaikunShowbackRuleUpdate(t *testing.T) {
 					projectLimit,
 					globalLimit,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", name),
@@ -176,7 +176,7 @@ func TestAccResourceTaikunShowbackRuleUpdate(t *testing.T) {
 					newProjectLimit,
 					newGlobalLimit,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", newName),
@@ -248,7 +248,7 @@ func TestAccResourceTaikunShowbackRuleWithCredentials(t *testing.T) {
 					projectLimit,
 					globalLimit,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", name),

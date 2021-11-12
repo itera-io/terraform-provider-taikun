@@ -95,7 +95,7 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -131,7 +131,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -148,7 +148,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleNameNew,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleNameNew),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -213,7 +213,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -231,7 +231,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),

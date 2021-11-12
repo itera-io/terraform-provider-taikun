@@ -161,7 +161,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 					emails,
 					webhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -218,7 +218,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					emails,
 					webhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -241,7 +241,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					newEmails,
 					newWebhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -313,7 +313,7 @@ integration {
 					emails,
 					webhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -338,7 +338,7 @@ integration {
 					emails,
 					webhooks,
 					newIntegrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),

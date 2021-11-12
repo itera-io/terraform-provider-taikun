@@ -112,7 +112,7 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					country,
 					isLocked,
 					letManagersChangeSubscription),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
 					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(name)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fmt.Sprint(fullName)),
@@ -182,7 +182,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					country,
 					isLocked,
 					letManagersChangeSubscription),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
 					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(name)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fmt.Sprint(fullName)),
@@ -212,7 +212,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					newCountry,
 					newIsLocked,
 					newLetManagersChangeSubscription),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
 					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(newName)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "full_name", fmt.Sprint(newFullName)),

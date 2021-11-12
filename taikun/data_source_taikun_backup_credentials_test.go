@@ -35,7 +35,7 @@ func TestAccDataSourceTaikunBackupCredentials(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_backup_credentials.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.created_by"),
@@ -94,7 +94,7 @@ func TestAccDataSourceTaikunBackupCredentialsWithFilter(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_backup_credentials.all", "backup_credentials.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.#"),

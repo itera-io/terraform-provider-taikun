@@ -81,7 +81,7 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -113,7 +113,7 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -133,7 +133,7 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -166,7 +166,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -186,7 +186,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", newBackupCredentialName),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),

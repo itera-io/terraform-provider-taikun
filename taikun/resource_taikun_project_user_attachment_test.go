@@ -54,7 +54,7 @@ func TestAccResourceTaikunProjectUserAttachment(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectUserAttachmentExists,
 					resource.TestCheckResourceAttrSet("taikun_project_user_attachment.foo", "project_id"),
 					resource.TestCheckResourceAttr("taikun_project_user_attachment.foo", "project_name", projectName),

@@ -73,7 +73,7 @@ func TestAccResourceTaikunOrganizationBillingRuleAttachment(t *testing.T) {
 					fullOrgName,
 					globalDiscountRate,
 					ruleDiscountRate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationBillingRuleAttachmentExists,
 					resource.TestCheckResourceAttrSet("taikun_organization_billing_rule_attachment.foo", "billing_rule_id"),
 					resource.TestCheckResourceAttrSet("taikun_organization_billing_rule_attachment.foo", "organization_id"),

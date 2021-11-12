@@ -72,7 +72,7 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
@@ -102,7 +102,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
@@ -115,7 +115,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, true),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "true"),

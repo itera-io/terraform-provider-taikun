@@ -40,7 +40,7 @@ func TestAccDataSourceTaikunFlavorsAWS(t *testing.T) {
 					cpu, cpu,
 					ram, ram,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.0.name"),
 					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.cpu", fmt.Sprint(cpu)),
@@ -85,7 +85,7 @@ func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 					cpu, cpu,
 					ram, ram,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.0.name"),
 					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.cpu", fmt.Sprint(cpu)),
@@ -126,7 +126,7 @@ func TestAccDataSourceTaikunFlavorsOpenStack(t *testing.T) {
 					cpu, cpu,
 					ram, ram,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.0.name"),
 					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.cpu", fmt.Sprint(cpu)),

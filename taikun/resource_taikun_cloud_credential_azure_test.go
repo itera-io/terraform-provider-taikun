@@ -81,7 +81,7 @@ func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAzureExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_id", os.Getenv("ARM_CLIENT_ID")),
@@ -115,7 +115,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAzureExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_id", os.Getenv("ARM_CLIENT_ID")),
@@ -137,7 +137,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					true,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAzureExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_id", os.Getenv("ARM_CLIENT_ID")),
@@ -172,7 +172,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAzureExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_id", os.Getenv("ARM_CLIENT_ID")),
@@ -194,7 +194,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAzureExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_id", os.Getenv("ARM_CLIENT_ID")),

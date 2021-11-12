@@ -82,7 +82,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
@@ -117,7 +117,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
@@ -135,7 +135,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "true"),

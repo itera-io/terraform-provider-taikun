@@ -88,7 +88,7 @@ func TestAccResourceTaikunUser(t *testing.T) {
 					userDisabled,
 					approvedByPartner,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunUserExists,
 					resource.TestCheckResourceAttr("taikun_user.foo", "user_name", userName),
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
@@ -142,7 +142,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					userDisabled,
 					approvedByPartner,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunUserExists,
 					resource.TestCheckResourceAttr("taikun_user.foo", "user_name", userName),
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
@@ -168,7 +168,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					newUserDisabled,
 					newApprovedByPartner,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunUserExists,
 					resource.TestCheckResourceAttr("taikun_user.foo", "user_name", newUserName),
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", newEmail),

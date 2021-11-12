@@ -94,7 +94,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -130,7 +130,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -148,7 +148,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, secondName, true),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "true"),
@@ -205,7 +205,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -223,7 +223,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, secondName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),

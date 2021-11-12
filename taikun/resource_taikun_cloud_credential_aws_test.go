@@ -79,7 +79,7 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -110,7 +110,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -129,7 +129,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					true,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -161,7 +161,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -180,7 +180,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),

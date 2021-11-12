@@ -77,7 +77,7 @@ func TestAccResourceTaikunCloudCredentialOpenStack(t *testing.T) {
 					cloudCredentialName,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialOpenStackExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "user", os.Getenv("OS_USERNAME")),
@@ -111,7 +111,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackLock(t *testing.T) {
 					cloudCredentialName,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialOpenStackExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "user", os.Getenv("OS_USERNAME")),
@@ -133,7 +133,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackLock(t *testing.T) {
 					cloudCredentialName,
 					true,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialOpenStackExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "user", os.Getenv("OS_USERNAME")),
@@ -168,7 +168,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackRename(t *testing.T) {
 					cloudCredentialName,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialOpenStackExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "user", os.Getenv("OS_USERNAME")),
@@ -190,7 +190,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackRename(t *testing.T) {
 					newCloudCredentialName,
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialOpenStackExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_openstack.foo", "user", os.Getenv("OS_USERNAME")),
