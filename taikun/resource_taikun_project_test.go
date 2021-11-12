@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -1050,12 +1051,24 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
-		if err == nil && len(response.Payload.Data) != 0 {
-			return fmt.Errorf("project still exists (id = %s)", rs.Primary.ID)
+			response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if len(response.Payload.Data) != 0 {
+				return resource.RetryableError(errors.New("project still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("project still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

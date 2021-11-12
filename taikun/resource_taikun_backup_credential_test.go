@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -230,12 +231,24 @@ func testAccCheckTaikunBackupCredentialDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.S3Credentials.S3CredentialsList(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("backup credential still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.S3Credentials.S3CredentialsList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("backup credential still exists ()"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("backup credential still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

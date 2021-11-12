@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -298,12 +299,24 @@ func testAccCheckTaikunShowbackRuleDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("showback rule still exists (id = %s)", rs.Primary.ID)
+			response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("showback rule still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("showback rule still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

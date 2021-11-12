@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -133,21 +134,30 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 			return err
 		}
 
-		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-		response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
-		if err != nil {
-			return err
-		}
-		if len(response.Payload.Data) == 0 {
-			return nil
-		}
-
-		rawBillingRule := response.GetPayload().Data[0]
-
-		for _, e := range rawBillingRule.BoundOrganizations {
-			if e.OrganizationID == organizationId {
-				return fmt.Errorf("organization_billing_rule_attachment exists (id = %s)", rs.Primary.ID)
+		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
+			response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
 			}
+			if len(response.Payload.Data) == 0 {
+				return resource.NonRetryableError(errors.New(fmt.Sprintf("billing rule with ID %d not found", billingRuleId)))
+			}
+
+			rawBillingRule := response.GetPayload().Data[0]
+
+			for _, e := range rawBillingRule.BoundOrganizations {
+				if e.OrganizationID == organizationId {
+					return resource.RetryableError(errors.New("organization_billing_rule_attachment still exists"))
+				}
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("organization_billing_rule_attachment still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 
