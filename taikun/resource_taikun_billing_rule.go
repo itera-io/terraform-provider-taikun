@@ -94,7 +94,7 @@ func resourceTaikunBillingRule() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Billing Rule",
 		CreateContext: resourceTaikunBillingRuleCreate,
-		ReadContext:   generateResourceTaikunBillingRuleRead(false),
+		ReadContext:   generateResourceTaikunBillingRuleReadWithoutRetries(),
 		UpdateContext: resourceTaikunBillingRuleUpdate,
 		DeleteContext: resourceTaikunBillingRuleDelete,
 		Schema:        resourceTaikunBillingRuleSchema(),
@@ -129,10 +129,15 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 
 	data.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunBillingRuleRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunBillingRuleRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunBillingRuleReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBillingRuleRead(true)
+}
+func generateResourceTaikunBillingRuleReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBillingRuleRead(false)
+}
+func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -147,7 +152,7 @@ func generateResourceTaikunBillingRuleRead(isAfterUpdateOrCreate bool) schema.Re
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -195,7 +200,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunBillingRuleRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

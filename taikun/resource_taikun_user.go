@@ -103,7 +103,7 @@ func resourceTaikunUser() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun User",
 		CreateContext: resourceTaikunUserCreate,
-		ReadContext:   generateResourceTaikunUserRead(false),
+		ReadContext:   generateResourceTaikunUserReadWithoutRetries(),
 		UpdateContext: resourceTaikunUserUpdate,
 		DeleteContext: resourceTaikunUserDelete,
 		Schema:        resourceTaikunUserSchema(),
@@ -156,10 +156,15 @@ func resourceTaikunUserCreate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunUserRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunUserRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunUserReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunUserRead(true)
+}
+func generateResourceTaikunUserReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunUserRead(false)
+}
+func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id := data.Id()
@@ -170,7 +175,7 @@ func generateResourceTaikunUserRead(isAfterUpdateOrCreate bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -209,7 +214,7 @@ func resourceTaikunUserUpdate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunUserRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunUserDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

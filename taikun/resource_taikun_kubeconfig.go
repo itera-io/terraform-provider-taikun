@@ -81,7 +81,7 @@ func resourceTaikunKubeconfig() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Kubeconfig",
 		CreateContext: resourceTaikunKubeconfigCreate,
-		ReadContext:   generateResourceTaikunKubeconfigRead(false),
+		ReadContext:   generateResourceTaikunKubeconfigReadWithoutRetries(),
 		DeleteContext: resourceTaikunKubeconfigDelete,
 		Schema:        resourceTaikunKubeconfigSchema(),
 		Importer: &schema.ResourceImporter{
@@ -112,10 +112,15 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, data *schema.ResourceDa
 	}
 	data.SetId(response.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunKubeconfigRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunKubeconfigReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunKubeconfigRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunKubeconfigReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunKubeconfigRead(true)
+}
+func generateResourceTaikunKubeconfigReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunKubeconfigRead(false)
+}
+func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id := data.Id()
@@ -132,7 +137,7 @@ func generateResourceTaikunKubeconfigRead(isAfterUpdateOrCreate bool) schema.Rea
 		}
 
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}

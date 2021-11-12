@@ -80,7 +80,7 @@ func resourceTaikunBackupPolicy() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Backup Policy",
 		CreateContext: resourceTaikunBackupPolicyCreate,
-		ReadContext:   generateResourceTaikunBackupPolicyRead(false),
+		ReadContext:   generateResourceTaikunBackupPolicyReadWithoutRetries(),
 		DeleteContext: resourceTaikunBackupPolicyDelete,
 		Schema:        resourceTaikunBackupPolicySchema(),
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
@@ -127,10 +127,15 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(fmt.Sprintf("%d/%s", projectId, data.Get("name").(string)))
 
-	return readAfterCreateWithRetries(generateResourceTaikunBackupPolicyRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBackupPolicyReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunBackupPolicyRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunBackupPolicyReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBackupPolicyRead(true)
+}
+func generateResourceTaikunBackupPolicyReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBackupPolicyRead(false)
+}
+func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		projectId, backupPolicyName, err := parseBackupPolicyId(data.Id())
@@ -160,7 +165,7 @@ func generateResourceTaikunBackupPolicyRead(isAfterUpdateOrCreate bool) schema.R
 			}
 		}
 
-		if isAfterUpdateOrCreate {
+		if withRetries {
 			data.SetId(fmt.Sprintf("%d/%s", projectId, backupPolicyName))
 			return diag.Errorf(notFoundAfterCreateOrUpdateError)
 		}

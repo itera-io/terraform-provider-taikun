@@ -43,7 +43,7 @@ func resourceTaikunProjectUserAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Project - User Attachment",
 		CreateContext: resourceTaikunProjectUserAttachmentCreate,
-		ReadContext:   generateResourceTaikunProjectUserAttachmentRead(false),
+		ReadContext:   generateResourceTaikunProjectUserAttachmentReadWithoutRetries(),
 		DeleteContext: resourceTaikunProjectUserAttachmentDelete,
 		Schema:        resourceTaikunProjectUserAttachmentSchema(),
 	}
@@ -77,10 +77,15 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, data *schema
 	id := fmt.Sprintf("%d/%s", projectId, userId)
 	data.SetId(id)
 
-	return readAfterCreateWithRetries(generateResourceTaikunProjectUserAttachmentRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunProjectUserAttachmentReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunProjectUserAttachmentRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunProjectUserAttachmentReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunProjectUserAttachmentRead(true)
+}
+func generateResourceTaikunProjectUserAttachmentReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunProjectUserAttachmentRead(false)
+}
+func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 
@@ -97,7 +102,7 @@ func generateResourceTaikunProjectUserAttachmentRead(isAfterUpdateOrCreate bool)
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -122,7 +127,7 @@ func generateResourceTaikunProjectUserAttachmentRead(isAfterUpdateOrCreate bool)
 			}
 		}
 
-		if isAfterUpdateOrCreate {
+		if withRetries {
 			data.SetId(id)
 			return diag.Errorf(notFoundAfterCreateOrUpdateError)
 		}

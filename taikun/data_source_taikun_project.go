@@ -25,5 +25,5 @@ func dataSourceTaikunProject() *schema.Resource {
 
 func dataSourceTaikunProjectRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
-	return generateResourceTaikunProjectRead(false)(ctx, data, meta)
+	return generateResourceTaikunProjectReadWithoutRetries()(ctx, data, meta)
 }

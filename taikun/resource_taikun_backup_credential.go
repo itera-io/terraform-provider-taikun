@@ -97,7 +97,7 @@ func resourceTaikunBackupCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Backup Credential",
 		CreateContext: resourceTaikunBackupCredentialCreate,
-		ReadContext:   generateResourceTaikunBackupCredentialRead(false),
+		ReadContext:   generateResourceTaikunBackupCredentialReadWithoutRetries(),
 		UpdateContext: resourceTaikunBackupCredentialUpdate,
 		DeleteContext: resourceTaikunBackupCredentialDelete,
 		Schema:        resourceTaikunBackupCredentialSchema(),
@@ -142,10 +142,15 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunBackupCredentialRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunBackupCredentialRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunBackupCredentialReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBackupCredentialRead(true)
+}
+func generateResourceTaikunBackupCredentialReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBackupCredentialRead(false)
+}
+func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -159,7 +164,7 @@ func generateResourceTaikunBackupCredentialRead(isAfterUpdateOrCreate bool) sche
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -212,7 +217,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunBackupCredentialRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunBackupCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

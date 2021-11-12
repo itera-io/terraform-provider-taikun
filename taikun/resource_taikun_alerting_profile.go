@@ -164,7 +164,7 @@ func resourceTaikunAlertingProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Alerting Profile",
 		CreateContext: resourceTaikunAlertingProfileCreate,
-		ReadContext:   generateResourceTaikunAlertingProfileRead(false),
+		ReadContext:   generateResourceTaikunAlertingProfileReadWithoutRetries(),
 		UpdateContext: resourceTaikunAlertingProfileUpdate,
 		DeleteContext: resourceTaikunAlertingProfileDelete,
 		Schema:        resourceTaikunAlertingProfileSchema(),
@@ -231,10 +231,15 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunAlertingProfileRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunAlertingProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunAlertingProfileReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunAlertingProfileRead(true)
+}
+func generateResourceTaikunAlertingProfileReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunAlertingProfileRead(false)
+}
+func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -249,7 +254,7 @@ func generateResourceTaikunAlertingProfileRead(isAfterUpdateOrCreate bool) schem
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -260,7 +265,7 @@ func generateResourceTaikunAlertingProfileRead(isAfterUpdateOrCreate bool) schem
 		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
 		alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
 		if err != nil {
-			if _, ok := err.(*alerting_integrations.AlertingIntegrationsListNotFound); ok && isAfterUpdateOrCreate {
+			if _, ok := err.(*alerting_integrations.AlertingIntegrationsListNotFound); ok && withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -352,7 +357,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

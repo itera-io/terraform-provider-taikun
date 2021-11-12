@@ -108,7 +108,7 @@ func resourceTaikunCloudCredentialAWS() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun AWS Cloud Credential",
 		CreateContext: resourceTaikunCloudCredentialAWSCreate,
-		ReadContext:   generateResourceTaikunCloudCredentialAWSRead(false),
+		ReadContext:   generateResourceTaikunCloudCredentialAWSReadWithoutRetries(),
 		UpdateContext: resourceTaikunCloudCredentialAWSUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialAWSSchema(),
@@ -153,10 +153,15 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunCloudCredentialAWSRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunCloudCredentialAWSReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialAWSRead(true)
+}
+func generateResourceTaikunCloudCredentialAWSReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialAWSRead(false)
+}
+func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -170,7 +175,7 @@ func generateResourceTaikunCloudCredentialAWSRead(isAfterUpdateOrCreate bool) sc
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Amazon) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -223,7 +228,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {

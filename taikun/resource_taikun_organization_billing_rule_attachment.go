@@ -49,7 +49,7 @@ func resourceTaikunOrganizationBillingRuleAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Organization - Billing Rule Attachment",
 		CreateContext: resourceTaikunOrganizationBillingRuleAttachmentCreate,
-		ReadContext:   generateResourceTaikunOrganizationBillingRuleAttachmentRead(false),
+		ReadContext:   generateResourceTaikunOrganizationBillingRuleAttachmentReadWithoutRetries(),
 		DeleteContext: resourceTaikunOrganizationBillingRuleAttachmentDelete,
 		Schema:        resourceTaikunOrganizationBillingRuleAttachmentSchema(),
 	}
@@ -87,10 +87,15 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 	id := fmt.Sprintf("%d/%d", organizationId, billingRuleId)
 	data.SetId(id)
 
-	return readAfterCreateWithRetries(generateResourceTaikunOrganizationBillingRuleAttachmentRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunOrganizationBillingRuleAttachmentReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunOrganizationBillingRuleAttachmentRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunOrganizationBillingRuleAttachmentReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunOrganizationBillingRuleAttachmentRead(true)
+}
+func generateResourceTaikunOrganizationBillingRuleAttachmentReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunOrganizationBillingRuleAttachmentRead(false)
+}
+func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 
@@ -107,7 +112,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(isAfterUpdateOr
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -135,7 +140,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(isAfterUpdateOr
 			}
 		}
 
-		if isAfterUpdateOrCreate {
+		if withRetries {
 			data.SetId(id)
 			return diag.Errorf(notFoundAfterCreateOrUpdateError)
 		}
