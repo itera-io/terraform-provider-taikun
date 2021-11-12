@@ -918,6 +918,7 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   flavors = local.flavors
+  backup_credential_id = resource.taikun_backup_credential.foo.id
 
   server_bastion {
      name = "b"
@@ -982,14 +983,32 @@ data "taikun_kubeconfigs" "foo" {
 
   project_id = resource.taikun_project.foo.id
 }
+
+resource "taikun_backup_credential" "foo" {
+  name            = "%s"
+
+  s3_endpoint = "%s"
+  s3_region   = "%s"
+}
+
+resource "taikun_backup_policy" "foo" {
+  name = "%s"
+  project_id = resource.taikun_project.foo.id
+  cron_period = "0 0 * * 0"
+  retention_period = "2h"
+  included_namespaces = ["test"]
+  excluded_namespaces = ["aled"]
+}
 `
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	backupCredentialName := randomTestName()
+	backupPolicyName := randomTestName()
 	projectName := shortRandomTestName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t); testAccPreCheckS3(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
 		Steps: []resource.TestStep{
@@ -997,6 +1016,10 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 				Config: fmt.Sprintf(testAccResourceTaikunProjectMinimal,
 					cloudCredentialName,
 					projectName,
+					backupCredentialName,
+					os.Getenv("S3_ENDPOINT"),
+					os.Getenv("S3_REGION"),
+					backupPolicyName,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunProjectExists,
