@@ -3,7 +3,6 @@ package taikun
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1306,53 +1305,43 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiCl
 }
 
 func resourceTaikunProjectGetDefaultOrganization(defaultOrganizationID *int32, apiClient *apiClient) error {
-	log.Printf("[DEBUG] <<<>>> GETTING DEFAULT ORGANIZATION\n")
 	params := users.NewUsersDetailsParams().WithV(ApiVersion)
 	response, err := apiClient.client.Users.UsersDetails(params, apiClient)
 	if err != nil {
 		return err
 	}
 	*defaultOrganizationID = response.Payload.Data.OrganizationID
-	log.Printf("[DEBUG] <<<>>> FOUND DEFAULT ORGANIZATION %d\n", *defaultOrganizationID)
 	return nil
 }
 
 const defaultAccessProfileName = "default"
 
 func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *apiClient) (accessProfileID int32, found bool, err error) {
-	log.Printf("[DEBUG] <<<>>> GETTING DEFAULT ACCESS PROFILE IN ORG %d\n", organizationID)
 	params := access_profiles.NewAccessProfilesAccessProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
 	response, err := apiClient.client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
 	for _, profile := range response.Payload {
-		log.Printf("[DEBUG] <<<>>> ACCESS PROFILE %s\n", profile.Name)
 		if profile.Name == defaultAccessProfileName {
-			log.Printf("[DEBUG] <<<>>> FOUND DEFAULT ACCESS PROFILE %d\n", profile.ID)
 			return profile.ID, true, nil
 		}
 	}
-	log.Printf("[DEBUG] <<<>>> DEFAULT ACCESS PROFILE NOT FOUND\n")
 	return 0, false, nil
 }
 
 const defaultKubernetesProfileName = "default"
 
 func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *apiClient) (kubernetesProfileID int32, found bool, err error) {
-	log.Printf("[DEBUG] <<<>>> GETTING DEFAULT KUBERNETES PROFILE IN ORG %d\n", organizationID)
 	params := kubernetes_profiles.NewKubernetesProfilesBackupCredentialsForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
 	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesBackupCredentialsForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
 	for _, profile := range response.Payload {
-		log.Printf("[DEBUG] <<<>>> KUBERNETES PROFILE %s\n", profile.Name)
 		if profile.Name == defaultKubernetesProfileName {
-			log.Printf("[DEBUG] <<<>>> FOUND DEFAULT KUBERNETES PROFILE %d\n", profile.ID)
 			return profile.ID, true, nil
 		}
 	}
-	log.Printf("[DEBUG] <<<>>> DEFAULT KUBERNETES PROFILE NOT FOUND\n")
 	return 0, false, nil
 }
