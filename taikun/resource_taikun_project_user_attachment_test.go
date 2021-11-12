@@ -121,7 +121,7 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 				return resource.NonRetryableError(err)
 			}
 			if response.Payload.TotalCount != 1 {
-				return resource.NonRetryableError(errors.New(fmt.Sprintf("user with ID %s not found", userId)))
+				return nil
 			}
 
 			rawUser := response.GetPayload().Data[0]
