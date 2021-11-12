@@ -39,7 +39,6 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 70
     concurrency: test-acc
-    continue-on-error: true
     steps:
 
       - name: Set up Go
