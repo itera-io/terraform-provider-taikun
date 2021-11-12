@@ -1,10 +1,12 @@
 package taikun
 
 import (
+	"errors"
 	"fmt"
-	"github.com/itera-io/taikungoclient/client/opa_profiles"
 	"strings"
 	"testing"
+
+	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -266,12 +268,24 @@ func testAccCheckTaikunOPAProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.OpaProfiles.OpaProfilesList(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("opa profile still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.OpaProfiles.OpaProfilesList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("opa profile still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("opa profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 
