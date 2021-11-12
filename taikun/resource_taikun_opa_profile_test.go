@@ -64,6 +64,8 @@ resource "taikun_opa_profile" "foo" {
   require_probe = %t
   unique_ingress = %t
   unique_service_selector = %t
+
+  %s
 }
 `
 
@@ -85,6 +87,7 @@ func TestAccResourceTaikunOPAProfile(t *testing.T) {
 					false,
 					false,
 					false,
+					"",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
@@ -126,6 +129,7 @@ func TestAccResourceTaikunOPAProfileLock(t *testing.T) {
 					true,
 					true,
 					true,
+					"",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
@@ -149,6 +153,7 @@ func TestAccResourceTaikunOPAProfileLock(t *testing.T) {
 					true,
 					true,
 					true,
+					"",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTaikunOPAProfileExists,
@@ -161,6 +166,72 @@ func TestAccResourceTaikunOPAProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "unique_service_selector", "true"),
 					resource.TestCheckResourceAttrSet("taikun_opa_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_opa_profile.foo", "organization_name"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceTaikunOPAProfileUpdate(t *testing.T) {
+	firstName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunOPAProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(
+					testAccResourceTaikunOPAProfileConfig,
+					firstName,
+					false,
+					true,
+					true,
+					true,
+					true,
+					true,
+					"forbidden_tags = [\"tag1\", \"tag2\"]",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunOPAProfileExists,
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbid_node_port", "true"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbid_http_ingress", "true"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "require_probe", "true"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "unique_ingress", "true"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "unique_service_selector", "true"),
+					resource.TestCheckResourceAttrSet("taikun_opa_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_opa_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbidden_tags.#", "2"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbidden_tags.0", "tag1"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbidden_tags.1", "tag2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunOPAProfileConfig,
+					firstName,
+					false,
+					true,
+					false,
+					true,
+					false,
+					true,
+					"forbidden_tags = [\"tag3\"]",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTaikunOPAProfileExists,
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbid_node_port", "true"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbid_http_ingress", "false"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "require_probe", "true"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "unique_ingress", "false"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "unique_service_selector", "true"),
+					resource.TestCheckResourceAttrSet("taikun_opa_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_opa_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbidden_tags.#", "1"),
+					resource.TestCheckResourceAttr("taikun_opa_profile.foo", "forbidden_tags.0", "tag3"),
 				),
 			},
 		},

@@ -221,13 +221,12 @@ func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceDa
 
 	if data.HasChangeExcept("lock") {
 
-		//TODO
 		body := &models.OpaProfileUpdateCommand{
-			//AllowedRepo:           resourceGetStringList(data.Get("allowed_repos")),
-			ForbidHTTPIngress: data.Get("forbid_http_ingress").(bool),
-			ForbidNodePort:    data.Get("forbid_node_port").(bool),
-			//ForbidSpecificTags:    resourceGetStringList(data.Get("forbidden_tags")),
-			//IngressWhitelist:      resourceGetStringList(data.Get("ingress_whitelist")),
+			AllowedRepo:           resourceGetStringList(data.Get("allowed_repos")),
+			ForbidHTTPIngress:     data.Get("forbid_http_ingress").(bool),
+			ForbidNodePort:        data.Get("forbid_node_port").(bool),
+			ForbidSpecificTags:    resourceGetStringList(data.Get("forbidden_tags")),
+			IngressWhitelist:      resourceGetStringList(data.Get("ingress_whitelist")),
 			Name:                  data.Get("name").(string),
 			RequireProbe:          data.Get("require_probe").(bool),
 			UniqueIngresses:       data.Get("unique_ingress").(bool),
