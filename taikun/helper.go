@@ -157,6 +157,15 @@ func stringIsUUID(i interface{}, path cty.Path) diag.Diagnostics {
 	return nil
 }
 
+func resourceGetStringList(data interface{}) []string {
+	rawList := data.([]interface{})
+	result := make([]string, 0)
+	for _, e := range rawList {
+		result = append(result, e.(string))
+	}
+	return result
+}
+
 func randomTestName() string {
 	return randomName(testNamePrefix, 15)
 }
