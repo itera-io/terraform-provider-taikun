@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
