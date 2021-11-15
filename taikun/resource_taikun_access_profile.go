@@ -171,19 +171,9 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.AccessProfilesLockManagementCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		id, _ := atoi32(createResult.Payload.ID)
+		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -243,18 +233,9 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("lock") {
-		lockBody := models.AccessProfilesLockManagementCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.AccessProfiles.AccessProfilesLockManager(lockParams, apiClient)
-		if err != nil {
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		if err := resourceTaikunAccessProfileLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
-		}
-		if !data.HasChangeExcept("lock") {
-			return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
 		}
 	}
 
@@ -281,6 +262,13 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 	}
 
 	data.SetId(updateResponse.Payload.ID)
+
+	if data.Get("lock").(bool) {
+		id, _ := atoi32(updateResponse.Payload.ID)
+		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
 }
@@ -431,4 +419,14 @@ func resourceTaikunAccessProfileUpsertSetBody(data *schema.ResourceData, body *m
 		}
 		body.SSHUsers = SSHUsersList
 	}
+}
+
+func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.AccessProfilesLockManagementCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.AccessProfiles.AccessProfilesLockManager(params, apiClient)
+	return err
 }

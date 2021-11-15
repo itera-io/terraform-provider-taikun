@@ -143,19 +143,9 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.CloudLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		id, _ := atoi32(createResult.Payload.ID)
+		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -204,6 +194,12 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		if err := resourceTaikunCloudCredentialAWSLock(id, false, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if data.HasChanges("access_key_id", "secret_access_key", "name") {
 		updateBody := &models.UpdateAwsCommand{
 			ID:                 id,
@@ -218,14 +214,8 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	if data.HasChange("lock") {
-		lockBody := models.CloudLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -248,4 +238,14 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsL
 		"availability_zone": rawAWSCredential.AvailabilityZone,
 		"region":            rawAWSCredential.Region,
 	}
+}
+
+func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.CloudLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	return err
 }

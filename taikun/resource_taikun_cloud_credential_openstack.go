@@ -210,19 +210,9 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *sch
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.CloudLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		id, _ := atoi32(createResult.Payload.ID)
+		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -271,6 +261,12 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		return diag.FromErr(err)
 	}
 
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		if err := resourceTaikunCloudCredentialOpenStackLock(id, false, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if data.HasChanges("user", "password", "name") {
 		updateBody := &models.UpdateOpenStackCommand{
 			ID:                id,
@@ -285,14 +281,8 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		}
 	}
 
-	if data.HasChange("lock") {
-		lockBody := models.CloudLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -322,4 +312,14 @@ func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.Openst
 		"volume_type_name":           rawOpenStackCredential.VolumeType,
 		"imported_network_subnet_id": rawOpenStackCredential.InternalSubnetID,
 	}
+}
+
+func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.CloudLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	return err
 }
