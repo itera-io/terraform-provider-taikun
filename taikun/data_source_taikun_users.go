@@ -63,7 +63,7 @@ func dataSourceTaikunUsersRead(_ context.Context, data *schema.ResourceData, met
 		params = params.WithOffset(&offset)
 	}
 
-	userList := make([]map[string]interface{}, len(rawUserList), len(rawUserList))
+	userList := make([]map[string]interface{}, len(rawUserList))
 	for i, rawUser := range rawUserList {
 		userList[i] = flattenTaikunUser(rawUser)
 	}

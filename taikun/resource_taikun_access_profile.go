@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -240,6 +239,9 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if data.HasChange("lock") {
 		lockBody := models.AccessProfilesLockManagementCommand{
