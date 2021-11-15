@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -268,7 +269,7 @@ func testAccCheckTaikunOPAProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 			params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
 
