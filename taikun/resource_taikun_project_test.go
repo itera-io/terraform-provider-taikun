@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -129,7 +130,7 @@ func TestAccResourceTaikunProject(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
@@ -171,7 +172,7 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
@@ -191,7 +192,7 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					newExpirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
@@ -228,7 +229,7 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
@@ -248,7 +249,7 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					enableAutoUpgrade,
 					disableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(disableMonitoring)),
@@ -268,7 +269,7 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
@@ -385,7 +386,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
@@ -412,7 +413,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_name", newAlertingProfileName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
@@ -451,7 +452,7 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
@@ -473,7 +474,7 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_id", ""),
 					resource.TestCheckResourceAttr("taikun_project.foo", "auto_upgrade", fmt.Sprint(enableAutoUpgrade)),
@@ -542,7 +543,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					projectName,
 					"backup_credential_id = resource.taikun_backup_credential.foo.id",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -567,7 +568,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					projectName,
 					"backup_credential_id = resource.taikun_backup_credential.foo2.id",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -592,7 +593,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					projectName,
 					"",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -617,7 +618,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					projectName,
 					"backup_credential_id = resource.taikun_backup_credential.foo.id",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -658,7 +659,7 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 	projectName := randomTestName()
 	cpuCount := 2
 	newCpuCount := 8
-	checkFunc := resource.ComposeTestCheckFunc(
+	checkFunc := resource.ComposeAggregateTestCheckFunc(
 		testAccCheckTaikunProjectExists,
 		resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -724,7 +725,7 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 					quota_disk_size = 200
 					`,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -748,7 +749,7 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 					quota_ram_size = 200
 					`,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -769,7 +770,7 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 					projectName,
 					"",
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -795,7 +796,7 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 					quota_ram_size = 201
 					`,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
@@ -845,7 +846,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					projectName,
 					locked,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(locked)),
@@ -864,7 +865,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					projectName,
 					unlocked,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(unlocked)),
@@ -883,7 +884,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					projectName,
 					locked,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(locked)),
@@ -1021,7 +1022,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					os.Getenv("S3_REGION"),
 					backupPolicyName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -1073,12 +1074,24 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
-		if err == nil && len(response.Payload.Data) != 0 {
-			return fmt.Errorf("project still exists (id = %s)", rs.Primary.ID)
+			response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if len(response.Payload.Data) != 0 {
+				return resource.RetryableError(errors.New("project still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("project still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

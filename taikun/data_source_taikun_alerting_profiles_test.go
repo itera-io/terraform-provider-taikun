@@ -19,7 +19,7 @@ func TestAccDataSourceTaikunAlertingProfiles(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceTaikunAlertingProfilesConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_alerting_profiles.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.0.emails.#"),
@@ -59,7 +59,7 @@ func TestAccDataSourceTaikunAlertingProfilesWithFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAlertingProfilesWithFilterConfig, organizationName, organizationFullName),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_alerting_profiles.all", "alerting_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_alerting_profiles.all", "alerting_profiles.#"),

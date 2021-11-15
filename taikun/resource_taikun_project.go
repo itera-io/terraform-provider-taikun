@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -361,7 +360,7 @@ func resourceTaikunProject() *schema.Resource {
 					}
 				}
 
-				visitedMap := make(map[string]bool, 0)
+				visitedMap := make(map[string]bool)
 				for _, name := range names {
 					if visitedMap[name] {
 						return fmt.Errorf("server names must be unique: %s", name)
@@ -452,6 +451,9 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
 		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 		if err = resourceTaikunProjectEditQuotas(data, apiClient, response.Payload.Project.QuotaID); err != nil {
 			return diag.FromErr(err)
@@ -882,7 +884,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 			}
 			_, err := disableStateConf.WaitForStateContext(ctx)
 			if err != nil {
-				return errors.New(fmt.Sprintf("Error waiting for project (%s) to disable backup: %s", data.Id(), err))
+				return fmt.Errorf("error waiting for project (%s) to disable backup: %s", data.Id(), err)
 			}
 
 			enableBody := &models.EnableBackupCommand{
@@ -1032,8 +1034,8 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 
 func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundFlavorsForProjectsListDto, error) {
 	var boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto
+	boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
-		boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 		response, err := apiClient.client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
 		if err != nil {
 			return nil, err

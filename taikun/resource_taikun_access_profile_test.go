@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -93,7 +95,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -129,7 +131,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -147,7 +149,7 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, secondName, true),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "true"),
@@ -204,7 +206,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -222,7 +224,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, secondName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
@@ -270,12 +272,24 @@ func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("access profile still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("access profile still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("access profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

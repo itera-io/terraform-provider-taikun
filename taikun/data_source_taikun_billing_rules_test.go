@@ -51,7 +51,7 @@ func TestAccDataSourceTaikunBillingRules(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					billingRuleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.created_by"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.id"),

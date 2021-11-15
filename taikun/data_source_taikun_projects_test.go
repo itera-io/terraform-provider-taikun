@@ -39,7 +39,7 @@ func TestAccDataSourceTaikunProjects(t *testing.T) {
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_projects.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.name"),
@@ -99,7 +99,7 @@ func TestAccDataSourceTaikunProjectsWithFilter(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectCount,
 					projectName),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_projects.foo", "projects.#", fmt.Sprint(projectCount)),
 				),
 			},

@@ -22,7 +22,7 @@ func TestAccDataSourceTaikunOrganization(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceOrganizationConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "discount_rate"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "name"),
 					resource.TestCheckResourceAttrSet("data.taikun_organization.foo", "full_name"),

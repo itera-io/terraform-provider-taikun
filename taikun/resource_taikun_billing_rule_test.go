@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -94,7 +96,7 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -130,7 +132,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -147,7 +149,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleNameNew,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleNameNew),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -212,7 +214,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -230,7 +232,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 					ruleName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
@@ -272,12 +274,24 @@ func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("billing rule still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("billing rule still exists ()"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("billing rule still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

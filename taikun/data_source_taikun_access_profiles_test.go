@@ -18,7 +18,7 @@ func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceTaikunAccessProfilesConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_access_profiles.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.0.dns_server.#"),
@@ -56,7 +56,7 @@ func TestAccDataSourceTaikunAccessProfilesWithFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfilesWithFilterConfig, organizationName, organizationFullName),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_access_profiles.all", "access_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_access_profiles.all", "access_profiles.#"),

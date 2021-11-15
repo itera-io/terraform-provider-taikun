@@ -19,7 +19,7 @@ func TestAccDataSourceTaikunUsers(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceTaikunUsersConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_users.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.id"),
@@ -87,7 +87,7 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 					role,
 					displayName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.user_name", userName),
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.role", role),
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.email", email),

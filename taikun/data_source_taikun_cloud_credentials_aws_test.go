@@ -32,7 +32,7 @@ func TestAccDataSourceTaikunCloudCredentialsAWS(t *testing.T) {
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_aws.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.created_by"),
@@ -87,7 +87,7 @@ func TestAccDataSourceTaikunCloudCredentialsAWSWithFilter(t *testing.T) {
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.#"),

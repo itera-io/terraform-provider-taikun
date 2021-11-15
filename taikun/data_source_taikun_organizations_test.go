@@ -18,7 +18,7 @@ func TestAccDataSourceTaikunOrganizations(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceTaikunOrganizationsConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_organizations.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_organizations.all", "organizations.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_organizations.all", "organizations.0.discount_rate"),

@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -79,7 +81,7 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, name, url, channel, slackConfigType),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
@@ -116,7 +118,7 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, name, url, channel, slackConfigType),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
@@ -129,7 +131,7 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, newName, newUrl, newChannel, newSlackConfigType),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", newChannel),
 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
@@ -172,12 +174,24 @@ func testAccCheckTaikunSlackConfigurationDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.Slack.SlackList(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("slack configuration still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.Slack.SlackList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("slack configuration still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("slack configuration still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -81,7 +83,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
@@ -116,7 +118,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
@@ -134,7 +136,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackCredentialExists,
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "true"),
@@ -176,12 +178,24 @@ func testAccCheckTaikunShowbackCredentialDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.Showback.ShowbackCredentialsList(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("showback credential still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.Showback.ShowbackCredentialsList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("showback credential still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("showback credential still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

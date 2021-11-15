@@ -29,7 +29,7 @@ func TestAccDataSourceTaikunCloudCredentialsOpenStack(t *testing.T) {
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialsOpenStackConfig,
 					cloudCredentialName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_openstack.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_openstack.all", "cloud_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_openstack.all", "cloud_credentials.0.created_by"),
@@ -86,7 +86,7 @@ func TestAccDataSourceTaikunCloudCredentialsOpenStackWithFilter(t *testing.T) {
 					organizationFullName,
 					cloudCredentialName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_openstack.all", "cloud_credentials.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_openstack.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_openstack.all", "cloud_credentials.#"),

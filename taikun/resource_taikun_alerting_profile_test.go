@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -160,7 +162,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 					emails,
 					webhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -217,7 +219,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					emails,
 					webhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -240,7 +242,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					newEmails,
 					newWebhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -312,7 +314,7 @@ integration {
 					emails,
 					webhooks,
 					integrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -337,7 +339,7 @@ integration {
 					emails,
 					webhooks,
 					newIntegrations),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
@@ -382,12 +384,24 @@ func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("alerting profile with ID %d still exists", id)
+			response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("alerting profile still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("alerting profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

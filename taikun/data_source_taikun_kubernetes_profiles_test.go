@@ -18,7 +18,7 @@ func TestAccDataSourceTaikunKubernetesProfiles(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceTaikunKubernetesProfilesConfig,
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_kubernetes_profiles.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.bastion_proxy"),
@@ -57,7 +57,7 @@ func TestAccDataSourceTaikunKubernetesProfilesWithFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunKubernetesProfilesWithFilterConfig, organizationName, organizationFullName),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_kubernetes_profiles.all", "kubernetes_profiles.#"),

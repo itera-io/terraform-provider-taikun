@@ -1,10 +1,13 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"github.com/itera-io/taikungoclient/client/users"
 	"os"
 	"testing"
+
+	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -52,7 +55,7 @@ func TestAccResourceTaikunProjectUserAttachment(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectUserAttachmentExists,
 					resource.TestCheckResourceAttrSet("taikun_project_user_attachment.foo", "project_id"),
 					resource.TestCheckResourceAttr("taikun_project_user_attachment.foo", "project_name", projectName),
@@ -112,21 +115,30 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 			return err
 		}
 
-		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-		response, err := apiClient.client.Users.UsersList(params, apiClient)
-		if err != nil {
-			return err
-		}
-		if response.Payload.TotalCount != 1 {
-			return nil
-		}
-
-		rawUser := response.GetPayload().Data[0]
-
-		for _, e := range rawUser.BoundProjects {
-			if e.ProjectID == projectId {
-				return fmt.Errorf("project_user_attachment exists (id = %s)", rs.Primary.ID)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
+			response, err := apiClient.client.Users.UsersList(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
 			}
+			if response.Payload.TotalCount != 1 {
+				return nil
+			}
+
+			rawUser := response.GetPayload().Data[0]
+
+			for _, e := range rawUser.BoundProjects {
+				if e.ProjectID == projectId {
+					return resource.RetryableError(errors.New("project_user_attachment still exists"))
+				}
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("project_user_attachment still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -71,7 +73,7 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
@@ -101,7 +103,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
@@ -114,7 +116,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, true),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "true"),
@@ -157,12 +159,24 @@ func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.KubernetesProfiles.KubernetesProfilesList(params, client)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("kubernetes profile still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.KubernetesProfiles.KubernetesProfilesList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("kubernetes profile still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("kubernetes profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

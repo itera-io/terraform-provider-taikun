@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -97,7 +99,7 @@ func TestAccResourceTaikunShowbackRule(t *testing.T) {
 					kind,
 					projectLimit,
 					globalLimit),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "metric_name", metricName),
@@ -151,7 +153,7 @@ func TestAccResourceTaikunShowbackRuleUpdate(t *testing.T) {
 					projectLimit,
 					globalLimit,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", name),
@@ -175,7 +177,7 @@ func TestAccResourceTaikunShowbackRuleUpdate(t *testing.T) {
 					newProjectLimit,
 					newGlobalLimit,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", newName),
@@ -247,7 +249,7 @@ func TestAccResourceTaikunShowbackRuleWithCredentials(t *testing.T) {
 					projectLimit,
 					globalLimit,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunShowbackRuleExists,
 					resource.TestCheckResourceAttrSet("taikun_showback_rule.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_showback_rule.foo", "name", name),
@@ -298,12 +300,24 @@ func testAccCheckTaikunShowbackRuleDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
-		if err == nil && response.Payload.TotalCount != 0 {
-			return fmt.Errorf("showback rule still exists (id = %s)", rs.Primary.ID)
+			response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCount != 0 {
+				return resource.RetryableError(errors.New("showback rule still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("showback rule still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 

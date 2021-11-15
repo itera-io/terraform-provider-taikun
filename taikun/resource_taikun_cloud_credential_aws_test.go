@@ -1,6 +1,8 @@
 package taikun
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -78,7 +80,7 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -109,7 +111,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -128,7 +130,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					true,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -160,7 +162,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -179,7 +181,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
-				Check: resource.ComposeTestCheckFunc(
+				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialAWSExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
@@ -224,12 +226,24 @@ func testAccCheckTaikunCloudCredentialAWSDestroy(state *terraform.State) error {
 			continue
 		}
 
-		id, _ := atoi32(rs.Primary.ID)
-		params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+			id, _ := atoi32(rs.Primary.ID)
+			params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.CloudCredentials.CloudCredentialsDashboardList(params, client)
-		if err == nil && response.Payload.TotalCountAws != 0 {
-			return fmt.Errorf("aws cloud credential still exists (id = %s)", rs.Primary.ID)
+			response, err := client.client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+			if err != nil {
+				return resource.NonRetryableError(err)
+			}
+			if response.Payload.TotalCountAws != 0 {
+				return resource.RetryableError(errors.New("aws cloud credential still exists"))
+			}
+			return nil
+		})
+		if timedOut(retryErr) {
+			return errors.New("aws cloud credential still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
 		}
 	}
 
