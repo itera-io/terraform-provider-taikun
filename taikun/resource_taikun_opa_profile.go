@@ -14,24 +14,24 @@ import (
 func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"allowed_repos": {
-			Description: "The list of allowed repo.",
+			Description: "The list of allowed images repositories.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		"forbid_node_port": {
-			Description: "",
+			Description: "Disallows all Services with type NodePort.",
 			Type:        schema.TypeBool,
 			Required:    true,
 		},
 		"forbid_http_ingress": {
-			Description: "",
+			Description: "Requires Ingress resources to be HTTPS only.",
 			Type:        schema.TypeBool,
 			Required:    true,
 		},
 		"forbidden_tags": {
-			Description: "The list of forbidden tags.",
+			Description: "The list of forbidden tags of docker images.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -43,7 +43,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"ingress_whitelist": {
-			Description: "Whitelist of the k8s ingress.",
+			Description: "Whitelist of the k8s ingresses.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -81,17 +81,17 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"require_probe": {
-			Description: "",
+			Description: "Requires Pods to have readiness and/or liveness probes.",
 			Type:        schema.TypeBool,
 			Required:    true,
 		},
 		"unique_ingress": {
-			Description: "",
+			Description: "Requires all Ingress rule hosts to be unique.",
 			Type:        schema.TypeBool,
 			Required:    true,
 		},
 		"unique_service_selector": {
-			Description: "",
+			Description: "Whether services must have globally unique service selectors or not.",
 			Type:        schema.TypeBool,
 			Required:    true,
 		},
