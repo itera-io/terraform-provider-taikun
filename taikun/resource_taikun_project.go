@@ -480,7 +480,7 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	_, quotaRAMIsSet := data.GetOk("quota_ram_size")
 	if quotaCPUIsSet || quotaDiskIsSet || quotaRAMIsSet {
 
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
 		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
@@ -533,7 +533,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32) // TODO use /api/v1/projects endpoint?
+		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32)
 		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 		if err != nil {
 			if withRetries {
@@ -818,7 +818,7 @@ func resourceTaikunProjectDelete(ctx context.Context, data *schema.ResourceData,
 }
 
 func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) error {
-	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
 	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
 	if err != nil {
 		return err
@@ -896,7 +896,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
 					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 					if err != nil {
 						return 0, "", err
@@ -963,7 +963,6 @@ func resourceTaikunProjectEditQuotas(data *schema.ResourceData, apiClient *apiCl
 	return nil
 }
 
-// TODO change type of DTO if read endpoint is modified
 func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, serverListDTO []*models.ServerListDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {

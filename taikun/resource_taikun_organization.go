@@ -23,7 +23,6 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
-		// TODO bound_rules?
 		"city": {
 			Description: "City.",
 			Type:        schema.TypeString,
