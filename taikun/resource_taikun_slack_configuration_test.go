@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -173,7 +174,7 @@ func testAccCheckTaikunSlackConfigurationDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 			params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
 

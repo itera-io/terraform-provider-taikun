@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -216,7 +217,7 @@ func testAccCheckTaikunUserDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			params := users.NewUsersListParams().WithV(ApiVersion).WithID(&rs.Primary.ID)
 
 			response, err := client.client.Users.UsersList(params, client)

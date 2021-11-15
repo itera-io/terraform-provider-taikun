@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -177,7 +178,7 @@ func testAccCheckTaikunShowbackCredentialDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 			params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
 

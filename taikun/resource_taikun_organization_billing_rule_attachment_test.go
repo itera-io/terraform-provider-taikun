@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -134,7 +135,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 			return err
 		}
 
-		retryErr := resource.Retry(getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
 			response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
 			if err != nil {
