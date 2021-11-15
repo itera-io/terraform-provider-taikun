@@ -141,8 +141,8 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if len(response.Payload.Data) == 0 {
-				return resource.NonRetryableError(errors.New(fmt.Sprintf("billing rule with ID %d not found", billingRuleId)))
+			if len(response.Payload.Data) != 1 {
+				return nil
 			}
 
 			rawBillingRule := response.GetPayload().Data[0]
