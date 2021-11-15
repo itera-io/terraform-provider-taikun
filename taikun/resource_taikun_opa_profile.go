@@ -23,12 +23,14 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 		"forbid_node_port": {
 			Description: "Disallows all Services with type NodePort.",
 			Type:        schema.TypeBool,
-			Required:    true,
+			Optional:    true,
+			Default:     false,
 		},
 		"forbid_http_ingress": {
 			Description: "Requires Ingress resources to be HTTPS only.",
 			Type:        schema.TypeBool,
-			Required:    true,
+			Optional:    true,
+			Default:     false,
 		},
 		"forbidden_tags": {
 			Description: "The list of forbidden tags of docker images.",
@@ -83,17 +85,20 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 		"require_probe": {
 			Description: "Requires Pods to have readiness and/or liveness probes.",
 			Type:        schema.TypeBool,
-			Required:    true,
+			Optional:    true,
+			Default:     false,
 		},
 		"unique_ingress": {
 			Description: "Requires all Ingress rule hosts to be unique.",
 			Type:        schema.TypeBool,
-			Required:    true,
+			Optional:    true,
+			Default:     false,
 		},
 		"unique_service_selector": {
 			Description: "Whether services must have globally unique service selectors or not.",
 			Type:        schema.TypeBool,
-			Required:    true,
+			Optional:    true,
+			Default:     false,
 		},
 	}
 }
