@@ -10,9 +10,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
+	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
+	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/backup"
@@ -35,7 +37,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"access_profile_id": {
-			Description:      "ID of the project's access profile.",
+			Description:      "ID of the project's access profile. Defaults to the project's organization's default access profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -97,7 +99,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"kubernetes_profile_id": {
-			Description:      "ID of the project's kubernetes profile.",
+			Description:      "ID of the project's Kubernetes profile. Defaults to the project's organization's default Kubernetes profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -396,9 +398,8 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	}
 	body.Flavors = flavors
 
-	if accessProfileID, accessProfileIDIsSet := data.GetOk("access_profile_id"); accessProfileIDIsSet {
-		body.AccessProfileID, _ = atoi32(accessProfileID.(string))
-	}
+	var projectOrganizationID int32 = -1
+
 	if alertingProfileID, alertingProfileIDIsSet := data.GetOk("alerting_profile_id"); alertingProfileIDIsSet {
 		body.AlertingProfileID, _ = atoi32(alertingProfileID.(string))
 	}
@@ -418,11 +419,9 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	} else {
 		body.ExpiredAt = nil
 	}
-	if kubernetesProfileID, kubernetesProfileIDIsSet := data.GetOk("kubernetes_profile_id"); kubernetesProfileIDIsSet {
-		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
-	}
 	if organizationID, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
-		body.OrganizationID, _ = atoi32(organizationID.(string))
+		projectOrganizationID, _ = atoi32(organizationID.(string))
+		body.OrganizationID = projectOrganizationID
 	}
 
 	if taikunLBFlavor, taikunLBFlavorIsSet := data.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
@@ -430,9 +429,41 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		body.RouterIDStartRange = int32(data.Get("router_id_start_range").(int))
 		body.RouterIDEndRange = int32(data.Get("router_id_end_range").(int))
 	}
-
 	if err := resourceTaikunProjectValidateKubernetesProfileLB(data, apiClient); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if accessProfileID, accessProfileIDIsSet := data.GetOk("access_profile_id"); accessProfileIDIsSet {
+		body.AccessProfileID, _ = atoi32(accessProfileID.(string))
+	} else {
+		if projectOrganizationID == -1 {
+			if err := resourceTaikunProjectGetDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		defaultAccessProfileID, found, err := resourceTaikunProjectGetDefaultAccessProfile(projectOrganizationID, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if found {
+			body.AccessProfileID = defaultAccessProfileID
+		}
+	}
+	if kubernetesProfileID, kubernetesProfileIDIsSet := data.GetOk("kubernetes_profile_id"); kubernetesProfileIDIsSet {
+		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
+	} else {
+		if projectOrganizationID == -1 {
+			if err := resourceTaikunProjectGetDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		defaultKubernetesProfileID, found, err := resourceTaikunProjectGetDefaultKubernetesProfile(projectOrganizationID, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if found {
+			body.KubernetesProfileID = defaultKubernetesProfileID
+		}
 	}
 
 	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body)
@@ -1271,4 +1302,46 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiCl
 		return cloudTypeOpenStack, nil
 	}
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
+}
+
+func resourceTaikunProjectGetDefaultOrganization(defaultOrganizationID *int32, apiClient *apiClient) error {
+	params := users.NewUsersDetailsParams().WithV(ApiVersion)
+	response, err := apiClient.client.Users.UsersDetails(params, apiClient)
+	if err != nil {
+		return err
+	}
+	*defaultOrganizationID = response.Payload.Data.OrganizationID
+	return nil
+}
+
+const defaultAccessProfileName = "default"
+
+func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *apiClient) (accessProfileID int32, found bool, err error) {
+	params := access_profiles.NewAccessProfilesAccessProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
+	response, err := apiClient.client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
+	if err != nil {
+		return 0, false, err
+	}
+	for _, profile := range response.Payload {
+		if profile.Name == defaultAccessProfileName {
+			return profile.ID, true, nil
+		}
+	}
+	return 0, false, nil
+}
+
+const defaultKubernetesProfileName = "default"
+
+func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *apiClient) (kubernetesProfileID int32, found bool, err error) {
+	params := kubernetes_profiles.NewKubernetesProfilesBackupCredentialsForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
+	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesBackupCredentialsForOrganizationList(params, apiClient)
+	if err != nil {
+		return 0, false, err
+	}
+	for _, profile := range response.Payload {
+		if profile.Name == defaultKubernetesProfileName {
+			return profile.ID, true, nil
+		}
+	}
+	return 0, false, nil
 }

@@ -26,7 +26,7 @@ data "taikun_project" "foo" {
 ### Read-Only
 
 - **access_ip** (String) Public IP address of the bastion.
-- **access_profile_id** (String) ID of the project's access profile.
+- **access_profile_id** (String) ID of the project's access profile. Defaults to the project's organization's default access profile.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
 - **alerting_profile_name** (String) Name of the project's alerting profile.
 - **auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available.
@@ -34,7 +34,7 @@ data "taikun_project" "foo" {
 - **cloud_credential_id** (String) ID of the cloud credential used to store the project.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
-- **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
+- **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the project's organization's default Kubernetes profile.
 - **lock** (Boolean) Indicates whether to lock the project.
 - **monitoring** (Boolean) Kubernetes cluster monitoring.
 - **name** (String) Project name.

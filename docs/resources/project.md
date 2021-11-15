@@ -87,13 +87,13 @@ resource "taikun_project" "foobar" {
 
 ### Optional
 
-- **access_profile_id** (String) ID of the project's access profile.
+- **access_profile_id** (String) ID of the project's access profile. Defaults to the project's organization's default access profile.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
 - **auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available. Defaults to `false`.
 - **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
-- **kubernetes_profile_id** (String) ID of the project's kubernetes profile.
+- **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the project's organization's default Kubernetes profile.
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.
