@@ -48,6 +48,7 @@ Read-Only:
 - **lock** (Boolean)
 - **monitoring** (Boolean)
 - **name** (String)
+- **opa_profile_id** (String)
 - **organization_id** (String)
 - **quota_cpu_units** (Number)
 - **quota_disk_size** (Number)

@@ -1,0 +1,1 @@
+terraform import taikun_opa_profile.myprofile 42
