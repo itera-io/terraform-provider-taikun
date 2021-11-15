@@ -970,7 +970,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, data *schema.Reso
 
 			newOPAProfilelID, _ := atoi32(newOPAProfile.(string))
 
-			// Wait for the backup to be disabled
+			// Wait for the OPA to be disabled
 			disableStateConf := &resource.StateChangeConf{
 				Pending: []string{
 					strconv.FormatBool(true),
@@ -994,7 +994,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, data *schema.Reso
 			}
 			_, err := disableStateConf.WaitForStateContext(ctx)
 			if err != nil {
-				return errors.New(fmt.Sprintf("Error waiting for project (%s) to disable backup: %s", data.Id(), err))
+				return fmt.Errorf("error waiting for project (%s) to disable OPA: %s", data.Id(), err)
 			}
 
 			enableBody := &models.EnableGatekeeperCommand{
