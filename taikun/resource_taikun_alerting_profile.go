@@ -214,8 +214,12 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(response.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	data.SetId(response.Payload.ID)
-	id, _ := atoi32(response.Payload.ID)
 
 	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
 		return diag.FromErr(err)

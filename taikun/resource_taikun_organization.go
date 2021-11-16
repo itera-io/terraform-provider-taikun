@@ -149,11 +149,14 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(createResult.GetPayload().ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	data.SetId(createResult.GetPayload().ID)
 
 	if isLocked, isLockedIsSet := data.GetOk("lock"); isLockedIsSet {
-		id, _ := atoi32(createResult.GetPayload().ID)
 		updateLockBody := &models.UpdateOrganizationCommand{
 			Address:                      body.Address,
 			BillingEmail:                 body.BillingEmail,
