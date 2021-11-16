@@ -33,6 +33,18 @@ jobs:
         run: |
           go build -v .
 
+  golangci:
+    name: lint
+    runs-on: self-hosted
+    needs: build
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+
   test:
     name: Acceptance Tests
     needs: build
