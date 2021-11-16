@@ -107,7 +107,7 @@ func resourceTaikunOPAProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun OPA Profile",
 		CreateContext: resourceTaikunOPAProfileCreate,
-		ReadContext:   generateResourceTaikunOPAProfileRead(false),
+		ReadContext:   generateResourceTaikunOPAProfileReadWithoutRetries(),
 		UpdateContext: resourceTaikunOPAProfileUpdate,
 		DeleteContext: resourceTaikunOPAProfileDelete,
 		Schema:        resourceTaikunOPAProfileSchema(),
@@ -161,9 +161,15 @@ func resourceTaikunOPAProfileCreate(ctx context.Context, data *schema.ResourceDa
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunOPAProfileRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunOPAProfileReadWithRetries(), ctx, data, meta)
 }
 
+func generateResourceTaikunOPAProfileReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunOPAProfileRead(true)
+}
+func generateResourceTaikunOPAProfileReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunOPAProfileRead(false)
+}
 func generateResourceTaikunOPAProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
@@ -242,7 +248,7 @@ func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceDa
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunOPAProfileRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunOPAProfileReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunOPAProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

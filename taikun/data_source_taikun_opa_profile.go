@@ -25,5 +25,5 @@ func dataSourceTaikunOPAProfile() *schema.Resource {
 func dataSourceTaikunOPAProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
 
-	return generateResourceTaikunOPAProfileRead(false)(ctx, data, meta)
+	return generateResourceTaikunOPAProfileReadWithoutRetries()(ctx, data, meta)
 }
