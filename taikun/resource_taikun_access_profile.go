@@ -259,16 +259,9 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 	resourceTaikunAccessProfileUpsertSetBody(data, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	updateResponse, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
-	if err != nil {
+	if _, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
-	id, err = atoi32(updateResponse.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(updateResponse.Payload.ID)
 
 	if data.Get("lock").(bool) {
 		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {

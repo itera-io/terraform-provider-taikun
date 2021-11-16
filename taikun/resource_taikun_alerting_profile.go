@@ -315,11 +315,10 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 			body.SlackConfigurationID = slackConfigID
 		}
 		params := alerting_profiles.NewAlertingProfilesEditParams().WithV(ApiVersion).WithBody(&body)
-		response, err := apiClient.client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
+		_, err := apiClient.client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		data.SetId(response.Payload.ID)
 	}
 
 	if data.HasChange("emails") {
