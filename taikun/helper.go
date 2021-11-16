@@ -3,11 +3,13 @@ package taikun
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"math/rand"
 	"net/mail"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/go-uuid"
+	"github.com/robfig/cron/v3"
 
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -137,6 +139,19 @@ func stringIsDate(i interface{}, path cty.Path) diag.Diagnostics {
 
 	if _, err := time.Parse(time.RFC3339, dateToRfc3339DateTime(v)); len(v) != 10 || err != nil {
 		return diag.FromErr(path.NewErrorf("expected a valid date in the format: 'dd/mm/yyyy'"))
+	}
+
+	return nil
+}
+
+func stringIsUUID(i interface{}, path cty.Path) diag.Diagnostics {
+	v, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	if _, err := uuid.ParseUUID(v); err != nil {
+		return diag.FromErr(path.NewErrorf("expected a valid UUID, got %v", v))
 	}
 
 	return nil

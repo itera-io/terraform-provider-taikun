@@ -3,8 +3,6 @@ package taikun
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -12,7 +10,7 @@ import (
 func dataSourceTaikunUserSchema() map[string]*schema.Schema {
 	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunUserSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
-	setValidateFuncToSchema(dsSchema, "id", validation.IsUUID)
+	setValidateDiagFuncToSchema(dsSchema, "id", stringIsUUID)
 	return dsSchema
 }
 
