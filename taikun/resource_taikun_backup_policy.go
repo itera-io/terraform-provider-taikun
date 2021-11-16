@@ -69,7 +69,7 @@ func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 			Default:     "720h",
 			ForceNew:    true,
 			ValidateFunc: validation.StringMatch(
-				regexp.MustCompile("^(((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)?((0*[1-9][0-9]*)s)|((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)((\\d+)s)?|((0*[1-9][0-9]*)h)((\\d+)m)?((\\d+)s)?)$"),
+				regexp.MustCompile(`^(((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)?((0*[1-9][0-9]*)s)|((0*[1-9][0-9]*)h)?((0*[1-9][0-9]*)m)((\\d+)s)?|((0*[1-9][0-9]*)h)((\\d+)m)?((\\d+)s)?)$`),
 				"The retention period must follow the HMS format, for example: `10h30m15s`, `48h5s` or `360h`.",
 			),
 		},
