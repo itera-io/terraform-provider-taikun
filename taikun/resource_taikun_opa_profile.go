@@ -33,7 +33,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"forbidden_tags": {
-			Description: "The list of forbidden tags of docker images.",
+			Description: "Requires container images to have an image tag different from the ones in the specified list.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -45,7 +45,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"ingress_whitelist": {
-			Description: "Whitelist of the k8s ingresses.",
+			Description: "List of allowed Ingress rule hosts.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -57,7 +57,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"lock": {
-			Description: "Indicates whether to lock the Kubernetes profile.",
+			Description: "Indicates whether to lock the OPA profile.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
