@@ -121,22 +121,15 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(createResult.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.ShowbackCredentialLockCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := showback.NewShowbackLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.Showback.ShowbackLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunShowbackCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -186,13 +179,7 @@ func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.Re
 	}
 
 	if data.HasChange("lock") {
-		lockBody := models.ShowbackCredentialLockCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := showback.NewShowbackLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.Showback.ShowbackLockManager(lockParams, apiClient)
-		if err != nil {
+		if err := resourceTaikunShowbackCredentialLock(id, data.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -232,4 +219,14 @@ func flattenTaikunShowbackCredential(rawShowbackCredential *models.ShowbackCrede
 		"url":               rawShowbackCredential.URL,
 		"username":          rawShowbackCredential.Username,
 	}
+}
+
+func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.ShowbackCredentialLockCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := showback.NewShowbackLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.Showback.ShowbackLockManager(params, apiClient)
+	return err
 }

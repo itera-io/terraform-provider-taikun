@@ -158,22 +158,15 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(createResult.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.CloudLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -222,6 +215,12 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		return diag.FromErr(err)
 	}
 
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		if err := resourceTaikunCloudCredentialAzureLock(id, false, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if data.HasChanges("client_id", "client_secret", "name") {
 		updateBody := &models.UpdateAzureCommand{
 			ID:                id,
@@ -236,14 +235,8 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	if data.HasChange("lock") {
-		lockBody := models.CloudLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.CloudCredentials.CloudCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -267,4 +260,14 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentia
 		"location":          rawAzureCredential.Location,
 		"tenant_id":         rawAzureCredential.TenantID,
 	}
+}
+
+func resourceTaikunCloudCredentialAzureLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.CloudLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	return err
 }

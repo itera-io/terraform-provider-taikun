@@ -166,12 +166,9 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.Re
 	}
 
 	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.client.Slack.SlackCreate(params, apiClient)
-	if err != nil {
+	if _, err := apiClient.client.Slack.SlackCreate(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
-
-	data.SetId(i32toa(response.Payload))
 
 	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationRead(true), ctx, data, meta)
 }

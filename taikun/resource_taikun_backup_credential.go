@@ -129,22 +129,15 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(createResult.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.BackupLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := s3_credentials.NewS3CredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.S3Credentials.S3CredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -193,6 +186,12 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		if err := resourceTaikunBackupCredentialLock(id, false, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if data.HasChanges("name", "s3_access_key_id", "s3_secret_access_key") {
 		updateBody := models.BackupCredentialsUpdateCommand{
 			ID:            id,
@@ -207,14 +206,8 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	if data.HasChange("lock") {
-		lockBody := models.BackupLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := s3_credentials.NewS3CredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.S3Credentials.S3CredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -255,4 +248,14 @@ func flattenTaikunBackupCredential(rawBackupCredential *models.BackupCredentials
 		"s3_region":         rawBackupCredential.S3Region,
 		"s3_endpoint":       rawBackupCredential.S3Endpoint,
 	}
+}
+
+func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.BackupLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := s3_credentials.NewS3CredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.S3Credentials.S3CredentialsLockManager(params, apiClient)
+	return err
 }

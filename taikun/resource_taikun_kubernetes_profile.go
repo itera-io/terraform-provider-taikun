@@ -128,22 +128,15 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(createResult.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.KubernetesProfilesLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := kubernetes_profiles.NewKubernetesProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.KubernetesProfiles.KubernetesProfilesLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunKubernetesProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -194,13 +187,7 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.Res
 	}
 
 	if data.HasChange("lock") {
-		lockBody := models.KubernetesProfilesLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := kubernetes_profiles.NewKubernetesProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.KubernetesProfiles.KubernetesProfilesLockManager(lockParams, apiClient)
-		if err != nil {
+		if err := resourceTaikunKubernetesProfileLock(id, data.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -241,4 +228,14 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *models.KubernetesProfi
 		"organization_name":       rawKubernetesProfile.OrganizationName,
 		"schedule_on_master":      rawKubernetesProfile.AllowSchedulingOnMaster,
 	}
+}
+
+func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.KubernetesProfilesLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := kubernetes_profiles.NewKubernetesProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.KubernetesProfiles.KubernetesProfilesLockManager(params, apiClient)
+	return err
 }

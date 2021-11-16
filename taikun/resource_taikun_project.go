@@ -509,12 +509,8 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 		}
 	}
 
-	lock := data.Get("lock").(bool)
-	if lock {
-		lockMode := getLockMode(lock)
-		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&projectID).WithMode(&lockMode)
-		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunProjectLock(projectID, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -770,10 +766,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 	}
 
 	if data.Get("lock").(bool) {
-		lockMode := getLockMode(true)
-		params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
-		_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
-		if err != nil {
+		if err := resourceTaikunProjectLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -827,9 +820,7 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) 
 	}
 
 	if response.Payload.Project.IsLocked {
-		unlockedMode := getLockMode(false)
-		unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&projectID).WithMode(&unlockedMode)
-		if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
+		if err := resourceTaikunProjectLock(projectID, false, apiClient); err != nil {
 			return err
 		}
 	}
@@ -1344,4 +1335,11 @@ func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiC
 		}
 	}
 	return 0, false, nil
+}
+
+func resourceTaikunProjectLock(id int32, lock bool, apiClient *apiClient) error {
+	lockMode := getLockMode(lock)
+	params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
+	_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+	return err
 }

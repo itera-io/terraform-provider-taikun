@@ -126,22 +126,15 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(createResult.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	data.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
-	if locked {
-		id, err := atoi32(createResult.Payload.ID)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		lockBody := models.OperationCredentialLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.OpsCredentials.OpsCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunBillingCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -191,13 +184,7 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, data *schema.Res
 	}
 
 	if data.HasChange("lock") {
-		lockBody := models.OperationCredentialLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.OpsCredentials.OpsCredentialsLockManager(lockParams, apiClient)
-		if err != nil {
+		if err := resourceTaikunBillingCredentialLock(id, data.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -238,4 +225,14 @@ func flattenTaikunBillingCredential(rawOperationCredential *models.OperationCred
 		"prometheus_url":      rawOperationCredential.PrometheusURL,
 		"prometheus_username": rawOperationCredential.PrometheusUsername,
 	}
+}
+
+func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.OperationCredentialLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.OpsCredentials.OpsCredentialsLockManager(params, apiClient)
+	return err
 }

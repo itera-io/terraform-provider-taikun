@@ -214,21 +214,19 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	id, err := atoi32(response.Payload.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	data.SetId(response.Payload.ID)
-	id, _ := atoi32(response.Payload.ID)
 
 	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if isLocked, isLockedIsSet := data.GetOk("lock"); isLockedIsSet && isLocked.(bool) {
-		body := models.AlertingProfilesLockManagerCommand{
-			ID:   id,
-			Mode: "lock",
-		}
-		params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
-		if err != nil {
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -288,6 +286,12 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		if err := resourceTaikunAlertingProfileLock(id, false, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if data.HasChanges("name", "organization_id", "reminder", "slack_configuration_id") {
 		body := models.UpdateAlertingProfileCommand{
 			ID:   id,
@@ -311,20 +315,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 			body.SlackConfigurationID = slackConfigID
 		}
 		params := alerting_profiles.NewAlertingProfilesEditParams().WithV(ApiVersion).WithBody(&body)
-		response, err := apiClient.client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		data.SetId(response.Payload.ID)
-	}
-
-	if data.HasChange("lock") {
-		body := models.AlertingProfilesLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
+		_, err := apiClient.client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -353,6 +344,12 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 	}
 	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if data.Get("lock").(bool) {
+		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileRead(true), ctx, data, meta)
@@ -516,4 +513,14 @@ func flattenTaikunAlertingProfile(alertingProfileDTO *models.AlertingProfilesLis
 		"slack_configuration_name": alertingProfileDTO.SlackConfigurationName,
 		"webhook":                  getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks),
 	}
+}
+
+func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *apiClient) error {
+	body := models.AlertingProfilesLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
+	return err
 }
