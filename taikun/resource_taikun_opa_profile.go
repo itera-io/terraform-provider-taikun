@@ -155,12 +155,7 @@ func resourceTaikunOPAProfileCreate(ctx context.Context, data *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		lockBody := models.OpaProfileLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(locked),
-		}
-		lockParams := opa_profiles.NewOpaProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.OpaProfiles.OpaProfilesLockManager(lockParams, apiClient)
+		err = resourceTaikunOPAProfileLock(id, true, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -211,14 +206,8 @@ func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("lock") {
-
-		lockBody := models.OpaProfileLockManagerCommand{
-			ID:   id,
-			Mode: getLockMode(data.Get("lock").(bool)),
-		}
-		lockParams := opa_profiles.NewOpaProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-		_, err = apiClient.client.OpaProfiles.OpaProfilesLockManager(lockParams, apiClient)
+	if locked, _ := data.GetChange("lock"); locked.(bool) {
+		err := resourceTaikunOPAProfileLock(id, false, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -246,6 +235,13 @@ func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceDa
 
 	}
 
+	if data.Get("lock").(bool) {
+		err := resourceTaikunOPAProfileLock(id, true, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return readAfterUpdateWithRetries(generateResourceTaikunOPAProfileRead(true), ctx, data, meta)
 }
 
@@ -264,6 +260,17 @@ func resourceTaikunOPAProfileDelete(_ context.Context, data *schema.ResourceData
 
 	data.SetId("")
 	return nil
+}
+
+func resourceTaikunOPAProfileLock(id int32, lock bool, apiClient *apiClient) error {
+	lockBody := models.OpaProfileLockManagerCommand{
+		ID:   id,
+		Mode: getLockMode(lock),
+	}
+	lockParams := opa_profiles.NewOpaProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
+	_, err := apiClient.client.OpaProfiles.OpaProfilesLockManager(lockParams, apiClient)
+
+	return err
 }
 
 func flattenTaikunOPAProfile(rawOPAProfile *models.OpaProfileListDto) map[string]interface{} {
