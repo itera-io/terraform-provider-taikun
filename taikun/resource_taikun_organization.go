@@ -23,7 +23,6 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 		},
-		// TODO bound_rules?
 		"city": {
 			Description: "City.",
 			Type:        schema.TypeString,
@@ -117,7 +116,7 @@ func resourceTaikunOrganization() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Organization",
 		CreateContext: resourceTaikunOrganizationCreate,
-		ReadContext:   generateResourceTaikunOrganizationRead(false),
+		ReadContext:   generateResourceTaikunOrganizationReadWithoutRetries(),
 		UpdateContext: resourceTaikunOrganizationUpdate,
 		DeleteContext: resourceTaikunOrganizationDelete,
 		Schema:        resourceTaikunOrganizationSchema(),
@@ -179,10 +178,15 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunOrganizationRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunOrganizationRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunOrganizationReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunOrganizationRead(true)
+}
+func generateResourceTaikunOrganizationReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunOrganizationRead(false)
+}
+func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id := data.Id()
@@ -194,7 +198,7 @@ func generateResourceTaikunOrganizationRead(isAfterUpdateOrCreate bool) schema.R
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -244,7 +248,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunOrganizationRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

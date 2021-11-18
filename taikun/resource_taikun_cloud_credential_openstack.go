@@ -156,7 +156,7 @@ func resourceTaikunCloudCredentialOpenStack() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun OpenStack Cloud Credential",
 		CreateContext: resourceTaikunCloudCredentialOpenStackCreate,
-		ReadContext:   generateResourceTaikunCloudCredentialOpenStackRead(false),
+		ReadContext:   generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries(),
 		UpdateContext: resourceTaikunCloudCredentialOpenStackUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialOpenStackSchema(),
@@ -220,10 +220,15 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *sch
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialOpenStackRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunCloudCredentialOpenStackRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunCloudCredentialOpenStackReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialOpenStackRead(true)
+}
+func generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialOpenStackRead(false)
+}
+func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -237,7 +242,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(isAfterUpdateOrCreate bo
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Openstack) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -290,7 +295,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialOpenStackRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {

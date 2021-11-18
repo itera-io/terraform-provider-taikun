@@ -92,7 +92,7 @@ func resourceTaikunBillingCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Billing Credential",
 		CreateContext: resourceTaikunBillingCredentialCreate,
-		ReadContext:   generateResourceTaikunBillingCredentialRead(false),
+		ReadContext:   generateResourceTaikunBillingCredentialReadWithoutRetries(),
 		UpdateContext: resourceTaikunBillingCredentialUpdate,
 		DeleteContext: resourceTaikunBillingCredentialDelete,
 		Schema:        resourceTaikunBillingCredentialSchema(),
@@ -139,10 +139,15 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunBillingCredentialRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunBillingCredentialRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunBillingCredentialReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBillingCredentialRead(true)
+}
+func generateResourceTaikunBillingCredentialReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunBillingCredentialRead(false)
+}
+func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -156,7 +161,7 @@ func generateResourceTaikunBillingCredentialRead(isAfterUpdateOrCreate bool) sch
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -189,7 +194,7 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunBillingCredentialRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunBillingCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

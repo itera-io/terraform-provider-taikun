@@ -92,7 +92,7 @@ func resourceTaikunKubernetesProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Kubernetes Profile",
 		CreateContext: resourceTaikunKubernetesProfileCreate,
-		ReadContext:   generateResourceTaikunKubernetesProfileRead(false),
+		ReadContext:   generateResourceTaikunKubernetesProfileReadWithoutRetries(),
 		UpdateContext: resourceTaikunKubernetesProfileUpdate,
 		DeleteContext: resourceTaikunKubernetesProfileDelete,
 		Schema:        resourceTaikunKubernetesProfileSchema(),
@@ -141,10 +141,15 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunKubernetesProfileRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunKubernetesProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunKubernetesProfileReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunKubernetesProfileRead(true)
+}
+func generateResourceTaikunKubernetesProfileReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunKubernetesProfileRead(false)
+}
+func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -158,7 +163,7 @@ func generateResourceTaikunKubernetesProfileRead(isAfterUpdateOrCreate bool) sch
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -192,7 +197,7 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunKubernetesProfileRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

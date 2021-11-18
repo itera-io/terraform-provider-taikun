@@ -87,7 +87,7 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Showback Credential",
 		CreateContext: resourceTaikunShowbackCredentialCreate,
-		ReadContext:   generateResourceTaikunShowbackCredentialRead(false),
+		ReadContext:   generateResourceTaikunShowbackCredentialReadWithoutRetries(),
 		UpdateContext: resourceTaikunShowbackCredentialUpdate,
 		DeleteContext: resourceTaikunShowbackCredentialDelete,
 		Schema:        resourceTaikunShowbackCredentialSchema(),
@@ -134,10 +134,15 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunShowbackCredentialRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackCredentialReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunShowbackCredentialRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunShowbackCredentialReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunShowbackCredentialRead(true)
+}
+func generateResourceTaikunShowbackCredentialReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunShowbackCredentialRead(false)
+}
+func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -151,7 +156,7 @@ func generateResourceTaikunShowbackCredentialRead(isAfterUpdateOrCreate bool) sc
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -184,7 +189,7 @@ func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunShowbackCredentialRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackCredentialReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunShowbackCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

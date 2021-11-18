@@ -145,7 +145,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Access Profile",
 		CreateContext: resourceTaikunAccessProfileCreate,
-		ReadContext:   generateResourceTaikunAccessProfileRead(false),
+		ReadContext:   generateResourceTaikunAccessProfileReadWithoutRetries(),
 		UpdateContext: resourceTaikunAccessProfileUpdate,
 		DeleteContext: resourceTaikunAccessProfileDelete,
 		Schema:        resourceTaikunAccessProfileSchema(),
@@ -181,10 +181,15 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, data *schema.Resourc
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunAccessProfileReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunAccessProfileRead(true)
+}
+func generateResourceTaikunAccessProfileReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunAccessProfileRead(false)
+}
+func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -199,7 +204,7 @@ func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.
 		}
 
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -208,7 +213,7 @@ func generateResourceTaikunAccessProfileRead(isAfterUpdateOrCreate bool) schema.
 
 		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
 		if err != nil {
-			if _, ok := err.(*ssh_users.SSHUsersListNotFound); ok && isAfterUpdateOrCreate {
+			if _, ok := err.(*ssh_users.SSHUsersListNotFound); ok && withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -269,7 +274,7 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, data *schema.Resourc
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunAccessProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -124,7 +124,7 @@ func resourceTaikunCloudCredentialAzure() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Azure Cloud Credential",
 		CreateContext: resourceTaikunCloudCredentialAzureCreate,
-		ReadContext:   generateResourceTaikunCloudCredentialAzureRead(false),
+		ReadContext:   generateResourceTaikunCloudCredentialAzureReadWithoutRetries(),
 		UpdateContext: resourceTaikunCloudCredentialAzureUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
 		Schema:        resourceTaikunCloudCredentialAzureSchema(),
@@ -171,10 +171,15 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunCloudCredentialAzureRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunCloudCredentialAzureReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialAzureRead(true)
+}
+func generateResourceTaikunCloudCredentialAzureReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialAzureRead(false)
+}
+func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -188,7 +193,7 @@ func generateResourceTaikunCloudCredentialAzureRead(isAfterUpdateOrCreate bool) 
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Azure) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -241,7 +246,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, data, meta)
 }
 
 func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {

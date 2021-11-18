@@ -135,7 +135,7 @@ func resourceTaikunShowbackRule() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Showback Rule",
 		CreateContext: resourceTaikunShowbackRuleCreate,
-		ReadContext:   generateResourceTaikunShowbackRuleRead(false),
+		ReadContext:   generateResourceTaikunShowbackRuleReadWithoutRetries(),
 		UpdateContext: resourceTaikunShowbackRuleUpdate,
 		DeleteContext: resourceTaikunShowbackRuleDelete,
 		Schema:        resourceTaikunShowbackRuleSchema(),
@@ -195,10 +195,15 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 
 	data.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunShowbackRuleRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunShowbackRuleReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunShowbackRuleRead(true)
+}
+func generateResourceTaikunShowbackRuleReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunShowbackRuleRead(false)
+}
+func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -212,7 +217,7 @@ func generateResourceTaikunShowbackRuleRead(isAfterUpdateOrCreate bool) schema.R
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -267,7 +272,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

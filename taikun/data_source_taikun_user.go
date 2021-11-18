@@ -25,5 +25,5 @@ func dataSourceTaikunUser() *schema.Resource {
 func dataSourceTaikunUserRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
 
-	return generateResourceTaikunUserRead(false)(ctx, data, meta)
+	return generateResourceTaikunUserReadWithoutRetries()(ctx, data, meta)
 }

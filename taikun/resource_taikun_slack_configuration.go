@@ -66,7 +66,7 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Taikun Slack Configuration",
 		CreateContext: resourceTaikunSlackConfigurationCreate,
-		ReadContext:   generateResourceTaikunSlackConfigurationRead(false),
+		ReadContext:   generateResourceTaikunSlackConfigurationReadWithoutRetries(),
 		UpdateContext: resourceTaikunSlackConfigurationUpdate,
 		DeleteContext: resourceTaikunSlackConfigurationDelete,
 		Importer: &schema.ResourceImporter{
@@ -102,10 +102,15 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 
 	data.SetId(i32toa(response.Payload))
 
-	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationRead(true), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, data, meta)
 }
-
-func generateResourceTaikunSlackConfigurationRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunSlackConfigurationReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunSlackConfigurationRead(true)
+}
+func generateResourceTaikunSlackConfigurationReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunSlackConfigurationRead(false)
+}
+func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 
@@ -121,7 +126,7 @@ func generateResourceTaikunSlackConfigurationRead(isAfterUpdateOrCreate bool) sc
 			return diag.FromErr(err)
 		}
 		if len(response.Payload.Data) != 1 {
-			if isAfterUpdateOrCreate {
+			if withRetries {
 				data.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
@@ -170,7 +175,7 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationRead(true), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, data, meta)
 }
 
 func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

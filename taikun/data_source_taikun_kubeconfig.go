@@ -25,5 +25,5 @@ func dataSourceTaikunKubeconfig() *schema.Resource {
 
 func dataSourceTaikunKubeconfigRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("id").(string))
-	return generateResourceTaikunKubeconfigRead(false)(ctx, data, meta)
+	return generateResourceTaikunKubeconfigReadWithoutRetries()(ctx, data, meta)
 }
