@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
@@ -18,7 +19,13 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+				ValidateFunc: validation.StringMatch(
+					regexp.MustCompile("^([a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?(\\.[a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?)*(:\\d{1,5})?/)?([a-z\\d]+((\\.|(_{1,2}|-+))[a-z\\d]+)*)(/([a-z\\d]+((\\.|(_{1,2}|-+))[a-z\\d]+)*))*/?$"),
+					"Please specify valid Docker image prefix",
+				),
+			},
 		},
 		"forbid_node_port": {
 			Description: "Disallows all Services with type NodePort.",
@@ -37,7 +44,16 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+				ValidateFunc: validation.All(
+					validation.StringMatch(
+						regexp.MustCompile("^[a-z0-9_][a-z0-9_.-]*$"),
+						"Please specify valid Docker image tag",
+					),
+					validation.StringLenBetween(0, 128),
+				),
+			},
 		},
 		"id": {
 			Description: "The ID of the OPA profile.",
@@ -49,7 +65,16 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+				ValidateFunc: validation.All(
+					validation.StringMatch(
+						regexp.MustCompile("^(\\*|([a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?))(\\.[a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?)+$"),
+						"Please specify valid ingress domain",
+					),
+					validation.StringLenBetween(0, 253),
+				),
+			},
 		},
 		"is_default": {
 			Description: "Indicates whether the OPA Profile is the default one.",
