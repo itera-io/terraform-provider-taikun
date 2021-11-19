@@ -46,10 +46,10 @@ resource "taikun_user" "foo" {
 - **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed or not.
 - **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email or not.
 - **id** (String) The UUID of the user.
+- **is_approved_by_partner** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
 - **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager or not.
 - **is_disabled** (Boolean) Indicates whether the user is locked.
 - **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
-- **is_partner_approved** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
 - **organization_name** (String) The name of the user's organization.
 
 ## Import
