@@ -88,7 +88,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
-		"is_partner_approved": {
+		"is_approved_by_partner": {
 			Description: "Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.",
 			Type:        schema.TypeBool,
 			Computed:    true,
@@ -224,7 +224,7 @@ func flattenTaikunUser(rawUser *models.UserForListDto) map[string]interface{} {
 		"email_notification_enabled": rawUser.IsEmailNotificationEnabled,
 		"is_csm":                     rawUser.IsCsm,
 		"is_disabled":                rawUser.IsLocked,
-		"is_partner_approved":        rawUser.IsApprovedByPartner,
+		"is_approved_by_partner":     rawUser.IsApprovedByPartner,
 		"is_owner":                   rawUser.Owner,
 	}
 }
