@@ -27,16 +27,16 @@ data "taikun_user" "foo" {
 
 ### Read-Only
 
-- **disable** (Boolean) Indicates whether to lock the user.
 - **display_name** (String) The user's display name.
 - **email** (String) The email of the user.
 - **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed or not.
 - **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email or not.
 - **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager or not.
+- **is_disabled** (Boolean) Indicates whether the user is locked.
 - **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
+- **is_partner_approved** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
 - **organization_id** (String) The ID of the user's organization.
 - **organization_name** (String) The name of the user's organization.
-- **partner_approval** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
 - **role** (String) The role of the user: `Manager` or `User`.
 - **user_name** (String) The name of the user.
 
