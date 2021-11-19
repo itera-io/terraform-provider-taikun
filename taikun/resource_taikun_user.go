@@ -73,6 +73,11 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
+		"is_approved_by_partner": {
+			Description: "Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
 		"is_csm": {
 			Description: "Indicates whether the user is a Customer Success Manager or not.",
 			Type:        schema.TypeBool,
@@ -85,11 +90,6 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 		},
 		"is_owner": {
 			Description: "Indicates whether the user is the Owner of their organization.",
-			Type:        schema.TypeBool,
-			Computed:    true,
-		},
-		"is_approved_by_partner": {
-			Description: "Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
