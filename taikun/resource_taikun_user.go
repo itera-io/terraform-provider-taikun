@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-
 	"regexp"
 
 	"github.com/itera-io/taikungoclient/client/users"
@@ -74,8 +73,18 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
+		"is_approved_by_partner": {
+			Description: "Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
 		"is_csm": {
 			Description: "Indicates whether the user is a Customer Success Manager or not.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"is_disabled": {
+			Description: "Indicates whether the user is locked.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -83,18 +92,6 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Description: "Indicates whether the user is the Owner of their organization.",
 			Type:        schema.TypeBool,
 			Computed:    true,
-		},
-		"disable": {
-			Description: "Indicates whether to lock the user.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
-		"partner_approval": {
-			Description: "Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
 		},
 	}
 }
@@ -139,22 +136,6 @@ func resourceTaikunUserCreate(ctx context.Context, data *schema.ResourceData, me
 	}
 
 	data.SetId(createResult.GetPayload().ID)
-
-	updateUserBody := &models.UpdateUserCommand{
-		ID:                  createResult.GetPayload().ID,
-		Email:               data.Get("email").(string),
-		Role:                getUserRole(data.Get("role").(string)),
-		Username:            data.Get("user_name").(string),
-		DisplayName:         data.Get("display_name").(string),
-		Disable:             data.Get("disable").(bool),
-		IsApprovedByPartner: data.Get("partner_approval").(bool),
-	}
-
-	updateUserParams := users.NewUsersUpdateUserParams().WithV(ApiVersion).WithBody(updateUserBody)
-	_, err = apiClient.client.Users.UsersUpdateUser(updateUserParams, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	return readAfterCreateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, data, meta)
 }
@@ -204,8 +185,7 @@ func resourceTaikunUserUpdate(ctx context.Context, data *schema.ResourceData, me
 		Username:            data.Get("user_name").(string),
 		Email:               data.Get("email").(string),
 		Role:                getUserRole(data.Get("role").(string)),
-		Disable:             data.Get("disable").(bool),
-		IsApprovedByPartner: data.Get("partner_approval").(bool),
+		IsApprovedByPartner: true,
 	}
 
 	updateUserParams := users.NewUsersUpdateUserParams().WithV(ApiVersion).WithBody(body)
@@ -243,8 +223,8 @@ func flattenTaikunUser(rawUser *models.UserForListDto) map[string]interface{} {
 		"email_confirmed":            rawUser.IsEmailConfirmed,
 		"email_notification_enabled": rawUser.IsEmailNotificationEnabled,
 		"is_csm":                     rawUser.IsCsm,
+		"is_disabled":                rawUser.IsLocked,
+		"is_approved_by_partner":     rawUser.IsApprovedByPartner,
 		"is_owner":                   rawUser.Owner,
-		"disable":                    rawUser.IsLocked,
-		"partner_approval":           rawUser.IsApprovedByPartner,
 	}
 }

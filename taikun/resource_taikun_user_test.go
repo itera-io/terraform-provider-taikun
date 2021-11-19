@@ -62,8 +62,6 @@ resource "taikun_user" "foo" {
   role      = "%s"
 
   display_name        = "%s"
-  disable       = %t
-  partner_approval = %t
 }
 `
 
@@ -72,8 +70,6 @@ func TestAccResourceTaikunUser(t *testing.T) {
 	email := randomEmail()
 	role := "User"
 	displayName := randomTestName()
-	userDisabled := false
-	approvedByPartner := false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
@@ -86,8 +82,6 @@ func TestAccResourceTaikunUser(t *testing.T) {
 					email,
 					role,
 					displayName,
-					userDisabled,
-					approvedByPartner,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunUserExists,
@@ -95,13 +89,13 @@ func TestAccResourceTaikunUser(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
 					resource.TestCheckResourceAttr("taikun_user.foo", "role", role),
 					resource.TestCheckResourceAttr("taikun_user.foo", "display_name", displayName),
-					resource.TestCheckResourceAttr("taikun_user.foo", "disable", fmt.Sprint(userDisabled)),
-					resource.TestCheckResourceAttr("taikun_user.foo", "partner_approval", fmt.Sprint(approvedByPartner)),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "is_owner"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "is_csm"),
+					resource.TestCheckResourceAttrSet("taikun_user.foo", "is_disabled"),
+					resource.TestCheckResourceAttrSet("taikun_user.foo", "is_approved_by_partner"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "email_confirmed"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "email_notification_enabled"),
 				),
@@ -120,14 +114,10 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 	email := randomEmail()
 	role := "Manager"
 	displayName := randomTestName()
-	userDisabled := false
-	approvedByPartner := true
 	newUserName := randomTestName()
 	newEmail := randomEmail()
 	newRole := "Manager"
 	newDisplayName := randomTestName()
-	newUserDisabled := true
-	newApprovedByPartner := false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
@@ -140,8 +130,6 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					email,
 					role,
 					displayName,
-					userDisabled,
-					approvedByPartner,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunUserExists,
@@ -149,8 +137,8 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
 					resource.TestCheckResourceAttr("taikun_user.foo", "role", role),
 					resource.TestCheckResourceAttr("taikun_user.foo", "display_name", displayName),
-					resource.TestCheckResourceAttr("taikun_user.foo", "disable", fmt.Sprint(userDisabled)),
-					resource.TestCheckResourceAttr("taikun_user.foo", "partner_approval", fmt.Sprint(approvedByPartner)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "is_disabled", "false"),
+					resource.TestCheckResourceAttr("taikun_user.foo", "is_approved_by_partner", "true"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "id"),
@@ -166,8 +154,6 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					newEmail,
 					newRole,
 					newDisplayName,
-					newUserDisabled,
-					newApprovedByPartner,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunUserExists,
@@ -175,8 +161,8 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", newEmail),
 					resource.TestCheckResourceAttr("taikun_user.foo", "role", newRole),
 					resource.TestCheckResourceAttr("taikun_user.foo", "display_name", newDisplayName),
-					resource.TestCheckResourceAttr("taikun_user.foo", "disable", fmt.Sprint(newUserDisabled)),
-					resource.TestCheckResourceAttr("taikun_user.foo", "partner_approval", fmt.Sprint(newApprovedByPartner)),
+					resource.TestCheckResourceAttr("taikun_user.foo", "is_disabled", "false"),
+					resource.TestCheckResourceAttr("taikun_user.foo", "is_approved_by_partner", "true"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_user.foo", "id"),
