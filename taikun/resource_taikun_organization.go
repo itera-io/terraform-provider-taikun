@@ -41,7 +41,8 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 		"discount_rate": {
 			Description:  "Discount rate, must be between 0 and 100 (included).",
 			Type:         schema.TypeFloat,
-			Required:     true,
+			Optional:     true,
+			Default:      100,
 			ValidateFunc: validation.FloatBetween(0, 100),
 		},
 		"email": {
