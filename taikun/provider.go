@@ -121,6 +121,7 @@ func Provider() *schema.Provider {
 				Type:         schema.TypeString,
 				Description:  "Custom Taikun API host.",
 				Optional:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_API_HOST", nil),
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"email": {
