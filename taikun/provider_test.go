@@ -1,9 +1,10 @@
 package taikun
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var testAccProvider *schema.Provider
@@ -11,6 +12,9 @@ var testAccProviders map[string]*schema.Provider
 var testAccProviderFactories map[string]func() (*schema.Provider, error)
 
 func init() {
+
+	os.Setenv("TAIKUN_API_HOST", "api.taikun.dev")
+
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
 		"taikun": testAccProvider,
