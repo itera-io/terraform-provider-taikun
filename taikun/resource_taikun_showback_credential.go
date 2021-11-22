@@ -25,14 +25,14 @@ func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"username": {
-			Description:  "The prometheus username or other credential.",
+			Description:  "The Prometheus username or other credential.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"password": {
-			Description:  "The prometheus password or other credential.",
+			Description:  "The Prometheus password or other credential.",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,

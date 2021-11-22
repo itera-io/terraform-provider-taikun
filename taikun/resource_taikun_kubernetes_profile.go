@@ -37,7 +37,7 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"cni": {
-			Description: "Container Network Interface(CNI) of the Kubernetes profile.",
+			Description: "Container Network Interface (CNI) of the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

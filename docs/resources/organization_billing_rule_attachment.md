@@ -8,7 +8,7 @@ description: |-   Taikun Organization - Billing Rule Attachment
 
 Taikun Organization - Billing Rule Attachment
 
-~> **Role Requirement** In order to use the `taikun_organization_billing_rule_attachment` resource you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_organization_billing_rule_attachment` resource, you need a Partner account.
 
 ## Example Usage
 

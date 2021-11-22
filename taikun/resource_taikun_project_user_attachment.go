@@ -41,7 +41,7 @@ func resourceTaikunProjectUserAttachmentSchema() map[string]*schema.Schema {
 
 func resourceTaikunProjectUserAttachment() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Taikun Project - User Attachment",
+		Description:   "Taikun Project-User Attachment",
 		CreateContext: resourceTaikunProjectUserAttachmentCreate,
 		ReadContext:   generateResourceTaikunProjectUserAttachmentReadWithoutRetries(),
 		DeleteContext: resourceTaikunProjectUserAttachmentDelete,

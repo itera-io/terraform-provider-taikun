@@ -28,9 +28,9 @@ resource "taikun_kubeconfig" "foo" {
 ### Required
 
 - **access_scope** (String) Who can use the kubeconfig: `personal` (only you), `managers` (managers only) or `all` (all users with access to this project).
-- **name** (String) Kubeconfig's name.
+- **name** (String) The kubeconfig's name.
 - **project_id** (String) ID of the kubeconfig's project.
-- **role** (String) Kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.
+- **role** (String) The kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.
 
 ### Read-Only
 

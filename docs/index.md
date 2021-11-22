@@ -5,7 +5,9 @@ description: |- The Taikun provider provides resources to interact with the Taik
 
 # Taikun Provider
 
-The Taikun provider provides resources and datasources to interact with the Taikun API.
+With the Taikun provider, you can use Terraform to manage resources in [Taikun](https://taikun.cloud).
+
+Use the navigation to the left to learn about the available resources and data sources.
 
 ## Example Usage
 

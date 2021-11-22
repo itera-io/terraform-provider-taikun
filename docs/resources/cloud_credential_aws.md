@@ -8,7 +8,7 @@ description: |-   Taikun AWS Cloud Credential
 
 Taikun AWS Cloud Credential
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_aws` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_cloud_credential_aws` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -33,11 +33,11 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 ### Required
 
-- **access_key_id** (String, Sensitive) The AWS Access Key ID.
+- **access_key_id** (String, Sensitive) The AWS access key ID.
 - **availability_zone** (String) The AWS availability zone for the region.
 - **name** (String) The name of the AWS cloud credential.
 - **region** (String) The AWS region.
-- **secret_access_key** (String, Sensitive) The AWS Secret Access Key.
+- **secret_access_key** (String, Sensitive) The AWS secret access key.
 
 ### Optional
 

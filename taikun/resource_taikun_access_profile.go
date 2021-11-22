@@ -41,7 +41,7 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			},
 		},
 		"http_proxy": {
-			Description:  "HTTP Proxy of the access profile.",
+			Description:  "HTTP proxy of the access profile.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.IsURLWithHTTPorHTTPS,

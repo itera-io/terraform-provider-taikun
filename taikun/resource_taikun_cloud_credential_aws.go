@@ -33,7 +33,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			),
 		},
 		"access_key_id": {
-			Description:  "The AWS Access Key ID.",
+			Description:  "The AWS access key ID.",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -41,7 +41,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"secret_access_key": {
-			Description:  "The AWS Secret Access Key.",
+			Description:  "The AWS secret access key.",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,

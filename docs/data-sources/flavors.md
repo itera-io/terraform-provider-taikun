@@ -8,7 +8,7 @@ description: |-   Retrieve flavors for a given cloud credential.
 
 Retrieve flavors for a given cloud credential.
 
-~> **Role Requirement** In order to use the `taikun_flavors` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_flavors` data source, you need a Manager or Partner account.
 
 ## Example Usage
 

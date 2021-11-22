@@ -8,7 +8,7 @@ description: |-   Taikun Slack Configuration
 
 Taikun Slack Configuration
 
-~> **Role Requirement** In order to use the `taikun_slack_configuration` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_slack_configuration` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -31,18 +31,18 @@ resource "taikun_slack_configuration" "foo" {
 ### Required
 
 - **channel** (String) Slack channel for notifications.
-- **name** (String) Name.
+- **name** (String) The Slack configuration's name.
 - **type** (String) The type of notifications to receive: `Alert` (only alert-type notifications) or `General` (all notifications).
 - **url** (String) Webhook URL from Slack app.
 
 ### Optional
 
-- **organization_id** (String) Organization ID.
+- **organization_id** (String) The ID of the organization which owns the Slack configuration.
 
 ### Read-Only
 
-- **id** (String) ID.
-- **organization_name** (String) Organization Name.
+- **id** (String) The Slack configuration's ID.
+- **organization_name** (String) The name of the organization which owns the Slack configuration.
 
 ## Import
 

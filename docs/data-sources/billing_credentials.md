@@ -8,7 +8,7 @@ description: |-   Retrieve all billing credentials.
 
 Retrieve all billing credentials.
 
-~> **Role Requirement** In order to use the `taikun_billing_credentials` data source you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_billing_credentials` data source, you need a Partner account.
 
 ## Example Usage
 

@@ -8,7 +8,7 @@ description: |-   Get an Azure cloud credential by its ID.
 
 Get an Azure cloud credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_azure` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_cloud_credential_azure` data source, you need a Manager or Partner account.
 
 ## Example Usage
 
@@ -37,6 +37,6 @@ data "taikun_cloud_credential_azure" "foo" {
 - **name** (String) The name of the Azure cloud credential.
 - **organization_id** (String) The ID of the organization which owns the Azure cloud credential.
 - **organization_name** (String) The name of the organization which owns the Azure cloud credential.
-- **tenant_id** (String) The Azure Tenant ID.
+- **tenant_id** (String) The Azure tenant ID.
 
 

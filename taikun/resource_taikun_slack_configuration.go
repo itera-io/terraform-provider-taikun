@@ -19,12 +19,12 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"id": {
-			Description: "ID.",
+			Description: "The Slack configuration's ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"name": {
-			Description: "Name.",
+			Description: "The Slack configuration's name.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.All(
@@ -36,14 +36,14 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			),
 		},
 		"organization_id": {
-			Description:      "Organization ID.",
+			Description:      "The ID of the organization which owns the Slack configuration.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "Organization Name.",
+			Description: "The name of the organization which owns the Slack configuration.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

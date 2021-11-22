@@ -8,7 +8,7 @@ description: |-   Taikun Azure Cloud Credential
 
 Taikun Azure Cloud Credential
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_azure` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_cloud_credential_azure` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -36,12 +36,12 @@ resource "taikun_cloud_credential_azure" "foo" {
 ### Required
 
 - **availability_zone** (String) The Azure availability zone for the location.
-- **client_id** (String, Sensitive) The Azure Client ID.
-- **client_secret** (String, Sensitive) The Azure Client Secret.
+- **client_id** (String, Sensitive) The Azure client ID.
+- **client_secret** (String, Sensitive) The Azure client secret.
 - **location** (String) The Azure location.
 - **name** (String) The name of the Azure cloud credential.
-- **subscription_id** (String) The Azure Subscription ID.
-- **tenant_id** (String) The Azure Tenant ID.
+- **subscription_id** (String) The Azure subscription ID.
+- **tenant_id** (String) The Azure tenant ID.
 
 ### Optional
 
