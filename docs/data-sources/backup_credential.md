@@ -8,7 +8,7 @@ description: |-   Retrieve a backup credential by its ID.
 
 Retrieve a backup credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_backup_credential` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_backup_credential` data source, you need a Manager or Partner account.
 
 ## Example Usage
 
@@ -35,7 +35,7 @@ data "taikun_backup_credential" "foo" {
 - **name** (String) The name of the backup credential.
 - **organization_id** (String) The ID of the organization which owns the backup credential.
 - **organization_name** (String) The name of the organization which owns the backup credential.
-- **s3_access_key_id** (String) The S3 Access Key ID.
+- **s3_access_key_id** (String) The S3 access key ID.
 - **s3_endpoint** (String) The S3 endpoint URL.
 - **s3_region** (String) The S3 region.
 

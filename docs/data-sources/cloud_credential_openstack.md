@@ -8,7 +8,7 @@ description: |-   Get an OpenStack cloud credential by its ID.
 
 Get an OpenStack cloud credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_cloud_credential_openstack` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_cloud_credential_openstack` data source, you need a Manager or Partner account.
 
 ## Example Usage
 

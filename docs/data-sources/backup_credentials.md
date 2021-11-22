@@ -8,7 +8,7 @@ description: |-   Retrieve all backup credentials.
 
 Retrieve all backup credentials.
 
-~> **Role Requirement** In order to use the `taikun_backup_credentials` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_backup_credentials` data source, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 

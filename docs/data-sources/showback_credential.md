@@ -8,7 +8,7 @@ description: |-   Get a showback credential by its ID.
 
 Get a showback credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_showback_credential` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_showback_credential` data source, you need a Manager or Partner account.
 
 ## Example Usage
 
@@ -34,8 +34,8 @@ data "taikun_showback_credential" "foo" {
 - **name** (String) The name of the showback credential.
 - **organization_id** (String) The ID of the organization which owns the showback credential.
 - **organization_name** (String) The name of the organization which owns the showback credential.
-- **password** (String, Sensitive) The prometheus password or other credential.
+- **password** (String, Sensitive) The Prometheus password or other credential.
 - **url** (String) URL of the source.
-- **username** (String) The prometheus username or other credential.
+- **username** (String) The Prometheus username or other credential.
 
 

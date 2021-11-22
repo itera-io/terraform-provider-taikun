@@ -8,7 +8,7 @@ description: |-   Get an access profile by its ID.
 
 Get an access profile by its ID.
 
-~> **Role Requirement** In order to use the `taikun_access_profile` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_access_profile` data source, you need a Manager or Partner account.
 
 ## Example Usage
 
@@ -29,7 +29,7 @@ data "taikun_access_profile" "foo" {
 
 - **created_by** (String) The creator of the access profile.
 - **dns_server** (List of Object) List of DNS servers. (see [below for nested schema](#nestedatt--dns_server))
-- **http_proxy** (String) HTTP Proxy of the access profile.
+- **http_proxy** (String) HTTP proxy of the access profile.
 - **last_modified** (String) The time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the profile.
 - **lock** (Boolean) Indicates whether to lock the access profile.

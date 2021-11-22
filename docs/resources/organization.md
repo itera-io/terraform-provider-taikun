@@ -8,7 +8,7 @@ description: |-   Taikun Organization
 
 Taikun Organization
 
-~> **Role Requirement** In order to use the `taikun_organization` resource you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_organization` resource, you need a Partner account.
 
 ## Example Usage
 

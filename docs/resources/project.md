@@ -8,7 +8,7 @@ description: |-   Taikun Project
 
 Taikun Project
 
-~> **Role Requirement** In order to use the `taikun_project` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_project` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization. If specified, the project's cloud credential must be in the same organization.
 
@@ -82,30 +82,30 @@ resource "taikun_project" "foobar" {
 
 ### Required
 
-- **cloud_credential_id** (String) ID of the cloud credential used to store the project.
+- **cloud_credential_id** (String) ID of the cloud credential used to create the project's servers.
 - **name** (String) Project name.
 
 ### Optional
 
-- **access_profile_id** (String) ID of the project's access profile. Defaults to the project's organization's default access profile.
+- **access_profile_id** (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
 - **alerting_profile_id** (String) ID of the project's alerting profile.
-- **auto_upgrade** (Boolean) Kubespray version will be automatically upgraded if new version is available. Defaults to `false`.
+- **auto_upgrade** (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available. Defaults to `false`.
 - **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
-- **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the project's organization's default Kubernetes profile.
+- **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.
 - **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
 - **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
-- **router_id_end_range** (Number) Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
-- **router_id_start_range** (Number) Router ID start range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
+- **router_id_end_range** (Number) Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
+- **router_id_start_range** (Number) Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
 - **server_bastion** (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
 - **server_kubemaster** (Block Set) Kubemaster server. Required with: `server_bastion`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_kubemaster))
 - **server_kubeworker** (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
-- **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
+- **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
 - **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

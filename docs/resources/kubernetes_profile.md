@@ -8,7 +8,7 @@ description: |-   Taikun Kubernetes Profile
 
 Taikun Kubernetes Profile
 
-~> **Role Requirement** In order to use the `taikun_kubernetes_profile` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_kubernetes_profile` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -43,7 +43,7 @@ resource "taikun_kubernetes_profile" "foo" {
 
 ### Read-Only
 
-- **cni** (String) Container Network Interface(CNI) of the Kubernetes profile.
+- **cni** (String) Container Network Interface (CNI) of the Kubernetes profile.
 - **created_by** (String) The creator of the Kubernetes profile.
 - **id** (String) The ID of the Kubernetes profile.
 - **last_modified** (String) Time and date of last modification.

@@ -8,7 +8,7 @@ description: |-   Get a billing credential by its ID.
 
 Get a billing credential by its ID.
 
-~> **Role Requirement** In order to use the `taikun_billing_credential` data source you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_billing_credential` data source, you need a Partner account.
 
 ## Example Usage
 
@@ -35,8 +35,8 @@ data "taikun_billing_credential" "foo" {
 - **name** (String) The name of the billing credential.
 - **organization_id** (String) The ID of the organization which owns the billing credential.
 - **organization_name** (String) The name of the organization which owns the billing credential.
-- **prometheus_password** (String, Sensitive) The prometheus password.
-- **prometheus_url** (String) The prometheus URL.
-- **prometheus_username** (String) The prometheus username.
+- **prometheus_password** (String, Sensitive) The Prometheus password.
+- **prometheus_url** (String) The Prometheus URL.
+- **prometheus_username** (String) The Prometheus username.
 
 

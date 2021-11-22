@@ -8,7 +8,7 @@ description: |-   Taikun Backup Policy
 
 Taikun Backup Policy
 
-~> **Role Requirement** In order to use the `taikun_backup_policy` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_backup_policy` resource, you need a Manager or Partner account.
 
 ## Example Usage
 
