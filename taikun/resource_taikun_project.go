@@ -37,7 +37,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"access_profile_id": {
-			Description:      "ID of the project's access profile. Defaults to the project's organization's default access profile.",
+			Description:      "ID of the project's access profile. Defaults to the default access profile of the project's organization.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -56,7 +56,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"auto_upgrade": {
-			Description: "Kubespray version will be automatically upgraded if new version is available.",
+			Description: "If enabled, the Kubespray version will be automatically upgraded when a new version is available.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -69,7 +69,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"cloud_credential_id": {
-			Description:      "ID of the cloud credential used to store the project.",
+			Description:      "ID of the cloud credential used to create the project's servers.",
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: stringIsInt,
@@ -99,7 +99,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"kubernetes_profile_id": {
-			Description:      "ID of the project's Kubernetes profile. Defaults to the project's organization's default Kubernetes profile.",
+			Description:      "ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -163,7 +163,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"router_id_end_range": {
-			Description:  "Router ID end range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Description:  "Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
@@ -171,7 +171,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			RequiredWith: []string{"router_id_start_range", "taikun_lb_flavor"},
 		},
 		"router_id_start_range": {
-			Description:  "Router ID start range (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Description:  "Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
@@ -210,7 +210,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			},
 		},
 		"taikun_lb_flavor": {
-			Description:  "OpenStack flavor for the Taikun load balancer (only used if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
+			Description:  "OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled).",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,

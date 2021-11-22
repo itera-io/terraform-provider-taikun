@@ -64,12 +64,12 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 64),
 		},
 		"email_confirmed": {
-			Description: "Indicates whether the email of the user has been confirmed or not.",
+			Description: "Indicates whether the email of the user has been confirmed.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
 		"email_notification_enabled": {
-			Description: "Indicates whether the user has enabled notifications on their email or not.",
+			Description: "Indicates whether the user has enabled notifications on their email.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -79,7 +79,7 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"is_csm": {
-			Description: "Indicates whether the user is a Customer Success Manager or not.",
+			Description: "Indicates whether the user is a Customer Success Manager.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},

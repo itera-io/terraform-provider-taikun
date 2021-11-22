@@ -16,7 +16,7 @@ func dataSourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunSlackConfiguration() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a slack configuration by its ID.",
+		Description: "Get a Slack configuration by its ID.",
 		ReadContext: dataSourceTaikunSlackConfigurationRead,
 		Schema:      dataSourceTaikunSlackConfigurationSchema(),
 	}

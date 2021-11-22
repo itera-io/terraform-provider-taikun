@@ -24,14 +24,14 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"s3_access_key_id": {
-			Description:  "The S3 Access Key ID.",
+			Description:  "The S3 access key ID.",
 			Type:         schema.TypeString,
 			Required:     true,
 			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"s3_secret_access_key": {
-			Description:  "The S3 Secret Access Key.",
+			Description:  "The S3 secret access key.",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
