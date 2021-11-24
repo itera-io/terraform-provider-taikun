@@ -48,14 +48,14 @@ resource "taikun_opa_profile" "foo" {
 
 ### Optional
 
-- **allowed_repos** (List of String) The list of allowed images repositories.
+- **allowed_repos** (List of String) Requires container images to begin with a string from the specified list.
 - **forbid_http_ingress** (Boolean) Requires Ingress resources to be HTTPS only. Defaults to `false`.
 - **forbid_node_port** (Boolean) Disallows all Services with type NodePort. Defaults to `false`.
-- **forbidden_tags** (List of String) Requires container images to have an image tag different from the ones in the specified list.
+- **forbidden_tags** (List of String) Container images must have an image tag different from the ones in the list.
 - **ingress_whitelist** (List of String) List of allowed Ingress rule hosts.
 - **lock** (Boolean) Indicates whether to lock the OPA profile. Defaults to `false`.
 - **organization_id** (String) The ID of the organization which owns the OPA profile.
-- **require_probe** (Boolean) Requires Pods to have readiness and/or liveness probes. Defaults to `false`.
+- **require_probe** (Boolean) Requires Pods to have readiness and liveness probes. Defaults to `false`.
 - **unique_ingress** (Boolean) Requires all Ingress rule hosts to be unique. Defaults to `false`.
 - **unique_service_selector** (Boolean) Whether services must have globally unique service selectors or not. Defaults to `false`.
 

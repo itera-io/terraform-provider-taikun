@@ -15,7 +15,7 @@ import (
 func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"allowed_repos": {
-			Description: "The list of allowed images repositories.",
+			Description: "Requires container images to begin with a string from the specified list.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -40,7 +40,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"forbidden_tags": {
-			Description: "Requires container images to have an image tag different from the ones in the specified list.",
+			Description: "Container images must have an image tag different from the ones in the list.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
@@ -108,7 +108,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"require_probe": {
-			Description: "Requires Pods to have readiness and/or liveness probes.",
+			Description: "Requires Pods to have readiness and liveness probes.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
