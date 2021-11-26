@@ -10,10 +10,10 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
-func dataSourceTaikunOPAProfiles() *schema.Resource {
+func dataSourceTaikunPolicyProfiles() *schema.Resource {
 	return &schema.Resource{
-		Description: "Retrieve all OPA profiles.",
-		ReadContext: dataSourceTaikunOPAProfilesRead,
+		Description: "Retrieve all Policy profiles.",
+		ReadContext: dataSourceTaikunPolicyProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
 				Description:      "Organization ID filter.",
@@ -21,19 +21,19 @@ func dataSourceTaikunOPAProfiles() *schema.Resource {
 				Optional:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
-			"opa_profiles": {
-				Description: "List of retrieved OPA profiles.",
+			"policy_profiles": {
+				Description: "List of retrieved Policy profiles.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{
-					Schema: dataSourceTaikunOPAProfileSchema(),
+					Schema: dataSourceTaikunPolicyProfileSchema(),
 				},
 			},
 		},
 	}
 }
 
-func dataSourceTaikunOPAProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunPolicyProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
@@ -65,9 +65,9 @@ func dataSourceTaikunOPAProfilesRead(_ context.Context, data *schema.ResourceDat
 
 	opaProfiles := make([]map[string]interface{}, len(opaProfilesListDtos))
 	for i, rawOPAProfile := range opaProfilesListDtos {
-		opaProfiles[i] = flattenTaikunOPAProfile(rawOPAProfile)
+		opaProfiles[i] = flattenTaikunPolicyProfile(rawOPAProfile)
 	}
-	if err := data.Set("opa_profiles", opaProfiles); err != nil {
+	if err := data.Set("policy_profiles", opaProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 

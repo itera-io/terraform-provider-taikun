@@ -1,19 +1,19 @@
 ---
-page_title: "taikun_opa_profile Data Source - terraform-provider-taikun"
+page_title: "taikun_policy_profile Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get an OPA profile by its ID.
+description: |-   Get a Policy profile by its ID.
 ---
 
-# taikun_opa_profile (Data Source)
+# taikun_policy_profile (Data Source)
 
-Get an OPA profile by its ID.
+Get a Policy profile by its ID.
 
-~> **Role Requirement** In order to use the `taikun_opa_profile` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** In order to use the `taikun_policy_profile` data source you need a `Manager` or `Partner` account.
 
 ## Example Usage
 
 ```terraform
-data "taikun_opa_profile" "foo" {
+data "taikun_policy_profile" "foo" {
   id = "42"
 }
 ```
@@ -23,7 +23,7 @@ data "taikun_opa_profile" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the OPA profile.
+- **id** (String) The ID of the Policy profile.
 
 ### Read-Only
 
@@ -32,11 +32,11 @@ data "taikun_opa_profile" "foo" {
 - **forbid_node_port** (Boolean) Disallows all Services with type NodePort.
 - **forbidden_tags** (List of String) Container images must have an image tag different from the ones in the list.
 - **ingress_whitelist** (List of String) List of allowed Ingress rule hosts.
-- **is_default** (Boolean) Indicates whether the OPA Profile is the default one.
-- **lock** (Boolean) Indicates whether to lock the OPA profile.
-- **name** (String) The name of the OPA profile.
-- **organization_id** (String) The ID of the organization which owns the OPA profile.
-- **organization_name** (String) The name of the organization which owns the OPA profile.
+- **is_default** (Boolean) Indicates whether the Policy Profile is the default one.
+- **lock** (Boolean) Indicates whether to lock the Policy profile.
+- **name** (String) The name of the Policy profile.
+- **organization_id** (String) The ID of the organization which owns the Policy profile.
+- **organization_name** (String) The name of the organization which owns the Policy profile.
 - **require_probe** (Boolean) Requires Pods to have readiness and liveness probes.
 - **unique_ingress** (Boolean) Requires all Ingress rule hosts to be unique.
 - **unique_service_selector** (Boolean) Whether services must have globally unique service selectors or not.

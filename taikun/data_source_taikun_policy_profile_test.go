@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceTaikunOPAProfileConfig = `
-resource "taikun_opa_profile" "foo" {
+const testAccDataSourceTaikunPolicyProfileConfig = `
+resource "taikun_policy_profile" "foo" {
   name = "%s"
 
   forbid_node_port = %t
@@ -18,13 +18,13 @@ resource "taikun_opa_profile" "foo" {
   unique_service_selector = %t
 }
 
-data "taikun_opa_profile" "foo" {
-  id = resource.taikun_opa_profile.foo.id
+data "taikun_policy_profile" "foo" {
+  id = resource.taikun_policy_profile.foo.id
 }
 `
 
-func TestAccDataSourceTaikunOPAProfile(t *testing.T) {
-	OPAProfileName := randomTestName()
+func TestAccDataSourceTaikunPolicyProfile(t *testing.T) {
+	PolicyProfileName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -32,8 +32,8 @@ func TestAccDataSourceTaikunOPAProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(
-					testAccDataSourceTaikunOPAProfileConfig,
-					OPAProfileName,
+					testAccDataSourceTaikunPolicyProfileConfig,
+					PolicyProfileName,
 					false,
 					false,
 					false,
@@ -41,8 +41,8 @@ func TestAccDataSourceTaikunOPAProfile(t *testing.T) {
 					false,
 				),
 				Check: checkDataSourceStateMatchesResourceState(
-					"data.taikun_opa_profile.foo",
-					"taikun_opa_profile.foo",
+					"data.taikun_policy_profile.foo",
+					"taikun_policy_profile.foo",
 				),
 			},
 		},

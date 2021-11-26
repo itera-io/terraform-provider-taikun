@@ -920,7 +920,7 @@ resource "taikun_project" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   flavors = local.flavors
   backup_credential_id = resource.taikun_backup_credential.foo.id
-  opa_profile_id = resource.taikun_opa_profile.foo.id
+  policy_profile_id = resource.taikun_policy_profile.foo.id
 
   server_bastion {
      name = "b"
@@ -1002,7 +1002,7 @@ resource "taikun_backup_policy" "foo" {
   excluded_namespaces = ["aled"]
 }
 
-resource "taikun_opa_profile" "foo" {
+resource "taikun_policy_profile" "foo" {
   name = "%s"
 
   forbid_node_port = %t

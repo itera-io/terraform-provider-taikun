@@ -50,6 +50,7 @@ resource "taikun_project" "foobar" {
   access_profile_id     = resource.taikun_access_profile.foo.id
   alerting_profile_id   = resource.taikun_alerting_profile.foo.id
   kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
+  policy_profile_id     = resource.taikun_policy_profile.foo.id
 
   expiration_date = "21/12/2012"
   auto_upgrade    = true
@@ -96,8 +97,8 @@ resource "taikun_project" "foobar" {
 - **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
-- **opa_profile_id** (String) ID of the OPA profile. If unspecified, OPA is disabled.
 - **organization_id** (String) ID of the organization which owns the project.
+- **policy_profile_id** (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
 - **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
 - **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
 - **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.

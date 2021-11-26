@@ -8,14 +8,18 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 {{ .Description | trimspace }}
 
-~> **Role Requirement** In order to use the `taikun_opa_profiles` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** In order to use the `taikun_policy_profile` resource you need a `Manager` or `Partner` account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
-{{tffile "examples/data-sources/taikun_opa_profiles/data-source.tf"}}
+{{tffile "examples/resources/taikun_policy_profile/resource.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
+## Import
 
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/taikun_policy_profile/import.sh"}}

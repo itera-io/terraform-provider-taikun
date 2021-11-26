@@ -12,7 +12,7 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
-func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
+func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"allowed_repos": {
 			Description: "Requires container images to begin with a string from the specified list.",
@@ -56,7 +56,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			},
 		},
 		"id": {
-			Description: "The ID of the OPA profile.",
+			Description: "The ID of the Policy profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -77,25 +77,25 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			},
 		},
 		"is_default": {
-			Description: "Indicates whether the OPA Profile is the default one.",
+			Description: "Indicates whether the Policy Profile is the default one.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
 		"lock": {
-			Description: "Indicates whether to lock the OPA profile.",
+			Description: "Indicates whether to lock the Policy profile.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"name": {
-			Description:  "The name of the OPA profile.",
+			Description:  "The name of the Policy profile.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(2, 50),
 		},
 		"organization_id": {
-			Description:      "The ID of the organization which owns the OPA profile.",
+			Description:      "The ID of the organization which owns the Policy profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -103,7 +103,7 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "The name of the organization which owns the OPA profile.",
+			Description: "The name of the organization which owns the Policy profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -128,21 +128,21 @@ func resourceTaikunOPAProfileSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunOPAProfile() *schema.Resource {
+func resourceTaikunPolicyProfile() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Taikun OPA Profile",
-		CreateContext: resourceTaikunOPAProfileCreate,
-		ReadContext:   generateResourceTaikunOPAProfileReadWithoutRetries(),
-		UpdateContext: resourceTaikunOPAProfileUpdate,
-		DeleteContext: resourceTaikunOPAProfileDelete,
-		Schema:        resourceTaikunOPAProfileSchema(),
+		Description:   "Taikun Policy Profile",
+		CreateContext: resourceTaikunPolicyProfileCreate,
+		ReadContext:   generateResourceTaikunPolicyProfileReadWithoutRetries(),
+		UpdateContext: resourceTaikunPolicyProfileUpdate,
+		DeleteContext: resourceTaikunPolicyProfileDelete,
+		Schema:        resourceTaikunPolicyProfileSchema(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }
 
-func resourceTaikunOPAProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunPolicyProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateOpaProfileCommand{
@@ -180,22 +180,22 @@ func resourceTaikunOPAProfileCreate(ctx context.Context, data *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		err = resourceTaikunOPAProfileLock(id, true, apiClient)
+		err = resourceTaikunPolicyProfileLock(id, true, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunOPAProfileReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunPolicyProfileReadWithRetries(), ctx, data, meta)
 }
 
-func generateResourceTaikunOPAProfileReadWithRetries() schema.ReadContextFunc {
-	return generateResourceTaikunOPAProfileRead(true)
+func generateResourceTaikunPolicyProfileReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunPolicyProfileRead(true)
 }
-func generateResourceTaikunOPAProfileReadWithoutRetries() schema.ReadContextFunc {
-	return generateResourceTaikunOPAProfileRead(false)
+func generateResourceTaikunPolicyProfileReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunPolicyProfileRead(false)
 }
-func generateResourceTaikunOPAProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
+func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
 	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 		id, err := atoi32(data.Id())
@@ -216,9 +216,9 @@ func generateResourceTaikunOPAProfileRead(isAfterUpdateOrCreate bool) schema.Rea
 			return nil
 		}
 
-		rawOPAProfile := response.GetPayload().Data[0]
+		rawPolicyProfile := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunOPAProfile(rawOPAProfile))
+		err = setResourceDataFromMap(data, flattenTaikunPolicyProfile(rawPolicyProfile))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -229,7 +229,7 @@ func generateResourceTaikunOPAProfileRead(isAfterUpdateOrCreate bool) schema.Rea
 	}
 }
 
-func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunPolicyProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	id, err := atoi32(data.Id())
@@ -238,7 +238,7 @@ func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceDa
 	}
 
 	if locked, _ := data.GetChange("lock"); locked.(bool) {
-		err := resourceTaikunOPAProfileLock(id, false, apiClient)
+		err := resourceTaikunPolicyProfileLock(id, false, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -267,16 +267,16 @@ func resourceTaikunOPAProfileUpdate(ctx context.Context, data *schema.ResourceDa
 	}
 
 	if data.Get("lock").(bool) {
-		err := resourceTaikunOPAProfileLock(id, true, apiClient)
+		err := resourceTaikunPolicyProfileLock(id, true, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunOPAProfileReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunPolicyProfileReadWithRetries(), ctx, data, meta)
 }
 
-func resourceTaikunOPAProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunPolicyProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id, err := atoi32(data.Id())
 	if err != nil {
@@ -293,7 +293,7 @@ func resourceTaikunOPAProfileDelete(_ context.Context, data *schema.ResourceData
 	return nil
 }
 
-func resourceTaikunOPAProfileLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *apiClient) error {
 	lockBody := models.OpaProfileLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),
@@ -304,22 +304,22 @@ func resourceTaikunOPAProfileLock(id int32, lock bool, apiClient *apiClient) err
 	return err
 }
 
-func flattenTaikunOPAProfile(rawOPAProfile *models.OpaProfileListDto) map[string]interface{} {
+func flattenTaikunPolicyProfile(rawPolicyProfile *models.OpaProfileListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"allowed_repos":           rawOPAProfile.AllowedRepo,
-		"forbid_node_port":        rawOPAProfile.ForbidNodePort,
-		"forbid_http_ingress":     rawOPAProfile.ForbidHTTPIngress,
-		"forbidden_tags":          rawOPAProfile.ForbidSpecificTags,
-		"id":                      i32toa(rawOPAProfile.ID),
-		"ingress_whitelist":       rawOPAProfile.IngressWhitelist,
-		"is_default":              rawOPAProfile.IsDefault,
-		"lock":                    rawOPAProfile.IsLocked,
-		"name":                    rawOPAProfile.Name,
-		"organization_id":         i32toa(rawOPAProfile.OrganizationID),
-		"organization_name":       rawOPAProfile.OrganizationName,
-		"require_probe":           rawOPAProfile.RequireProbe,
-		"unique_ingress":          rawOPAProfile.UniqueIngresses,
-		"unique_service_selector": rawOPAProfile.UniqueServiceSelector,
+		"allowed_repos":           rawPolicyProfile.AllowedRepo,
+		"forbid_node_port":        rawPolicyProfile.ForbidNodePort,
+		"forbid_http_ingress":     rawPolicyProfile.ForbidHTTPIngress,
+		"forbidden_tags":          rawPolicyProfile.ForbidSpecificTags,
+		"id":                      i32toa(rawPolicyProfile.ID),
+		"ingress_whitelist":       rawPolicyProfile.IngressWhitelist,
+		"is_default":              rawPolicyProfile.IsDefault,
+		"lock":                    rawPolicyProfile.IsLocked,
+		"name":                    rawPolicyProfile.Name,
+		"organization_id":         i32toa(rawPolicyProfile.OrganizationID),
+		"organization_name":       rawPolicyProfile.OrganizationName,
+		"require_probe":           rawPolicyProfile.RequireProbe,
+		"unique_ingress":          rawPolicyProfile.UniqueIngresses,
+		"unique_service_selector": rawPolicyProfile.UniqueServiceSelector,
 	}
 }

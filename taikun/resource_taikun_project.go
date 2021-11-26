@@ -132,8 +132,8 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			),
 			ForceNew: true,
 		},
-		"opa_profile_id": {
-			Description:      "ID of the OPA profile. If unspecified, OPA is disabled.",
+		"policy_profile_id": {
+			Description:      "ID of the Policy profile. If unspecified, Gatekeeper is disabled.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: stringIsInt,
@@ -426,8 +426,8 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	} else {
 		body.ExpiredAt = nil
 	}
-	if OPAProfileID, OPAProfileIDIsSet := data.GetOk("opa_profile_id"); OPAProfileIDIsSet {
-		body.OpaProfileID, _ = atoi32(OPAProfileID.(string))
+	if PolicyProfileID, PolicyProfileIDIsSet := data.GetOk("policy_profile_id"); PolicyProfileIDIsSet {
+		body.OpaProfileID, _ = atoi32(PolicyProfileID.(string))
 	}
 
 	if organizationID, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
@@ -947,9 +947,9 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 }
 
 func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
-	if data.HasChange("opa_profile_id") {
+	if data.HasChange("policy_profile_id") {
 		projectID, _ := atoi32(data.Id())
-		oldOPAProfile, _ := data.GetChange("opa_profile_id")
+		oldOPAProfile, _ := data.GetChange("policy_profile_id")
 
 		if oldOPAProfile != "" {
 
@@ -964,7 +964,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, data *schema.Reso
 
 		}
 
-		newOPAProfile, newOPAProfileIsSet := data.GetOk("opa_profile_id")
+		newOPAProfile, newOPAProfileIsSet := data.GetOk("policy_profile_id")
 
 		if newOPAProfileIsSet {
 
@@ -1127,7 +1127,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	}
 
 	if projectDetailsDTO.IsOpaEnabled {
-		projectMap["opa_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
+		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
 	}
 
 	if !projectQuotaDTO.IsCPUUnlimited {

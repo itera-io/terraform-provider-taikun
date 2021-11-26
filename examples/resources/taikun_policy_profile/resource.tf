@@ -1,4 +1,4 @@
-resource "taikun_opa_profile" "foo" {
+resource "taikun_policy_profile" "foo" {
   name = "foo"
 
   forbid_node_port        = true

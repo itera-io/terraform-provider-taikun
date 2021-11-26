@@ -1,21 +1,21 @@
 ---
-page_title: "taikun_opa_profiles Data Source - terraform-provider-taikun"
+page_title: "taikun_policy_profiles Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Retrieve all OPA profiles.
+description: |-   Retrieve all Policy profiles.
 ---
 
-# taikun_opa_profiles (Data Source)
+# taikun_policy_profiles (Data Source)
 
-Retrieve all OPA profiles.
+Retrieve all Policy profiles.
 
-~> **Role Requirement** In order to use the `taikun_opa_profiles` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** In order to use the `taikun_policy_profiles` data source you need a `Manager` or `Partner` account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
 ## Example Usage
 
 ```terraform
-data "taikun_opa_profiles" "foo" {
+data "taikun_policy_profiles" "foo" {
   organization_id = "42"
 }
 ```
@@ -29,10 +29,10 @@ data "taikun_opa_profiles" "foo" {
 
 ### Read-Only
 
-- **opa_profiles** (List of Object) List of retrieved OPA profiles. (see [below for nested schema](#nestedatt--opa_profiles))
+- **policy_profiles** (List of Object) List of retrieved Policy profiles. (see [below for nested schema](#nestedatt--policy_profiles))
 
-<a id="nestedatt--opa_profiles"></a>
-### Nested Schema for `opa_profiles`
+<a id="nestedatt--policy_profiles"></a>
+### Nested Schema for `policy_profiles`
 
 Read-Only:
 
