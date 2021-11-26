@@ -22,7 +22,7 @@ func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type: schema.TypeString,
 				ValidateFunc: validation.StringMatch(
-					regexp.MustCompile("^([a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?(\\.[a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?)*(:\\d{1,5})?/)?([a-z\\d]+((\\.|(_{1,2}|-+))[a-z\\d]+)*)(/([a-z\\d]+((\\.|(_{1,2}|-+))[a-z\\d]+)*))*/?$"),
+					regexp.MustCompile(`^([a-zA-Z]([-\da-zA-Z]*[\da-zA-Z])?(\.[a-zA-Z]([-\da-zA-Z]*[\da-zA-Z])?)*(:\d{1,5})?/)?([a-z\d]+((\.|(_{1,2}|-+))[a-z\d]+)*)(/([a-z\d]+((\.|(_{1,2}|-+))[a-z\d]+)*))*/?$`),
 					"Please specify valid Docker image prefix",
 				),
 			},
@@ -69,7 +69,7 @@ func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 				ValidateFunc: validation.All(
 					validation.StringMatch(
-						regexp.MustCompile("^(\\*|([a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?))(\\.[a-zA-Z]([-\\da-zA-Z]*[\\da-zA-Z])?)+$"),
+						regexp.MustCompile(`^(\*|([a-zA-Z]([-\da-zA-Z]*[\da-zA-Z])?))(\.[a-zA-Z]([-\da-zA-Z]*[\da-zA-Z])?)+$`),
 						"Please specify valid ingress domain",
 					),
 					validation.StringLenBetween(0, 253),
