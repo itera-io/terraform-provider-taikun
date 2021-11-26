@@ -9,7 +9,7 @@ set -e
 repo="https://github.com/itera-io/taikungoclient.git"
 
 # client branch
-branch=dev
+branch=staging
 
 # client dependency path
 path=github.com/itera-io/taikungoclient
