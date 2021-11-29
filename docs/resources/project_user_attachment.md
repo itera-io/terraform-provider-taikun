@@ -1,15 +1,14 @@
 ---
 page_title: "taikun_project_user_attachment Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-   Taikun Project - User Attachment
+description: |-   Taikun Project-User Attachment
 ---
 
 # taikun_project_user_attachment (Resource)
 
-Taikun Project - User Attachment
+Taikun Project-User Attachment
 
-~> **Role Requirement** In order to use the `taikun_project_user_attachment` resource you need a `Manager` or `Partner`
-account.
+~> **Role Requirement** To use the `taikun_project_user_attachment` resource, you need a Manager or Partner account.
 
 ## Example Usage
 

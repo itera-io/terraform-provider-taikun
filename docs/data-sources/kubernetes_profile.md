@@ -8,7 +8,7 @@ description: |-   Get a Kubernetes profile by its ID.
 
 Get a Kubernetes profile by its ID.
 
-~> **Role Requirement** In order to use the `taikun_kubernetes_profile` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_kubernetes_profile` data source, you need a Manager or Partner account.
 
 ## Example Usage
 
@@ -28,7 +28,7 @@ data "taikun_kubernetes_profile" "foo" {
 ### Read-Only
 
 - **bastion_proxy** (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.
-- **cni** (String) Container Network Interface(CNI) of the Kubernetes profile.
+- **cni** (String) Container Network Interface (CNI) of the Kubernetes profile.
 - **created_by** (String) The creator of the Kubernetes profile.
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the Kubernetes profile.

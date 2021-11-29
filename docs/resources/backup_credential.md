@@ -8,7 +8,7 @@ description: |-   Taikun Backup Credential
 
 Taikun Backup Credential
 
-~> **Role Requirement** In order to use the `taikun_backup_credential` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_backup_credential` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -33,10 +33,10 @@ resource "taikun_backup_credential" "foo" {
 ### Required
 
 - **name** (String) The name of the backup credential.
-- **s3_access_key_id** (String) The S3 Access Key ID.
+- **s3_access_key_id** (String) The S3 access key ID.
 - **s3_endpoint** (String) The S3 endpoint URL.
 - **s3_region** (String) The S3 region.
-- **s3_secret_access_key** (String, Sensitive) The S3 Secret Access Key.
+- **s3_secret_access_key** (String, Sensitive) The S3 secret access key.
 
 ### Optional
 

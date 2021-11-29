@@ -29,7 +29,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description:  "Kubeconfig's name.",
+			Description:  "The kubeconfig's name.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -48,7 +48,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"role": {
-			Description: "Kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.",
+			Description: "The kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,

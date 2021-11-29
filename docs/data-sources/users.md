@@ -8,7 +8,7 @@ description: |-   Retrieve all users.
 
 Retrieve all users.
 
-~> **Role Requirement** In order to use the `taikun_users` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_users` data source, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -36,17 +36,17 @@ data "taikun_users" "foo" {
 
 Read-Only:
 
-- **disable** (Boolean)
 - **display_name** (String)
 - **email** (String)
 - **email_confirmed** (Boolean)
 - **email_notification_enabled** (Boolean)
 - **id** (String)
+- **is_approved_by_partner** (Boolean)
 - **is_csm** (Boolean)
+- **is_disabled** (Boolean)
 - **is_owner** (Boolean)
 - **organization_id** (String)
 - **organization_name** (String)
-- **partner_approval** (Boolean)
 - **role** (String)
 - **user_name** (String)
 

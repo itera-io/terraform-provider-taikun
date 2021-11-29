@@ -8,7 +8,7 @@ description: |-   Retrieve all organizations.
 
 Retrieve all organizations.
 
-~> **Role Requirement** In order to use the `taikun_organizations` data source you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_organizations` data source, you need a Partner account.
 
 ## Example Usage
 

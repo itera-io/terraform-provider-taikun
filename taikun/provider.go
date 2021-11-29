@@ -119,9 +119,9 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"api_host": {
 				Type:         schema.TypeString,
-				Description:  "Taikun API host.",
+				Description:  "Custom Taikun API host.",
 				Optional:     true,
-				Default:      "api.taikun.dev",
+				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_API_HOST", "api.taikun.cloud"),
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"email": {
@@ -181,10 +181,10 @@ func configureContextFunc(_ context.Context, data *schema.ResourceData) (interfa
 		return nil, diag.Errorf("You must define an email and a password")
 	}
 
-	transportConfig := &client.TransportConfig{
-		Host:     data.Get("api_host").(string),
-		BasePath: client.DefaultBasePath,
-		Schemes:  client.DefaultSchemes,
+	transportConfig := client.DefaultTransportConfig()
+
+	if apiHost, apiHostIsSet := data.GetOk("api_host"); apiHostIsSet {
+		transportConfig = transportConfig.WithHost(apiHost.(string))
 	}
 
 	return &apiClient{

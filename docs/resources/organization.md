@@ -8,7 +8,7 @@ description: |-   Taikun Organization
 
 Taikun Organization
 
-~> **Role Requirement** In order to use the `taikun_organization` resource you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_organization` resource, you need a Partner account.
 
 ## Example Usage
 
@@ -35,7 +35,6 @@ resource "taikun_organization" "foo" {
 
 ### Required
 
-- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included).
 - **full_name** (String) Full name.
 - **name** (String) Organization's name.
 
@@ -45,6 +44,7 @@ resource "taikun_organization" "foo" {
 - **billing_email** (String) Billing email.
 - **city** (String) City.
 - **country** (String) Country.
+- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included). Defaults to `100`.
 - **email** (String) Email.
 - **lock** (Boolean) Indicates whether to lock the organization. Defaults to `false`.
 - **managers_can_change_subscription** (Boolean) Allow subscription to be changed by managers. Defaults to `true`.

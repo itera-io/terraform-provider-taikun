@@ -8,7 +8,7 @@ description: |-   Taikun Showback Credential
 
 Taikun Showback Credential
 
-~> **Role Requirement** In order to use the `taikun_showback_credential` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_showback_credential` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -32,9 +32,9 @@ resource "taikun_showback_credential" "foo" {
 ### Required
 
 - **name** (String) The name of the showback credential.
-- **password** (String, Sensitive) The prometheus password or other credential.
+- **password** (String, Sensitive) The Prometheus password or other credential.
 - **url** (String) URL of the source.
-- **username** (String) The prometheus username or other credential.
+- **username** (String) The Prometheus username or other credential.
 
 ### Optional
 

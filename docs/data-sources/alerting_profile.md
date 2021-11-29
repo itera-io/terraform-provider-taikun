@@ -8,7 +8,7 @@ description: |-   Retrieve an alerting profile by its ID.
 
 Retrieve an alerting profile by its ID.
 
-~> **Role Requirement** In order to use the `taikun_alerting_profile` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_alerting_profile` data source, you need a Manager or Partner account.
 
 ## Example Usage
 

@@ -8,7 +8,7 @@ description: |-   Taikun Billing Credential
 
 Taikun Billing Credential
 
-~> **Role Requirement** In order to use the `taikun_billing_credential` resource you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_billing_credential` resource, you need a Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -32,9 +32,9 @@ resource "taikun_billing_credential" "foo" {
 ### Required
 
 - **name** (String) The name of the billing credential.
-- **prometheus_password** (String, Sensitive) The prometheus password.
-- **prometheus_url** (String) The prometheus URL.
-- **prometheus_username** (String) The prometheus username.
+- **prometheus_password** (String, Sensitive) The Prometheus password.
+- **prometheus_url** (String) The Prometheus URL.
+- **prometheus_username** (String) The Prometheus username.
 
 ### Optional
 

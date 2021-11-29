@@ -8,7 +8,7 @@ description: |-   Retrieve all billing rules.
 
 Retrieve all billing rules.
 
-~> **Role Requirement** In order to use the `taikun_billing_rules` data source you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_billing_rules` data source, you need a Partner account.
 
 ## Example Usage
 

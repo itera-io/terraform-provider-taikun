@@ -8,7 +8,7 @@ description: |-   Retrieve all Slack configurations.
 
 Retrieve all Slack configurations.
 
-~> **Role Requirement** In order to use the `taikun_slack_configurations` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_slack_configurations` data source, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 

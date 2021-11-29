@@ -8,7 +8,7 @@ description: |-   Taikun User
 
 Taikun User
 
-~> **Role Requirement** In order to use the `taikun_user` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_user` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
@@ -38,17 +38,17 @@ resource "taikun_user" "foo" {
 
 ### Optional
 
-- **disable** (Boolean) Indicates whether to lock the user. Defaults to `false`.
 - **display_name** (String) The user's display name. Defaults to ` `.
 - **organization_id** (String) The ID of the user's organization.
-- **partner_approval** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login. Defaults to `true`.
 
 ### Read-Only
 
-- **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed or not.
-- **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email or not.
+- **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed.
+- **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email.
 - **id** (String) The UUID of the user.
-- **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager or not.
+- **is_approved_by_partner** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
+- **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager.
+- **is_disabled** (Boolean) Indicates whether the user is locked.
 - **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
 - **organization_name** (String) The name of the user's organization.
 

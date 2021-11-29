@@ -25,14 +25,14 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
 		"prometheus_username": {
-			Description:  "The prometheus username.",
+			Description:  "The Prometheus username.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"prometheus_password": {
-			Description:  "The prometheus password.",
+			Description:  "The Prometheus password.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -40,7 +40,7 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"prometheus_url": {
-			Description:  "The prometheus URL.",
+			Description:  "The Prometheus URL.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,

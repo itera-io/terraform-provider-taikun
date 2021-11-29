@@ -8,7 +8,7 @@ description: |-   Taikun Billing Rule
 
 Taikun Billing Rule
 
-~> **Role Requirement** In order to use the `taikun_billing_rule` resource you need a `Partner` account.
+~> **Role Requirement** To use the `taikun_billing_rule` resource, you need a Partner account.
 
 ## Example Usage
 

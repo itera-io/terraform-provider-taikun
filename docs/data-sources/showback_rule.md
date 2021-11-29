@@ -8,7 +8,7 @@ description: |-   Get a showback rule by its ID.
 
 Get a showback rule by its ID.
 
-~> **Role Requirement** In order to use the `taikun_showback_rule` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_showback_rule` data source, you need a Manager or Partner account.
 
 ## Example Usage
 

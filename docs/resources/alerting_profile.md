@@ -8,7 +8,7 @@ description: |-   Taikun Alerting Profile
 
 Taikun Alerting Profile
 
-~> **Role Requirement** In order to use the `taikun_alerting_profile` resource you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_alerting_profile` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 

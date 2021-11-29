@@ -8,7 +8,7 @@ description: |-   Retrieve all showback rules.
 
 Retrieve all showback rules.
 
-~> **Role Requirement** In order to use the `taikun_showback_rules` data source you need a `Manager` or `Partner` account.
+~> **Role Requirement** To use the `taikun_showback_rules` data source, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
