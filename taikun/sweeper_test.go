@@ -23,8 +23,10 @@ func sharedConfig() (interface{}, error) {
 		return nil, fmt.Errorf("TAIKUN_PASSWORD must be set in order to run sweepers")
 	}
 
+	transportConfig := client.DefaultTransportConfig().WithHost("api.taikun.dev")
+
 	return &apiClient{
-		client:              client.Default,
+		client:              client.NewHTTPClientWithConfig(nil, transportConfig),
 		email:               email,
 		password:            password,
 		useKeycloakEndpoint: false,
