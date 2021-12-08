@@ -49,6 +49,7 @@ Read-Only:
 - **monitoring** (Boolean)
 - **name** (String)
 - **organization_id** (String)
+- **policy_profile_id** (String)
 - **quota_cpu_units** (Number)
 - **quota_disk_size** (Number)
 - **quota_id** (String)

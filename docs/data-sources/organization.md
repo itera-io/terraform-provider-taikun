@@ -8,7 +8,7 @@ description: |-   Get the details of an organization.
 
 Get the details of an organization.
 
-~> **Role Requirement** To use the `taikun_organization` data source, you need a Partner account.
+~> **Role Requirement** To use the `taikun_organization` data source with the `id` attribute set, you need a Partner account.
 
 ## Example Usage
 

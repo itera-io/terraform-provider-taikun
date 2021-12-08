@@ -2,10 +2,11 @@ package taikun
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/itera-io/taikungoclient/client"
 	"os"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/itera-io/taikungoclient/client"
 )
 
 func TestMain(m *testing.M) {

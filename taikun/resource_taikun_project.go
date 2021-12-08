@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
@@ -130,6 +131,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 				),
 			),
 			ForceNew: true,
+		},
+		"policy_profile_id": {
+			Description:      "ID of the Policy profile. If unspecified, Gatekeeper is disabled.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_id": {
 			Description:      "ID of the organization which owns the project.",
@@ -419,6 +426,10 @@ func resourceTaikunProjectCreate(ctx context.Context, data *schema.ResourceData,
 	} else {
 		body.ExpiredAt = nil
 	}
+	if PolicyProfileID, PolicyProfileIDIsSet := data.GetOk("policy_profile_id"); PolicyProfileIDIsSet {
+		body.OpaProfileID, _ = atoi32(PolicyProfileID.(string))
+	}
+
 	if organizationID, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
 		projectOrganizationID, _ = atoi32(organizationID.(string))
 		body.OrganizationID = projectOrganizationID
@@ -668,7 +679,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 
 		if oldSet.Len() == 0 {
 			// The project was empty before
-			if err := resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx, data, apiClient); err != nil {
+			if err := resourceTaikunProjectUpdateToggleServices(ctx, data, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 			if err := resourceTaikunProjectSetServers(data, apiClient, id); err != nil {
@@ -688,12 +699,12 @@ func resourceTaikunProjectUpdate(ctx context.Context, data *schema.ResourceData,
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx, data, apiClient); err != nil {
+			if err := resourceTaikunProjectUpdateToggleServices(ctx, data, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	} else {
-		if err := resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx, data, apiClient); err != nil {
+		if err := resourceTaikunProjectUpdateToggleServices(ctx, data, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 		if data.HasChange("server_kubeworker") {
@@ -833,11 +844,14 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) 
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleBackupAndMonitoring(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleServices(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
 	if err := resourceTaikunProjectUpdateToggleMonitoring(ctx, data, apiClient); err != nil {
 		return err
 	}
 	if err := resourceTaikunProjectUpdateToggleBackup(ctx, data, apiClient); err != nil {
+		return err
+	}
+	if err := resourceTaikunProjectUpdateToggleOPA(ctx, data, apiClient); err != nil {
 		return err
 	}
 	return nil
@@ -926,6 +940,75 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, data *schema.R
 		}
 
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableBackup", "DisableBackup"}, apiClient, projectID); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, data *schema.ResourceData, apiClient *apiClient) error {
+	if data.HasChange("policy_profile_id") {
+		projectID, _ := atoi32(data.Id())
+		oldOPAProfile, _ := data.GetChange("policy_profile_id")
+
+		if oldOPAProfile != "" {
+
+			disableBody := &models.DisableGatekeeperCommand{
+				ProjectID: projectID,
+			}
+			disableParams := opa_profiles.NewOpaProfilesDisableGatekeeperParams().WithV(ApiVersion).WithBody(disableBody)
+			_, err := apiClient.client.OpaProfiles.OpaProfilesDisableGatekeeper(disableParams, apiClient)
+			if err != nil {
+				return err
+			}
+
+		}
+
+		newOPAProfile, newOPAProfileIsSet := data.GetOk("policy_profile_id")
+
+		if newOPAProfileIsSet {
+
+			newOPAProfilelID, _ := atoi32(newOPAProfile.(string))
+
+			// Wait for the OPA to be disabled
+			disableStateConf := &resource.StateChangeConf{
+				Pending: []string{
+					strconv.FormatBool(true),
+				},
+				Target: []string{
+					strconv.FormatBool(false),
+				},
+				Refresh: func() (interface{}, string, error) {
+					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+					if err != nil {
+						return 0, "", err
+					}
+
+					return response, strconv.FormatBool(response.Payload.Project.IsOpaEnabled), nil
+				},
+				Timeout:                   5 * time.Minute,
+				Delay:                     2 * time.Second,
+				MinTimeout:                5 * time.Second,
+				ContinuousTargetOccurence: 1,
+			}
+			_, err := disableStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return fmt.Errorf("error waiting for project (%s) to disable OPA: %s", data.Id(), err)
+			}
+
+			enableBody := &models.EnableGatekeeperCommand{
+				ProjectID:    projectID,
+				OpaProfileID: newOPAProfilelID,
+			}
+			enableParams := opa_profiles.NewOpaProfilesEnableGatekeeperParams().WithV(ApiVersion).WithBody(enableBody)
+			_, err = apiClient.client.OpaProfiles.OpaProfilesEnableGatekeeper(enableParams, apiClient)
+			if err != nil {
+				return err
+			}
+		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableGatekeeper", "DisableGatekeeper"}, apiClient, projectID); err != nil {
 			return err
 		}
 	}
@@ -1041,6 +1124,10 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 
 	if projectDetailsDTO.IsBackupEnabled {
 		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
+	}
+
+	if projectDetailsDTO.IsOpaEnabled {
+		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
 	}
 
 	if !projectQuotaDTO.IsCPUUnlimited {
@@ -1328,8 +1415,8 @@ func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClien
 const defaultKubernetesProfileName = "default"
 
 func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *apiClient) (kubernetesProfileID int32, found bool, err error) {
-	params := kubernetes_profiles.NewKubernetesProfilesBackupCredentialsForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesBackupCredentialsForOrganizationList(params, apiClient)
+	params := kubernetes_profiles.NewKubernetesProfilesKubernetesProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
+	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}

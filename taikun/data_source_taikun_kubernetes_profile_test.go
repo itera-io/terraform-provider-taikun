@@ -21,7 +21,7 @@ func TestAccDataSourceTaikunKubernetesProfile(t *testing.T) {
 	kubernetesProfileName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{

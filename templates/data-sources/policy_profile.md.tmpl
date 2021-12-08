@@ -8,11 +8,11 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 {{ .Description | trimspace }}
 
-~> **Role Requirement** To use the `taikun_organization` data source with the `id` attribute set, you need a Partner account.
+~> **Role Requirement** In order to use the `taikun_policy_profile` data source you need a `Manager` or `Partner` account.
 
 ## Example Usage
 
-{{tffile "examples/data-sources/taikun_organization/data-source.tf"}}
+{{tffile "examples/data-sources/taikun_policy_profile/data-source.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 

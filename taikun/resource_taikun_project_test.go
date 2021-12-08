@@ -920,6 +920,7 @@ resource "taikun_project" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   flavors = local.flavors
   backup_credential_id = resource.taikun_backup_credential.foo.id
+  policy_profile_id = resource.taikun_policy_profile.foo.id
 
   server_bastion {
      name = "b"
@@ -1000,6 +1001,17 @@ resource "taikun_backup_policy" "foo" {
   included_namespaces = ["test"]
   excluded_namespaces = ["aled"]
 }
+
+resource "taikun_policy_profile" "foo" {
+  name = "%s"
+
+  forbid_node_port = %t
+  forbid_http_ingress = %t
+  require_probe = %t
+  unique_ingress = %t
+  unique_service_selector = %t
+
+}
 `
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
@@ -1007,6 +1019,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 	backupCredentialName := randomTestName()
 	backupPolicyName := randomTestName()
 	projectName := shortRandomTestName()
+	OPAProfileName := randomTestName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t); testAccPreCheckS3(t) },
@@ -1021,6 +1034,12 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 					backupPolicyName,
+					OPAProfileName,
+					true,
+					false,
+					true,
+					false,
+					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,

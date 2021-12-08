@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,7 +38,7 @@ func dataSourceTaikunProjectsRead(ctx context.Context, data *schema.ResourceData
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
-	params := projects.NewProjectsListSelectorParams().WithV(ApiVersion)
+	params := projects.NewProjectsListParams().WithV(ApiVersion)
 
 	if organizationIDData, organizationIDProvided := data.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
@@ -48,13 +49,13 @@ func dataSourceTaikunProjectsRead(ctx context.Context, data *schema.ResourceData
 		params = params.WithOrganizationID(&organizationID)
 	}
 
-	response, err := apiClient.client.Projects.ProjectsListSelector(params, apiClient)
+	response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projects := make([]map[string]interface{}, len(response.Payload))
-	for i, projectEntityDTO := range response.Payload {
+	projects := make([]map[string]interface{}, len(response.Payload.Data))
+	for i, projectEntityDTO := range response.Payload.Data {
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectEntityDTO.ID)
 		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 		if err != nil {

@@ -99,21 +99,10 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, data *schema.Resource
 
 	projectId, _ := atoi32(data.Get("project_id").(string))
 
-	rawIncludedNamespaces := data.Get("included_namespaces").([]interface{})
-	includedNamespaces := make([]string, 0)
-	for _, e := range rawIncludedNamespaces {
-		includedNamespaces = append(includedNamespaces, e.(string))
-	}
-	rawExcludedNamespaces := data.Get("excluded_namespaces").([]interface{})
-	excludedNamespaces := make([]string, 0)
-	for _, e := range rawExcludedNamespaces {
-		excludedNamespaces = append(excludedNamespaces, e.(string))
-	}
-
 	body := &models.CreateBackupPolicyCommand{
 		CronPeriod:        data.Get("cron_period").(string),
-		ExcludeNamespaces: excludedNamespaces,
-		IncludeNamespaces: includedNamespaces,
+		ExcludeNamespaces: resourceGetStringList(data.Get("excluded_namespaces")),
+		IncludeNamespaces: resourceGetStringList(data.Get("included_namespaces")),
 		Name:              data.Get("name").(string),
 		ProjectID:         projectId,
 		RetentionPeriod:   data.Get("retention_period").(string),
