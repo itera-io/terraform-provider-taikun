@@ -4,12 +4,12 @@ go 1.17
 
 require (
 	github.com/go-openapi/runtime v0.21.0
-	github.com/go-openapi/strfmt v0.21.0
+	github.com/go-openapi/strfmt v0.21.1
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/terraform-plugin-docs v0.5.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.0
-	github.com/itera-io/taikungoclient v0.0.0-20211117002709-1caa82ee8b06
+	github.com/itera-io/taikungoclient v0.0.0-20211208002901-f6cb9e645c32
 	github.com/robfig/cron/v3 v3.0.1
 )
 
@@ -89,7 +89,7 @@ require (
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
-	go.mongodb.org/mongo-driver v1.7.3 // indirect
+	go.mongodb.org/mongo-driver v1.7.5 // indirect
 	go.opencensus.io v0.22.4 // indirect
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
