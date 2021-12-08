@@ -1415,8 +1415,8 @@ func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClien
 const defaultKubernetesProfileName = "default"
 
 func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *apiClient) (kubernetesProfileID int32, found bool, err error) {
-	params := kubernetes_profiles.NewKubernetesProfilesBackupCredentialsForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesBackupCredentialsForOrganizationList(params, apiClient)
+	params := kubernetes_profiles.NewKubernetesProfilesKubernetesProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
+	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
