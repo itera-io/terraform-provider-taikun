@@ -78,11 +78,7 @@ func dataSourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if id == "" {
-		data.SetId("-1")
-	} else {
-		data.SetId(id)
-	}
+	data.SetId(i32toa(rawOrganization.ID))
 
 	return nil
 }
