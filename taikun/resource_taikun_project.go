@@ -1029,12 +1029,12 @@ func resourceTaikunProjectEditQuotas(data *schema.ResourceData, apiClient *apiCl
 	}
 
 	if quotaDisk, quotaDiskIsSet := data.GetOk("quota_disk_size"); quotaDiskIsSet {
-		quotaEditBody.DiskSize = int64(quotaDisk.(int))
+		quotaEditBody.DiskSize = gibiByteToByte(quotaDisk.(int))
 		quotaEditBody.IsDiskSizeUnlimited = false
 	}
 
 	if quotaRAM, quotaRAMIsSet := data.GetOk("quota_ram_size"); quotaRAMIsSet {
-		quotaEditBody.RAM = int64(quotaRAM.(int))
+		quotaEditBody.RAM = gibiByteToByte(quotaRAM.(int))
 		quotaEditBody.IsRAMUnlimited = false
 	}
 
@@ -1135,11 +1135,11 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	}
 
 	if !projectQuotaDTO.IsDiskSizeUnlimited {
-		projectMap["quota_disk_size"] = projectQuotaDTO.DiskSize
+		projectMap["quota_disk_size"] = byteToGibiByte(projectQuotaDTO.DiskSize)
 	}
 
 	if !projectQuotaDTO.IsRAMUnlimited {
-		projectMap["quota_ram_size"] = projectQuotaDTO.RAM
+		projectMap["quota_ram_size"] = byteToGibiByte(projectQuotaDTO.RAM)
 	}
 
 	return projectMap
