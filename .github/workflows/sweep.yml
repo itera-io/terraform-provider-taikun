@@ -9,7 +9,7 @@ jobs:
   test:
     name: Sweep
     runs-on: self-hosted
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
 
       - name: Set up Go
