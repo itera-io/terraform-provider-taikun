@@ -122,7 +122,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		AwsAccessKeyID:      data.Get("access_key_id").(string),
 		AwsSecretAccessKey:  data.Get("secret_access_key").(string),
 		AwsAvailabilityZone: data.Get("availability_zone").(string),
-		AwsRegion:           getAWSRegion(data.Get("region").(string)),
+		AwsRegion:           data.Get("region").(string),
 	}
 
 	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
