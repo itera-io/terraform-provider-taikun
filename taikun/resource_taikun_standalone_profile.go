@@ -194,6 +194,13 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 		rawStandaloneProfile := response.GetPayload().Data[0]
 
 		securityGroupResponse, err := apiClient.client.SecurityGroup.SecurityGroupList(security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(id), apiClient)
+		if err != nil {
+			if _, ok := err.(*security_group.SecurityGroupListNotFound); ok && withRetries {
+				data.SetId(i32toa(id))
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return diag.FromErr(err)
+		}
 
 		err = setResourceDataFromMap(data, flattenTaikunStandaloneProfile(rawStandaloneProfile, securityGroupResponse.GetPayload()))
 		if err != nil {

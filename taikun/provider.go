@@ -94,6 +94,8 @@ func Provider() *schema.Provider {
 			"taikun_showback_rules":              dataSourceTaikunShowbackRules(),
 			"taikun_slack_configuration":         dataSourceTaikunSlackConfiguration(),
 			"taikun_slack_configurations":        dataSourceTaikunSlackConfigurations(),
+			"taikun_standalone_profile":          dataSourceTaikunStandaloneProfile(),
+			"taikun_standalone_profiles":         dataSourceTaikunStandaloneProfiles(),
 			"taikun_user":                        dataSourceTaikunUser(),
 			"taikun_users":                       dataSourceTaikunUsers(),
 		},
