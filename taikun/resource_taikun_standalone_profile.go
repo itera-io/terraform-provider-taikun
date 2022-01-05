@@ -233,7 +233,42 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, data *schema.Res
 	}
 
 	if data.HasChange("security_group") {
-		// TODO DELETE ALL + ADD ALL
+		old, new := data.GetChange("security_group")
+
+		// Delete
+		oldSecurityGroupList := old.([]interface{})
+		for _, e := range oldSecurityGroupList {
+			rawSecurityGroup := e.(map[string]interface{})
+			id, err := atoi32(rawSecurityGroup["id"].(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			body := &models.DeleteSecurityGroupCommand{ID: id}
+			params := security_group.NewSecurityGroupDeleteParams().WithV(ApiVersion).WithBody(body)
+			_, err = apiClient.client.SecurityGroup.SecurityGroupDelete(params, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		// Add
+		newSecurityGroupList := new.([]interface{})
+		for _, e := range newSecurityGroupList {
+			rawSecurityGroup := e.(map[string]interface{})
+			body := &models.CreateSecurityGroupCommand{
+				Name:                rawSecurityGroup["name"].(string),
+				PortMaxRange:        int32(rawSecurityGroup["to_port"].(int)),
+				PortMinRange:        int32(rawSecurityGroup["from_port"].(int)),
+				Protocol:            getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)),
+				RemoteIPPrefix:      rawSecurityGroup["cidr"].(string),
+				StandAloneProfileID: id,
+			}
+			params := security_group.NewSecurityGroupCreateParams().WithV(ApiVersion).WithBody(body)
+			_, err = apiClient.client.SecurityGroup.SecurityGroupCreate(params, apiClient)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunStandaloneProfileReadWithRetries(), ctx, data, meta)
@@ -266,10 +301,14 @@ func flattenTaikunStandaloneProfile(rawStandaloneProfile *models.StandAloneProfi
 		securityGroups[i] = map[string]interface{}{
 			"id":          i32toa(rawSecurityGroup.ID),
 			"name":        rawSecurityGroup.Name,
-			"from_port":   rawSecurityGroup.PortMinRange,
-			"to_port":     rawSecurityGroup.PortMaxRange,
 			"cidr":        rawSecurityGroup.RemoteIPPrefix,
 			"ip_protocol": rawSecurityGroup.Protocol,
+		}
+		if rawSecurityGroup.PortMinRange != -1 {
+			securityGroups[i]["from_port"] = rawSecurityGroup.PortMinRange
+		}
+		if rawSecurityGroup.PortMaxRange != -1 {
+			securityGroups[i]["to_port"] = rawSecurityGroup.PortMaxRange
 		}
 	}
 

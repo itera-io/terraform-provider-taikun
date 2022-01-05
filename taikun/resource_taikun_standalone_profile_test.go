@@ -69,6 +69,29 @@ resource "taikun_standalone_profile" "foo" {
         ip_protocol = "tcp"
         cidr = "0.0.0.0/0"
     }
+    security_group {
+        name = "https"
+        from_port = 443
+        to_port = 443
+        ip_protocol = "tcp"
+        cidr = "0.0.0.0/0"
+    }
+    %s
+}
+`
+
+const testAccResourceTaikunStandaloneProfileExtraSecurityGroup = `
+security_group {
+    name = "http2"
+    from_port = 80
+    to_port = 80
+    ip_protocol = "udp"
+    cidr = "0.0.0.0/0"
+}
+security_group {
+    name = "icmp"
+    ip_protocol = "icmp"
+    cidr = "0.0.0.0/0"
 }
 `
 
@@ -81,7 +104,7 @@ func TestAccResourceTaikunStandaloneProfile(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false),
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
@@ -89,7 +112,7 @@ func TestAccResourceTaikunStandaloneProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "2"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
@@ -115,7 +138,7 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false),
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
@@ -123,7 +146,7 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "2"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
@@ -132,7 +155,7 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, true),
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, true, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
@@ -140,7 +163,7 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "2"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
@@ -162,7 +185,7 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false),
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
@@ -170,7 +193,7 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "2"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
@@ -179,7 +202,7 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, newName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, newName, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", newName),
@@ -187,12 +210,58 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
-					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "2"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
+	name := randomTestName()
+	newName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunStandaloneProfileExists,
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "2"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, newName, false, testAccResourceTaikunStandaloneProfileExtraSecurityGroup),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunStandaloneProfileExists,
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", newName),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "4"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.1.name", "https"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.2.name", "http2"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.3.name", "icmp"),
 				),
 			},
 		},
