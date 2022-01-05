@@ -127,6 +127,41 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 	})
 }
 
+func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
+	name := randomTestName()
+	newName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunStandaloneProfileExists,
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, newName, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunStandaloneProfileExists,
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", newName),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 	client := testAccProvider.Meta().(*apiClient)
 
