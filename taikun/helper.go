@@ -173,19 +173,6 @@ func stringIsUUID(i interface{}, path cty.Path) diag.Diagnostics {
 	return nil
 }
 
-func stringIsLowercase(i interface{}, path cty.Path) diag.Diagnostics {
-	v, ok := i.(string)
-	if !ok {
-		return diag.FromErr(path.NewErrorf("expected type to be string"))
-	}
-
-	if strings.ToLower(v) != v {
-		return diag.FromErr(path.NewErrorf("expected a lowercase string, got %v", v))
-	}
-
-	return nil
-}
-
 func resourceGetStringList(data interface{}) []string {
 	rawList := data.([]interface{})
 	result := make([]string, 0)
