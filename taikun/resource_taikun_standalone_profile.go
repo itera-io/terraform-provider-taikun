@@ -50,12 +50,18 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"security_groups": {
+		"security_group": {
 			Description: "List of Security groups.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"cidr": {
+						Description:  "Remote IP Prefix.",
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
 					"from_port": {
 						Description:  "Min Range Port",
 						Type:         schema.TypeInt,
@@ -71,19 +77,13 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 						Description:  "Protocol",
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, true),
+						ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "icmp"}, true),
 					},
 					"name": {
 						Description:  "Name of the Security group.",
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(3, 30),
-					},
-					"remote_ip_prefix": {
-						Description:  "Remote IP Prefix.",
-						Type:         schema.TypeString,
-						Required:     true,
-						ValidateFunc: validation.StringIsNotEmpty,
 					},
 					"to_port": {
 						Description:  "Max Range Port",
@@ -119,7 +119,7 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, data *schema.Res
 		PublicKey: data.Get("public_key").(string),
 	}
 
-	if securityGroups, isSecurityGroupsSet := data.GetOk("security_groups"); isSecurityGroupsSet {
+	if securityGroups, isSecurityGroupsSet := data.GetOk("security_group"); isSecurityGroupsSet {
 		rawSecurityGroupList := securityGroups.([]interface{})
 		securityGroupList := make([]*models.StandAloneProfileSecurityGroupDto, len(rawSecurityGroupList))
 		for i, e := range rawSecurityGroupList {
@@ -129,7 +129,7 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, data *schema.Res
 				PortMaxRange:   int32(rawSecurityGroup["to_port"].(int)),
 				PortMinRange:   int32(rawSecurityGroup["from_port"].(int)),
 				Protocol:       getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)),
-				RemoteIPPrefix: rawSecurityGroup["name"].(string),
+				RemoteIPPrefix: rawSecurityGroup["cidr"].(string),
 			}
 		}
 		body.SecurityGroups = securityGroupList
@@ -232,7 +232,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	if data.HasChange("security_groups") {
+	if data.HasChange("security_group") {
 		// TODO DELETE ALL + ADD ALL
 	}
 
@@ -264,12 +264,12 @@ func flattenTaikunStandaloneProfile(rawStandaloneProfile *models.StandAloneProfi
 	securityGroups := make([]map[string]interface{}, len(sg))
 	for i, rawSecurityGroup := range sg {
 		securityGroups[i] = map[string]interface{}{
-			"id":               i32toa(rawSecurityGroup.ID),
-			"name":             rawSecurityGroup.Name,
-			"from_port":        i32toa(rawSecurityGroup.PortMinRange),
-			"to_port":          i32toa(rawSecurityGroup.PortMaxRange),
-			"remote_ip_prefix": rawSecurityGroup.RemoteIPPrefix,
-			"ip_protocol":      rawSecurityGroup.Protocol,
+			"id":          i32toa(rawSecurityGroup.ID),
+			"name":        rawSecurityGroup.Name,
+			"from_port":   rawSecurityGroup.PortMinRange,
+			"to_port":     rawSecurityGroup.PortMaxRange,
+			"cidr":        rawSecurityGroup.RemoteIPPrefix,
+			"ip_protocol": rawSecurityGroup.Protocol,
 		}
 	}
 
@@ -280,7 +280,7 @@ func flattenTaikunStandaloneProfile(rawStandaloneProfile *models.StandAloneProfi
 		"organization_id":   i32toa(rawStandaloneProfile.OrganizationID),
 		"organization_name": rawStandaloneProfile.OrganizationName,
 		"public_key":        rawStandaloneProfile.PublicKey,
-		"security_groups":   securityGroups,
+		"security_group":    securityGroups,
 	}
 }
 
