@@ -319,3 +319,14 @@ const (
 	cloudTypeAzure     = "Azure"
 	cloudTypeOpenStack = "OpenStack"
 )
+
+func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
+	switch strings.ToLower(protocol) {
+	case "icmp":
+		return 100
+	case "tcp":
+		return 200
+	default: // udp
+		return 300
+	}
+}
