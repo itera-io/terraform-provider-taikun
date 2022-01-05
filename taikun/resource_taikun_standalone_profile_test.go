@@ -62,6 +62,13 @@ resource "taikun_standalone_profile" "foo" {
 	name = "%s"
     public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"
     lock = %t
+    security_group {
+        name = "http"
+        from_port = 80
+        to_port = 80
+        ip_protocol = "tcp"
+        cidr = "0.0.0.0/0"
+    }
 }
 `
 
@@ -82,6 +89,12 @@ func TestAccResourceTaikunStandaloneProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
 				),
 			},
 			{
@@ -110,6 +123,12 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
 				),
 			},
 			{
@@ -121,6 +140,12 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
 				),
 			},
 		},
@@ -145,6 +170,12 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
 				),
 			},
 			{
@@ -156,6 +187,12 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.#", "1"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.name", "http"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.from_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.to_port", "80"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.cidr", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "security_group.0.ip_protocol", "tcp"),
 				),
 			},
 		},
