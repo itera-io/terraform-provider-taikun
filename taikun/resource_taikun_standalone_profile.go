@@ -25,10 +25,11 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"name": {
-			Description:  "The name of the Standalone profile.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 30),
+			Description:      "The name of the Standalone profile.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateFunc:     validation.StringLenBetween(3, 30),
+			ValidateDiagFunc: stringIsLowercase,
 		},
 		"organization_id": {
 			Description:      "The ID of the organization which owns the Standalone profile.",
@@ -60,7 +61,7 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 						Description:  "Remote IP Prefix.",
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: validation.StringIsNotEmpty,
+						ValidateFunc: validation.IsCIDR,
 					},
 					"from_port": {
 						Description:  "Min Range Port",
@@ -80,10 +81,11 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "icmp"}, true),
 					},
 					"name": {
-						Description:  "Name of the Security group.",
-						Type:         schema.TypeString,
-						Required:     true,
-						ValidateFunc: validation.StringLenBetween(3, 30),
+						Description:      "Name of the Security group.",
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateFunc:     validation.StringLenBetween(3, 30),
+						ValidateDiagFunc: stringIsLowercase,
 					},
 					"to_port": {
 						Description:  "Max Range Port",
