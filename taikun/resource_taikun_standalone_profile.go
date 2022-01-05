@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,11 +26,16 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"name": {
-			Description:      "The name of the Standalone profile.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ValidateFunc:     validation.StringLenBetween(3, 30),
-			ValidateDiagFunc: stringIsLowercase,
+			Description: "The name of the Standalone profile.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-z0-9_-]*$"),
+					"expected a lowercase string",
+				),
+			),
 		},
 		"organization_id": {
 			Description:      "The ID of the organization which owns the Standalone profile.",
@@ -81,11 +87,16 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "icmp"}, true),
 					},
 					"name": {
-						Description:      "Name of the Security group.",
-						Type:             schema.TypeString,
-						Required:         true,
-						ValidateFunc:     validation.StringLenBetween(3, 30),
-						ValidateDiagFunc: stringIsLowercase,
+						Description: "Name of the Security group.",
+						Type:        schema.TypeString,
+						Required:    true,
+						ValidateFunc: validation.All(
+							validation.StringLenBetween(3, 30),
+							validation.StringMatch(
+								regexp.MustCompile("^[a-z0-9_-]*$"),
+								"expected a lowercase string",
+							),
+						),
 					},
 					"to_port": {
 						Description:  "Max Range Port",
