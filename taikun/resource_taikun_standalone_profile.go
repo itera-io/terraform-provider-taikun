@@ -15,18 +15,18 @@ import (
 func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Description: "The ID of the Standalone profile.",
+			Description: "The ID of the standalone profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"lock": {
-			Description: "Indicates whether to lock the Standalone profile.",
+			Description: "Indicates whether to lock the standalone profile.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"name": {
-			Description: "The name of the Standalone profile.",
+			Description: "The name of the standalone profile.",
 			Type:        schema.TypeString,
 			Required:    true,
 			ValidateFunc: validation.All(
@@ -38,7 +38,7 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 			),
 		},
 		"organization_id": {
-			Description:      "The ID of the organization which owns the Standalone profile.",
+			Description:      "The ID of the organization which owns the standalone profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			Computed:         true,
@@ -46,48 +46,48 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"organization_name": {
-			Description: "The name of the organization which owns the Standalone profile.",
+			Description: "The name of the organization which owns the standalone profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"public_key": {
-			Description:  "The public key of the Standalone profile..",
+			Description:  "The public key of the standalone profile.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"security_group": {
-			Description: "List of Security groups.",
+			Description: "List of security groups.",
 			Type:        schema.TypeList,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"cidr": {
-						Description:  "Remote IP Prefix.",
+						Description:  "Remote IP prefix.",
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.IsCIDR,
 					},
 					"from_port": {
-						Description:  "Min Range Port",
+						Description:  "Min range port.",
 						Type:         schema.TypeInt,
 						Optional:     true,
 						ValidateFunc: validation.IntBetween(0, 65535),
 					},
 					"id": {
-						Description: "ID of the Security group.",
+						Description: "ID of the security group.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
 					"ip_protocol": {
-						Description:  "Protocol",
+						Description:  "IP Protocol: `tcp`, `udp` or `icmp`.",
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "icmp"}, true),
+						ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "icmp"}, false),
 					},
 					"name": {
-						Description: "Name of the Security group.",
+						Description: "Name of the security group.",
 						Type:        schema.TypeString,
 						Required:    true,
 						ValidateFunc: validation.All(
@@ -99,7 +99,7 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 						),
 					},
 					"to_port": {
-						Description:  "Max Range Port",
+						Description:  "Max range port.",
 						Type:         schema.TypeInt,
 						Optional:     true,
 						ValidateFunc: validation.IntBetween(0, 65535),

@@ -1,0 +1,21 @@
+---
+page_title: "{{.Type}} {{.Name}} - {{.ProviderName}}"
+subcategory: ""
+description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Type}} ({{.Name}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** To use the `taikun_standalone_profiles` data source, you need a Manager or Partner account.
+
+-> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
+
+## Example Usage
+
+{{tffile "examples/data-sources/taikun_standalone_profiles/data-source.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+
