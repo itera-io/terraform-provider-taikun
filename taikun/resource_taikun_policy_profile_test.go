@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
@@ -43,7 +42,7 @@ func init() {
 			}
 
 			for _, e := range PolicyProfilesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := opa_profiles.NewOpaProfilesDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteOpaProfileCommand{ID: e.ID})
 					_, err = apiClient.client.OpaProfiles.OpaProfilesDelete(params, apiClient)
 					if err != nil {

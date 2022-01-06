@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -41,7 +40,7 @@ func init() {
 			}
 
 			for _, e := range userList {
-				if strings.HasPrefix(e.Username, testNamePrefix) {
+				if shouldSweep(e.Username) {
 					params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.Users.UsersDelete(params, apiClient)
 					if err != nil {

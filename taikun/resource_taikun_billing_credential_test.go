@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -43,7 +42,7 @@ func init() {
 			}
 
 			for _, e := range operationCredentialsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := ops_credentials.NewOpsCredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.OpsCredentials.OpsCredentialsDelete(params, apiClient)
 					if err != nil {

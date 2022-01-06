@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -42,7 +41,7 @@ func init() {
 			}
 
 			for _, e := range showbackCredentialsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := showback.NewShowbackDeleteShowbackCredentialParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackCredentialCommand{ID: e.ID})
 					_, err = apiClient.client.Showback.ShowbackDeleteShowbackCredential(params, apiClient)
 					if err != nil {

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -43,7 +42,7 @@ func init() {
 			}
 
 			for _, e := range cloudCredentialsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := cloud_credentials.NewCloudCredentialsDeleteParams().WithV(ApiVersion).WithCloudID(e.ID)
 					_, _, err = apiClient.client.CloudCredentials.CloudCredentialsDelete(params, apiClient)
 					if err != nil {

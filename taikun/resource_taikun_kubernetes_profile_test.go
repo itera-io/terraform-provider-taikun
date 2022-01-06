@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -42,7 +41,7 @@ func init() {
 			}
 
 			for _, e := range kubernetesProfilesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := kubernetes_profiles.NewKubernetesProfilesDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.KubernetesProfiles.KubernetesProfilesDelete(params, apiClient)
 					if err != nil {

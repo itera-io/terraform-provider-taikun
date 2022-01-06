@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -46,7 +45,7 @@ func init() {
 			}
 
 			for _, e := range organizationsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(e.ID)
 					_, _, err = apiClient.client.Organizations.OrganizationsDelete(params, apiClient)
 					if err != nil {

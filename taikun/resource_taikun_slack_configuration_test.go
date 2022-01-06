@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -44,7 +43,7 @@ func init() {
 			}
 
 			for _, e := range slackConfigurationsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					body := models.DeleteSlackConfigurationCommand{ID: e.ID}
 					params := slack.NewSlackDeleteParams().WithV(ApiVersion).WithBody(&body)
 					_, _, err = apiClient.client.Slack.SlackDelete(params, apiClient)
