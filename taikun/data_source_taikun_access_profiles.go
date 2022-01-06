@@ -16,12 +16,6 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 		Description: "Retrieve all access profiles.",
 		ReadContext: dataSourceTaikunAccessProfilesRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"access_profiles": {
 				Description: "List of retrieved access profiles.",
 				Type:        schema.TypeList,
@@ -29,6 +23,12 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunAccessProfileSchema(),
 				},
+			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

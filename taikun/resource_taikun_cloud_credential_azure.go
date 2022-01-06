@@ -14,10 +14,66 @@ import (
 
 func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"availability_zone": {
+			Description:  "The Azure availability zone for the location.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"client_id": {
+			Description:  "The Azure client ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"client_secret": {
+			Description:  "The Azure client secret.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"created_by": {
+			Description: "The creator of the Azure cloud credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the Azure cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"is_default": {
+			Description: "Indicates whether the Azure cloud credential is the default one.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "Time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the Azure cloud credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"location": {
+			Description:  "The Azure location.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the Azure cloud credential.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description: "The name of the Azure cloud credential.",
@@ -30,52 +86,6 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 					"expected only alpha numeric characters or non alpha numeric (-)",
 				),
 			),
-		},
-		"subscription_id": {
-			Description:  "The Azure subscription ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"client_id": {
-			Description:  "The Azure client ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"tenant_id": {
-			Description:  "The Azure tenant ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"client_secret": {
-			Description:  "The Azure client secret.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"availability_zone": {
-			Description:  "The Azure availability zone for the location.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"location": {
-			Description:  "The Azure location.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
 			Description:      "The ID of the organization which owns the Azure cloud credential.",
@@ -90,31 +100,21 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"lock": {
-			Description: "Indicates whether to lock the Azure cloud credential.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
+		"subscription_id": {
+			Description:  "The Azure subscription ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"is_default": {
-			Description: "Indicates whether the Azure cloud credential is the default one.",
-			Type:        schema.TypeBool,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the Azure cloud credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "Time and date of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user to have modified the Azure cloud credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"tenant_id": {
+			Description:  "The Azure tenant ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }

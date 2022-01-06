@@ -15,12 +15,6 @@ func dataSourceTaikunCloudCredentialsAWS() *schema.Resource {
 		Description: "Retrieve all AWS cloud credentials.",
 		ReadContext: dataSourceTaikunCloudCredentialsAWSRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"cloud_credentials": {
 				Description: "List of retrieved AWS cloud credentials.",
 				Type:        schema.TypeList,
@@ -28,6 +22,12 @@ func dataSourceTaikunCloudCredentialsAWS() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunCloudCredentialAWSSchema(),
 				},
+			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

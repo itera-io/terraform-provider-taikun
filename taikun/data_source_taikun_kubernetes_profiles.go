@@ -14,12 +14,6 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 		Description: "Retrieve all Kubernetes profiles.",
 		ReadContext: dataSourceTaikunKubernetesProfilesRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"kubernetes_profiles": {
 				Description: "List of retrieved Kubernetes profiles.",
 				Type:        schema.TypeList,
@@ -27,6 +21,12 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunKubernetesProfileSchema(),
 				},
+			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

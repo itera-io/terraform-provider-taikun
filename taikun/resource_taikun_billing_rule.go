@@ -12,22 +12,21 @@ import (
 
 func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"billing_credential_id": {
+			Description:      "ID of the billing credential.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: stringIsInt,
+		},
+		"created_by": {
+			Description: "The creator of the billing rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the billing rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"name": {
-			Description:  "The name of the billing rule.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 30),
-		},
-		"metric_name": {
-			Description:  "The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 256),
 		},
 		"label": {
 			Description: "Labels linked to the billing rule.",
@@ -36,6 +35,11 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			MinItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"id": {
+						Description: "ID of the label.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
 					"key": {
 						Description: "Key of the label.",
 						Type:        schema.TypeString,
@@ -46,36 +50,8 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Required:    true,
 					},
-					"id": {
-						Description: "ID of the label.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
 				},
 			},
-		},
-		"type": {
-			Description:  "The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
-		},
-		"price": {
-			Description:  "The price in CZK per selected unit.",
-			Type:         schema.TypeFloat,
-			Required:     true,
-			ValidateFunc: validation.FloatAtLeast(0),
-		},
-		"created_by": {
-			Description: "The creator of the billing rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"billing_credential_id": {
-			Description:      "ID of the billing credential.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ValidateDiagFunc: stringIsInt,
 		},
 		"last_modified": {
 			Description: "Time and date of last modification.",
@@ -86,6 +62,30 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			Description: "The last user to have modified the billing rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"metric_name": {
+			Description:  "The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 256),
+		},
+		"name": {
+			Description:  "The name of the billing rule.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 30),
+		},
+		"price": {
+			Description:  "The price in CZK per selected unit.",
+			Type:         schema.TypeFloat,
+			Required:     true,
+			ValidateFunc: validation.FloatAtLeast(0),
+		},
+		"type": {
+			Description:  "The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
 		},
 	}
 }

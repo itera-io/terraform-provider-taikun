@@ -15,12 +15,6 @@ func dataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
 		Description: "Retrieve all OpenStack cloud credentials.",
 		ReadContext: dataSourceTaikunCloudCredentialsOpenStackRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"cloud_credentials": {
 				Description: "List of retrieved OpenStack cloud credentials.",
 				Type:        schema.TypeList,
@@ -28,6 +22,12 @@ func dataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunCloudCredentialOpenStackSchema(),
 				},
+			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

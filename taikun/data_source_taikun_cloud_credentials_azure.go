@@ -15,12 +15,6 @@ func dataSourceTaikunCloudCredentialsAzure() *schema.Resource {
 		Description: "Retrieve all Azure cloud credentials.",
 		ReadContext: dataSourceTaikunCloudCredentialsAzureRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"cloud_credentials": {
 				Description: "List of retrieved Azure cloud credentials.",
 				Type:        schema.TypeList,
@@ -28,6 +22,12 @@ func dataSourceTaikunCloudCredentialsAzure() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunCloudCredentialAzureSchema(),
 				},
+			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

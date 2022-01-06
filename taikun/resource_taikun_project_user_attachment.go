@@ -5,25 +5,18 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/projects"
 	"github.com/itera-io/taikungoclient/client/user_projects"
 	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunProjectUserAttachmentSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"user_id": {
-			Description:  "ID of the user.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
 		"project_id": {
 			Description:      "ID of the project.",
 			Type:             schema.TypeString,
@@ -35,6 +28,13 @@ func resourceTaikunProjectUserAttachmentSchema() map[string]*schema.Schema {
 			Description: "Name of the project.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"user_id": {
+			Description:  "ID of the user.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }

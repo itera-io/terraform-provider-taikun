@@ -12,11 +12,6 @@ import (
 
 func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": {
-			Description: "The ID of the Kubernetes profile.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
 		"bastion_proxy": {
 			Description: "Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
 			Type:        schema.TypeBool,
@@ -24,28 +19,20 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 			ForceNew:    true,
 		},
-		"schedule_on_master": {
-			Description: "When enabled, the workload will also run on master nodes (not recommended).",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			ForceNew:    true,
+		"cni": {
+			Description: "Container Network Interface (CNI) of the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
 		},
 		"created_by": {
 			Description: "The creator of the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"cni": {
-			Description: "Container Network Interface (CNI) of the Kubernetes profile.",
+		"id": {
+			Description: "The ID of the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"lock": {
-			Description: "Indicates whether to lock the Kubernetes profile.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
 		},
 		"last_modified": {
 			Description: "Time and date of last modification.",
@@ -64,6 +51,12 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:      "Octavia",
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"None", "Octavia", "Taikun"}, false),
+		},
+		"lock": {
+			Description: "Indicates whether to lock the Kubernetes profile.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description:  "The name of the Kubernetes profile.",
@@ -84,6 +77,13 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Description: "The name of the organization which owns the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"schedule_on_master": {
+			Description: "When enabled, the workload will also run on master nodes (not recommended).",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
 		},
 	}
 }
