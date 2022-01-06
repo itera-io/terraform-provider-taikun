@@ -33,13 +33,13 @@ func dataSourceTaikunPolicyProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunPolicyProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunPolicyProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -67,11 +67,11 @@ func dataSourceTaikunPolicyProfilesRead(_ context.Context, data *schema.Resource
 	for i, rawOPAProfile := range opaProfilesListDtos {
 		opaProfiles[i] = flattenTaikunPolicyProfile(rawOPAProfile)
 	}
-	if err := data.Set("policy_profiles", opaProfiles); err != nil {
+	if err := d.Set("policy_profiles", opaProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

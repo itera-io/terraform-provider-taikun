@@ -34,13 +34,13 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -75,11 +75,11 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 
 		accessProfiles[i] = flattenTaikunAccessProfile(rawAccessProfile, sshResponse)
 	}
-	if err := data.Set("access_profiles", accessProfiles); err != nil {
+	if err := d.Set("access_profiles", accessProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

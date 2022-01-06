@@ -162,41 +162,41 @@ func resourceTaikunCloudCredentialOpenStack() *schema.Resource {
 	}
 }
 
-func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateOpenstackCloudCommand{
-		Name:                   data.Get("name").(string),
-		OpenStackUser:          data.Get("user").(string),
-		OpenStackPassword:      data.Get("password").(string),
-		OpenStackURL:           data.Get("url").(string),
-		OpenStackProject:       data.Get("project_name").(string),
-		OpenStackPublicNetwork: data.Get("public_network_name").(string),
-		OpenStackDomain:        data.Get("domain").(string),
-		OpenStackRegion:        data.Get("region").(string),
+		Name:                   d.Get("name").(string),
+		OpenStackUser:          d.Get("user").(string),
+		OpenStackPassword:      d.Get("password").(string),
+		OpenStackURL:           d.Get("url").(string),
+		OpenStackProject:       d.Get("project_name").(string),
+		OpenStackPublicNetwork: d.Get("public_network_name").(string),
+		OpenStackDomain:        d.Get("domain").(string),
+		OpenStackRegion:        d.Get("region").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
 
-	importedNetworkSubnetIDData, importedNetworkSubnetIDDataIsSet := data.GetOk("imported_network_subnet_id")
+	importedNetworkSubnetIDData, importedNetworkSubnetIDDataIsSet := d.GetOk("imported_network_subnet_id")
 	if importedNetworkSubnetIDDataIsSet {
 		body.OpenStackImportNetwork = true
 		body.OpenStackInternalSubnetID = importedNetworkSubnetIDData.(string)
 	}
 
-	volumeTypeNameData, volumeTypeNameIsSet := data.GetOk("volume_type_name")
+	volumeTypeNameData, volumeTypeNameIsSet := d.GetOk("volume_type_name")
 	if volumeTypeNameIsSet {
 		body.OpenStackVolumeType = volumeTypeNameData.(string)
 	}
 
-	availabilityZoneData, availabilityZoneIsSet := data.GetOk("availability_zone")
+	availabilityZoneData, availabilityZoneIsSet := d.GetOk("availability_zone")
 	if availabilityZoneIsSet {
 		body.OpenStackAvailabilityZone = availabilityZoneData.(string)
 	}
@@ -211,15 +211,15 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, data *sch
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunCloudCredentialOpenStackReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunCloudCredentialOpenStackRead(true)
@@ -228,10 +228,10 @@ func generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries() schema.R
 	return generateResourceTaikunCloudCredentialOpenStackRead(false)
 }
 func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -242,7 +242,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 		}
 		if len(response.Payload.Openstack) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -250,36 +250,36 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 
 		rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialOpenStack(rawCloudCredentialOpenStack))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(rawCloudCredentialOpenStack))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunCloudCredentialOpenStackLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("user", "password", "name") {
+	if d.HasChanges("user", "password", "name") {
 		updateBody := &models.UpdateOpenStackCommand{
 			ID:                id,
-			Name:              data.Get("name").(string),
-			OpenStackPassword: data.Get("password").(string),
-			OpenStackUser:     data.Get("user").(string),
+			Name:              d.Get("name").(string),
+			OpenStackPassword: d.Get("password").(string),
+			OpenStackUser:     d.Get("user").(string),
 		}
 		updateParams := openstack.NewOpenstackUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.client.Openstack.OpenstackUpdate(updateParams, apiClient)
@@ -288,13 +288,13 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, data *sch
 		}
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, d, meta)
 }
 
 func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {

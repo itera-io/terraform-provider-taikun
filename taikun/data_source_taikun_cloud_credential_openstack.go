@@ -23,8 +23,8 @@ func dataSourceTaikunCloudCredentialOpenStack() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialOpenStackRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunCloudCredentialOpenStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries()(ctx, d, meta)
 }

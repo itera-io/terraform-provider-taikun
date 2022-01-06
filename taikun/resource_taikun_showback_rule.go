@@ -144,38 +144,38 @@ func resourceTaikunShowbackRule() *schema.Resource {
 	}
 }
 
-func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateShowbackRuleCommand{
-		Name:              data.Get("name").(string),
-		MetricName:        data.Get("metric_name").(string),
-		Type:              getPrometheusType(data.Get("type").(string)),
-		Kind:              getShowbackType(data.Get("kind").(string)),
-		Price:             data.Get("price").(float64),
-		ProjectAlertLimit: int32(data.Get("project_alert_limit").(int)),
-		GlobalAlertLimit:  int32(data.Get("global_alert_limit").(int)),
+		Name:              d.Get("name").(string),
+		MetricName:        d.Get("metric_name").(string),
+		Type:              getPrometheusType(d.Get("type").(string)),
+		Kind:              getShowbackType(d.Get("kind").(string)),
+		Price:             d.Get("price").(float64),
+		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
+		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
 
-	showbackCredentialIDData, showbackCredentialIDIsSet := data.GetOk("showback_credential_id")
+	showbackCredentialIDData, showbackCredentialIDIsSet := d.GetOk("showback_credential_id")
 	if showbackCredentialIDIsSet {
 		showbackCredentialId, err := atoi32(showbackCredentialIDData.(string))
 		if err != nil {
-			return diag.Errorf("showback_credential_id isn't valid: %s", data.Get("showback_credential_id").(string))
+			return diag.Errorf("showback_credential_id isn't valid: %s", d.Get("showback_credential_id").(string))
 		}
 		body.ShowbackCredentialID = &showbackCredentialId
 	}
 
-	rawLabelsList := data.Get("label").([]interface{})
+	rawLabelsList := d.Get("label").([]interface{})
 	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
@@ -192,9 +192,9 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunShowbackRuleReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunShowbackRuleRead(true)
@@ -203,10 +203,10 @@ func generateResourceTaikunShowbackRuleReadWithoutRetries() schema.ReadContextFu
 	return generateResourceTaikunShowbackRuleRead(false)
 }
 func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,7 +217,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -225,36 +225,36 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 
 		rawShowbackRule := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunShowbackRule(rawShowbackRule))
+		err = setResourceDataFromMap(d, flattenTaikunShowbackRule(rawShowbackRule))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	body := &models.UpdateShowbackRuleCommand{
 		ID:                id,
-		Name:              data.Get("name").(string),
-		MetricName:        data.Get("metric_name").(string),
-		Type:              getPrometheusType(data.Get("type").(string)),
-		Kind:              getShowbackType(data.Get("kind").(string)),
-		Price:             data.Get("price").(float64),
-		ProjectAlertLimit: int32(data.Get("project_alert_limit").(int)),
-		GlobalAlertLimit:  int32(data.Get("global_alert_limit").(int)),
+		Name:              d.Get("name").(string),
+		MetricName:        d.Get("metric_name").(string),
+		Type:              getPrometheusType(d.Get("type").(string)),
+		Kind:              getShowbackType(d.Get("kind").(string)),
+		Price:             d.Get("price").(float64),
+		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
+		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
 	}
 
-	rawLabelsList := data.Get("label").([]interface{})
+	rawLabelsList := d.Get("label").([]interface{})
 	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
@@ -271,12 +271,12 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,7 +287,7 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

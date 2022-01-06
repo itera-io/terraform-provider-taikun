@@ -173,14 +173,14 @@ func Provider() *schema.Provider {
 	}
 }
 
-func configureContextFunc(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
-	email, keycloakEnabled := data.GetOk("keycloak_email")
-	password := data.Get("keycloak_password")
+	email, keycloakEnabled := d.GetOk("keycloak_email")
+	password := d.Get("keycloak_password")
 
 	if !keycloakEnabled {
-		email = data.Get("email")
-		password = data.Get("password")
+		email = d.Get("email")
+		password = d.Get("password")
 	}
 
 	if email == "" || password == "" {
@@ -189,7 +189,7 @@ func configureContextFunc(_ context.Context, data *schema.ResourceData) (interfa
 
 	transportConfig := client.DefaultTransportConfig()
 
-	if apiHost, apiHostIsSet := data.GetOk("api_host"); apiHostIsSet {
+	if apiHost, apiHostIsSet := d.GetOk("api_host"); apiHostIsSet {
 		transportConfig = transportConfig.WithHost(apiHost.(string))
 	}
 

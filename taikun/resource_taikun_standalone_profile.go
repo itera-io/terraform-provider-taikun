@@ -125,15 +125,15 @@ func resourceTaikunStandaloneProfile() *schema.Resource {
 	}
 }
 
-func resourceTaikunStandaloneProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.StandAloneProfileCreateCommand{
-		Name:      data.Get("name").(string),
-		PublicKey: data.Get("public_key").(string),
+		Name:      d.Get("name").(string),
+		PublicKey: d.Get("public_key").(string),
 	}
 
-	if securityGroups, isSecurityGroupsSet := data.GetOk("security_group"); isSecurityGroupsSet {
+	if securityGroups, isSecurityGroupsSet := d.GetOk("security_group"); isSecurityGroupsSet {
 		rawSecurityGroupList := securityGroups.([]interface{})
 		securityGroupList := make([]*models.StandAloneProfileSecurityGroupDto, len(rawSecurityGroupList))
 		for i, e := range rawSecurityGroupList {
@@ -149,11 +149,11 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, data *schema.Res
 		body.SecurityGroups = securityGroupList
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -168,15 +168,15 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunStandaloneProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunStandaloneProfileReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunStandaloneProfileReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunStandaloneProfileReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunStandaloneProfileRead(true)
@@ -185,10 +185,10 @@ func generateResourceTaikunStandaloneProfileReadWithoutRetries() schema.ReadCont
 	return generateResourceTaikunStandaloneProfileRead(false)
 }
 func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -199,7 +199,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -210,35 +210,35 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 		securityGroupResponse, err := apiClient.client.SecurityGroup.SecurityGroupList(security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(id), apiClient)
 		if err != nil {
 			if _, ok := err.(*security_group.SecurityGroupListNotFound); ok && withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return diag.FromErr(err)
 		}
 
-		err = setResourceDataFromMap(data, flattenTaikunStandaloneProfile(rawStandaloneProfile, securityGroupResponse.GetPayload()))
+		err = setResourceDataFromMap(d, flattenTaikunStandaloneProfile(rawStandaloneProfile, securityGroupResponse.GetPayload()))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunStandaloneProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("name") {
+	if d.HasChange("name") {
 		body := models.StandAloneProfileUpdateCommand{
 			ID:   id,
-			Name: data.Get("name").(string),
+			Name: d.Get("name").(string),
 		}
 		params := stand_alone_profile.NewStandAloneProfileEditParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.client.StandAloneProfile.StandAloneProfileEdit(params, apiClient)
@@ -247,14 +247,14 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	if data.HasChange("lock") {
-		if err := resourceTaikunStandaloneProfileLock(id, data.Get("lock").(bool), apiClient); err != nil {
+	if d.HasChange("lock") {
+		if err := resourceTaikunStandaloneProfileLock(id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChange("security_group") {
-		old, new := data.GetChange("security_group")
+	if d.HasChange("security_group") {
+		old, new := d.GetChange("security_group")
 
 		// Delete
 		oldSecurityGroupList := old.([]interface{})
@@ -292,12 +292,12 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, data *schema.Res
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunStandaloneProfileReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunStandaloneProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunStandaloneProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunStandaloneProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -311,7 +311,7 @@ func resourceTaikunStandaloneProfileDelete(_ context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

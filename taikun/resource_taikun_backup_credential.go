@@ -104,22 +104,22 @@ func resourceTaikunBackupCredential() *schema.Resource {
 	}
 }
 
-func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.BackupCredentialsCreateCommand{
-		S3Name:        data.Get("name").(string),
-		S3AccessKeyID: data.Get("s3_access_key_id").(string),
-		S3SecretKey:   data.Get("s3_secret_access_key").(string),
-		S3Region:      data.Get("s3_region").(string),
-		S3Endpoint:    data.Get("s3_endpoint").(string),
+		S3Name:        d.Get("name").(string),
+		S3AccessKeyID: d.Get("s3_access_key_id").(string),
+		S3SecretKey:   d.Get("s3_secret_access_key").(string),
+		S3Region:      d.Get("s3_region").(string),
+		S3Endpoint:    d.Get("s3_endpoint").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -134,15 +134,15 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunBackupCredentialReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunBackupCredentialRead(true)
@@ -151,10 +151,10 @@ func generateResourceTaikunBackupCredentialReadWithoutRetries() schema.ReadConte
 	return generateResourceTaikunBackupCredentialRead(false)
 }
 func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -165,7 +165,7 @@ func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadCon
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -173,36 +173,36 @@ func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadCon
 
 		rawBackupCredential := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunBackupCredential(rawBackupCredential))
+		err = setResourceDataFromMap(d, flattenTaikunBackupCredential(rawBackupCredential))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunBackupCredentialLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("name", "s3_access_key_id", "s3_secret_access_key") {
+	if d.HasChanges("name", "s3_access_key_id", "s3_secret_access_key") {
 		updateBody := models.BackupCredentialsUpdateCommand{
 			ID:            id,
-			S3AccessKeyID: data.Get("s3_access_key_id").(string),
-			S3SecretKey:   data.Get("s3_secret_access_key").(string),
-			S3Name:        data.Get("name").(string),
+			S3AccessKeyID: d.Get("s3_access_key_id").(string),
+			S3SecretKey:   d.Get("s3_secret_access_key").(string),
+			S3Name:        d.Get("name").(string),
 		}
 		updateParams := s3_credentials.NewS3CredentialsUpdateParams().WithV(ApiVersion).WithBody(&updateBody)
 		_, err = apiClient.client.S3Credentials.S3CredentialsUpdate(updateParams, apiClient)
@@ -211,18 +211,18 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, data *schema.Reso
 		}
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunBackupCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,7 +233,7 @@ func resourceTaikunBackupCredentialDelete(_ context.Context, data *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 
