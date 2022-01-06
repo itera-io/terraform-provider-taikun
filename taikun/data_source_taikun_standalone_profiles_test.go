@@ -15,14 +15,14 @@ resource "taikun_standalone_profile" "foo" {
         name = "http"
         from_port = 80
         to_port = 80
-        ip_protocol = "tcp"
+        ip_protocol = "TCP"
         cidr = "0.0.0.0/0"
     }
     security_group {
         name = "https"
         from_port = 443
         to_port = 443
-        ip_protocol = "tcp"
+        ip_protocol = "TCP"
         cidr = "0.0.0.0/0"
     }
 }
@@ -72,14 +72,14 @@ resource "taikun_standalone_profile" "foo" {
         name = "http"
         from_port = 80
         to_port = 80
-        ip_protocol = "tcp"
+        ip_protocol = "TCP"
         cidr = "0.0.0.0/0"
     }
     security_group {
         name = "https"
         from_port = 443
         to_port = 443
-        ip_protocol = "tcp"
+        ip_protocol = "TCP"
         cidr = "0.0.0.0/0"
     }
 }
