@@ -23,8 +23,8 @@ func dataSourceTaikunCloudCredentialAzure() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialAzureRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunCloudCredentialAzureRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunCloudCredentialAzureReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunCloudCredentialAzureReadWithoutRetries()(ctx, d, meta)
 }

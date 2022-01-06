@@ -110,21 +110,21 @@ func resourceTaikunUser() *schema.Resource {
 	}
 }
 
-func resourceTaikunUserCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateUserCommand{
-		Username:    data.Get("user_name").(string),
-		DisplayName: data.Get("display_name").(string),
-		Email:       data.Get("email").(string),
-		Role:        getUserRole(data.Get("role").(string)),
+		Username:    d.Get("user_name").(string),
+		DisplayName: d.Get("display_name").(string),
+		Email:       d.Get("email").(string),
+		Role:        getUserRole(d.Get("role").(string)),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -135,9 +135,9 @@ func resourceTaikunUserCreate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.GetPayload().ID)
+	d.SetId(createResult.GetPayload().ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunUserReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunUserRead(true)
@@ -146,10 +146,10 @@ func generateResourceTaikunUserReadWithoutRetries() schema.ReadContextFunc {
 	return generateResourceTaikunUserRead(false)
 }
 func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id := data.Id()
-		data.SetId("")
+		id := d.Id()
+		d.SetId("")
 
 		response, err := apiClient.client.Users.UsersList(users.NewUsersListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
@@ -157,7 +157,7 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(id)
+				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -165,26 +165,26 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 
 		rawUser := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunUser(rawUser))
+		err = setResourceDataFromMap(d, flattenTaikunUser(rawUser))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(id)
+		d.SetId(id)
 
 		return nil
 	}
 }
 
-func resourceTaikunUserUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.UpdateUserCommand{
-		ID:                  data.Id(),
-		DisplayName:         data.Get("display_name").(string),
-		Username:            data.Get("user_name").(string),
-		Email:               data.Get("email").(string),
-		Role:                getUserRole(data.Get("role").(string)),
+		ID:                  d.Id(),
+		DisplayName:         d.Get("display_name").(string),
+		Username:            d.Get("user_name").(string),
+		Email:               d.Get("email").(string),
+		Role:                getUserRole(d.Get("role").(string)),
 		IsApprovedByPartner: true,
 	}
 
@@ -194,19 +194,19 @@ func resourceTaikunUserUpdate(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunUserDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunUserDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(data.Id())
+	params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(d.Id())
 	_, _, err := apiClient.client.Users.UsersDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

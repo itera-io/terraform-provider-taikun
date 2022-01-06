@@ -49,14 +49,14 @@ func resourceTaikunProjectUserAttachment() *schema.Resource {
 	}
 }
 
-func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*apiClient)
 
-	userId := data.Get("user_id").(string)
+	userId := d.Get("user_id").(string)
 
-	projectId, err := atoi32(data.Get("project_id").(string))
+	projectId, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
-		return diag.Errorf("project_id isn't valid: %s", data.Get("project_id").(string))
+		return diag.Errorf("project_id isn't valid: %s", d.Get("project_id").(string))
 	}
 
 	body := &models.BindUsersCommand{
@@ -75,9 +75,9 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, data *schema
 	}
 
 	id := fmt.Sprintf("%d/%s", projectId, userId)
-	data.SetId(id)
+	d.SetId(id)
 
-	return readAfterCreateWithRetries(generateResourceTaikunProjectUserAttachmentReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunProjectUserAttachmentReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunProjectUserAttachmentReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunProjectUserAttachmentRead(true)
@@ -86,11 +86,11 @@ func generateResourceTaikunProjectUserAttachmentReadWithoutRetries() schema.Read
 	return generateResourceTaikunProjectUserAttachmentRead(false)
 }
 func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 
-		id := data.Id()
-		data.SetId("")
+		id := d.Id()
+		d.SetId("")
 		projectId, userId, err := parseProjectUserAttachmentId(id)
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_project_user_attachment : %s", err)
@@ -103,7 +103,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(id)
+				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -113,32 +113,32 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 
 		for _, e := range rawUser.BoundProjects {
 			if e.ProjectID == projectId {
-				if err := data.Set("project_id", i32toa(e.ProjectID)); err != nil {
+				if err := d.Set("project_id", i32toa(e.ProjectID)); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := data.Set("project_name", e.ProjectName); err != nil {
+				if err := d.Set("project_name", e.ProjectName); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := data.Set("user_id", rawUser.ID); err != nil {
+				if err := d.Set("user_id", rawUser.ID); err != nil {
 					return diag.FromErr(err)
 				}
-				data.SetId(id)
+				d.SetId(id)
 				return nil
 			}
 		}
 
 		if withRetries {
-			data.SetId(id)
+			d.SetId(id)
 			return diag.Errorf(notFoundAfterCreateOrUpdateError)
 		}
 		return nil
 	}
 }
 
-func resourceTaikunProjectUserAttachmentDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	projectId, userId, err := parseProjectUserAttachmentId(data.Id())
+	projectId, userId, err := parseProjectUserAttachmentId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_project_user_attachment : %s", err)
 	}
@@ -149,7 +149,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, data *schema.R
 		return diag.FromErr(err)
 	}
 	if len(usersListResponse.Payload.Data) != 1 {
-		data.SetId("")
+		d.SetId("")
 		return nil
 	}
 
@@ -159,7 +159,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, data *schema.R
 		return diag.FromErr(err)
 	}
 	if len(projectsListResponse.Payload.Data) != 1 {
-		data.SetId("")
+		d.SetId("")
 		return nil
 	}
 
@@ -178,7 +178,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, data *schema.R
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

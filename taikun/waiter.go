@@ -22,19 +22,19 @@ func timedOut(err error) bool {
 	return ok && timeoutErr.LastError == nil
 }
 
-func readAfterCreateWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readAfterCreateWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	isUpdate := false
-	return readAfterOpWithRetries(readFunc, ctx, data, meta, isUpdate)
+	return readAfterOpWithRetries(readFunc, ctx, d, meta, isUpdate)
 }
 
-func readAfterUpdateWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readAfterUpdateWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	isUpdate := true
-	return readAfterOpWithRetries(readFunc, ctx, data, meta, isUpdate)
+	return readAfterOpWithRetries(readFunc, ctx, d, meta, isUpdate)
 }
 
-func readAfterOpWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, data *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
+func readAfterOpWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, d *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
 	retryErr := resource.RetryContext(ctx, getReadAfterOpTimeout(isUpdate), func() *resource.RetryError {
-		readDiagnostics := readFunc(ctx, data, meta)
+		readDiagnostics := readFunc(ctx, d, meta)
 		if readDiagnostics != nil {
 
 			if readDiagnostics[0].Summary == notFoundAfterCreateOrUpdateError {

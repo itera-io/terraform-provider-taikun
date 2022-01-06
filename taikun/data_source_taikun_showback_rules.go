@@ -32,13 +32,13 @@ func dataSourceTaikunShowbackRules() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunShowbackRulesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := showback.NewShowbackRulesListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -66,11 +66,11 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, data *schema.ResourceD
 	for i, rawShowbackRule := range showbackRulesList {
 		showbackRules[i] = flattenTaikunShowbackRule(rawShowbackRule)
 	}
-	if err := data.Set("showback_rules", showbackRules); err != nil {
+	if err := d.Set("showback_rules", showbackRules); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

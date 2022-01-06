@@ -22,8 +22,8 @@ func dataSourceTaikunBillingRule() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBillingRuleRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunBillingRuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunBillingRuleReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunBillingRuleReadWithoutRetries()(ctx, d, meta)
 }

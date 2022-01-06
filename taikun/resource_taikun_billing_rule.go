@@ -104,21 +104,21 @@ func resourceTaikunBillingRule() *schema.Resource {
 	}
 }
 
-func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	billingCredentialId, err := atoi32(data.Get("billing_credential_id").(string))
+	billingCredentialId, err := atoi32(d.Get("billing_credential_id").(string))
 	if err != nil {
-		return diag.Errorf("billing_credential_id isn't valid: %s", data.Get("billing_credential_id").(string))
+		return diag.Errorf("billing_credential_id isn't valid: %s", d.Get("billing_credential_id").(string))
 	}
 
 	body := &models.RuleCreateCommand{
-		Labels:                resourceTaikunBillingRuleLabelsToAdd(data),
-		Name:                  data.Get("name").(string),
-		MetricName:            data.Get("metric_name").(string),
-		Price:                 data.Get("price").(float64),
+		Labels:                resourceTaikunBillingRuleLabelsToAdd(d),
+		Name:                  d.Get("name").(string),
+		MetricName:            d.Get("metric_name").(string),
+		Price:                 d.Get("price").(float64),
 		OperationCredentialID: billingCredentialId,
-		Type:                  getPrometheusType(data.Get("type").(string)),
+		Type:                  getPrometheusType(d.Get("type").(string)),
 	}
 
 	params := prometheus.NewPrometheusCreateParams().WithV(ApiVersion).WithBody(body)
@@ -127,9 +127,9 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunBillingRuleReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunBillingRuleRead(true)
@@ -138,10 +138,10 @@ func generateResourceTaikunBillingRuleReadWithoutRetries() schema.ReadContextFun
 	return generateResourceTaikunBillingRuleRead(false)
 }
 func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -153,7 +153,7 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -161,37 +161,37 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 
 		rawBillingRule := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunBillingRule(rawBillingRule))
+		err = setResourceDataFromMap(d, flattenTaikunBillingRule(rawBillingRule))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	billingCredentialId, err := atoi32(data.Get("billing_credential_id").(string))
+	billingCredentialId, err := atoi32(d.Get("billing_credential_id").(string))
 	if err != nil {
-		return diag.Errorf("billing_credential_id isn't valid: %s", data.Get("billing_credential_id").(string))
+		return diag.Errorf("billing_credential_id isn't valid: %s", d.Get("billing_credential_id").(string))
 	}
 
 	body := &models.RuleForUpdateDto{
-		LabelsToAdd:           resourceTaikunBillingRuleLabelsToAdd(data),
-		LabelsToDelete:        resourceTaikunBillingRuleLabelsToDelete(data),
-		Name:                  data.Get("name").(string),
-		MetricName:            data.Get("metric_name").(string),
-		Price:                 data.Get("price").(float64),
+		LabelsToAdd:           resourceTaikunBillingRuleLabelsToAdd(d),
+		LabelsToDelete:        resourceTaikunBillingRuleLabelsToDelete(d),
+		Name:                  d.Get("name").(string),
+		MetricName:            d.Get("metric_name").(string),
+		Price:                 d.Get("price").(float64),
 		OperationCredentialID: billingCredentialId,
-		Type:                  getPrometheusType(data.Get("type").(string)),
+		Type:                  getPrometheusType(d.Get("type").(string)),
 	}
 
 	params := prometheus.NewPrometheusUpdateParams().WithV(ApiVersion).WithID(id).WithBody(body)
@@ -200,12 +200,12 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,12 +216,12 @@ func resourceTaikunBillingRuleDelete(_ context.Context, data *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 
-func resourceTaikunBillingRuleLabelsToAdd(data *schema.ResourceData) []*models.PrometheusLabelListDto {
-	labels := data.Get("label").([]interface{})
+func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []*models.PrometheusLabelListDto {
+	labels := d.Get("label").([]interface{})
 	labelsToAdd := make([]*models.PrometheusLabelListDto, len(labels))
 	for i, labelData := range labels {
 		label := labelData.(map[string]interface{})
@@ -233,8 +233,8 @@ func resourceTaikunBillingRuleLabelsToAdd(data *schema.ResourceData) []*models.P
 	return labelsToAdd
 }
 
-func resourceTaikunBillingRuleLabelsToDelete(data *schema.ResourceData) []*models.PrometheusLabelDeleteDto {
-	oldLabelsData, _ := data.GetChange("label")
+func resourceTaikunBillingRuleLabelsToDelete(d *schema.ResourceData) []*models.PrometheusLabelDeleteDto {
+	oldLabelsData, _ := d.GetChange("label")
 	oldLabels := oldLabelsData.([]interface{})
 	labelsToDelete := make([]*models.PrometheusLabelDeleteDto, len(oldLabels))
 	for i, oldLabelData := range oldLabels {

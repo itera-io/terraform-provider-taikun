@@ -34,12 +34,12 @@ func dataSourceTaikunAlertingProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAlertingProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion)
-	if organizationIDData, organizationIDProvided := data.GetOk("organization_id"); organizationIDProvided {
+	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
 		if err != nil {
@@ -74,11 +74,11 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, data *schema.Resour
 		alertingProfiles[i] = flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload)
 	}
 
-	if err := data.Set("alerting_profiles", alertingProfiles); err != nil {
+	if err := d.Set("alerting_profiles", alertingProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

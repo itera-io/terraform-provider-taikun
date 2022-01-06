@@ -142,26 +142,26 @@ func resourceTaikunPolicyProfile() *schema.Resource {
 	}
 }
 
-func resourceTaikunPolicyProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunPolicyProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateOpaProfileCommand{
-		AllowedRepo:           resourceGetStringList(data.Get("allowed_repos")),
-		ForbidHTTPIngress:     data.Get("forbid_http_ingress").(bool),
-		ForbidNodePort:        data.Get("forbid_node_port").(bool),
-		ForbidSpecificTags:    resourceGetStringList(data.Get("forbidden_tags")),
-		IngressWhitelist:      resourceGetStringList(data.Get("ingress_whitelist")),
-		Name:                  data.Get("name").(string),
-		RequireProbe:          data.Get("require_probe").(bool),
-		UniqueIngresses:       data.Get("unique_ingress").(bool),
-		UniqueServiceSelector: data.Get("unique_service_selector").(bool),
+		AllowedRepo:           resourceGetStringList(d.Get("allowed_repos")),
+		ForbidHTTPIngress:     d.Get("forbid_http_ingress").(bool),
+		ForbidNodePort:        d.Get("forbid_node_port").(bool),
+		ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags")),
+		IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist")),
+		Name:                  d.Get("name").(string),
+		RequireProbe:          d.Get("require_probe").(bool),
+		UniqueIngresses:       d.Get("unique_ingress").(bool),
+		UniqueServiceSelector: d.Get("unique_service_selector").(bool),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -172,9 +172,9 @@ func resourceTaikunPolicyProfileCreate(ctx context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	locked := data.Get("lock").(bool)
+	locked := d.Get("lock").(bool)
 	if locked {
 		id, err := atoi32(createResult.Payload.ID)
 		if err != nil {
@@ -186,7 +186,7 @@ func resourceTaikunPolicyProfileCreate(ctx context.Context, data *schema.Resourc
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunPolicyProfileReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunPolicyProfileReadWithRetries(), ctx, d, meta)
 }
 
 func generateResourceTaikunPolicyProfileReadWithRetries() schema.ReadContextFunc {
@@ -196,10 +196,10 @@ func generateResourceTaikunPolicyProfileReadWithoutRetries() schema.ReadContextF
 	return generateResourceTaikunPolicyProfileRead(false)
 }
 func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -210,7 +210,7 @@ func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.
 		}
 		if len(response.Payload.Data) != 1 {
 			if isAfterUpdateOrCreate {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -218,44 +218,44 @@ func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.
 
 		rawPolicyProfile := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunPolicyProfile(rawPolicyProfile))
+		err = setResourceDataFromMap(d, flattenTaikunPolicyProfile(rawPolicyProfile))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunPolicyProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		err := resourceTaikunPolicyProfileLock(id, false, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChangeExcept("lock") {
+	if d.HasChangeExcept("lock") {
 
 		body := &models.OpaProfileUpdateCommand{
-			AllowedRepo:           resourceGetStringList(data.Get("allowed_repos")),
-			ForbidHTTPIngress:     data.Get("forbid_http_ingress").(bool),
-			ForbidNodePort:        data.Get("forbid_node_port").(bool),
-			ForbidSpecificTags:    resourceGetStringList(data.Get("forbidden_tags")),
-			IngressWhitelist:      resourceGetStringList(data.Get("ingress_whitelist")),
-			Name:                  data.Get("name").(string),
-			RequireProbe:          data.Get("require_probe").(bool),
-			UniqueIngresses:       data.Get("unique_ingress").(bool),
-			UniqueServiceSelector: data.Get("unique_service_selector").(bool),
+			AllowedRepo:           resourceGetStringList(d.Get("allowed_repos")),
+			ForbidHTTPIngress:     d.Get("forbid_http_ingress").(bool),
+			ForbidNodePort:        d.Get("forbid_node_port").(bool),
+			ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags")),
+			IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist")),
+			Name:                  d.Get("name").(string),
+			RequireProbe:          d.Get("require_probe").(bool),
+			UniqueIngresses:       d.Get("unique_ingress").(bool),
+			UniqueServiceSelector: d.Get("unique_service_selector").(bool),
 			ID:                    id,
 		}
 		params := opa_profiles.NewOpaProfilesUpdateParams().WithV(ApiVersion).WithBody(body)
@@ -266,19 +266,19 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, data *schema.Resourc
 
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		err := resourceTaikunPolicyProfileLock(id, true, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunPolicyProfileReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunPolicyProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunPolicyProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunPolicyProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -289,7 +289,7 @@ func resourceTaikunPolicyProfileDelete(_ context.Context, data *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

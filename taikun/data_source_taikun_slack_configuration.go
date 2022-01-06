@@ -22,7 +22,7 @@ func dataSourceTaikunSlackConfiguration() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunSlackConfigurationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
-	return generateResourceTaikunSlackConfigurationReadWithoutRetries()(ctx, data, meta)
+func dataSourceTaikunSlackConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
+	return generateResourceTaikunSlackConfigurationReadWithoutRetries()(ctx, d, meta)
 }

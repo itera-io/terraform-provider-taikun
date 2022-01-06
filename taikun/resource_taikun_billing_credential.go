@@ -102,21 +102,21 @@ func resourceTaikunBillingCredential() *schema.Resource {
 	}
 }
 
-func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.OperationCredentialsCreateCommand{
-		Name:               data.Get("name").(string),
-		PrometheusPassword: data.Get("prometheus_password").(string),
-		PrometheusURL:      data.Get("prometheus_url").(string),
-		PrometheusUsername: data.Get("prometheus_username").(string),
+		Name:               d.Get("name").(string),
+		PrometheusPassword: d.Get("prometheus_password").(string),
+		PrometheusURL:      d.Get("prometheus_url").(string),
+		PrometheusUsername: d.Get("prometheus_username").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -131,15 +131,15 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunBillingCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunBillingCredentialReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunBillingCredentialRead(true)
@@ -148,10 +148,10 @@ func generateResourceTaikunBillingCredentialReadWithoutRetries() schema.ReadCont
 	return generateResourceTaikunBillingCredentialRead(false)
 }
 func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -162,7 +162,7 @@ func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadCo
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -170,36 +170,36 @@ func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadCo
 
 		rawBillingCredential := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunBillingCredential(rawBillingCredential))
+		err = setResourceDataFromMap(d, flattenTaikunBillingCredential(rawBillingCredential))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunBillingCredentialUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("lock") {
-		if err := resourceTaikunBillingCredentialLock(id, data.Get("lock").(bool), apiClient); err != nil {
+	if d.HasChange("lock") {
+		if err := resourceTaikunBillingCredentialLock(id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunBillingCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -210,7 +210,7 @@ func resourceTaikunBillingCredentialDelete(_ context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

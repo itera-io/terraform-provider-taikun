@@ -146,22 +146,22 @@ func resourceTaikunCloudCredentialAWS() *schema.Resource {
 	}
 }
 
-func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateAwsCloudCommand{
-		Name:                data.Get("name").(string),
-		AwsAccessKeyID:      data.Get("access_key_id").(string),
-		AwsSecretAccessKey:  data.Get("secret_access_key").(string),
-		AwsAvailabilityZone: data.Get("availability_zone").(string),
-		AwsRegion:           data.Get("region").(string),
+		Name:                d.Get("name").(string),
+		AwsAccessKeyID:      d.Get("access_key_id").(string),
+		AwsSecretAccessKey:  d.Get("secret_access_key").(string),
+		AwsAvailabilityZone: d.Get("availability_zone").(string),
+		AwsRegion:           d.Get("region").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -176,15 +176,15 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunCloudCredentialAWSReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunCloudCredentialAWSRead(true)
@@ -193,10 +193,10 @@ func generateResourceTaikunCloudCredentialAWSReadWithoutRetries() schema.ReadCon
 	return generateResourceTaikunCloudCredentialAWSRead(false)
 }
 func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -207,7 +207,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 		}
 		if len(response.Payload.Amazon) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -215,36 +215,36 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 
 		rawCloudCredentialAWS := response.GetPayload().Amazon[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("access_key_id", "secret_access_key", "name") {
+	if d.HasChanges("access_key_id", "secret_access_key", "name") {
 		updateBody := &models.UpdateAwsCommand{
 			ID:                 id,
-			Name:               data.Get("name").(string),
-			AwsAccessKeyID:     data.Get("access_key_id").(string),
-			AwsSecretAccessKey: data.Get("secret_access_key").(string),
+			Name:               d.Get("name").(string),
+			AwsAccessKeyID:     d.Get("access_key_id").(string),
+			AwsSecretAccessKey: d.Get("secret_access_key").(string),
 		}
 		updateParams := aws.NewAwsUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.client.Aws.AwsUpdate(updateParams, apiClient)
@@ -253,13 +253,13 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, d, meta)
 }
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {

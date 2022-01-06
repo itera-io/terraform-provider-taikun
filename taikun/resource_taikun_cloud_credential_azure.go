@@ -130,24 +130,24 @@ func resourceTaikunCloudCredentialAzure() *schema.Resource {
 	}
 }
 
-func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateAzureCloudCommand{
-		Name:                  data.Get("name").(string),
-		AzureTenantID:         data.Get("tenant_id").(string),
-		AzureClientID:         data.Get("client_id").(string),
-		AzureClientSecret:     data.Get("client_secret").(string),
-		AzureSubscriptionID:   data.Get("subscription_id").(string),
-		AzureLocation:         data.Get("location").(string),
-		AzureAvailabilityZone: data.Get("availability_zone").(string),
+		Name:                  d.Get("name").(string),
+		AzureTenantID:         d.Get("tenant_id").(string),
+		AzureClientID:         d.Get("client_id").(string),
+		AzureClientSecret:     d.Get("client_secret").(string),
+		AzureSubscriptionID:   d.Get("subscription_id").(string),
+		AzureLocation:         d.Get("location").(string),
+		AzureAvailabilityZone: d.Get("availability_zone").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -162,15 +162,15 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunCloudCredentialAzureReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunCloudCredentialAzureRead(true)
@@ -179,10 +179,10 @@ func generateResourceTaikunCloudCredentialAzureReadWithoutRetries() schema.ReadC
 	return generateResourceTaikunCloudCredentialAzureRead(false)
 }
 func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -193,7 +193,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 		}
 		if len(response.Payload.Azure) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -201,36 +201,36 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 
 		rawCloudCredentialAzure := response.GetPayload().Azure[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunCloudCredentialAzureLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("client_id", "client_secret", "name") {
+	if d.HasChanges("client_id", "client_secret", "name") {
 		updateBody := &models.UpdateAzureCommand{
 			ID:                id,
-			Name:              data.Get("name").(string),
-			AzureClientID:     data.Get("client_id").(string),
-			AzureClientSecret: data.Get("client_secret").(string),
+			Name:              d.Get("name").(string),
+			AzureClientID:     d.Get("client_id").(string),
+			AzureClientSecret: d.Get("client_secret").(string),
 		}
 		updateParams := azure.NewAzureUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.client.Azure.AzureUpdate(updateParams, apiClient)
@@ -239,13 +239,13 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, d, meta)
 }
 
 func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {

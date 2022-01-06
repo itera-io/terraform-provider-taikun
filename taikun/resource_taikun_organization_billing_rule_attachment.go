@@ -55,17 +55,17 @@ func resourceTaikunOrganizationBillingRuleAttachment() *schema.Resource {
 	}
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*apiClient)
 
-	billingRuleId, err := atoi32(data.Get("billing_rule_id").(string))
+	billingRuleId, err := atoi32(d.Get("billing_rule_id").(string))
 	if err != nil {
-		return diag.Errorf("billing_rule_id isn't valid: %s", data.Get("billing_rule_id").(string))
+		return diag.Errorf("billing_rule_id isn't valid: %s", d.Get("billing_rule_id").(string))
 	}
 
-	organizationId, err := atoi32(data.Get("organization_id").(string))
+	organizationId, err := atoi32(d.Get("organization_id").(string))
 	if err != nil {
-		return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+		return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 	}
 
 	body := &models.BindPrometheusOrganizationsCommand{
@@ -73,7 +73,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 			{
 				IsBound:          true,
 				OrganizationID:   organizationId,
-				RuleDiscountRate: data.Get("discount_rate").(float64),
+				RuleDiscountRate: d.Get("discount_rate").(float64),
 			},
 		},
 		PrometheusRuleID: billingRuleId,
@@ -85,9 +85,9 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 	}
 
 	id := fmt.Sprintf("%d/%d", organizationId, billingRuleId)
-	data.SetId(id)
+	d.SetId(id)
 
-	return readAfterCreateWithRetries(generateResourceTaikunOrganizationBillingRuleAttachmentReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunOrganizationBillingRuleAttachmentReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunOrganizationBillingRuleAttachmentReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunOrganizationBillingRuleAttachmentRead(true)
@@ -96,11 +96,11 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentReadWithoutRetries()
 	return generateResourceTaikunOrganizationBillingRuleAttachmentRead(false)
 }
 func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 
-		id := data.Id()
-		data.SetId("")
+		id := d.Id()
+		d.SetId("")
 		organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(id)
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_organization_billing_rule_attachment : %s", err)
@@ -113,7 +113,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(id)
+				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -123,35 +123,35 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 
 		for _, e := range rawBillingRule.BoundOrganizations {
 			if e.OrganizationID == organizationId {
-				if err := data.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
+				if err := d.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := data.Set("organization_name", e.OrganizationName); err != nil {
+				if err := d.Set("organization_name", e.OrganizationName); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := data.Set("billing_rule_id", i32toa(rawBillingRule.ID)); err != nil {
+				if err := d.Set("billing_rule_id", i32toa(rawBillingRule.ID)); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := data.Set("discount_rate", e.RuleDiscountRate); err != nil {
+				if err := d.Set("discount_rate", e.RuleDiscountRate); err != nil {
 					return diag.FromErr(err)
 				}
-				data.SetId(id)
+				d.SetId(id)
 				return nil
 			}
 		}
 
 		if withRetries {
-			data.SetId(id)
+			d.SetId(id)
 			return diag.Errorf(notFoundAfterCreateOrUpdateError)
 		}
 		return nil
 	}
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(data.Id())
+	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
 	}
@@ -162,7 +162,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, da
 		return diag.FromErr(err)
 	}
 	if len(organizationsListResponse.Payload.Data) != 1 {
-		data.SetId("")
+		d.SetId("")
 		return nil
 	}
 
@@ -172,7 +172,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, da
 		return diag.FromErr(err)
 	}
 	if len(billingRulesListResponse.Payload.Data) != 1 {
-		data.SetId("")
+		d.SetId("")
 		return nil
 	}
 
@@ -191,7 +191,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, da
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

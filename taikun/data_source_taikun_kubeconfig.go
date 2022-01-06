@@ -23,7 +23,7 @@ func dataSourceTaikunKubeconfig() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunKubeconfigRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
-	return generateResourceTaikunKubeconfigReadWithoutRetries()(ctx, data, meta)
+func dataSourceTaikunKubeconfigRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
+	return generateResourceTaikunKubeconfigReadWithoutRetries()(ctx, d, meta)
 }

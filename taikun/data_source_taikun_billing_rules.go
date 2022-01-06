@@ -26,7 +26,7 @@ func dataSourceTaikunBillingRules() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBillingRulesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunBillingRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion)
@@ -49,11 +49,11 @@ func dataSourceTaikunBillingRulesRead(_ context.Context, data *schema.ResourceDa
 	for i, rawBillingRule := range billingRulesList {
 		billingRules[i] = flattenTaikunBillingRule(rawBillingRule)
 	}
-	if err := data.Set("billing_rules", billingRules); err != nil {
+	if err := d.Set("billing_rules", billingRules); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId("all")
+	d.SetId("all")
 
 	return nil
 }

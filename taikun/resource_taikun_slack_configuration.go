@@ -76,17 +76,17 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 	}
 }
 
-func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := models.UpsertSlackConfigurationCommand{
-		Name:      data.Get("name").(string),
-		URL:       data.Get("url").(string),
-		Channel:   data.Get("channel").(string),
-		SlackType: getSlackConfigurationType(data.Get("type").(string)),
+		Name:      d.Get("name").(string),
+		URL:       d.Get("url").(string),
+		Channel:   d.Get("channel").(string),
+		SlackType: getSlackConfigurationType(d.Get("type").(string)),
 	}
 
-	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -100,9 +100,9 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(response.Payload))
+	d.SetId(i32toa(response.Payload))
 
-	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunSlackConfigurationReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunSlackConfigurationRead(true)
@@ -111,11 +111,11 @@ func generateResourceTaikunSlackConfigurationReadWithoutRetries() schema.ReadCon
 	return generateResourceTaikunSlackConfigurationRead(false)
 }
 func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
 
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -127,7 +127,7 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -135,34 +135,34 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 
 		rawSlackConfiguration := response.Payload.Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunSlackConfiguration(rawSlackConfiguration))
+		err = setResourceDataFromMap(d, flattenTaikunSlackConfiguration(rawSlackConfiguration))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	body := models.UpsertSlackConfigurationCommand{
 		ID:        id,
-		Name:      data.Get("name").(string),
-		URL:       data.Get("url").(string),
-		Channel:   data.Get("channel").(string),
-		SlackType: getSlackConfigurationType(data.Get("type").(string)),
+		Name:      d.Get("name").(string),
+		URL:       d.Get("url").(string),
+		Channel:   d.Get("channel").(string),
+		SlackType: getSlackConfigurationType(d.Get("type").(string)),
 	}
 
-	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -175,13 +175,13 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,7 +193,7 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 
 	return nil
 }
