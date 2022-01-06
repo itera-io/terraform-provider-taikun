@@ -155,7 +155,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 	}
 }
 
-func resourceTaikunKubeconfigDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	id, err := atoi32(d.Id())
 	if err != nil {

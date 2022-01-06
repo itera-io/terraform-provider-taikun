@@ -32,7 +32,7 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunKubeconfigsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	projectID, err := atoi32(d.Get("project_id").(string))
