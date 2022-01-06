@@ -12,10 +12,36 @@ import (
 
 func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"created_by": {
+			Description: "The creator of the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the billing credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"is_default": {
+			Description: "Indicates whether the billing credential is the organization's default.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "Time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the billing credential.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description:  "The name of the billing credential.",
@@ -24,12 +50,18 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(3, 30),
 		},
-		"prometheus_username": {
-			Description:  "The Prometheus username.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
+		"organization_id": {
+			Description:      "The ID of the organization which owns the billing credential.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the billing credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
 		},
 		"prometheus_password": {
 			Description:  "The Prometheus password.",
@@ -46,44 +78,12 @@ func resourceTaikunBillingCredentialSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"organization_id": {
-			Description:      "The ID of the organization which owns the billing credential.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ValidateDiagFunc: stringIsInt,
-			ForceNew:         true,
-		},
-		"organization_name": {
-			Description: "The name of the organization which owns the billing credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"lock": {
-			Description: "Indicates whether to lock the billing credential.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
-		"is_default": {
-			Description: "Indicates whether the billing credential is the organization's default.",
-			Type:        schema.TypeBool,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the billing credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "Time and date of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user to have modified the billing credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"prometheus_username": {
+			Description:  "The Prometheus username.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }

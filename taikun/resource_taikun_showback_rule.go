@@ -13,53 +13,10 @@ import (
 
 func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": {
-			Description: "The ID of the showback rule.",
+		"created_by": {
+			Description: "The creator of the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"name": {
-			Description: "The name of the showback rule.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ValidateFunc: validation.All(
-				validation.StringLenBetween(3, 30),
-				validation.StringMatch(
-					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
-					"expected only alpha numeric characters or non alpha numeric (_-.)",
-				),
-			),
-		},
-		"metric_name": {
-			Description:  "The metric name.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 256),
-		},
-		"kind": {
-			Description:  "The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"General", "External"}, false),
-		},
-		"type": {
-			Description:  "The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
-		},
-		"price": {
-			Description:  "Billing in CZK per selected unit.",
-			Type:         schema.TypeFloat,
-			Required:     true,
-			ValidateFunc: validation.FloatAtLeast(0),
-		},
-		"project_alert_limit": {
-			Description:  "Set limit of alerts for one project.",
-			Type:         schema.TypeInt,
-			Optional:     true,
-			Default:      0,
-			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"global_alert_limit": {
 			Description:  "Set limit of alerts for all projects.",
@@ -68,45 +25,16 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			Default:      0,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
-		"organization_id": {
-			Description:      "The ID of the organization which owns the showback rule.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ValidateDiagFunc: stringIsInt,
-			ForceNew:         true,
-		},
-		"organization_name": {
-			Description: "The name of the organization which owns the showback rule.",
+		"id": {
+			Description: "The ID of the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"showback_credential_id": {
-			Description:      "Id of the showback rule.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
-		},
-		"showback_credential_name": {
-			Description: "Name of the showback rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the showback rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "Time of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user who modified the showback rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"kind": {
+			Description:  "The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"General", "External"}, false),
 		},
 		"label": {
 			Description: "Labels linked to this showback rule.",
@@ -126,6 +54,78 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the showback rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"metric_name": {
+			Description:  "The metric name.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 256),
+		},
+		"name": {
+			Description: "The name of the showback rule.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+					"expected only alpha numeric characters or non alpha numeric (_-.)",
+				),
+			),
+		},
+		"organization_id": {
+			Description:      "The ID of the organization which owns the showback rule.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the showback rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"price": {
+			Description:  "Billing in CZK per selected unit.",
+			Type:         schema.TypeFloat,
+			Required:     true,
+			ValidateFunc: validation.FloatAtLeast(0),
+		},
+		"project_alert_limit": {
+			Description:  "Set limit of alerts for one project.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      0,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"showback_credential_id": {
+			Description:      "Id of the showback rule.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: stringIsInt,
+		},
+		"showback_credential_name": {
+			Description: "Name of the showback rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"type": {
+			Description:  "The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
 		},
 	}
 }
