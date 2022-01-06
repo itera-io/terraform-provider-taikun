@@ -22,8 +22,8 @@ func dataSourceTaikunAccessProfile() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAccessProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunAccessProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunAccessProfileReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunAccessProfileReadWithoutRetries()(ctx, d, meta)
 }

@@ -22,8 +22,8 @@ func dataSourceTaikunStandaloneProfile() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunStandaloneProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunStandaloneProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunStandaloneProfileReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunStandaloneProfileReadWithoutRetries()(ctx, d, meta)
 }

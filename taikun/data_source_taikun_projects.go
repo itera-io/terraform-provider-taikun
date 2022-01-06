@@ -34,13 +34,13 @@ func dataSourceTaikunProjects() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunProjectsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunProjectsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := projects.NewProjectsListParams().WithV(ApiVersion)
 
-	if organizationIDData, organizationIDProvided := data.GetOk("organization_id"); organizationIDProvided {
+	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
 		if err != nil {
@@ -78,10 +78,10 @@ func dataSourceTaikunProjectsRead(ctx context.Context, data *schema.ResourceData
 
 		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, boundFlavorDTOs, quotaResponse.Payload.Data[0])
 	}
-	if err := data.Set("projects", projects); err != nil {
+	if err := d.Set("projects", projects); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 	return nil
 }

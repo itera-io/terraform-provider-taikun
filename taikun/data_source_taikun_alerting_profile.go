@@ -22,7 +22,7 @@ func dataSourceTaikunAlertingProfile() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAlertingProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
-	return generateResourceTaikunAlertingProfileReadWithoutRetries()(ctx, data, meta)
+func dataSourceTaikunAlertingProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
+	return generateResourceTaikunAlertingProfileReadWithoutRetries()(ctx, d, meta)
 }

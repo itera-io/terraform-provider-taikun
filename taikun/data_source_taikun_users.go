@@ -33,13 +33,13 @@ func dataSourceTaikunUsers() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunUsersRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := users.NewUsersListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -67,11 +67,11 @@ func dataSourceTaikunUsersRead(_ context.Context, data *schema.ResourceData, met
 	for i, rawUser := range rawUserList {
 		userList[i] = flattenTaikunUser(rawUser)
 	}
-	if err := data.Set("users", userList); err != nil {
+	if err := d.Set("users", userList); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

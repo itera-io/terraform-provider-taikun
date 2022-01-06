@@ -32,10 +32,10 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunKubeconfigsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunKubeconfigsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	projectID, err := atoi32(data.Get("project_id").(string))
+	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -66,10 +66,10 @@ func dataSourceTaikunKubeconfigsRead(ctx context.Context, data *schema.ResourceD
 		kubeconfigs[i] = flattenTaikunKubeconfig(kubeconfigDTO)
 	}
 
-	if err := data.Set("kubeconfigs", kubeconfigs); err != nil {
+	if err := d.Set("kubeconfigs", kubeconfigs); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(projectID))
+	d.SetId(i32toa(projectID))
 	return nil
 }

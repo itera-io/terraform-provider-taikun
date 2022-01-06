@@ -32,13 +32,13 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunKubernetesProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -66,11 +66,11 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, data *schema.Reso
 	for i, rawKubernetesProfile := range kubernetesProfilesListDtos {
 		kubernetesProfiles[i] = flattenTaikunKubernetesProfile(rawKubernetesProfile)
 	}
-	if err := data.Set("kubernetes_profiles", kubernetesProfiles); err != nil {
+	if err := d.Set("kubernetes_profiles", kubernetesProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

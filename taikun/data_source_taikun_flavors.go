@@ -79,17 +79,17 @@ func dataSourceTaikunFlavors() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunFlavorsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	cloudCredentialID, err := atoi32(data.Get("cloud_credential_id").(string))
+	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	startCPU := int32(data.Get("min_cpu").(int))
-	endCPU := int32(data.Get("max_cpu").(int))
-	startRAM := gibiByteToMebiByte(int32(data.Get("min_ram").(int)))
-	endRAM := gibiByteToMebiByte(int32(data.Get("max_ram").(int)))
+	startCPU := int32(d.Get("min_cpu").(int))
+	endCPU := int32(d.Get("max_cpu").(int))
+	startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
+	endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
 
 	params := cloud_credentials.NewCloudCredentialsAllFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 	params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
@@ -112,11 +112,11 @@ func dataSourceTaikunFlavorsRead(_ context.Context, data *schema.ResourceData, m
 	}
 
 	flavors := flattenDataSourceTaikunFlavors(cloudType, flavorDTOs)
-	if err := data.Set("flavors", flavors); err != nil {
+	if err := d.Set("flavors", flavors); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(cloudCredentialID))
+	d.SetId(i32toa(cloudCredentialID))
 	return nil
 }
 

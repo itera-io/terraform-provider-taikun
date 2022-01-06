@@ -33,13 +33,13 @@ func dataSourceTaikunStandaloneProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunStandaloneProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunStandaloneProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -74,11 +74,11 @@ func dataSourceTaikunStandaloneProfilesRead(_ context.Context, data *schema.Reso
 
 		standaloneProfiles[i] = flattenTaikunStandaloneProfile(rawStandaloneProfile, securityGroupResponse.GetPayload())
 	}
-	if err := data.Set("standalone_profiles", standaloneProfiles); err != nil {
+	if err := d.Set("standalone_profiles", standaloneProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

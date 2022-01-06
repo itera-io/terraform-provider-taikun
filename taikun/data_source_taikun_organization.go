@@ -43,19 +43,19 @@ func dataSourceTaikunOrganization() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	var limit int32 = 1
 	params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithLimit(&limit)
 
-	id := data.Get("id").(string)
+	id := d.Get("id").(string)
 	id32, _ := atoi32(id)
 	if id != "" {
 		params = params.WithID(&id32)
 	}
 
-	data.SetId("")
+	d.SetId("")
 
 	response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
 	if err != nil {
@@ -73,12 +73,12 @@ func dataSourceTaikunOrganizationRead(_ context.Context, data *schema.ResourceDa
 	organizationMap["servers"] = rawOrganization.Servers
 	organizationMap["users"] = rawOrganization.Users
 
-	err = setResourceDataFromMap(data, organizationMap)
+	err = setResourceDataFromMap(d, organizationMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(rawOrganization.ID))
+	d.SetId(i32toa(rawOrganization.ID))
 
 	return nil
 }

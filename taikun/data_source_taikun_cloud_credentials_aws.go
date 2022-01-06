@@ -33,13 +33,13 @@ func dataSourceTaikunCloudCredentialsAWS() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsAWSRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsAWSRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -67,11 +67,11 @@ func dataSourceTaikunCloudCredentialsAWSRead(_ context.Context, data *schema.Res
 	for i, rawCloudCredential := range cloudCredentialsList {
 		cloudCredentials[i] = flattenTaikunCloudCredentialAWS(rawCloudCredential)
 	}
-	if err := data.Set("cloud_credentials", cloudCredentials); err != nil {
+	if err := d.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

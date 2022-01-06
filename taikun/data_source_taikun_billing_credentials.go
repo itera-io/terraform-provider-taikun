@@ -32,13 +32,13 @@ func dataSourceTaikunBillingCredentials() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunBillingCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -66,11 +66,11 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, data *schema.Reso
 	for i, rawOperationCredential := range operationCredentialsList {
 		operationCredentials[i] = flattenTaikunBillingCredential(rawOperationCredential)
 	}
-	if err := data.Set("billing_credentials", operationCredentials); err != nil {
+	if err := d.Set("billing_credentials", operationCredentials); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }
