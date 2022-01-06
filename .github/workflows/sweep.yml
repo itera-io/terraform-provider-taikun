@@ -25,7 +25,6 @@ jobs:
           go mod download
 
       - name: TF sweepers
-        timeout-minutes: 5
         env:
           TF_ACC: "1"
           TF_ACC_TERRAFORM_VERSION: "1.1.0"
