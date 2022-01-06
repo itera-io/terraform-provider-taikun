@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_standalone_profiles Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Retrieve all Standalone profiles.
+description: |-   Retrieve all standalone profiles.
 ---
 
 # taikun_standalone_profiles (Data Source)
 
-Retrieve all Standalone profiles.
+Retrieve all standalone profiles.
 
 ~> **Role Requirement** To use the `taikun_standalone_profiles` data source, you need a Manager or Partner account.
 
@@ -29,7 +29,7 @@ data "taikun_standalone_profiles" "foo" {
 
 ### Read-Only
 
-- **standalone_profiles** (List of Object) List of retrieved Standalone profiles. (see [below for nested schema](#nestedatt--standalone_profiles))
+- **standalone_profiles** (List of Object) List of retrieved standalone profiles. (see [below for nested schema](#nestedatt--standalone_profiles))
 
 <a id="nestedatt--standalone_profiles"></a>
 ### Nested Schema for `standalone_profiles`

@@ -76,7 +76,7 @@ resource "taikun_standalone_profile" "foo" {
 Required:
 
 - **cidr** (String) Remote IP prefix.
-- **ip_protocol** (String) IP Protocol: `tcp`, `udp` or `icmp`.
+- **ip_protocol** (String) IP Protocol: `TCP`, `UDP` or `ICMP`.
 - **name** (String) Name of the security group.
 
 Optional:
