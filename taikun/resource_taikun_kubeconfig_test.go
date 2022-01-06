@@ -1,8 +1,6 @@
 package taikun
 
 import (
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/kube_config"
 	"github.com/itera-io/taikungoclient/models"
@@ -38,7 +36,7 @@ func init() {
 			}
 
 			for _, e := range kubeconfigDTOs {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 
 					body := models.DeleteKubeConfigCommand{
 						ID: e.ID,

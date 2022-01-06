@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -43,7 +42,7 @@ func init() {
 			}
 
 			for _, e := range backupCredentialsList {
-				if strings.HasPrefix(e.S3Name, testNamePrefix) {
+				if shouldSweep(e.S3Name) {
 					params := s3_credentials.NewS3CredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.S3Credentials.S3CredentialsDelete(params, apiClient)
 					if err != nil {
