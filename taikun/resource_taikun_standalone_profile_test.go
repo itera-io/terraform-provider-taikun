@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -42,7 +41,7 @@ func init() {
 			}
 
 			for _, e := range standaloneProfilesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					body := &models.DeleteStandAloneProfileCommand{ID: e.ID}
 					params := stand_alone_profile.NewStandAloneProfileDeleteParams().WithV(ApiVersion).WithBody(body)
 					_, err = apiClient.client.StandAloneProfile.StandAloneProfileDelete(params, apiClient)
