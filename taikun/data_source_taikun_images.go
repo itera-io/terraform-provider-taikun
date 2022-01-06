@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/models"
@@ -21,9 +22,10 @@ func dataSourceTaikunImages() *schema.Resource {
 				Optional:    true,
 			},
 			"aws_platform": {
-				Description: "AWS Platform (only valid with AWS Cloud Credential ID).",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:  "AWS Platform (only valid with AWS Cloud Credential ID).",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"windows", "linux", "ubuntu"}, false),
 			},
 			"azure_offer": {
 				Description: "Azure offer (only valid with Azure Cloud Credential ID).",
@@ -76,8 +78,6 @@ func dataSourceTaikunImagesRead(_ context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	//params := cloud_credentials.NewCloudCredentialsAllFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-
 	apiClient := meta.(*apiClient)
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
 	list, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
@@ -120,7 +120,7 @@ func dataSourceTaikunImagesRead(_ context.Context, data *schema.ResourceData, me
 			return diag.Errorf("One of the following attributes is missing: aws_owner, aws_platform")
 		}
 		params := images.NewImagesAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-		params.WithOwner(owner.(string)).WithPlatform(platform.(string))
+		params.WithOwner(owner.(string)).WithPlatform("*" + platform.(string) + "*")
 
 		for {
 			response, err := apiClient.client.Images.ImagesAwsImages(params, apiClient)
