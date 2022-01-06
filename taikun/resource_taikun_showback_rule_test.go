@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/itera-io/taikungoclient/client/showback"
@@ -46,7 +45,7 @@ func init() {
 			}
 
 			for _, e := range showbackRulesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := showback.NewShowbackDeleteRuleParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackRuleCommand{ID: e.ID})
 					_, err = apiClient.client.Showback.ShowbackDeleteRule(params, apiClient)
 					if err != nil {

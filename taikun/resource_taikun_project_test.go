@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -45,7 +44,7 @@ func init() {
 			}
 
 			for _, e := range projectList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 
 					readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(e.ID)
 					response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)

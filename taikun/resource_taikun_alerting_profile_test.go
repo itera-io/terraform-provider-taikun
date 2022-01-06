@@ -43,7 +43,7 @@ func init() {
 			}
 
 			for _, e := range alertingProfilesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					body := models.DeleteAlertingProfilesCommand{ID: e.ID}
 					params := alerting_profiles.NewAlertingProfilesDeleteParams().WithV(ApiVersion).WithBody(&body)
 					_, _, err = apiClient.client.AlertingProfiles.AlertingProfilesDelete(params, apiClient)
