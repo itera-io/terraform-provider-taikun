@@ -51,12 +51,6 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"lock": {
-			Description: "Indicates whether to lock the access profile.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
 		"last_modified": {
 			Description: "The time and date of last modification.",
 			Type:        schema.TypeString,
@@ -66,6 +60,12 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Description: "The last user to have modified the profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the access profile.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description:  "The name of the access profile.",
@@ -111,6 +111,11 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
+					"id": {
+						Description: "ID of the SSH user.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
 					"name": {
 						Description: "Name of the SSH user.",
 						Type:        schema.TypeString,
@@ -129,11 +134,6 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 						Type:         schema.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringIsNotEmpty,
-					},
-					"id": {
-						Description: "ID of the SSH user.",
-						Type:        schema.TypeString,
-						Computed:    true,
 					},
 				},
 			},

@@ -14,12 +14,6 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 		Description: "Retrieve a project's kubeconfigs.",
 		ReadContext: dataSourceTaikunKubeconfigsRead,
 		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Description:      "Project ID filter.",
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"kubeconfigs": {
 				Description: "List of retrieved kubeconfigs.",
 				Type:        schema.TypeList,
@@ -27,6 +21,12 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunKubeconfigSchema(),
 				},
+			},
+			"project_id": {
+				Description:      "Project ID filter.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

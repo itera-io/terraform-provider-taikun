@@ -67,12 +67,6 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"lock": {
-			Description: "Indicates whether to lock the profile.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
 		"last_modified": {
 			Description: "The time and date of last modification.",
 			Type:        schema.TypeString,
@@ -82,6 +76,12 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "The last user to have modified the profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the profile.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description:  "The alerting profile's name.",

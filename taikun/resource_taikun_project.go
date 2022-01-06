@@ -132,12 +132,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			),
 			ForceNew: true,
 		},
-		"policy_profile_id": {
-			Description:      "ID of the Policy profile. If unspecified, Gatekeeper is disabled.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			ValidateDiagFunc: stringIsInt,
-		},
 		"organization_id": {
 			Description:      "ID of the organization which owns the project.",
 			Type:             schema.TypeString,
@@ -145,6 +139,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Computed:         true,
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
+		},
+		"policy_profile_id": {
+			Description:      "ID of the Policy profile. If unspecified, Gatekeeper is disabled.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: stringIsInt,
 		},
 		"quota_cpu_units": {
 			Description:  "Maximum CPU units. Unlimited if unspecified.",

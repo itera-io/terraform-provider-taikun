@@ -61,11 +61,10 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"managers_can_change_subscription": {
-			Description: "Allow subscription to be changed by managers.",
+		"is_read_only": {
+			Description: "Whether the organization is in read-only mode.",
 			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
+			Computed:    true,
 		},
 		"lock": {
 			Description: "Indicates whether to lock the organization.",
@@ -73,10 +72,11 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
-		"is_read_only": {
-			Description: "Whether the organization is in read-only mode.",
+		"managers_can_change_subscription": {
+			Description: "Allow subscription to be changed by managers.",
 			Type:        schema.TypeBool,
-			Computed:    true,
+			Optional:    true,
+			Default:     true,
 		},
 		"name": {
 			Description: "Organization's name.",

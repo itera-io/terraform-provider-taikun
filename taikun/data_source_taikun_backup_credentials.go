@@ -15,12 +15,6 @@ func dataSourceTaikunBackupCredentials() *schema.Resource {
 		Description: "Retrieve all backup credentials.",
 		ReadContext: dataSourceTaikunBackupCredentialsRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"backup_credentials": {
 				Description: "List of retrieved backup credentials.",
 				Type:        schema.TypeList,
@@ -28,6 +22,12 @@ func dataSourceTaikunBackupCredentials() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: dataSourceTaikunBackupCredentialSchema(),
 				},
+			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
 			},
 		},
 	}

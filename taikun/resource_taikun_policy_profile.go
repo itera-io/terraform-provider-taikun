@@ -27,14 +27,14 @@ func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 				),
 			},
 		},
-		"forbid_node_port": {
-			Description: "Disallows all Services with type NodePort.",
+		"forbid_http_ingress": {
+			Description: "Requires Ingress resources to be HTTPS only.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
-		"forbid_http_ingress": {
-			Description: "Requires Ingress resources to be HTTPS only.",
+		"forbid_node_port": {
+			Description: "Disallows all Services with type NodePort.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,

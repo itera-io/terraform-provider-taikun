@@ -14,54 +14,18 @@ import (
 
 func resourceTaikunUserSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": {
-			Description: "The UUID of the user.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"user_name": {
-			Description: "The name of the user.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ValidateFunc: validation.All(
-				validation.StringLenBetween(3, 30),
-				validation.StringMatch(
-					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
-					"expected only alpha numeric characters or non alpha numeric (_-.)",
-				),
-			),
-		},
-		"organization_id": {
-			Description:      "The ID of the user's organization.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
-		},
-		"organization_name": {
-			Description: "The name of the user's organization.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"role": {
-			Description:  "The role of the user: `Manager` or `User`.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"User", "Manager"}, false),
-		},
-		"email": {
-			Description:      "The email of the user.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ValidateDiagFunc: stringIsEmail,
-		},
 		"display_name": {
 			Description:  "The user's display name.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			Default:      "",
 			ValidateFunc: validation.StringLenBetween(3, 64),
+		},
+		"email": {
+			Description:      "The email of the user.",
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: stringIsEmail,
 		},
 		"email_confirmed": {
 			Description: "Indicates whether the email of the user has been confirmed.",
@@ -71,6 +35,11 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 		"email_notification_enabled": {
 			Description: "Indicates whether the user has enabled notifications on their email.",
 			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"id": {
+			Description: "The UUID of the user.",
+			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"is_approved_by_partner": {
@@ -92,6 +61,37 @@ func resourceTaikunUserSchema() map[string]*schema.Schema {
 			Description: "Indicates whether the user is the Owner of their organization.",
 			Type:        schema.TypeBool,
 			Computed:    true,
+		},
+		"organization_id": {
+			Description:      "The ID of the user's organization.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: stringIsInt,
+		},
+		"organization_name": {
+			Description: "The name of the user's organization.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"role": {
+			Description:  "The role of the user: `Manager` or `User`.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"User", "Manager"}, false),
+		},
+		"user_name": {
+			Description: "The name of the user.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+					"expected only alpha numeric characters or non alpha numeric (_-.)",
+				),
+			),
 		},
 	}
 }

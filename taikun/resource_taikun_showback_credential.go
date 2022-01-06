@@ -12,35 +12,34 @@ import (
 
 func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"created_by": {
+			Description: "The creator of the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the showback credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the showback credential.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
 		"name": {
 			Description:  "The name of the showback credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"username": {
-			Description:  "The Prometheus username or other credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"password": {
-			Description:  "The Prometheus password or other credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"url": {
-			Description:  "URL of the source.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -59,26 +58,27 @@ func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"lock": {
-			Description: "Indicates whether to lock the showback credential.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
+		"password": {
+			Description:  "The Prometheus password or other credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"created_by": {
-			Description: "The creator of the showback credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"url": {
+			Description:  "URL of the source.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"last_modified": {
-			Description: "Time of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user who modified the showback credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"username": {
+			Description:  "The Prometheus username or other credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }
