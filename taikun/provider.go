@@ -78,6 +78,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_azure":     dataSourceTaikunCloudCredentialsAzure(),
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
 			"taikun_flavors":                     dataSourceTaikunFlavors(),
+			"taikun_images":                      dataSourceTaikunImages(),
 			"taikun_kubeconfig":                  dataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),
