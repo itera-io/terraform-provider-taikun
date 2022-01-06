@@ -71,9 +71,9 @@ func dataSourceTaikunImages() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunImagesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	cloudCredentialID, err := atoi32(data.Get("cloud_credential_id").(string))
+	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,9 +92,9 @@ func dataSourceTaikunImagesRead(_ context.Context, data *schema.ResourceData, me
 
 	switch {
 	case len(list.GetPayload().Azure) != 0:
-		offer, offerIsSet := data.GetOk("azure_offer")
-		publisher, publisherIsSet := data.GetOk("azure_publisher")
-		SKU, SKUIsSet := data.GetOk("azure_sku")
+		offer, offerIsSet := d.GetOk("azure_offer")
+		publisher, publisherIsSet := d.GetOk("azure_publisher")
+		SKU, SKUIsSet := d.GetOk("azure_sku")
 		if !SKUIsSet || !publisherIsSet || !offerIsSet {
 			return diag.Errorf("One of the following attributes is missing: azure_offer, azure_publisher, azure_sku")
 		}
@@ -114,8 +114,8 @@ func dataSourceTaikunImagesRead(_ context.Context, data *schema.ResourceData, me
 			params = params.WithOffset(&offset)
 		}
 	case len(list.GetPayload().Amazon) != 0:
-		owner, ownerIsSet := data.GetOk("aws_owner")
-		platform, platformIsSet := data.GetOk("aws_platform")
+		owner, ownerIsSet := d.GetOk("aws_owner")
+		platform, platformIsSet := d.GetOk("aws_platform")
 		if !ownerIsSet || !platformIsSet {
 			return diag.Errorf("One of the following attributes is missing: aws_owner, aws_platform")
 		}
@@ -151,11 +151,11 @@ func dataSourceTaikunImagesRead(_ context.Context, data *schema.ResourceData, me
 		}
 	}
 
-	if err := data.Set("images", imageList); err != nil {
+	if err := d.Set("images", imageList); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(cloudCredentialID))
+	d.SetId(i32toa(cloudCredentialID))
 	return nil
 }
 
