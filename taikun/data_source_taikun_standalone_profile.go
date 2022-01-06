@@ -16,7 +16,7 @@ func dataSourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 
 func dataSourceTaikunStandaloneProfile() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a Standalone profile by its ID.",
+		Description: "Get a standalone profile by its ID.",
 		ReadContext: dataSourceTaikunStandaloneProfileRead,
 		Schema:      dataSourceTaikunStandaloneProfileSchema(),
 	}

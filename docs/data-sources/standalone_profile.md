@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_standalone_profile Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get a Standalone profile by its ID.
+description: |-   Get a standalone profile by its ID.
 ---
 
 # taikun_standalone_profile (Data Source)
 
-Get a Standalone profile by its ID.
+Get a standalone profile by its ID.
 
 ~> **Role Requirement** To use the `taikun_standalone_profile` data source, you need a Manager or Partner account.
 

@@ -322,9 +322,9 @@ const (
 
 func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
 	switch strings.ToLower(protocol) {
-	case "icmp":
+	case "ICMP":
 		return 100
-	case "tcp":
+	case "TCP":
 		return 200
 	default: // udp
 		return 300

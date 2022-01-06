@@ -12,7 +12,7 @@ import (
 
 func dataSourceTaikunStandaloneProfiles() *schema.Resource {
 	return &schema.Resource{
-		Description: "Retrieve all Standalone profiles.",
+		Description: "Retrieve all standalone profiles.",
 		ReadContext: dataSourceTaikunStandaloneProfilesRead,
 		Schema: map[string]*schema.Schema{
 			"organization_id": {
@@ -22,7 +22,7 @@ func dataSourceTaikunStandaloneProfiles() *schema.Resource {
 				ValidateDiagFunc: stringIsInt,
 			},
 			"standalone_profiles": {
-				Description: "List of retrieved Standalone profiles.",
+				Description: "List of retrieved standalone profiles.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{

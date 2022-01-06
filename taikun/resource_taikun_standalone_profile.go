@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,10 +82,10 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 						Computed:    true,
 					},
 					"ip_protocol": {
-						Description:  "IP Protocol: `tcp`, `udp` or `icmp`.",
+						Description:  "IP Protocol: `TCP`, `UDP` or `ICMP`.",
 						Type:         schema.TypeString,
 						Required:     true,
-						ValidateFunc: validation.StringInSlice([]string{"tcp", "udp", "icmp"}, false),
+						ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, false),
 					},
 					"name": {
 						Description: "Name of the security group.",
@@ -322,7 +323,7 @@ func flattenTaikunStandaloneProfile(rawStandaloneProfile *models.StandAloneProfi
 			"id":          i32toa(rawSecurityGroup.ID),
 			"name":        rawSecurityGroup.Name,
 			"cidr":        rawSecurityGroup.RemoteIPPrefix,
-			"ip_protocol": rawSecurityGroup.Protocol,
+			"ip_protocol": strings.ToUpper(rawSecurityGroup.Protocol),
 		}
 		if rawSecurityGroup.PortMinRange != -1 {
 			securityGroups[i]["from_port"] = rawSecurityGroup.PortMinRange
