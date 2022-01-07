@@ -95,6 +95,21 @@ resource "taikun_project" "foo" {
     image = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 30
+    disk {
+      name = "mydisk"
+      size = 30
+    }
+    disk {
+      name = "mydisk2"
+      size = 30
+      volume_type = "ssd-2000iops"
+      lun_id = 10
+      device_name = "/dev/sdc"
+    }
+    tag {
+      key = "key"
+      value = "value"
+    }
   }
 }
 `
