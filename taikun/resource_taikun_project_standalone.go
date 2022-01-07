@@ -45,12 +45,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 							"Must be a valid device name",
 						),
 					},
-					"disk_size": {
-						Description:  "The disk size in GBs.",
-						Type:         schema.TypeInt,
-						Required:     true,
-						ValidateFunc: validation.IntAtLeast(0),
-					},
 					"lun_id": {
 						Description:  "LUN ID (only valid with Azure).",
 						Type:         schema.TypeInt,
@@ -68,6 +62,12 @@ func taikunVMSchema() map[string]*schema.Schema {
 								"expected only alpha numeric characters or non alpha numeric (_-.)",
 							),
 						),
+					},
+					"size": {
+						Description:  "The disk size in GBs.",
+						Type:         schema.TypeInt,
+						Required:     true,
+						ValidateFunc: validation.IntAtLeast(0),
 					},
 					"volume_type": {
 						Description: "Type of the volume (only valid with OpenStack).",
@@ -183,7 +183,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetVM(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
 
 	vms := d.Get("vm")
 
@@ -206,8 +206,8 @@ func resourceTaikunProjectSetVM(d *schema.ResourceData, apiClient *apiClient, pr
 			VolumeType:          vmMap["volume_type"].(string),
 		}
 
-		if tags, isTagsSet := d.GetOk("tag"); isTagsSet {
-			rawTags := tags.([]interface{})
+		if vmMap["tag"] != nil {
+			rawTags := vmMap["tag"].([]interface{})
 			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
 			for i, e := range rawTags {
 				rawTag := e.(map[string]interface{})
@@ -219,8 +219,8 @@ func resourceTaikunProjectSetVM(d *schema.ResourceData, apiClient *apiClient, pr
 			vmCreateBody.StandAloneMetaDatas = tagsList
 		}
 
-		if disks, isDisksSet := d.GetOk("disk"); isDisksSet {
-			rawDisks := disks.([]interface{})
+		if vmMap["disk"] != nil {
+			rawDisks := vmMap["disk"].(*schema.Set).List()
 			disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
 			for i, e := range rawDisks {
 				rawDisk := e.(map[string]interface{})
@@ -228,7 +228,7 @@ func resourceTaikunProjectSetVM(d *schema.ResourceData, apiClient *apiClient, pr
 					DeviceName: rawDisk["device_name"].(string),
 					LunID:      int32(rawDisk["lun_id"].(int)),
 					Name:       rawDisk["name"].(string),
-					Size:       int64(rawDisk["disk_size"].(int)),
+					Size:       int64(rawDisk["size"].(int)),
 					VolumeType: rawDisk["volume_type"].(string),
 				}
 			}
@@ -291,6 +291,29 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *apiClien
 		bindBody := models.BindImageToProjectCommand{ProjectID: id, Images: imagesToBindNames}
 		bindParams := images.NewImagesBindImagesToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
 		if _, err := apiClient.client.Images.ImagesBindImagesToProject(bindParams, apiClient); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *apiClient, projectID int32) error {
+	vmIds := make([]int32, 0)
+
+	for _, vm := range vmsToPurge {
+		vmMap := vm.(map[string]interface{})
+		vmId, _ := atoi32(vmMap["id"].(string))
+		vmIds = append(vmIds, vmId)
+	}
+
+	if len(vmIds) != 0 {
+		deleteServerBody := &models.DeleteStandAloneVMCommand{
+			ProjectID: projectID,
+			VMIds:     vmIds,
+		}
+		deleteVMParams := stand_alone.NewStandAloneDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+		_, err := apiClient.client.StandAlone.StandAloneDelete(deleteVMParams, apiClient)
+		if err != nil {
 			return err
 		}
 	}

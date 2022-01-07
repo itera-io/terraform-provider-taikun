@@ -437,18 +437,18 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if _, vmIsSet := d.GetOk("vm"); vmIsSet {
-		err = resourceTaikunProjectSetVM(d, apiClient, projectID)
+		err = resourceTaikunProjectSetVMs(d, apiClient, projectID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
-			return diag.FromErr(err)
-		}
+		//if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
+		//	return diag.FromErr(err)
+		//}
 
-		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
-			return diag.FromErr(err)
-		}
+		//if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+		//	return diag.FromErr(err)
+		//}
 	}
 
 	if d.Get("lock").(bool) {
@@ -739,6 +739,15 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
+	if vms := d.Get("vm").(*schema.Set).List(); len(vms) != 0 {
+		err = resourceTaikunProjectPurgeVMs(vms, apiClient, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
@@ -889,7 +898,6 @@ func flattenTaikunProject(
 			"access_ip":             vm.PublicIP,
 			"cloud_init":            vm.CloudInit,
 			"created_by":            vm.CreatedBy,
-			"disk_size":             vm.VolumeSize,
 			"flavor":                vm.TargetFlavor,
 			"id":                    i32toa(vm.ID),
 			"image":                 vm.ImageName,
@@ -900,6 +908,7 @@ func flattenTaikunProject(
 			"public_ip":             vm.PublicIPEnabled,
 			"standalone_profile_id": i32toa(vm.Profile.ID),
 			"status":                vm.Status,
+			"volume_size":           vm.VolumeSize,
 			"volume_type":           vm.VolumeType,
 		}
 
@@ -917,9 +926,9 @@ func flattenTaikunProject(
 			lunId, _ := atoi32(rawDisk.LunID)
 			disks[i] = map[string]interface{}{
 				"device_name": rawDisk.DeviceName,
-				"disk_size":   rawDisk.TargetSize,
 				"lun_id":      lunId,
 				"name":        rawDisk.Name,
+				"size":        rawDisk.TargetSize,
 				"volume_type": rawDisk.VolumeType,
 			}
 		}
