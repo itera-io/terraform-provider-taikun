@@ -3,11 +3,13 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/backup"
 	"github.com/itera-io/taikungoclient/client/flavors"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
@@ -15,6 +17,114 @@ import (
 	"github.com/itera-io/taikungoclient/client/servers"
 	"github.com/itera-io/taikungoclient/models"
 )
+
+func taikunServerKubeworkerSchema() map[string]*schema.Schema {
+	kubeworkerSchema := taikunServerSchemaWithKubernetesNodeLabels()
+	removeForceNewsFromSchema(kubeworkerSchema)
+	return kubeworkerSchema
+}
+
+func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
+	serverSchema := taikunServerBasicSchema()
+	serverSchema["kubernetes_node_label"] = &schema.Schema{
+		Description: "Attach Kubernetes node labels.",
+		Type:        schema.TypeSet,
+		Optional:    true,
+		ForceNew:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Description: "Kubernetes node label key.",
+					Type:        schema.TypeString,
+					Required:    true,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(1, 63),
+						validation.StringMatch(
+							regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+							"expected only alpha numeric characters or non alpha numeric (_-.)",
+						),
+					),
+				},
+				"value": {
+					Description: "Kubernetes node label value.",
+					Type:        schema.TypeString,
+					Required:    true,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(1, 63),
+						validation.StringMatch(
+							regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+							"expected only alpha numeric characters or non alpha numeric (_-.)",
+						),
+					),
+				},
+			},
+		},
+	}
+	return serverSchema
+}
+
+func taikunServerBasicSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"created_by": {
+			Description: "The creator of the server.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"disk_size": {
+			Description:  "The server's disk size in GBs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntAtLeast(30),
+			Default:      30,
+		},
+		"flavor": {
+			Description:  "The server's flavor.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"id": {
+			Description: "ID of the server.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"ip": {
+			Description: "IP of the server.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "The time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the server.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"name": {
+			Description: "Name of the server.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(1, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-]+$"),
+					"expected only alpha numeric characters or non alpha numeric (-)",
+				),
+			),
+		},
+		"status": {
+			Description: "Server status.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+	}
+}
 
 func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
 
