@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
+	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 	"github.com/itera-io/taikungoclient/client/users"
@@ -94,6 +95,18 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Project ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"images": {
+			Description: "List of images bound to the project.",
+			Type:        schema.TypeSet,
+			Optional:    true,
+			DefaultFunc: func() (interface{}, error) {
+				return []interface{}{}, nil
+			},
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 		},
 		"kubernetes_profile_id": {
 			Description:      "ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.",
@@ -498,6 +511,13 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
+	if _, imagesIsSet := d.GetOk("images"); imagesIsSet {
+		err := resourceTaikunProjectEditImages(d, apiClient, projectID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	_, bastionsIsSet := d.GetOk("server_bastion")
 
 	// Check if the project is not empty
@@ -557,6 +577,11 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
+		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.ProjectID, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
 		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
 		if err != nil {
@@ -570,7 +595,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		err = setResourceDataFromMap(d, flattenTaikunProject(projectDetailsDTO, response.Payload.Data, boundFlavorDTOs, quotaResponse.Payload.Data[0]))
+		err = setResourceDataFromMap(d, flattenTaikunProject(projectDetailsDTO, response.Payload.Data, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0]))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -626,38 +651,13 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 	if d.HasChange("flavors") {
-		oldFlavorData, newFlavorData := d.GetChange("flavors")
-		oldFlavors := oldFlavorData.(*schema.Set)
-		newFlavors := newFlavorData.(*schema.Set)
-		flavorsToUnbind := oldFlavors.Difference(newFlavors)
-		flavorsToBind := newFlavors.Difference(oldFlavors).List()
-		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(id, apiClient)
-		if err != nil {
+		if err := resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
-		if flavorsToUnbind.Len() != 0 {
-			var flavorBindingsToUndo []int32
-			for _, boundFlavorDTO := range boundFlavorDTOs {
-				if flavorsToUnbind.Contains(boundFlavorDTO.Name) {
-					flavorBindingsToUndo = append(flavorBindingsToUndo, boundFlavorDTO.ID)
-				}
-			}
-			unbindBody := models.UnbindFlavorFromProjectCommand{Ids: flavorBindingsToUndo}
-			unbindParams := flavors.NewFlavorsUnbindFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
-			if _, err := apiClient.client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-		if len(flavorsToBind) != 0 {
-			flavorsToBindNames := make([]string, len(flavorsToBind))
-			for i, flavorToBind := range flavorsToBind {
-				flavorsToBindNames[i] = flavorToBind.(string)
-			}
-			bindBody := models.BindFlavorToProjectCommand{ProjectID: id, Flavors: flavorsToBindNames}
-			bindParams := flavors.NewFlavorsBindToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
-			if _, err := apiClient.client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
-				return diag.FromErr(err)
-			}
+	}
+	if d.HasChange("images") {
+		if err := resourceTaikunProjectEditImages(d, apiClient, id); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
@@ -871,10 +871,15 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *apiClien
 	return nil
 }
 
-func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, serverListDTO []*models.ServerListDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
+func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, serverListDTO []*models.ServerListDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, boundImageDTOs []*models.BoundImagesForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
 		flavors[i] = boundFlavorDTO.Name
+	}
+
+	images := make([]string, len(boundImageDTOs))
+	for i, boundImageDTO := range boundImageDTOs {
+		images[i] = boundImageDTO.ImageID
 	}
 
 	projectMap := map[string]interface{}{
@@ -886,6 +891,7 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 		"monitoring":            projectDetailsDTO.IsMonitoringEnabled,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"flavors":               flavors,
+		"images":                images,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
 		"lock":                  projectDetailsDTO.IsLocked,
@@ -986,6 +992,24 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 		boundFlavorsParams = boundFlavorsParams.WithOffset(&boundFlavorDTOsCount)
 	}
 	return boundFlavorDTOs, nil
+}
+
+func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundImagesForProjectsListDto, error) {
+	var boundImageDTOs []*models.BoundImagesForProjectsListDto
+	boundImageParams := images.NewImagesGetSelectedImagesForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
+	for {
+		response, err := apiClient.client.Images.ImagesGetSelectedImagesForProject(boundImageParams, apiClient)
+		if err != nil {
+			return nil, err
+		}
+		boundImageDTOs = append(boundImageDTOs, response.Payload.Data...)
+		boundFlavorDTOsCount := int32(len(boundImageDTOs))
+		if boundFlavorDTOsCount == response.Payload.TotalCount {
+			break
+		}
+		boundImageParams = boundImageParams.WithOffset(&boundFlavorDTOsCount)
+	}
+	return boundImageDTOs, nil
 }
 
 func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMastersData interface{}, kubeWorkersData interface{}) []interface{} {
