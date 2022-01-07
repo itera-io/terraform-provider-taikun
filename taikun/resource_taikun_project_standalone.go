@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/images"
+	"github.com/itera-io/taikungoclient/client/stand_alone"
 	"github.com/itera-io/taikungoclient/models"
 )
 
@@ -75,13 +76,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 					},
 				},
 			},
-		},
-		"disk_size": {
-			Description:  "The VM's disk size in GBs.",
-			Type:         schema.TypeInt,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"flavor": {
 			Description:  "The VM's flavor.",
@@ -173,6 +167,13 @@ func taikunVMSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"volume_size": {
+			Description:  "The VM's volume size in GBs.",
+			Type:         schema.TypeInt,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
 		"volume_type": {
 			Description: "Volume type (only valid with OpenStack).",
 			Type:        schema.TypeString,
@@ -180,6 +181,83 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Default:     "",
 		},
 	}
+}
+
+func resourceTaikunProjectSetVM(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+
+	vms := d.Get("vm")
+
+	vmsList := vms.(*schema.Set).List()
+	for _, vm := range vmsList {
+		vmMap := vm.(map[string]interface{})
+
+		standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
+
+		vmCreateBody := &models.CreateStandAloneVMCommand{
+			CloudInit:           vmMap["cloud_init"].(string),
+			Count:               1,
+			FlavorName:          vmMap["flavor"].(string),
+			Image:               vmMap["image"].(string),
+			Name:                vmMap["name"].(string),
+			ProjectID:           projectID,
+			PublicIPEnabled:     vmMap["public_ip"].(bool),
+			StandAloneProfileID: standaloneProfileId,
+			VolumeSize:          int64(vmMap["volume_size"].(int)),
+			VolumeType:          vmMap["volume_type"].(string),
+		}
+
+		if tags, isTagsSet := d.GetOk("tag"); isTagsSet {
+			rawTags := tags.([]interface{})
+			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
+			for i, e := range rawTags {
+				rawTag := e.(map[string]interface{})
+				tagsList[i] = &models.StandAloneMetaDataDto{
+					Key:   rawTag["key"].(string),
+					Value: rawTag["value"].(string),
+				}
+			}
+			vmCreateBody.StandAloneMetaDatas = tagsList
+		}
+
+		if disks, isDisksSet := d.GetOk("disk"); isDisksSet {
+			rawDisks := disks.([]interface{})
+			disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
+			for i, e := range rawDisks {
+				rawDisk := e.(map[string]interface{})
+				disksList[i] = &models.StandAloneVMDiskDto{
+					DeviceName: rawDisk["device_name"].(string),
+					LunID:      int32(rawDisk["lun_id"].(int)),
+					Name:       rawDisk["name"].(string),
+					Size:       int64(rawDisk["disk_size"].(int)),
+					VolumeType: rawDisk["volume_type"].(string),
+				}
+			}
+			vmCreateBody.StandAloneVMDisks = disksList
+		}
+
+		vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
+		vmCreateResponse, err := apiClient.client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
+		if err != nil {
+			return err
+		}
+		vmMap["id"] = vmCreateResponse.Payload.ID
+	}
+	err := d.Set("vm", vmsList)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceTaikunProjectStandaloneCommit(apiClient *apiClient, projectID int32) error {
+	body := &models.CommitStandAloneVMCommand{ProjectID: projectID}
+	params := stand_alone.NewStandAloneCommitParams().WithV(ApiVersion).WithBody(body)
+	_, err := apiClient.client.StandAlone.StandAloneCommit(params, apiClient)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *apiClient, id int32) error {

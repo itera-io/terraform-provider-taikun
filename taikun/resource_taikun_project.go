@@ -420,16 +420,29 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	_, bastionsIsSet := d.GetOk("server_bastion")
-
 	// Check if the project is not empty
-	if bastionsIsSet {
+	if _, bastionsIsSet := d.GetOk("server_bastion"); bastionsIsSet {
 		err = resourceTaikunProjectSetServers(d, apiClient, projectID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		if err := resourceTaikunProjectCommit(apiClient, projectID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if _, vmIsSet := d.GetOk("vm"); vmIsSet {
+		err = resourceTaikunProjectSetVM(d, apiClient, projectID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
 			return diag.FromErr(err)
 		}
 
