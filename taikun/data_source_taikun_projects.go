@@ -67,6 +67,11 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return diag.FromErr(err)
 		}
 
+		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(projectEntityDTO.ID, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&response.Payload.Project.QuotaID)
 		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
 		if err != nil {
@@ -76,7 +81,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return nil
 		}
 
-		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, boundFlavorDTOs, quotaResponse.Payload.Data[0])
+		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
 	}
 	if err := d.Set("projects", projects); err != nil {
 		return diag.FromErr(err)
