@@ -34,7 +34,7 @@ func dataSourceTaikunProjects() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunProjectsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
