@@ -13,6 +13,7 @@ import (
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
+	"github.com/itera-io/taikungoclient/client/stand_alone"
 	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -233,113 +234,14 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 			RequiredWith: []string{"router_id_end_range", "router_id_start_range"},
 		},
-	}
-}
-
-func taikunServerKubeworkerSchema() map[string]*schema.Schema {
-	kubeworkerSchema := taikunServerSchemaWithKubernetesNodeLabels()
-	removeForceNewsFromSchema(kubeworkerSchema)
-	return kubeworkerSchema
-}
-
-func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
-	serverSchema := taikunServerBasicSchema()
-	serverSchema["kubernetes_node_label"] = &schema.Schema{
-		Description: "Attach Kubernetes node labels.",
-		Type:        schema.TypeSet,
-		Optional:    true,
-		ForceNew:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"key": {
-					Description: "Kubernetes node label key.",
-					Type:        schema.TypeString,
-					Required:    true,
-					ValidateFunc: validation.All(
-						validation.StringLenBetween(1, 63),
-						validation.StringMatch(
-							regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
-							"expected only alpha numeric characters or non alpha numeric (_-.)",
-						),
-					),
-				},
-				"value": {
-					Description: "Kubernetes node label value.",
-					Type:        schema.TypeString,
-					Required:    true,
-					ValidateFunc: validation.All(
-						validation.StringLenBetween(1, 63),
-						validation.StringMatch(
-							regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
-							"expected only alpha numeric characters or non alpha numeric (_-.)",
-						),
-					),
-				},
+		"vm": {
+			Description: "Virtual machines.",
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Set:         hashAttributes("name", "disk_size", "image"),
+			Elem: &schema.Resource{
+				Schema: taikunVMSchema(),
 			},
-		},
-	}
-	return serverSchema
-}
-
-func taikunServerBasicSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"created_by": {
-			Description: "The creator of the server.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"disk_size": {
-			Description:  "The server's disk size in GBs.",
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntAtLeast(30),
-			Default:      30,
-		},
-		"flavor": {
-			Description:  "The server's flavor.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"id": {
-			Description: "ID of the server.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"ip": {
-			Description: "IP of the server.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "The time and date of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user to have modified the server.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"name": {
-			Description: "Name of the server.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-			ValidateFunc: validation.All(
-				validation.StringLenBetween(1, 30),
-				validation.StringMatch(
-					regexp.MustCompile("^[a-zA-Z0-9-]+$"),
-					"expected only alpha numeric characters or non alpha numeric (-)",
-				),
-			),
-		},
-		"status": {
-			Description: "Server status.",
-			Type:        schema.TypeString,
-			Computed:    true,
 		},
 	}
 }
@@ -570,7 +472,19 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
+		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(id32)
+		responseVM, err := apiClient.client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		if err != nil {
+			if withRetries {
+				d.SetId(id)
+				return diag.Errorf(notFoundAfterCreateOrUpdateError)
+			}
+			return nil
+		}
+
 		projectDetailsDTO := response.Payload.Project
+		serverList := response.Payload.Data
+		vmList := responseVM.Payload.Data
 
 		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.ProjectID, apiClient)
 		if err != nil {
@@ -595,7 +509,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		err = setResourceDataFromMap(d, flattenTaikunProject(projectDetailsDTO, response.Payload.Data, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0]))
+		err = setResourceDataFromMap(d, flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0]))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -871,7 +785,15 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *apiClien
 	return nil
 }
 
-func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto, serverListDTO []*models.ServerListDto, boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto, boundImageDTOs []*models.BoundImagesForProjectsListDto, projectQuotaDTO *models.ProjectQuotaListDto) map[string]interface{} {
+func flattenTaikunProject(
+	projectDetailsDTO *models.ProjectDetailsForServersDto,
+	serverListDTO []*models.ServerListDto,
+	vmListDTO []*models.StandaloneVmsListForDetailsDto,
+	boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto,
+	boundImageDTOs []*models.BoundImagesForProjectsListDto,
+	projectQuotaDTO *models.ProjectQuotaListDto,
+) map[string]interface{} {
+
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
 		flavors[i] = boundFlavorDTO.Name
@@ -947,6 +869,52 @@ func flattenTaikunProject(projectDetailsDTO *models.ProjectDetailsForServersDto,
 	projectMap["server_bastion"] = bastions
 	projectMap["server_kubemaster"] = kubeMasters
 	projectMap["server_kubeworker"] = kubeWorkers
+
+	vms := make([]map[string]interface{}, 0)
+	for _, vm := range vmListDTO {
+		vmMap := map[string]interface{}{
+			"access_ip":             vm.PublicIP,
+			"cloud_init":            vm.CloudInit,
+			"created_by":            vm.CreatedBy,
+			"disk_size":             vm.VolumeSize,
+			"flavor":                vm.TargetFlavor,
+			"id":                    i32toa(vm.ID),
+			"image":                 vm.ImageName,
+			"ip":                    vm.IPAddress,
+			"last_modified":         vm.LastModified,
+			"last_modified_by":      vm.LastModifiedBy,
+			"name":                  vm.Name,
+			"public_ip":             vm.PublicIPEnabled,
+			"standalone_profile_id": i32toa(vm.Profile.ID),
+			"status":                vm.Status,
+			"volume_type":           vm.VolumeType,
+		}
+
+		tags := make([]map[string]interface{}, len(vm.StandAloneMetaDatas))
+		for i, rawTag := range vm.StandAloneMetaDatas {
+			tags[i] = map[string]interface{}{
+				"key":   rawTag.Key,
+				"value": rawTag.Value,
+			}
+		}
+		vmMap["tag"] = tags
+
+		disks := make([]map[string]interface{}, len(vm.Disks))
+		for i, rawDisk := range vm.Disks {
+			lunId, _ := atoi32(rawDisk.LunID)
+			disks[i] = map[string]interface{}{
+				"device_name": rawDisk.DeviceName,
+				"disk_size":   rawDisk.TargetSize,
+				"lun_id":      lunId,
+				"name":        rawDisk.Name,
+				"volume_type": rawDisk.VolumeType,
+			}
+		}
+		vmMap["disk"] = disks
+
+		vms = append(vms, vmMap)
+	}
+	projectMap["vm"] = vms
 
 	var nullID int32
 	if projectDetailsDTO.AlertingProfileID != nullID {

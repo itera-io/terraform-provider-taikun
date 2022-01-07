@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/itera-io/taikungoclient/client/project_quotas"
+	"github.com/itera-io/taikungoclient/client/stand_alone"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -62,6 +63,12 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return diag.FromErr(err)
 		}
 
+		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(projectEntityDTO.ID)
+		responseVM, err := apiClient.client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectEntityDTO.ID, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
@@ -81,7 +88,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return nil
 		}
 
-		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
+		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, responseVM.Payload.Data, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
 	}
 	if err := d.Set("projects", projects); err != nil {
 		return diag.FromErr(err)
