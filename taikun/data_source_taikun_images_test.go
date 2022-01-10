@@ -52,9 +52,9 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
-  azure_publisher = "GitHub"
-  azure_offer = "GitHub-Enterprise"
-  azure_sku = "GitHub-Enterprise"
+  azure_publisher = "Canonical"
+  azure_offer = "0001-com-ubuntu-server-hirsute"
+  azure_sku = "21_04"
 }
 `
 
