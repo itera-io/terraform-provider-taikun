@@ -223,8 +223,10 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 
 	for _, server := range serversToPurge {
 		serverMap := server.(map[string]interface{})
-		serverId, _ := atoi32(serverMap["id"].(string))
-		serverIds = append(serverIds, serverId)
+		if serverIdStr, serverIdSet := serverMap["id"]; serverIdSet {
+			serverId, _ := atoi32(serverIdStr.(string))
+			serverIds = append(serverIds, serverId)
+		}
 	}
 
 	if len(serverIds) != 0 {
