@@ -38,7 +38,7 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 		},
 		"label": {
 			Description: "Labels linked to this showback rule.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -175,7 +175,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 		body.ShowbackCredentialID = &showbackCredentialId
 	}
 
-	rawLabelsList := d.Get("label").([]interface{})
+	rawLabelsList := d.Get("label").(*schema.Set).List()
 	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
@@ -254,7 +254,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
 	}
 
-	rawLabelsList := d.Get("label").([]interface{})
+	rawLabelsList := d.Get("label").(*schema.Set).List()
 	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
