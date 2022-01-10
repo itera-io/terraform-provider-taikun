@@ -32,7 +32,7 @@ Read-Only:
 - **billing_credential_id** (String)
 - **created_by** (String)
 - **id** (String)
-- **label** (List of Object) (see [below for nested schema](#nestedobjatt--billing_rules--label))
+- **label** (Set of Object) (see [below for nested schema](#nestedobjatt--billing_rules--label))
 - **last_modified** (String)
 - **last_modified_by** (String)
 - **metric_name** (String)

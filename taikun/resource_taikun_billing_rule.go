@@ -30,8 +30,9 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 		},
 		"label": {
 			Description: "Labels linked to the billing rule.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Required:    true,
+			Set:         hashAttributes("key", "value"),
 			MinItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -221,9 +222,12 @@ func resourceTaikunBillingRuleDelete(_ context.Context, d *schema.ResourceData, 
 }
 
 func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []*models.PrometheusLabelListDto {
-	labels := d.Get("label").([]interface{})
-	labelsToAdd := make([]*models.PrometheusLabelListDto, len(labels))
-	for i, labelData := range labels {
+	oldLabelsData, newLabelsData := d.GetChange("label")
+	oldLabels := oldLabelsData.(*schema.Set)
+	newLabels := newLabelsData.(*schema.Set)
+	toAdd := newLabels.Difference(oldLabels).List()
+	labelsToAdd := make([]*models.PrometheusLabelListDto, len(toAdd))
+	for i, labelData := range toAdd {
 		label := labelData.(map[string]interface{})
 		labelsToAdd[i] = &models.PrometheusLabelListDto{
 			Label: label["key"].(string),
@@ -234,10 +238,12 @@ func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []*models.Prom
 }
 
 func resourceTaikunBillingRuleLabelsToDelete(d *schema.ResourceData) []*models.PrometheusLabelDeleteDto {
-	oldLabelsData, _ := d.GetChange("label")
-	oldLabels := oldLabelsData.([]interface{})
-	labelsToDelete := make([]*models.PrometheusLabelDeleteDto, len(oldLabels))
-	for i, oldLabelData := range oldLabels {
+	oldLabelsData, newLabelsData := d.GetChange("label")
+	oldLabels := oldLabelsData.(*schema.Set)
+	newLabels := newLabelsData.(*schema.Set)
+	toDelete := oldLabels.Difference(newLabels).List()
+	labelsToDelete := make([]*models.PrometheusLabelDeleteDto, len(toDelete))
+	for i, oldLabelData := range toDelete {
 		oldLabel := oldLabelData.(map[string]interface{})
 		oldLabelID, _ := atoi32(oldLabel["id"].(string))
 		labelsToDelete[i] = &models.PrometheusLabelDeleteDto{
