@@ -337,7 +337,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 	projectName := shortRandomTestName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
 		Steps: []resource.TestStep{
