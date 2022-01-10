@@ -22,7 +22,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "",
-			ForceNew:    true,
 		},
 		"created_by": {
 			Description: "The creator of the VM.",
@@ -118,7 +117,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Description:  "Name of the VM.",
 			Type:         schema.TypeString,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(1, 52),
 		},
 		"public_ip": {
@@ -131,7 +129,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Description:      "Standalone profile ID.",
 			Type:             schema.TypeString,
 			Required:         true,
-			ForceNew:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"status": {
@@ -176,7 +173,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Description:  "The VM's volume size in GBs.",
 			Type:         schema.TypeInt,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"volume_type": {
