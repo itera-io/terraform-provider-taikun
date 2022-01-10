@@ -238,7 +238,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Virtual machines.",
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Set:         hashAttributes("name", "disk_size", "image"),
+			Set:         hashAttributes("image_id", "name", "volume_size"),
 			Elem: &schema.Resource{
 				Schema: taikunVMSchema(),
 			},
@@ -900,7 +900,8 @@ func flattenTaikunProject(
 			"created_by":            vm.CreatedBy,
 			"flavor":                vm.TargetFlavor,
 			"id":                    i32toa(vm.ID),
-			"image":                 vm.ImageName,
+			"image_id":              vm.ImageID,
+			"image_name":            vm.ImageName,
 			"ip":                    vm.IPAddress,
 			"last_modified":         vm.LastModified,
 			"last_modified_by":      vm.LastModifiedBy,
