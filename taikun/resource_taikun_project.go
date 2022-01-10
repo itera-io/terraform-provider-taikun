@@ -238,7 +238,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Virtual machines.",
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Set:         hashAttributes("image_id", "name", "volume_size"),
+			Set:         hashAttributes("cloud_init", "disk", "flavor", "image_id", "name", "public_ip", "standalone_profile_id", "tag", "volume_size", "volume_type"),
 			Elem: &schema.Resource{
 				Schema: taikunVMSchema(),
 			},
@@ -613,6 +613,10 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				return diag.FromErr(err)
 			}
 
+			if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
+				return diag.FromErr(err)
+			}
+
 		} else if newSet.Len() == 0 {
 			// Purge
 			oldKubeMasters, _ := d.GetChange("server_kubemaster")
@@ -620,6 +624,9 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			serversToPurge := resourceTaikunProjectFlattenServersData(oldBastions, oldKubeMasters, oldKubeWorkers)
 			err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
 			if err != nil {
+				return diag.FromErr(err)
+			}
+			if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
 				return diag.FromErr(err)
 			}
 			if err := resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
@@ -696,12 +703,27 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
 					return diag.FromErr(err)
 				}
+
+				if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	}
 
-	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
-		return diag.FromErr(err)
+	if d.HasChange("vm") {
+		err = resourceTaikunProjectUpdateVMs(d, apiClient, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		//if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
+		//	return diag.FromErr(err)
+		//}
+
+		//if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+		//	return diag.FromErr(err)
+		//}
 	}
 
 	if d.Get("lock").(bool) {

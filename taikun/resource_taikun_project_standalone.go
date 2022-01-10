@@ -251,6 +251,103 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 	return nil
 }
 
+func resourceTaikunProjectUpdateVMs(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+
+	oldVms, newVms := d.GetChange("vm")
+	oldVmsSet := oldVms.(*schema.Set)
+	newVmsSet := newVms.(*schema.Set)
+
+	toDelete := oldVmsSet.Difference(newVmsSet).List()
+	toAdd := newVmsSet.Difference(oldVmsSet).List()
+
+	vmIds := make([]int32, 0)
+
+	for _, vm := range toDelete {
+		vmMap := vm.(map[string]interface{})
+		if vmIdStr, vmIdSet := vmMap["id"]; vmIdSet {
+			vmId, _ := atoi32(vmIdStr.(string))
+			vmIds = append(vmIds, vmId)
+		}
+	}
+
+	if len(vmIds) != 0 {
+		deleteServerBody := &models.DeleteStandAloneVMCommand{
+			ProjectID: projectID,
+			VMIds:     vmIds,
+		}
+		deleteVMParams := stand_alone.NewStandAloneDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
+		_, err := apiClient.client.StandAlone.StandAloneDelete(deleteVMParams, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+
+	vmsList := oldVmsSet.Intersection(newVmsSet).List()
+
+	for _, vm := range toAdd {
+		vmMap := vm.(map[string]interface{})
+
+		standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
+
+		vmCreateBody := &models.CreateStandAloneVMCommand{
+			CloudInit:           vmMap["cloud_init"].(string),
+			Count:               1,
+			FlavorName:          vmMap["flavor"].(string),
+			Image:               vmMap["image_id"].(string),
+			Name:                vmMap["name"].(string),
+			ProjectID:           projectID,
+			PublicIPEnabled:     vmMap["public_ip"].(bool),
+			StandAloneProfileID: standaloneProfileId,
+			VolumeSize:          int64(vmMap["volume_size"].(int)),
+			VolumeType:          vmMap["volume_type"].(string),
+		}
+
+		if vmMap["tag"] != nil {
+			rawTags := vmMap["tag"].([]interface{})
+			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
+			for i, e := range rawTags {
+				rawTag := e.(map[string]interface{})
+				tagsList[i] = &models.StandAloneMetaDataDto{
+					Key:   rawTag["key"].(string),
+					Value: rawTag["value"].(string),
+				}
+			}
+			vmCreateBody.StandAloneMetaDatas = tagsList
+		}
+
+		if vmMap["disk"] != nil {
+			rawDisks := vmMap["disk"].(*schema.Set).List()
+			disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
+			for i, e := range rawDisks {
+				rawDisk := e.(map[string]interface{})
+				disksList[i] = &models.StandAloneVMDiskDto{
+					DeviceName: rawDisk["device_name"].(string),
+					LunID:      int32(rawDisk["lun_id"].(int)),
+					Name:       rawDisk["name"].(string),
+					Size:       int64(rawDisk["size"].(int)),
+					VolumeType: rawDisk["volume_type"].(string),
+				}
+			}
+			vmCreateBody.StandAloneVMDisks = disksList
+		}
+
+		vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
+		vmCreateResponse, err := apiClient.client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
+		if err != nil {
+			return err
+		}
+		vmMap["id"] = vmCreateResponse.Payload.ID
+
+		vmsList = append(vmsList, vmMap)
+	}
+	err := d.Set("vm", vmsList)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func resourceTaikunProjectStandaloneCommit(apiClient *apiClient, projectID int32) error {
 	body := &models.CommitStandAloneVMCommand{ProjectID: projectID}
 	params := stand_alone.NewStandAloneCommitParams().WithV(ApiVersion).WithBody(body)
