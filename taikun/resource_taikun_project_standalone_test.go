@@ -92,7 +92,7 @@ resource "taikun_project" "foo" {
   vm {
     name = "my-vm"
     flavor = local.flavors[0]
-    image = local.images[0]
+    image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 30
     disk {

@@ -88,11 +88,16 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"image": {
-			Description:  "The VM's image.",
+		"image_id": {
+			Description:  "The VM's image id.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"image_name": {
+			Description: "The VM's image name.",
+			Type:        schema.TypeString,
+			Computed:    true,
 		},
 		"ip": {
 			Description: "IP of the VM.",
@@ -197,7 +202,7 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 			CloudInit:           vmMap["cloud_init"].(string),
 			Count:               1,
 			FlavorName:          vmMap["flavor"].(string),
-			Image:               vmMap["image"].(string),
+			Image:               vmMap["image_id"].(string),
 			Name:                vmMap["name"].(string),
 			ProjectID:           projectID,
 			PublicIPEnabled:     vmMap["public_ip"].(bool),
