@@ -442,13 +442,13 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 
-		//if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
-		//	return diag.FromErr(err)
-		//}
+		if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
+			return diag.FromErr(err)
+		}
 
-		//if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
-		//	return diag.FromErr(err)
-		//}
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.Get("lock").(bool) {
@@ -717,13 +717,13 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 
-		//if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
-		//	return diag.FromErr(err)
-		//}
+		if err := resourceTaikunProjectStandaloneCommit(apiClient, id); err != nil {
+			return diag.FromErr(err)
+		}
 
-		//if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
-		//	return diag.FromErr(err)
-		//}
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.Get("lock").(bool) {
