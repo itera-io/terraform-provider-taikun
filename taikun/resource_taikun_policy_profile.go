@@ -16,7 +16,7 @@ func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"allowed_repos": {
 			Description: "Requires container images to begin with a string from the specified list.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Computed:    true,
 			Elem: &schema.Schema{
@@ -41,7 +41,7 @@ func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 		},
 		"forbidden_tags": {
 			Description: "Container images must have an image tag different from the ones in the list.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Computed:    true,
 			Elem: &schema.Schema{
@@ -62,7 +62,7 @@ func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
 		},
 		"ingress_whitelist": {
 			Description: "List of allowed Ingress rule hosts.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Computed:    true,
 			Elem: &schema.Schema{
@@ -146,11 +146,11 @@ func resourceTaikunPolicyProfileCreate(ctx context.Context, d *schema.ResourceDa
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateOpaProfileCommand{
-		AllowedRepo:           resourceGetStringList(d.Get("allowed_repos")),
+		AllowedRepo:           resourceGetStringList(d.Get("allowed_repos").(*schema.Set).List()),
 		ForbidHTTPIngress:     d.Get("forbid_http_ingress").(bool),
 		ForbidNodePort:        d.Get("forbid_node_port").(bool),
-		ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags")),
-		IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist")),
+		ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()),
+		IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()),
 		Name:                  d.Get("name").(string),
 		RequireProbe:          d.Get("require_probe").(bool),
 		UniqueIngresses:       d.Get("unique_ingress").(bool),
@@ -247,11 +247,11 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	if d.HasChangeExcept("lock") {
 
 		body := &models.OpaProfileUpdateCommand{
-			AllowedRepo:           resourceGetStringList(d.Get("allowed_repos")),
+			AllowedRepo:           resourceGetStringList(d.Get("allowed_repos").(*schema.Set).List()),
 			ForbidHTTPIngress:     d.Get("forbid_http_ingress").(bool),
 			ForbidNodePort:        d.Get("forbid_node_port").(bool),
-			ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags")),
-			IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist")),
+			ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()),
+			IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()),
 			Name:                  d.Get("name").(string),
 			RequireProbe:          d.Get("require_probe").(bool),
 			UniqueIngresses:       d.Get("unique_ingress").(bool),
