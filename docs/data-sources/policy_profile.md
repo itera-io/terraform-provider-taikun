@@ -27,11 +27,11 @@ data "taikun_policy_profile" "foo" {
 
 ### Read-Only
 
-- **allowed_repos** (List of String) Requires container images to begin with a string from the specified list.
+- **allowed_repos** (Set of String) Requires container images to begin with a string from the specified list.
 - **forbid_http_ingress** (Boolean) Requires Ingress resources to be HTTPS only.
 - **forbid_node_port** (Boolean) Disallows all Services with type NodePort.
-- **forbidden_tags** (List of String) Container images must have an image tag different from the ones in the list.
-- **ingress_whitelist** (List of String) List of allowed Ingress rule hosts.
+- **forbidden_tags** (Set of String) Container images must have an image tag different from the ones in the list.
+- **ingress_whitelist** (Set of String) List of allowed Ingress rule hosts.
 - **is_default** (Boolean) Indicates whether the Policy Profile is the default one.
 - **lock** (Boolean) Indicates whether to lock the Policy profile.
 - **name** (String) The name of the Policy profile.
