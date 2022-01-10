@@ -44,6 +44,7 @@ Read-Only:
 - **expiration_date** (String)
 - **flavors** (Set of String)
 - **id** (String)
+- **images** (Set of String)
 - **kubernetes_profile_id** (String)
 - **lock** (Boolean)
 - **monitoring** (Boolean)
@@ -57,6 +58,7 @@ Read-Only:
 - **server_bastion** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_bastion))
 - **server_kubemaster** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster))
 - **server_kubeworker** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker))
+- **vm** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--vm))
 
 <a id="nestedobjatt--projects--server_bastion"></a>
 ### Nested Schema for `projects.server_bastion`
@@ -118,6 +120,52 @@ Read-Only:
 
 <a id="nestedobjatt--projects--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `projects.server_kubeworker.kubernetes_node_label`
+
+Read-Only:
+
+- **key** (String)
+- **value** (String)
+
+
+
+<a id="nestedobjatt--projects--vm"></a>
+### Nested Schema for `projects.vm`
+
+Read-Only:
+
+- **access_ip** (String)
+- **cloud_init** (String)
+- **created_by** (String)
+- **disk** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--vm--disk))
+- **flavor** (String)
+- **id** (String)
+- **image_id** (String)
+- **image_name** (String)
+- **ip** (String)
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **public_ip** (Boolean)
+- **standalone_profile_id** (String)
+- **status** (String)
+- **tag** (List of Object) (see [below for nested schema](#nestedobjatt--projects--vm--tag))
+- **volume_size** (Number)
+- **volume_type** (String)
+
+<a id="nestedobjatt--projects--vm--disk"></a>
+### Nested Schema for `projects.vm.disk`
+
+Read-Only:
+
+- **device_name** (String)
+- **lun_id** (Number)
+- **name** (String)
+- **size** (Number)
+- **volume_type** (String)
+
+
+<a id="nestedobjatt--projects--vm--tag"></a>
+### Nested Schema for `projects.vm.tag`
 
 Read-Only:
 
