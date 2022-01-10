@@ -13,12 +13,12 @@ import (
 func taikunVMSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"access_ip": {
-			Description: "The public IP.",
+			Description: "Access IP of the VM.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"cloud_init": {
-			Description: "Cloud init",
+			Description: "Cloud init.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "",
@@ -36,7 +36,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"device_name": {
-						Description: "Name of the device (Only valid with AWS).",
+						Description: "Name of the device (only valid with AWS).",
 						Type:        schema.TypeString,
 						Optional:    true,
 						ValidateFunc: validation.StringMatch(
@@ -120,13 +120,13 @@ func taikunVMSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringLenBetween(1, 52),
 		},
 		"public_ip": {
-			Description: "Whether a public IP will be available",
+			Description: "Whether a public IP will be available.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"standalone_profile_id": {
-			Description:      "Standalone profile ID.",
+			Description:      "Standalone profile ID bound to the VM.",
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: stringIsInt,
