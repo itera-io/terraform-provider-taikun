@@ -41,7 +41,7 @@ resource "taikun_billing_rule" "foo" {
 ### Required
 
 - **billing_credential_id** (String) ID of the billing credential.
-- **label** (Block List, Min: 1) Labels linked to the billing rule. (see [below for nested schema](#nestedblock--label))
+- **label** (Block Set, Min: 1) Labels linked to the billing rule. (see [below for nested schema](#nestedblock--label))
 - **metric_name** (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
 - **name** (String) The name of the billing rule.
 - **price** (Number) The price in CZK per selected unit.

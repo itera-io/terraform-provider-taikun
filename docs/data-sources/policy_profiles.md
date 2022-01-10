@@ -36,12 +36,12 @@ data "taikun_policy_profiles" "foo" {
 
 Read-Only:
 
-- **allowed_repos** (List of String)
+- **allowed_repos** (Set of String)
 - **forbid_http_ingress** (Boolean)
 - **forbid_node_port** (Boolean)
-- **forbidden_tags** (List of String)
+- **forbidden_tags** (Set of String)
 - **id** (String)
-- **ingress_whitelist** (List of String)
+- **ingress_whitelist** (Set of String)
 - **is_default** (Boolean)
 - **lock** (Boolean)
 - **name** (String)
