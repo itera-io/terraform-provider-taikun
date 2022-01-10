@@ -238,7 +238,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description: "Virtual machines.",
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Set:         hashAttributes("cloud_init", "disk", "flavor", "image_id", "name", "public_ip", "standalone_profile_id", "tag", "volume_size", "volume_type"),
 			Elem: &schema.Resource{
 				Schema: taikunVMSchema(),
 			},
@@ -422,8 +421,8 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 	// Check if the project is not empty
 	if _, bastionsIsSet := d.GetOk("server_bastion"); bastionsIsSet {
-		err = resourceTaikunProjectSetServers(d, apiClient, projectID)
-		if err != nil {
+
+		if err := resourceTaikunProjectSetServers(d, apiClient, projectID); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -437,8 +436,8 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if _, vmIsSet := d.GetOk("vm"); vmIsSet {
-		err = resourceTaikunProjectSetVMs(d, apiClient, projectID)
-		if err != nil {
+
+		if err := resourceTaikunProjectSetVMs(d, apiClient, projectID); err != nil {
 			return diag.FromErr(err)
 		}
 
