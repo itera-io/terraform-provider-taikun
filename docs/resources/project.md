@@ -150,7 +150,7 @@ Required:
 Optional:
 
 - **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
-- **kubernetes_node_label** (Block List) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
+- **kubernetes_node_label** (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
 
 Read-Only:
 
@@ -182,7 +182,7 @@ Required:
 Optional:
 
 - **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
-- **kubernetes_node_label** (Block List) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+- **kubernetes_node_label** (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
 
 Read-Only:
 

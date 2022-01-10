@@ -237,7 +237,7 @@ func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
 	serverSchema := taikunServerBasicSchema()
 	serverSchema["kubernetes_node_label"] = &schema.Schema{
 		Description: "Attach Kubernetes node labels.",
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Optional:    true,
 		ForceNew:    true,
 		Elem: &schema.Resource{
@@ -1317,7 +1317,7 @@ func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []
 	if !labelsAreSet {
 		return []*models.KubernetesNodeLabelsDto{}
 	}
-	labelsList := labels.([]interface{})
+	labelsList := labels.(*schema.Set).List()
 	labelsToAdd := make([]*models.KubernetesNodeLabelsDto, len(labelsList))
 	for i, labelData := range labelsList {
 		label := labelData.(map[string]interface{})
