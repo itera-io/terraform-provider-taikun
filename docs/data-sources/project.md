@@ -138,7 +138,7 @@ Read-Only:
 - **public_ip** (Boolean)
 - **standalone_profile_id** (String)
 - **status** (String)
-- **tag** (List of Object) (see [below for nested schema](#nestedobjatt--vm--tag))
+- **tag** (Set of Object) (see [below for nested schema](#nestedobjatt--vm--tag))
 - **volume_size** (Number)
 - **volume_type** (String)
 
