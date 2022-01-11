@@ -192,56 +192,11 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 	for _, vm := range vmsList {
 		vmMap := vm.(map[string]interface{})
 
-		standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
-
-		vmCreateBody := &models.CreateStandAloneVMCommand{
-			CloudInit:           vmMap["cloud_init"].(string),
-			Count:               1,
-			FlavorName:          vmMap["flavor"].(string),
-			Image:               vmMap["image_id"].(string),
-			Name:                vmMap["name"].(string),
-			ProjectID:           projectID,
-			PublicIPEnabled:     vmMap["public_ip"].(bool),
-			StandAloneProfileID: standaloneProfileId,
-			VolumeSize:          int64(vmMap["volume_size"].(int)),
-			VolumeType:          vmMap["volume_type"].(string),
-		}
-
-		if vmMap["tag"] != nil {
-			rawTags := vmMap["tag"].(*schema.Set).List()
-			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
-			for i, e := range rawTags {
-				rawTag := e.(map[string]interface{})
-				tagsList[i] = &models.StandAloneMetaDataDto{
-					Key:   rawTag["key"].(string),
-					Value: rawTag["value"].(string),
-				}
-			}
-			vmCreateBody.StandAloneMetaDatas = tagsList
-		}
-
-		if vmMap["disk"] != nil {
-			rawDisks := vmMap["disk"].(*schema.Set).List()
-			disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
-			for i, e := range rawDisks {
-				rawDisk := e.(map[string]interface{})
-				disksList[i] = &models.StandAloneVMDiskDto{
-					DeviceName: rawDisk["device_name"].(string),
-					LunID:      int32(rawDisk["lun_id"].(int)),
-					Name:       rawDisk["name"].(string),
-					Size:       int64(rawDisk["size"].(int)),
-					VolumeType: rawDisk["volume_type"].(string),
-				}
-			}
-			vmCreateBody.StandAloneVMDisks = disksList
-		}
-
-		vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
-		vmCreateResponse, err := apiClient.client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
+		vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
 		if err != nil {
 			return err
 		}
-		vmMap["id"] = vmCreateResponse.Payload.ID
+		vmMap["id"] = vmId
 	}
 	err := d.Set("vm", vmsList)
 	if err != nil {
@@ -287,56 +242,11 @@ func resourceTaikunProjectUpdateVMs(d *schema.ResourceData, apiClient *apiClient
 	for _, vm := range toAdd {
 		vmMap := vm.(map[string]interface{})
 
-		standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
-
-		vmCreateBody := &models.CreateStandAloneVMCommand{
-			CloudInit:           vmMap["cloud_init"].(string),
-			Count:               1,
-			FlavorName:          vmMap["flavor"].(string),
-			Image:               vmMap["image_id"].(string),
-			Name:                vmMap["name"].(string),
-			ProjectID:           projectID,
-			PublicIPEnabled:     vmMap["public_ip"].(bool),
-			StandAloneProfileID: standaloneProfileId,
-			VolumeSize:          int64(vmMap["volume_size"].(int)),
-			VolumeType:          vmMap["volume_type"].(string),
-		}
-
-		if vmMap["tag"] != nil {
-			rawTags := vmMap["tag"].(*schema.Set).List()
-			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
-			for i, e := range rawTags {
-				rawTag := e.(map[string]interface{})
-				tagsList[i] = &models.StandAloneMetaDataDto{
-					Key:   rawTag["key"].(string),
-					Value: rawTag["value"].(string),
-				}
-			}
-			vmCreateBody.StandAloneMetaDatas = tagsList
-		}
-
-		if vmMap["disk"] != nil {
-			rawDisks := vmMap["disk"].(*schema.Set).List()
-			disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
-			for i, e := range rawDisks {
-				rawDisk := e.(map[string]interface{})
-				disksList[i] = &models.StandAloneVMDiskDto{
-					DeviceName: rawDisk["device_name"].(string),
-					LunID:      int32(rawDisk["lun_id"].(int)),
-					Name:       rawDisk["name"].(string),
-					Size:       int64(rawDisk["size"].(int)),
-					VolumeType: rawDisk["volume_type"].(string),
-				}
-			}
-			vmCreateBody.StandAloneVMDisks = disksList
-		}
-
-		vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
-		vmCreateResponse, err := apiClient.client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
+		vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
 		if err != nil {
 			return err
 		}
-		vmMap["id"] = vmCreateResponse.Payload.ID
+		vmMap["id"] = vmId
 
 		vmsList = append(vmsList, vmMap)
 	}
@@ -346,6 +256,61 @@ func resourceTaikunProjectUpdateVMs(d *schema.ResourceData, apiClient *apiClient
 	}
 
 	return nil
+}
+
+func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClient, projectID int32) (string, error) {
+
+	standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
+
+	vmCreateBody := &models.CreateStandAloneVMCommand{
+		CloudInit:           vmMap["cloud_init"].(string),
+		Count:               1,
+		FlavorName:          vmMap["flavor"].(string),
+		Image:               vmMap["image_id"].(string),
+		Name:                vmMap["name"].(string),
+		ProjectID:           projectID,
+		PublicIPEnabled:     vmMap["public_ip"].(bool),
+		StandAloneProfileID: standaloneProfileId,
+		VolumeSize:          int64(vmMap["volume_size"].(int)),
+		VolumeType:          vmMap["volume_type"].(string),
+	}
+
+	if vmMap["tag"] != nil {
+		rawTags := vmMap["tag"].(*schema.Set).List()
+		tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
+		for i, e := range rawTags {
+			rawTag := e.(map[string]interface{})
+			tagsList[i] = &models.StandAloneMetaDataDto{
+				Key:   rawTag["key"].(string),
+				Value: rawTag["value"].(string),
+			}
+		}
+		vmCreateBody.StandAloneMetaDatas = tagsList
+	}
+
+	if vmMap["disk"] != nil {
+		rawDisks := vmMap["disk"].(*schema.Set).List()
+		disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
+		for i, e := range rawDisks {
+			rawDisk := e.(map[string]interface{})
+			disksList[i] = &models.StandAloneVMDiskDto{
+				DeviceName: rawDisk["device_name"].(string),
+				LunID:      int32(rawDisk["lun_id"].(int)),
+				Name:       rawDisk["name"].(string),
+				Size:       int64(rawDisk["size"].(int)),
+				VolumeType: rawDisk["volume_type"].(string),
+			}
+		}
+		vmCreateBody.StandAloneVMDisks = disksList
+	}
+
+	vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
+	vmCreateResponse, err := apiClient.client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
+	if err != nil {
+		return "", err
+	}
+
+	return vmCreateResponse.Payload.ID, nil
 }
 
 func resourceTaikunProjectStandaloneCommit(apiClient *apiClient, projectID int32) error {
