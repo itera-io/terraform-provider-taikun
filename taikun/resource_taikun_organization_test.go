@@ -84,8 +84,8 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 	fullName := randomString()
 	discountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
-	email := "manager@example.org"
-	billingEmail := "billing@example.org"
+	email := randomEmail()
+	billingEmail := randomEmail()
 	phone := "+42424242424242"
 	address := "10 Downing Street"
 	city := "London"
@@ -146,10 +146,10 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 	newDiscountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
 	newVatNumber := randomString()
-	email := "manager@example.org"
-	newEmail := "manager@example.com"
-	billingEmail := "billing@example.org"
-	newBillingEmail := "billing@example.com"
+	email := randomEmail()
+	newEmail := randomEmail()
+	billingEmail := randomEmail()
+	newBillingEmail := randomEmail()
 	phone := "+42424242424242"
 	newPhone := "+43434343434343"
 	address := "10 Downing Street"

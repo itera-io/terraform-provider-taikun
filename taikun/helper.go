@@ -203,7 +203,7 @@ func randomURL() string {
 }
 
 func randomEmail() string {
-	return fmt.Sprintf("%s@%s.example", randomString(), randomString())
+	return fmt.Sprintf("%s@mailinator.com", randomString())
 }
 
 func randomBool() bool {
