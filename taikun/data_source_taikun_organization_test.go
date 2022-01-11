@@ -63,8 +63,8 @@ func TestAccDataSourceTaikunOrganizationNew(t *testing.T) {
 	fullName := randomString()
 	discountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
-	email := "manager@example.org"
-	billingEmail := "billing@example.org"
+	email := randomEmail()
+	billingEmail := randomEmail()
 	phone := "+42424242424242"
 	address := "10 Downing Street"
 	city := "London"
