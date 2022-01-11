@@ -204,6 +204,7 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk"
       size = 30
+      device_name = "/dev/sdb"
     }
     disk {
       name = "mydisk2"
@@ -311,6 +312,7 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk"
       size = 30
+      lun_id = 9
     }
     disk {
       name = "mydisk2"
