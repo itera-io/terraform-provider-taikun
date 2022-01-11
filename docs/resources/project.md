@@ -272,7 +272,7 @@ Optional:
 - **cloud_init** (String) Cloud init. Defaults to ` `.
 - **disk** (Block Set) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
 - **public_ip** (Boolean) Whether a public IP will be available. Defaults to `false`.
-- **tag** (Block List) Tags linked to the VM. (see [below for nested schema](#nestedblock--vm--tag))
+- **tag** (Block Set) Tags linked to the VM. (see [below for nested schema](#nestedblock--vm--tag))
 - **volume_type** (String) Volume type (only valid with OpenStack). Defaults to ` `.
 
 Read-Only:
