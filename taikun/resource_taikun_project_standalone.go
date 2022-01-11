@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"context"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -206,7 +207,7 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 	return nil
 }
 
-func resourceTaikunProjectUpdateVMs(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
 
 	oldVms, newVms := d.GetChange("vm")
 	oldVmsSet := oldVms.(*schema.Set)
@@ -233,6 +234,10 @@ func resourceTaikunProjectUpdateVMs(d *schema.ResourceData, apiClient *apiClient
 		deleteVMParams := stand_alone.NewStandAloneDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
 		_, err := apiClient.client.StandAlone.StandAloneDelete(deleteVMParams, apiClient)
 		if err != nil {
+			return err
+		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting", "PendingDelete"}, apiClient, projectID); err != nil {
 			return err
 		}
 	}
