@@ -68,6 +68,7 @@ data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   min_cpu = 2
   max_cpu = 2
+  min_ram = 4
   max_ram = 8
 }
 
@@ -170,6 +171,7 @@ data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   min_cpu = 2
   max_cpu = 2
+  min_ram = 4
   max_ram = 8
 }
 
@@ -270,6 +272,7 @@ data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
   min_cpu = 2
   max_cpu = 2
+  min_ram = 4
   max_ram = 8
 }
 

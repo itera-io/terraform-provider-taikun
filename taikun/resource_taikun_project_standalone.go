@@ -33,7 +33,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Description: "Disks associated with the VM.",
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Set:         hashAttributes("name", "device_name", "lun_id", "volume_type"),
+			Set:         hashAttributes("name"),
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"device_name": {
@@ -189,7 +189,7 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 
 	vms := d.Get("vm")
 
-	vmsList := vms.(*schema.Set).List()
+	vmsList := vms.([]interface{})
 	for _, vm := range vmsList {
 		vmMap := vm.(map[string]interface{})
 
@@ -207,19 +207,51 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 	return nil
 }
 
+func computeDiff(old []interface{}, new []interface{}) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
+	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
+	for _, e := range old {
+		oldMap = append(oldMap, e.(map[string]interface{}))
+	}
+	for _, e := range new {
+		newMap = append(newMap, e.(map[string]interface{}))
+	}
+	toDelete, toAdd, intersection := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
+
+	for _, e := range newMap {
+		if e["id"] == nil {
+			toAdd = append(toAdd, e)
+			continue
+		}
+		intersection = append(intersection, e)
+	}
+
+old:
+	for _, e := range oldMap {
+		id := e["id"].(string)
+		for _, f := range newMap {
+			id2 := f["id"].(string)
+			if id2 != "" && id2 == id {
+				continue old
+			}
+		}
+
+		toDelete = append(toDelete, e)
+	}
+
+	return toDelete, toAdd, intersection
+}
+
 func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
 
 	oldVms, newVms := d.GetChange("vm")
-	oldVmsSet := oldVms.(*schema.Set)
-	newVmsSet := newVms.(*schema.Set)
+	oldVmsList := oldVms.([]interface{})
+	newVmsList := newVms.([]interface{})
 
-	toDelete := oldVmsSet.Difference(newVmsSet).List()
-	toAdd := newVmsSet.Difference(oldVmsSet).List()
+	toDelete, toAdd, intersection := computeDiff(oldVmsList, newVmsList)
 
 	vmIds := make([]int32, 0)
 
-	for _, vm := range toDelete {
-		vmMap := vm.(map[string]interface{})
+	for _, vmMap := range toDelete {
 		if vmIdStr, vmIdSet := vmMap["id"]; vmIdSet {
 			vmId, _ := atoi32(vmIdStr.(string))
 			vmIds = append(vmIds, vmId)
@@ -242,10 +274,9 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	vmsList := oldVmsSet.Intersection(newVmsSet).List()
+	vmsList := intersection
 
-	for _, vm := range toAdd {
-		vmMap := vm.(map[string]interface{})
+	for _, vmMap := range toAdd {
 
 		vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
 		if err != nil {

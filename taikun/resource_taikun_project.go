@@ -236,7 +236,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 		},
 		"vm": {
 			Description: "Virtual machines.",
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: taikunVMSchema(),
@@ -760,7 +760,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
-	if vms := d.Get("vm").(*schema.Set).List(); len(vms) != 0 {
+	if vms := d.Get("vm").([]interface{}); len(vms) != 0 {
 		err = resourceTaikunProjectPurgeVMs(vms, apiClient, id)
 		if err != nil {
 			return diag.FromErr(err)
