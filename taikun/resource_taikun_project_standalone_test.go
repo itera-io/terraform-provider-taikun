@@ -294,7 +294,7 @@ locals {
 
 resource "taikun_standalone_profile" "foo" {
 	name = "%s"
-    public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"
+    public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDHIHRbKu4shd9OardTAj0yV1HSjcg0o57s27IHT+TpL5CSVd8o5qZl/rI14pFbAG1lCbKly+BI9ql4kEj4RCOd6uS0EnLS3vxH0DPSZqKnV+r+iV8w0/0GgxaihAK2Z7RdIVoizOjDkjCRIDNd9fkQ2/C6uHdDmrRxiFh+e98w7Ebes/xcCX6r0iMhAUkYFfMx7C/H7BANA53YOJBdtxcd1BZbRo5VktoZ0i0ie5d+OioeD1uR+nEnU12q2tJqo4j2WHpJ++Rba2aNesVrYq1V9OoKg3+hl5CFXVDHzcgq2PykfNQ2PKo/C5i3jjLISMSVKvqCJDjZTsJJsoifv5KClkOYGA12Aqe/qJEpeq7uPadbQFRdYK8FT74K71Pz3Qg1Ipy02o6QaNRHZtJyXnaO5TZciD2tiM3YthuMoh0/vnARlqxc2YElOmrfUtaAEv3bB/SiIFreyGgkb1VNkEWA1hQmqYMxnTFhGF0ZbwSLo6xXQRTKuYo39ts+4eaqcJ0= non_non"
 }
 
 resource "taikun_project" "foo" {
