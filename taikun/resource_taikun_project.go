@@ -711,7 +711,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange("vm") {
-		err = resourceTaikunProjectUpdateVMs(d, apiClient, id)
+		err = resourceTaikunProjectUpdateVMs(ctx, d, apiClient, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
