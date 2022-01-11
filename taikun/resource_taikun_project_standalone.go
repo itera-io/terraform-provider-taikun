@@ -36,7 +36,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"device_name": {
-						Description: "Name of the device (only valid with AWS).",
+						Description: "Name of the device (required with AWS).",
 						Type:        schema.TypeString,
 						Optional:    true,
 						ValidateFunc: validation.StringMatch(
@@ -45,7 +45,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 						),
 					},
 					"lun_id": {
-						Description:  "LUN ID (only valid with Azure).",
+						Description:  "LUN ID (required with Azure).",
 						Type:         schema.TypeInt,
 						Optional:     true,
 						ValidateFunc: validation.IntBetween(0, 999),

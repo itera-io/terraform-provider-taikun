@@ -296,8 +296,8 @@ Required:
 
 Optional:
 
-- **device_name** (String) Name of the device (only valid with AWS).
-- **lun_id** (Number) LUN ID (only valid with Azure).
+- **device_name** (String) Name of the device (required with AWS).
+- **lun_id** (Number) LUN ID (required with Azure).
 - **volume_type** (String) Type of the volume (only valid with OpenStack).
 
 
