@@ -96,7 +96,7 @@ resource "taikun_project" "foo" {
     flavor = local.flavors[0]
     image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
-    volume_size = 30
+    volume_size = 40
     disk {
       name = "mydisk"
       size = 30
@@ -173,14 +173,7 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
-data "taikun_images" "foo" {
-  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-  aws_platform = "linux"
-  aws_owner = "679593333241"
-}
-
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
@@ -193,25 +186,25 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   flavors = local.flavors
-  images = local.images
+  images = ["ami-0f94f6b47f28fb0e7"]
 
   vm {
     name = "my-vm"
     flavor = local.flavors[0]
-    image_id = local.images[0]
+    image_id = "ami-0f94f6b47f28fb0e7"
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 30
     disk {
       name = "mydisk"
       size = 30
-      device_name = "/dev/sdb"
+      device_name = "/dev/sde"
     }
     disk {
       name = "mydisk2"
       size = 30
       volume_type = "ssd-2000iops"
       lun_id = 10
-      device_name = "/dev/sdc"
+      device_name = "/dev/sdf"
     }
     tag {
       key = "key"
