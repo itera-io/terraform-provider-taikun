@@ -138,7 +138,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 		},
 		"tag": {
 			Description: "Tags linked to the VM.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -208,7 +208,7 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 		}
 
 		if vmMap["tag"] != nil {
-			rawTags := vmMap["tag"].([]interface{})
+			rawTags := vmMap["tag"].(*schema.Set).List()
 			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
 			for i, e := range rawTags {
 				rawTag := e.(map[string]interface{})
@@ -303,7 +303,7 @@ func resourceTaikunProjectUpdateVMs(d *schema.ResourceData, apiClient *apiClient
 		}
 
 		if vmMap["tag"] != nil {
-			rawTags := vmMap["tag"].([]interface{})
+			rawTags := vmMap["tag"].(*schema.Set).List()
 			tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
 			for i, e := range rawTags {
 				rawTag := e.(map[string]interface{})
