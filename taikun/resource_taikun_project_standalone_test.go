@@ -146,7 +146,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "30"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
