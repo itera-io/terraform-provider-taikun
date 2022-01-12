@@ -207,6 +207,36 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 	return nil
 }
 
+func findWithId(searchMap []map[string]interface{}, id string) map[string]interface{} {
+	for _, f := range searchMap {
+		if f["id"] == id && id != "" {
+			return f
+		}
+	}
+	return nil
+}
+
+func hasChanges(old map[string]interface{}, new map[string]interface{}, labels ...string) bool {
+	//log.Println("---------------")
+	for _, label := range labels {
+		// Special compare function for sets
+		if set, isSet := old[label].(*schema.Set); isSet {
+			if !set.Equal(new[label]) {
+				//log.Println("DIFF SET"+label+": ", old[label], new[label])
+				return true
+			}
+		} else if old[label] != new[label] {
+			//log.Println("DIFF "+label+": ", old[label], new[label])
+			return true
+		}
+	}
+	return false
+}
+
+func shouldRecreateVm(old map[string]interface{}, new map[string]interface{}) bool {
+	return hasChanges(old, new, "cloud_init", "image_id", "name", "standalone_profile_id", "tag", "volume_size", "volume_type")
+}
+
 func computeDiff(old []interface{}, new []interface{}) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
 	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
 	for _, e := range old {
@@ -217,25 +247,35 @@ func computeDiff(old []interface{}, new []interface{}) ([]map[string]interface{}
 	}
 	toDelete, toAdd, intersection := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
 
+	// Vms which don't have id will be added
 	for _, e := range newMap {
-		if e["id"] == nil {
+		if e["id"] == nil || e["id"].(string) == "" {
 			toAdd = append(toAdd, e)
 			continue
 		}
 		intersection = append(intersection, e)
 	}
 
-old:
+	// Vms which are no longer in the list will be deleted
 	for _, e := range oldMap {
 		id := e["id"].(string)
-		for _, f := range newMap {
-			id2 := f["id"].(string)
-			if id2 != "" && id2 == id {
-				continue old
-			}
+		if findWithId(newMap, id) != nil {
+			continue
 		}
 
 		toDelete = append(toDelete, e)
+	}
+
+	// Vms which have ForceNew changes will be deleted and added
+	for _, new := range intersection {
+		id := new["id"].(string)
+		if old := findWithId(oldMap, id); old != nil {
+			if shouldRecreateVm(old, new) {
+				toDelete = append(toDelete, old)
+				toAdd = append(toAdd, new)
+			}
+		}
+		// Shouldn't happen
 	}
 
 	return toDelete, toAdd, intersection
@@ -269,7 +309,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 			return err
 		}
 
-		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting", "PendingDelete"}, apiClient, projectID); err != nil {
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging", "Deleting", "PendingDelete"}, apiClient, projectID); err != nil {
 			return err
 		}
 	}
@@ -289,6 +329,12 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	err := d.Set("vm", vmsList)
 	if err != nil {
 		return err
+	}
+
+	if len(toAdd) != 0 {
+		if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
+			return err
+		}
 	}
 
 	return nil
