@@ -522,10 +522,6 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		//TODO Reorder vm according previous config
-		// 1. len(config) > len(api) -> map vide sur ceux qu'on connait pas
-		// 2. len(config) = len(api) -> classic reorder (on regarde les ids qui normalement sont set après l'ajout du serv)
-		// 3. len(config) < len(api) -> reorder ce qu'on peut et le reste à la fin
 		projectMap := flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
 		reorderVms(d, projectMap)
 		err = setResourceDataFromMap(d, projectMap)
@@ -755,10 +751,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("vm") {
 		err = resourceTaikunProjectUpdateVMs(ctx, d, apiClient, id)
 		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
