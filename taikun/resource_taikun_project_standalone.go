@@ -3,12 +3,14 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/client/stand_alone"
+	"github.com/itera-io/taikungoclient/client/stand_alone_vm_disks"
 	"github.com/itera-io/taikungoclient/models"
 )
 
@@ -45,6 +47,11 @@ func taikunVMSchema() map[string]*schema.Schema {
 							regexp.MustCompile("^/dev/sd[a-z]$"),
 							"Must be a valid device name",
 						),
+					},
+					"id": {
+						Description: "ID of the disk.",
+						Type:        schema.TypeString,
+						Computed:    true,
 					},
 					"lun_id": {
 						Description:  "LUN ID (required with Azure).",
@@ -228,7 +235,7 @@ func hasChanges(old map[string]interface{}, new map[string]interface{}, labels .
 				//log.Println("DIFF SET"+label+": ", old[label], new[label])
 				return true
 			}
-		} else if old[label] != new[label] {
+		} else if !reflect.DeepEqual(old[label], new[label]) {
 			//log.Println("DIFF "+label+": ", old[label], new[label])
 			return true
 		}
@@ -240,7 +247,11 @@ func shouldRecreateVm(old map[string]interface{}, new map[string]interface{}) bo
 	return hasChanges(old, new, "cloud_init", "image_id", "name", "standalone_profile_id", "tag", "volume_size", "volume_type")
 }
 
-func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{}) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
+func shouldRecreateDisk(old map[string]interface{}, new map[string]interface{}) bool {
+	return hasChanges(old, new, "device_name", "lun_id", "name", "volume_type")
+}
+
+func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{}, recreateFunc func(old map[string]interface{}, new map[string]interface{}) bool) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
 	toDelete, toAdd, intersection := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
 
 	// Vms which don't have id will be added
@@ -266,7 +277,7 @@ func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{
 	for _, new := range intersection {
 		id := new["id"].(string)
 		if old := findWithId(oldMap, id); old != nil {
-			if shouldRecreateVm(old, new) {
+			if recreateFunc(old, new) {
 				toDelete = append(toDelete, old)
 				toAdd = append(toAdd, new)
 			}
@@ -290,7 +301,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		newMap = append(newMap, e.(map[string]interface{}))
 	}
 
-	toDelete, toAdd, intersection := computeDiff(oldMap, newMap)
+	toDelete, toAdd, intersection := computeDiff(oldMap, newMap, shouldRecreateVm)
 
 	vmIds := make([]int32, 0)
 
@@ -390,6 +401,14 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				}
 			}
 
+			if hasChanges(old, new, "disk") {
+				repairNeeded = true
+				err := resourceTaikunProjectUpdateVMDisks(ctx, old["disk"], new["disk"], apiClient, vmId, projectID)
+				if err != nil {
+					return err
+				}
+			}
+
 		}
 		// Shouldn't happen
 	}
@@ -403,6 +422,73 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{}, newDisks interface{}, apiClient *apiClient, vmID int32, projectID int32) error {
+	oldDisksList := oldDisks.([]interface{})
+	newDisksList := newDisks.([]interface{})
+	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
+	for _, e := range oldDisksList {
+		oldMap = append(oldMap, e.(map[string]interface{}))
+	}
+	for _, e := range newDisksList {
+		newMap = append(newMap, e.(map[string]interface{}))
+	}
+
+	toDelete, toAdd, intersection := computeDiff(oldMap, newMap, shouldRecreateDisk)
+
+	diskIds := make([]int32, 0)
+
+	for _, diskMap := range toDelete {
+		if diskIdStr, diskIdSet := diskMap["id"]; diskIdSet {
+			diskId, _ := atoi32(diskIdStr.(string))
+			diskIds = append(diskIds, diskId)
+		}
+	}
+
+	if len(diskIds) != 0 {
+		deleteDiskBody := &models.DeleteStandAloneVMDiskCommand{
+			StandaloneVMID: vmID,
+			VMDiskIds:      diskIds,
+		}
+		deleteDiskParams := stand_alone_vm_disks.NewStandAloneVMDisksDeleteParams().WithV(ApiVersion).WithBody(deleteDiskBody)
+		_, err := apiClient.client.StandAloneVMDisks.StandAloneVMDisksDelete(deleteDiskParams, apiClient)
+		if err != nil {
+			return err
+		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+			return err
+		}
+	}
+
+	for _, diskMap := range toAdd {
+		err := resourceTaikunProjectAddDisk(diskMap, apiClient, vmID)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, new := range intersection {
+		id := new["id"].(string)
+		diskId, _ := atoi32(id)
+		if old := findWithId(oldMap, id); old != nil {
+			if hasChanges(old, new, "size") {
+				body := &models.UpdateStandaloneVMDiskSizeCommand{
+					DiskSize: int64(new["size"].(int)),
+					ID:       diskId,
+				}
+				params := stand_alone_vm_disks.NewStandAloneVMDisksUpdateDiskSizeParams().WithV(ApiVersion).WithBody(body)
+				_, err := apiClient.client.StandAloneVMDisks.StandAloneVMDisksUpdateDiskSize(params, apiClient)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		// Shouldn't happen
 	}
 
 	return nil
@@ -464,6 +550,26 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClie
 	}
 
 	return vmCreateResponse.Payload.ID, nil
+}
+
+func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *apiClient, vmId int32) error {
+
+	diskCreateBody := &models.CreateStandAloneDiskCommand{
+		DeviceName:     diskMap["device_name"].(string),
+		LunID:          int32(diskMap["lun_id"].(int)),
+		Name:           diskMap["name"].(string),
+		Size:           int64(diskMap["size"].(int)),
+		VolumeType:     diskMap["volume_type"].(string),
+		StandaloneVMID: vmId,
+	}
+
+	diskCreateParams := stand_alone_vm_disks.NewStandAloneVMDisksCreateParams().WithV(ApiVersion).WithBody(diskCreateBody)
+	_, err := apiClient.client.StandAloneVMDisks.StandAloneVMDisksCreate(diskCreateParams, apiClient)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func resourceTaikunProjectStandaloneCommit(apiClient *apiClient, projectID int32) error {
