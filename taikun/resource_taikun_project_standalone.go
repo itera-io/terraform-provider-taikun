@@ -32,15 +32,15 @@ func taikunVMSchema() map[string]*schema.Schema {
 		},
 		"disk": {
 			Description: "Disks associated with the VM.",
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
 			Optional:    true,
-			Set:         hashAttributes("name"),
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"device_name": {
 						Description: "Name of the device (required with AWS).",
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 						ValidateFunc: validation.StringMatch(
 							regexp.MustCompile("^/dev/sd[a-z]$"),
 							"Must be a valid device name",
@@ -50,6 +50,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 						Description:  "LUN ID (required with Azure).",
 						Type:         schema.TypeInt,
 						Optional:     true,
+						Computed:     true,
 						ValidateFunc: validation.IntBetween(0, 999),
 					},
 					"name": {
@@ -74,6 +75,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 						Description: "Type of the volume (only valid with OpenStack).",
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},
@@ -440,7 +442,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClie
 	}
 
 	if vmMap["disk"] != nil {
-		rawDisks := vmMap["disk"].(*schema.Set).List()
+		rawDisks := vmMap["disk"].([]interface{})
 		disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
 		for i, e := range rawDisks {
 			rawDisk := e.(map[string]interface{})
