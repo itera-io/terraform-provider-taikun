@@ -237,14 +237,7 @@ func shouldRecreateVm(old map[string]interface{}, new map[string]interface{}) bo
 	return hasChanges(old, new, "cloud_init", "image_id", "name", "standalone_profile_id", "tag", "volume_size", "volume_type")
 }
 
-func computeDiff(old []interface{}, new []interface{}) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
-	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
-	for _, e := range old {
-		oldMap = append(oldMap, e.(map[string]interface{}))
-	}
-	for _, e := range new {
-		newMap = append(newMap, e.(map[string]interface{}))
-	}
+func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{}) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
 	toDelete, toAdd, intersection := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
 
 	// Vms which don't have id will be added
@@ -286,8 +279,15 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	oldVms, newVms := d.GetChange("vm")
 	oldVmsList := oldVms.([]interface{})
 	newVmsList := newVms.([]interface{})
+	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
+	for _, e := range oldVmsList {
+		oldMap = append(oldMap, e.(map[string]interface{}))
+	}
+	for _, e := range newVmsList {
+		newMap = append(newMap, e.(map[string]interface{}))
+	}
 
-	toDelete, toAdd, intersection := computeDiff(oldVmsList, newVmsList)
+	toDelete, toAdd, intersection := computeDiff(oldMap, newMap)
 
 	vmIds := make([]int32, 0)
 
@@ -314,25 +314,79 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	vmsList := intersection
+	if len(toAdd) != 0 {
+		vmsList := intersection
 
-	for _, vmMap := range toAdd {
+		for _, vmMap := range toAdd {
 
-		vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
+			vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
+			if err != nil {
+				return err
+			}
+			vmMap["id"] = vmId
+
+			vmsList = append(vmsList, vmMap)
+		}
+		err := d.Set("vm", vmsList)
 		if err != nil {
 			return err
 		}
-		vmMap["id"] = vmId
 
-		vmsList = append(vmsList, vmMap)
-	}
-	err := d.Set("vm", vmsList)
-	if err != nil {
-		return err
-	}
-
-	if len(toAdd) != 0 {
 		if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
+			return err
+		}
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
+			return err
+		}
+	}
+
+	repairNeeded := false
+	for _, new := range intersection {
+		id := new["id"].(string)
+		vmId, _ := atoi32(id)
+		if old := findWithId(oldMap, id); old != nil {
+
+			if hasChanges(old, new, "public_ip") {
+				repairNeeded = true
+				//TODO
+				mode := "enable"
+				if !new["public_ip"].(bool) {
+					mode = "disable"
+				}
+				body := &models.StandAloneVMIPManagementCommand{
+					ID:   vmId,
+					Mode: mode,
+				}
+				params := stand_alone.NewStandAloneIPManagementParams().WithV(ApiVersion).WithBody(body)
+				_, err := apiClient.client.StandAlone.StandAloneIPManagement(params, apiClient)
+				if err != nil {
+					return err
+				}
+			}
+			if hasChanges(old, new, "flavor") {
+				repairNeeded = true
+				body := &models.UpdateStandAloneVMFlavorCommand{
+					ID:     vmId,
+					Flavor: new["flavor"].(string),
+				}
+				params := stand_alone.NewStandAloneUpdateFlavorParams().WithV(ApiVersion).WithBody(body)
+				_, err := apiClient.client.StandAlone.StandAloneUpdateFlavor(params, apiClient)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+		// Shouldn't happen
+	}
+	if repairNeeded {
+		body := &models.RepairStandAloneVMCommand{ProjectID: projectID}
+		params := stand_alone.NewStandAloneRepairParams().WithV(ApiVersion).WithBody(body)
+		_, err := apiClient.client.StandAlone.StandAloneRepair(params, apiClient)
+		if err != nil {
+			return err
+		}
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
 			return err
 		}
 	}
