@@ -946,7 +946,6 @@ func flattenTaikunProject(
 	vms := make([]map[string]interface{}, 0)
 	for _, vm := range vmListDTO {
 		vmMap := map[string]interface{}{
-			"access_ip":             vm.PublicIP,
 			"cloud_init":            vm.CloudInit,
 			"created_by":            vm.CreatedBy,
 			"flavor":                vm.TargetFlavor,
@@ -962,6 +961,10 @@ func flattenTaikunProject(
 			"status":                vm.Status,
 			"volume_size":           vm.VolumeSize,
 			"volume_type":           vm.VolumeType,
+		}
+
+		if vm.PublicIP != "" {
+			vmMap["access_ip"] = vm.PublicIP
 		}
 
 		tags := make([]map[string]interface{}, len(vm.StandAloneMetaDatas))

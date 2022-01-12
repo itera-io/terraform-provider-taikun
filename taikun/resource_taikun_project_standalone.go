@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -347,6 +348,17 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		if old := findWithId(oldMap, id); old != nil {
 
 			if hasChanges(old, new, "public_ip") {
+
+				// Manual check as API doesn't return an error
+				cloudCredentialID, _ := atoi32(d.Get("cloud_credential_id").(string))
+				cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
+				if err != nil {
+					return err
+				}
+				if cloudType == cloudTypeAzure {
+					return fmt.Errorf("you cannot change public ip for Azure hosted projects")
+				}
+
 				repairNeeded = true
 				//TODO
 				mode := "enable"
@@ -358,7 +370,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 					Mode: mode,
 				}
 				params := stand_alone.NewStandAloneIPManagementParams().WithV(ApiVersion).WithBody(body)
-				_, err := apiClient.client.StandAlone.StandAloneIPManagement(params, apiClient)
+				_, err = apiClient.client.StandAlone.StandAloneIPManagement(params, apiClient)
 				if err != nil {
 					return err
 				}
