@@ -177,10 +177,10 @@ func taikunVMSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"volume_type": {
-			Description: "Volume type (only valid with OpenStack).",
+			Description: "Volume type.",
 			Type:        schema.TypeString,
 			Optional:    true,
-			Default:     "",
+			Computed:    true,
 		},
 	}
 }
@@ -308,7 +308,10 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClie
 		PublicIPEnabled:     vmMap["public_ip"].(bool),
 		StandAloneProfileID: standaloneProfileId,
 		VolumeSize:          int64(vmMap["volume_size"].(int)),
-		VolumeType:          vmMap["volume_type"].(string),
+	}
+
+	if vmMap["volume_type"] != nil {
+		vmCreateBody.VolumeType = vmMap["volume_type"].(string)
 	}
 
 	if vmMap["tag"] != nil {
