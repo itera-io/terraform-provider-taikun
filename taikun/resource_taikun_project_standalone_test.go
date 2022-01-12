@@ -94,7 +94,7 @@ resource "taikun_project" "foo" {
 
   vm {
     name = "my-vm"
-    flavor = local.flavors[0]
+    flavor = local.flavors[%d]
     image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 40
@@ -137,6 +137,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -180,6 +181,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -204,6 +206,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					"public_ip = true",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -228,6 +231,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					"public_ip = true",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -251,6 +255,70 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 	})
 }
 
+func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	standaloneProfileName := randomTestName()
+	projectName := shortRandomTestName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneOpenStackMinimal,
+					cloudCredentialName,
+					standaloneProfileName,
+					projectName,
+					0,
+					"",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
+					resource.TestCheckNoResourceAttr("taikun_project.foo", "vm.0.access_ip"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneOpenStackMinimal,
+					cloudCredentialName,
+					standaloneProfileName,
+					projectName,
+					1,
+					"",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	standaloneProfileName := randomTestName()
@@ -266,6 +334,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					"volume_type = \"ssd-2000iops\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -282,11 +351,6 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
-			},
-			{
-				ResourceName:      "taikun_project.foo",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -323,7 +387,7 @@ resource "taikun_project" "foo" {
 
   vm {
     name = "my-vm"
-    flavor = local.flavors[0]
+    flavor = local.flavors[%d]
     image_id = "ami-0f94f6b47f28fb0e7"
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 30
@@ -368,6 +432,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -412,6 +477,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateIP(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -437,6 +503,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateIP(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"public_ip = true",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -462,7 +529,74 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateIP(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"public_ip = false",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "30"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
+					resource.TestCheckNoResourceAttr("taikun_project.foo", "vm.0.access_ip"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	standaloneProfileName := randomTestName()
+	projectName := shortRandomTestName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAWSMinimal,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					standaloneProfileName,
+					projectName,
+					0,
+					"",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "30"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
+					resource.TestCheckNoResourceAttr("taikun_project.foo", "vm.0.access_ip"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAWSMinimal,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					standaloneProfileName,
+					projectName,
+					1,
+					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -501,6 +635,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalWithVolumeType(t *testing.T
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"volume_type = \"gp2\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -517,11 +652,6 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalWithVolumeType(t *testing.T
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
-			},
-			{
-				ResourceName:      "taikun_project.foo",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
@@ -567,7 +697,7 @@ resource "taikun_project" "foo" {
 
   vm {
     name = "my-vm"
-    flavor = local.flavors[0]
+    flavor = local.flavors[%d]
     image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 31
@@ -613,6 +743,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -658,6 +789,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateIP(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -684,6 +816,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateIP(t *testing.T) {
 					os.Getenv("ARM_LOCATION"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"public_ip = true",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -699,6 +832,74 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateIP(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "true"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "vm.0.access_ip"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	standaloneProfileName := randomTestName()
+	projectName := shortRandomTestName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
+					cloudCredentialName,
+					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					os.Getenv("ARM_LOCATION"),
+					standaloneProfileName,
+					projectName,
+					0,
+					"",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
+					resource.TestCheckNoResourceAttr("taikun_project.foo", "vm.0.access_ip"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
+					cloudCredentialName,
+					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					os.Getenv("ARM_LOCATION"),
+					standaloneProfileName,
+					projectName,
+					1,
+					"",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
+					resource.TestCheckNoResourceAttr("taikun_project.foo", "vm.0.access_ip"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
@@ -724,6 +925,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 					os.Getenv("ARM_LOCATION"),
 					standaloneProfileName,
 					projectName,
+					0,
 					"volume_type = \"Premium_LRS\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -740,11 +942,6 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
-			},
-			{
-				ResourceName:      "taikun_project.foo",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
