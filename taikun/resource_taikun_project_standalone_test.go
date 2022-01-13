@@ -231,7 +231,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					standaloneProfileName,
 					projectName,
 					0,
-					"public_ip = true",
+					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
