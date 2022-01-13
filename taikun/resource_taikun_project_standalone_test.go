@@ -108,7 +108,6 @@ resource "taikun_project" "foo" {
       size = 30
       volume_type = "ssd-2000iops"
       lun_id = 10
-      device_name = "/dev/sdc"
     }
     tag {
       key = "key"
