@@ -478,8 +478,8 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 		if old := findWithId(oldMap, id); old != nil {
 			if hasChanges(old, new, "size") {
 				body := &models.UpdateStandaloneVMDiskSizeCommand{
-					DiskSize: int64(new["size"].(int)),
-					ID:       diskId,
+					ID:   diskId,
+					Size: int64(new["size"].(int)),
 				}
 				params := stand_alone_vm_disks.NewStandAloneVMDisksUpdateDiskSizeParams().WithV(ApiVersion).WithBody(body)
 				_, err := apiClient.client.StandAloneVMDisks.StandAloneVMDisksUpdateDiskSize(params, apiClient)
