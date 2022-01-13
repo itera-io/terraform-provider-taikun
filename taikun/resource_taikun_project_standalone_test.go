@@ -399,7 +399,7 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk2"
       size = 30
-      volume_type = "ssd-2000iops"
+      volume_type = "gp2"
       lun_id = 10
       device_name = "/dev/sdf"
     }
@@ -709,7 +709,7 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk2"
       size = 30
-      volume_type = "ssd-2000iops"
+      volume_type = "Premium_LRS"
       lun_id = 10
       device_name = "/dev/sdc"
     }
