@@ -25,7 +25,7 @@ func dataSourceTaikunImages() *schema.Resource {
 				Description:  "AWS Platform (only valid with AWS Cloud Credential ID).",
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"windows", "linux", "ubuntu"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"windows", "Linux", "Ubuntu"}, false),
 			},
 			"azure_offer": {
 				Description: "Azure offer (only valid with Azure Cloud Credential ID).",
