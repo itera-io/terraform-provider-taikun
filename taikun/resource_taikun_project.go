@@ -981,7 +981,7 @@ func flattenTaikunProject(
 				"lun_id":      lunId,
 				"id":          i32toa(rawDisk.ID),
 				"name":        rawDisk.Name,
-				"size":        rawDisk.TargetSize,
+				"size":        rawDisk.CurrentSize,
 				"volume_type": rawDisk.VolumeType,
 			}
 		}
