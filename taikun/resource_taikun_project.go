@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -523,7 +522,6 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		projectMap := flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
-		reorderVms(d, projectMap)
 		err = setResourceDataFromMap(d, projectMap)
 		if err != nil {
 			return diag.FromErr(err)
@@ -533,41 +531,6 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 
 		return nil
 	}
-}
-
-func reorderVms(d *schema.ResourceData, projectMap map[string]interface{}) {
-	listToOrder := projectMap["vm"].([]map[string]interface{})
-	//log.Println("[DEBUG] $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-	//log.Println("[DEBUG] ", listToOrder)
-
-	if vm, vmIsSet := d.GetOk("vm"); vmIsSet {
-		vmList := vm.([]interface{})
-		refList := make([]map[string]interface{}, 0)
-		for _, e := range vmList {
-			eMap := e.(map[string]interface{})
-			refList = append(refList, eMap)
-		}
-
-		sort.SliceStable(listToOrder, func(i, j int) bool {
-			idi := listToOrder[i]["id"].(string)
-			idj := listToOrder[j]["id"].(string)
-
-			baseIdi := -1
-			baseIdj := -1
-
-			for i, e := range refList {
-				if e["id"] == idi {
-					baseIdi = i
-				} else if e["id"] == idj {
-					baseIdj = i
-				}
-			}
-
-			//log.Println("[DEBUG]", baseIdi, baseIdj)
-			return baseIdi > baseIdj
-		})
-	}
-	//log.Println("[DEBUG] ", listToOrder)
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
