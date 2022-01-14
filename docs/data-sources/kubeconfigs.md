@@ -35,6 +35,7 @@ data "taikun_kubeconfigs" "foo" {
 Read-Only:
 
 - **access_scope** (String)
+- **content** (String)
 - **id** (String)
 - **name** (String)
 - **project_id** (String)
