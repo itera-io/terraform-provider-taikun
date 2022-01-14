@@ -627,7 +627,9 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *apiClien
 		vmMap := vm.(map[string]interface{})
 		if vmIdStr, vmIdSet := vmMap["id"]; vmIdSet {
 			vmId, _ := atoi32(vmIdStr.(string))
-			vmIds = append(vmIds, vmId)
+			if vmId != 0 {
+				vmIds = append(vmIds, vmId)
+			}
 		}
 	}
 
