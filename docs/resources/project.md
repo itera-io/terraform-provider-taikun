@@ -83,7 +83,6 @@ resource "taikun_project" "foobar" {
     standalone_profile_id = resource.taikun_standalone_profile.foo.id
     public_ip             = true
 
-    // OpenStack
     volume_type = "ssd-2000iops"
 
     tag {
@@ -92,13 +91,12 @@ resource "taikun_project" "foobar" {
     }
 
     disk {
-      name = "name"
-      size = 30
+      name        = "name"
+      size        = 30
+      volume_type = "ssd-2000iops"
 
       // AWS
       device_name = "/dev/sda3"
-      // OpenStack
-      volume_type = "ssd-2000iops"
       // Azure
       lun_id = 3
     }
@@ -152,7 +150,7 @@ resource "taikun_project" "foobar" {
 - **server_kubeworker** (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
 - **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
 - **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- **vm** (Block Set) Virtual machines. (see [below for nested schema](#nestedblock--vm))
+- **vm** (Block List) Virtual machines. (see [below for nested schema](#nestedblock--vm))
 
 ### Read-Only
 
@@ -262,18 +260,18 @@ Optional:
 Required:
 
 - **flavor** (String) The VM's flavor.
-- **image_id** (String) The VM's image id.
-- **name** (String) Name of the VM.
-- **standalone_profile_id** (String) Standalone profile ID bound to the VM.
-- **volume_size** (Number) The VM's volume size in GBs.
+- **image_id** (String) The VM's image id (updating this field will recreate the VM).
+- **name** (String) Name of the VM (updating this field will recreate the VM).
+- **standalone_profile_id** (String) Standalone profile ID bound to the VM (updating this field will recreate the VM).
+- **volume_size** (Number) The VM's volume size in GBs (updating this field will recreate the VM).
 
 Optional:
 
-- **cloud_init** (String) Cloud init. Defaults to ` `.
-- **disk** (Block Set) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
-- **public_ip** (Boolean) Whether a public IP will be available. Defaults to `false`.
-- **tag** (Block Set) Tags linked to the VM. (see [below for nested schema](#nestedblock--vm--tag))
-- **volume_type** (String) Volume type (only valid with OpenStack). Defaults to ` `.
+- **cloud_init** (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
+- **disk** (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
+- **public_ip** (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
+- **tag** (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
+- **volume_type** (String) Volume type (updating this field will recreate the VM).
 
 Read-Only:
 
@@ -299,6 +297,10 @@ Optional:
 - **device_name** (String) Name of the device (required with AWS).
 - **lun_id** (Number) LUN ID (required with Azure).
 - **volume_type** (String) Type of the volume (only valid with OpenStack).
+
+Read-Only:
+
+- **id** (String) ID of the disk.
 
 
 <a id="nestedblock--vm--tag"></a>

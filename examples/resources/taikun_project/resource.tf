@@ -66,7 +66,6 @@ resource "taikun_project" "foobar" {
     standalone_profile_id = resource.taikun_standalone_profile.foo.id
     public_ip             = true
 
-    // OpenStack
     volume_type = "ssd-2000iops"
 
     tag {
@@ -75,13 +74,12 @@ resource "taikun_project" "foobar" {
     }
 
     disk {
-      name = "name"
-      size = 30
+      name        = "name"
+      size        = 30
+      volume_type = "ssd-2000iops"
 
       // AWS
       device_name = "/dev/sda3"
-      // OpenStack
-      volume_type = "ssd-2000iops"
       // Azure
       lun_id = 3
     }

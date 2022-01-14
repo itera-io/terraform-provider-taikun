@@ -58,7 +58,7 @@ Read-Only:
 - **server_bastion** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_bastion))
 - **server_kubemaster** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster))
 - **server_kubeworker** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker))
-- **vm** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--vm))
+- **vm** (List of Object) (see [below for nested schema](#nestedobjatt--projects--vm))
 
 <a id="nestedobjatt--projects--server_bastion"></a>
 ### Nested Schema for `projects.server_bastion`
@@ -136,7 +136,7 @@ Read-Only:
 - **access_ip** (String)
 - **cloud_init** (String)
 - **created_by** (String)
-- **disk** (Set of Object) (see [below for nested schema](#nestedobjatt--projects--vm--disk))
+- **disk** (List of Object) (see [below for nested schema](#nestedobjatt--projects--vm--disk))
 - **flavor** (String)
 - **id** (String)
 - **image_id** (String)
@@ -158,6 +158,7 @@ Read-Only:
 Read-Only:
 
 - **device_name** (String)
+- **id** (String)
 - **lun_id** (Number)
 - **name** (String)
 - **size** (Number)
