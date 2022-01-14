@@ -368,8 +368,8 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				if err != nil {
 					return err
 				}
-				if cloudType == cloudTypeAzure {
-					return fmt.Errorf("you cannot change public ip for Azure hosted projects")
+				if cloudType != cloudTypeOpenStack {
+					return fmt.Errorf("you can only change public ip for OpenStack hosted projects")
 				}
 
 				repairNeeded = true
