@@ -107,7 +107,6 @@ resource "taikun_project" "foo" {
       name = "mydisk2"
       size = 30
       volume_type = "ssd-2000iops"
-      lun_id = 10
     }
     tag {
       key = "key"
@@ -400,7 +399,6 @@ resource "taikun_project" "foo" {
       name = "mydisk2"
       size = 30
       volume_type = "gp2"
-      lun_id = 10
       device_name = "/dev/sdf"
     }
     tag {
@@ -619,7 +617,6 @@ resource "taikun_project" "foo" {
       size = 30
       volume_type = "Premium_LRS"
       lun_id = 10
-      device_name = "/dev/sdc"
     }
     tag {
       key = "key"
