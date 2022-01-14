@@ -151,14 +151,11 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 		}
 
 		kubeconfigDTO := response.Payload.Data[0]
-		kubeconfigContent, err := resourceTaikunKubeconfigGetContent(
+		kubeconfigContent := resourceTaikunKubeconfigGetContent(
 			kubeconfigDTO.ProjectID,
 			kubeconfigDTO.ID,
 			apiClient,
 		)
-		if err != nil {
-			return diag.FromErr(err)
-		}
 		if err := setResourceDataFromMap(d, flattenTaikunKubeconfig(kubeconfigDTO, kubeconfigContent)); err != nil {
 			return diag.FromErr(err)
 		}
@@ -209,7 +206,7 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 	return kubeconfigMap
 }
 
-func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *apiClient) (string, error) {
+func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *apiClient) string {
 
 	body := models.DownloadKubeConfigCommand{
 		ProjectID: projectID,
@@ -221,8 +218,8 @@ func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, api
 
 	response, err := apiClient.client.KubeConfig.KubeConfigDownload(params, apiClient)
 	if err != nil {
-		return "", err
+		return "Failed to retrieve content of kubeconfig"
 	}
 
-	return response.Payload.(string), nil
+	return response.Payload.(string)
 }
