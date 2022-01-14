@@ -24,7 +24,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"content": {
-			Description: "Content of the kubeconfig.",
+			Description: "Content of the kubeconfig's YAML file.",
 			Type:        schema.TypeString,
 			Sensitive:   true,
 			Computed:    true,
