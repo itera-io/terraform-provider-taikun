@@ -23,6 +23,12 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 				"personal",
 			}, false),
 		},
+		"content": {
+			Description: "Content of the kubeconfig's YAML file.",
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The kubeconfig's ID.",
 			Type:        schema.TypeString,
@@ -145,7 +151,12 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 		}
 
 		kubeconfigDTO := response.Payload.Data[0]
-		if err := setResourceDataFromMap(d, flattenTaikunKubeconfig(kubeconfigDTO)); err != nil {
+		kubeconfigContent := resourceTaikunKubeconfigGetContent(
+			kubeconfigDTO.ProjectID,
+			kubeconfigDTO.ID,
+			apiClient,
+		)
+		if err := setResourceDataFromMap(d, flattenTaikunKubeconfig(kubeconfigDTO, kubeconfigContent)); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -174,8 +185,9 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto) map[string]interface{} {
+func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubeconfigContent string) map[string]interface{} {
 	kubeconfigMap := map[string]interface{}{
+		"content":      kubeconfigContent,
 		"id":           i32toa(kubeconfigDTO.ID),
 		"name":         kubeconfigDTO.ServiceAccountName,
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
@@ -192,4 +204,22 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto) map[str
 		kubeconfigMap["access_scope"] = "personal"
 	}
 	return kubeconfigMap
+}
+
+func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *apiClient) string {
+
+	body := models.DownloadKubeConfigCommand{
+		ProjectID: projectID,
+		ID:        kubeconfigID,
+	}
+
+	params := kube_config.NewKubeConfigDownloadParams().WithV(ApiVersion)
+	params = params.WithBody(&body)
+
+	response, err := apiClient.client.KubeConfig.KubeConfigDownload(params, apiClient)
+	if err != nil {
+		return "Failed to retrieve content of kubeconfig"
+	}
+
+	return response.Payload.(string)
 }

@@ -63,7 +63,12 @@ func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, 
 
 	kubeconfigs := make([]map[string]interface{}, len(kubeconfigDTOs))
 	for i, kubeconfigDTO := range kubeconfigDTOs {
-		kubeconfigs[i] = flattenTaikunKubeconfig(kubeconfigDTO)
+		kubeconfigContent := resourceTaikunKubeconfigGetContent(
+			kubeconfigDTO.ProjectID,
+			kubeconfigDTO.ID,
+			apiClient,
+		)
+		kubeconfigs[i] = flattenTaikunKubeconfig(kubeconfigDTO, kubeconfigContent)
 	}
 
 	if err := d.Set("kubeconfigs", kubeconfigs); err != nil {
