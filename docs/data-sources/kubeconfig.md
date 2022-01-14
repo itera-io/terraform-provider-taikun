@@ -28,6 +28,7 @@ data "taikun_kubeconfig" "foo" {
 ### Read-Only
 
 - **access_scope** (String) Who can use the kubeconfig: `personal` (only you), `managers` (managers only) or `all` (all users with access to this project).
+- **content** (String, Sensitive) Content of the kubeconfig.
 - **name** (String) The kubeconfig's name.
 - **project_id** (String) ID of the kubeconfig's project.
 - **project_name** (String) Name of the kubeconfig's project.
