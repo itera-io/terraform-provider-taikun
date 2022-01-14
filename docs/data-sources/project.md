@@ -48,7 +48,7 @@ data "taikun_project" "foo" {
 - **server_bastion** (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
 - **server_kubemaster** (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
 - **server_kubeworker** (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
-- **vm** (Set of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
+- **vm** (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
 
 <a id="nestedatt--server_bastion"></a>
 ### Nested Schema for `server_bastion`
@@ -126,7 +126,7 @@ Read-Only:
 - **access_ip** (String)
 - **cloud_init** (String)
 - **created_by** (String)
-- **disk** (Set of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
+- **disk** (List of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
 - **flavor** (String)
 - **id** (String)
 - **image_id** (String)
@@ -148,6 +148,7 @@ Read-Only:
 Read-Only:
 
 - **device_name** (String)
+- **id** (String)
 - **lun_id** (Number)
 - **name** (String)
 - **size** (Number)
