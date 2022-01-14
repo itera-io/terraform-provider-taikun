@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"regexp"
 
@@ -22,7 +21,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"cloud_init": {
-			Description: "Cloud init.",
+			Description: "Cloud init (updating this field will recreate the VM).",
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "",
@@ -99,7 +98,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"image_id": {
-			Description:  "The VM's image id.",
+			Description:  "The VM's image id (updating this field will recreate the VM).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -125,19 +124,19 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"name": {
-			Description:  "Name of the VM.",
+			Description:  "Name of the VM (updating this field will recreate the VM).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(1, 52),
 		},
 		"public_ip": {
-			Description: "Whether a public IP will be available.",
+			Description: "Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack).",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 		},
 		"standalone_profile_id": {
-			Description:      "Standalone profile ID bound to the VM.",
+			Description:      "Standalone profile ID bound to the VM (updating this field will recreate the VM).",
 			Type:             schema.TypeString,
 			Required:         true,
 			ValidateDiagFunc: stringIsInt,
@@ -148,7 +147,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"tag": {
-			Description: "Tags linked to the VM.",
+			Description: "Tags linked to the VM (updating this field will recreate the VM).",
 			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
@@ -181,13 +180,13 @@ func taikunVMSchema() map[string]*schema.Schema {
 			},
 		},
 		"volume_size": {
-			Description:  "The VM's volume size in GBs.",
+			Description:  "The VM's volume size in GBs (updating this field will recreate the VM).",
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"volume_type": {
-			Description: "Volume type.",
+			Description: "Volume type (updating this field will recreate the VM).",
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
@@ -243,8 +242,15 @@ func hasChanges(old map[string]interface{}, new map[string]interface{}, labels .
 	return false
 }
 
-func shouldRecreateVm(old map[string]interface{}, new map[string]interface{}) bool {
-	return hasChanges(old, new, "cloud_init", "image_id", "name", "standalone_profile_id", "tag", "volume_size", "volume_type")
+func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) bool {
+	return func(old, new map[string]interface{}) bool {
+
+		if cloudType != cloudTypeOpenStack && hasChanges(old, new, "public_ip") {
+			return true
+		}
+
+		return hasChanges(old, new, "cloud_init", "image_id", "name", "standalone_profile_id", "tag", "volume_size", "volume_type")
+	}
 }
 
 func shouldRecreateDisk(old map[string]interface{}, new map[string]interface{}) bool {
@@ -301,7 +307,13 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		newMap = append(newMap, e.(map[string]interface{}))
 	}
 
-	toDelete, toAdd, intersection := computeDiff(oldMap, newMap, shouldRecreateVm)
+	cloudCredentialID, _ := atoi32(d.Get("cloud_credential_id").(string))
+	cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
+	if err != nil {
+		return err
+	}
+
+	toDelete, toAdd, intersection := computeDiff(oldMap, newMap, genVmRecreateFunc(cloudType))
 
 	vmIds := make([]int32, 0)
 
@@ -361,17 +373,6 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		if old := findWithId(oldMap, id); old != nil {
 
 			if hasChanges(old, new, "public_ip") {
-
-				// Manual check as API doesn't return an error
-				cloudCredentialID, _ := atoi32(d.Get("cloud_credential_id").(string))
-				cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
-				if err != nil {
-					return err
-				}
-				if cloudType != cloudTypeOpenStack {
-					return fmt.Errorf("you can only change public ip for OpenStack hosted projects")
-				}
-
 				repairNeeded = true
 				//TODO
 				mode := "enable"
@@ -383,7 +384,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 					Mode: mode,
 				}
 				params := stand_alone.NewStandAloneIPManagementParams().WithV(ApiVersion).WithBody(body)
-				_, err = apiClient.client.StandAlone.StandAloneIPManagement(params, apiClient)
+				_, err := apiClient.client.StandAlone.StandAloneIPManagement(params, apiClient)
 				if err != nil {
 					return err
 				}
