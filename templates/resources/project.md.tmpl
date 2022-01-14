@@ -12,6 +12,11 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization. If specified, the project's cloud credential must be in the same organization.
 
+!> **Standalone VMs** Reordering `vm` and `disk` blocks is not yet supported.
+Reordering these blocks will break your project!
+If you wish to delete multiple of these blocks, delete them one at a time and run `terraform apply` each time.
+If you wish to add one or multiple of these blocks, add them below the ones that are already there.
+
 ## Example Usage
 
 {{tffile "examples/resources/taikun_project/resource.tf"}}
