@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
@@ -18,7 +19,6 @@ func init() {
 		Name:         "taikun_backup_credential",
 		Dependencies: []string{"taikun_project"},
 		F: func(r string) error {
-
 			meta, err := sharedConfig()
 			if err != nil {
 				return err
@@ -41,17 +41,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range backupCredentialsList {
 				if shouldSweep(e.S3Name) {
 					params := s3_credentials.NewS3CredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.S3Credentials.S3CredentialsDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/prometheus"
@@ -17,7 +18,6 @@ func init() {
 	resource.AddTestSweepers("taikun_billing_rule", &resource.Sweeper{
 		Name: "taikun_billing_rule",
 		F: func(r string) error {
-
 			meta, err := sharedConfig()
 			if err != nil {
 				return err
@@ -40,17 +40,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range billingRulesList {
 				if shouldSweep(e.Name) {
 					params := prometheus.NewPrometheusDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, err = apiClient.client.Prometheus.PrometheusDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

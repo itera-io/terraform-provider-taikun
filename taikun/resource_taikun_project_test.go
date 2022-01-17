@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/projects"
@@ -43,20 +44,24 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range projectList {
 				if shouldSweep(e.Name) {
 
 					readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(e.ID)
 					response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
+						continue
 					}
 
 					if response.Payload.Project.IsLocked {
 						unlockedMode := getLockMode(false)
 						unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
 						if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
-							return err
+							result = multierror.Append(result, err)
+							continue
 						}
 					}
 
@@ -72,23 +77,25 @@ func init() {
 						deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
 						_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
 						if err != nil {
-							return err
+							result = multierror.Append(result, err)
+							continue
 						}
 
 						if err := resourceTaikunProjectWaitForStatus(context.Background(), []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, e.ID); err != nil {
-							return err
+							result = multierror.Append(result, err)
+							continue
 						}
 					}
 
 					params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteProjectCommand{ProjectID: e.ID})
 					_, _, err = apiClient.client.Projects.ProjectsDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }
