@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/showback"
@@ -40,17 +41,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range showbackCredentialsList {
 				if shouldSweep(e.Name) {
 					params := showback.NewShowbackDeleteShowbackCredentialParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackCredentialCommand{ID: e.ID})
 					_, err = apiClient.client.Showback.ShowbackDeleteShowbackCredential(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

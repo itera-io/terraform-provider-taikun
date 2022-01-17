@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
@@ -18,6 +19,7 @@ func init() {
 		Name:         "taikun_billing_credential",
 		Dependencies: []string{"taikun_billing_rule"},
 		F: func(r string) error {
+			var result *multierror.Error
 
 			meta, err := sharedConfig()
 			if err != nil {
@@ -46,12 +48,12 @@ func init() {
 					params := ops_credentials.NewOpsCredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.OpsCredentials.OpsCredentialsDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
@@ -40,18 +41,20 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range standaloneProfilesList {
 				if shouldSweep(e.Name) {
 					body := &models.DeleteStandAloneProfileCommand{ID: e.ID}
 					params := stand_alone_profile.NewStandAloneProfileDeleteParams().WithV(ApiVersion).WithBody(body)
 					_, err = apiClient.client.StandAloneProfile.StandAloneProfileDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

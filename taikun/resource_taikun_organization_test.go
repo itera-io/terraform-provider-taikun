@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/organizations"
@@ -44,17 +45,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range organizationsList {
 				if shouldSweep(e.Name) {
 					params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(e.ID)
 					_, _, err = apiClient.client.Organizations.OrganizationsDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

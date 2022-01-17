@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
@@ -17,7 +18,6 @@ func init() {
 		Name:         "taikun_access_profile",
 		Dependencies: []string{"taikun_project"},
 		F: func(r string) error {
-
 			meta, err := sharedConfig()
 			if err != nil {
 				return err
@@ -41,17 +41,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range accessProfilesList {
 				if shouldSweep(e.Name) {
 					params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.AccessProfiles.AccessProfilesDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }
