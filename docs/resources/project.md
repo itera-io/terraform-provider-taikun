@@ -268,7 +268,7 @@ Optional:
 Required:
 
 - **flavor** (String) The VM's flavor.
-- **image_id** (String) The VM's image id (updating this field will recreate the VM).
+- **image_id** (String) The VM's image ID (updating this field will recreate the VM).
 - **name** (String) Name of the VM (updating this field will recreate the VM).
 - **standalone_profile_id** (String) Standalone profile ID bound to the VM (updating this field will recreate the VM).
 - **volume_size** (Number) The VM's volume size in GBs (updating this field will recreate the VM).
@@ -297,7 +297,7 @@ Read-Only:
 
 Required:
 
-- **name** (String) Name of the Disk.
+- **name** (String) Name of the disk.
 - **size** (Number) The disk size in GBs.
 
 Optional:

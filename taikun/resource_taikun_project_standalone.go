@@ -60,7 +60,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.IntBetween(0, 999),
 					},
 					"name": {
-						Description: "Name of the Disk.",
+						Description: "Name of the disk.",
 						Type:        schema.TypeString,
 						Required:    true,
 						ValidateFunc: validation.All(
@@ -98,7 +98,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"image_id": {
-			Description:  "The VM's image id (updating this field will recreate the VM).",
+			Description:  "The VM's image ID (updating this field will recreate the VM).",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
