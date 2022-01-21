@@ -54,7 +54,7 @@ data "taikun_images" "foo" {
 
 locals {
   flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
-  images  = [for image in data.taikun_images.foo.images : image.name]
+  images  = [for image in data.taikun_images.foo.images : image.id]
 }
 
 resource "taikun_project" "foobar" {
