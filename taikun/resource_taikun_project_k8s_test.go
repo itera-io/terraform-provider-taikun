@@ -443,6 +443,10 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubeworker.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubemaster.#", "1"),
 					resource.TestCheckResourceAttr("data.taikun_kubeconfigs.foo", "kubeconfigs.#", "4"),
+					resource.TestCheckResourceAttrSet("taikun_kubeconfig.view", "content"),
+					resource.TestCheckResourceAttrSet("taikun_kubeconfig.edit", "content"),
+					resource.TestCheckResourceAttrSet("taikun_kubeconfig.admin", "content"),
+					resource.TestCheckResourceAttrSet("taikun_kubeconfig.cluster_admin", "content"),
 				),
 			},
 			{
