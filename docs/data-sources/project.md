@@ -34,6 +34,7 @@ data "taikun_project" "foo" {
 - **cloud_credential_id** (String) ID of the cloud credential used to create the project's servers.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
+- **images** (Set of String) List of images bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
 - **lock** (Boolean) Indicates whether to lock the project.
 - **monitoring** (Boolean) Kubernetes cluster monitoring.
@@ -47,6 +48,7 @@ data "taikun_project" "foo" {
 - **server_bastion** (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
 - **server_kubemaster** (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
 - **server_kubeworker** (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
+- **vm** (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
 
 <a id="nestedatt--server_bastion"></a>
 ### Nested Schema for `server_bastion`
@@ -108,6 +110,53 @@ Read-Only:
 
 <a id="nestedobjatt--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubeworker.kubernetes_node_label`
+
+Read-Only:
+
+- **key** (String)
+- **value** (String)
+
+
+
+<a id="nestedatt--vm"></a>
+### Nested Schema for `vm`
+
+Read-Only:
+
+- **access_ip** (String)
+- **cloud_init** (String)
+- **created_by** (String)
+- **disk** (List of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
+- **flavor** (String)
+- **id** (String)
+- **image_id** (String)
+- **image_name** (String)
+- **ip** (String)
+- **last_modified** (String)
+- **last_modified_by** (String)
+- **name** (String)
+- **public_ip** (Boolean)
+- **standalone_profile_id** (String)
+- **status** (String)
+- **tag** (Set of Object) (see [below for nested schema](#nestedobjatt--vm--tag))
+- **volume_size** (Number)
+- **volume_type** (String)
+
+<a id="nestedobjatt--vm--disk"></a>
+### Nested Schema for `vm.disk`
+
+Read-Only:
+
+- **device_name** (String)
+- **id** (String)
+- **lun_id** (Number)
+- **name** (String)
+- **size** (Number)
+- **volume_type** (String)
+
+
+<a id="nestedobjatt--vm--tag"></a>
+### Nested Schema for `vm.tag`
 
 Read-Only:
 

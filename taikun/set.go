@@ -32,11 +32,30 @@ func hashAttributes(keys ...string) func(v interface{}) int {
 				stringToHash += strconv.Itoa(v)
 			}
 
-			if labelsList, ok := set[key].([]interface{}); ok {
-				for _, e := range labelsList {
+			if v, ok := set[key].(bool); ok {
+				stringToHash += strconv.FormatBool(v)
+			}
+
+			if list, ok := set[key].([]interface{}); ok {
+				for _, e := range list {
+					if str, ok2 := e.(string); ok2 {
+						stringToHash += str
+					}
+
 					if label, ok2 := e.(map[string]interface{}); ok2 {
-						stringToHash += label["key"].(string)
-						stringToHash += label["value"].(string)
+						for _, value := range label {
+							if str, ok3 := value.(string); ok3 {
+								stringToHash += str
+							}
+						}
+					}
+				}
+			}
+
+			if amap, ok := set[key].(map[string]interface{}); ok {
+				for _, value := range amap {
+					if str, ok2 := value.(string); ok2 {
+						stringToHash += str
 					}
 				}
 			}

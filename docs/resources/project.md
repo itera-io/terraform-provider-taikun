@@ -12,12 +12,31 @@ Taikun Project
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization. If specified, the project's cloud credential must be in the same organization.
 
+## Current limitations of the `vm` and `disk` blocks.
+
+!> **Standalone VMs** Reordering `vm` blocks is not yet supported.
+Adding a `vm` block to a `taikun_project` resource is only supported if it is added
+below the preexisting `vm` blocks in the `taikun_project` resource.
+If you insert a `vm` block at the beginning or somewhere in the middle of a list of
+`vm` blocks, the VMs declared in the blocks that follow will be recreated!
+Deletion of `vm` blocks is also only supported for trailing blocks.
+If you delete a `vm` block at the beginning or somewhere in the middle of a list of
+`vm` blocks, the VMs declared in the blocks that follow will be recreated!
+
+!> **Standalone VM disks** Reordering `disk` blocks is not yet supported.
+Adding a `disk` block to a `vm` block is only supported if it is added
+below the preexisting `disk` blocks in the `vm` block.
+If you insert a `disk` block at the beginning or somewhere in the middle of a list of
+`disk` blocks, the disks declared in the blocks that follow will be recreated!
+Deletion of `disk` blocks is also only supported for trailing blocks.
+If you delete a `disk` block at the beginning or somewhere in the middle of a list of
+`disk` blocks, the disks declared in the blocks that follow will be recreated!
+
 ## Example Usage
 
 ```terraform
-resource "taikun_cloud_credential_aws" "foo" {
-  name              = "foo-credentials"
-  availability_zone = "a"
+resource "taikun_cloud_credential_openstack" "foo" {
+  name = "foo-credentials"
 }
 
 resource "taikun_access_profile" "foo" {
@@ -33,19 +52,29 @@ resource "taikun_kubernetes_profile" "foo" {
   name = "foo"
 }
 
+resource "taikun_standalone_profile" "foo" {
+  name       = "foo"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"
+}
+
 data "taikun_flavors" "small" {
-  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   min_cpu             = 2
   max_cpu             = 8
 }
 
+data "taikun_images" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+}
+
 locals {
   flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
+  images  = [for image in data.taikun_images.foo.images : image.id]
 }
 
 resource "taikun_project" "foobar" {
   name                = "foobar"
-  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 
   access_profile_id     = resource.taikun_access_profile.foo.id
   alerting_profile_id   = resource.taikun_alerting_profile.foo.id
@@ -61,6 +90,40 @@ resource "taikun_project" "foobar" {
   quota_ram_size  = 256
 
   flavors = local.flavors
+  images  = local.images
+
+  vm {
+    name        = "b"
+    volume_size = 30
+
+    flavor   = local.flavors[0]
+    image_id = local.images[0]
+
+    cloud_init            = ""
+    standalone_profile_id = resource.taikun_standalone_profile.foo.id
+    public_ip             = true
+
+    volume_type = "ssd-2000iops"
+
+    tag {
+      key   = "key"
+      value = "value"
+    }
+
+    disk {
+      name        = "name"
+      size        = 30
+      volume_type = "ssd-2000iops"
+
+      // device_name would have been required with AWS:
+      // for example:
+      // device_name = "/dev/sda3"
+
+      // lun_id would have been required with Azure
+      // for example:
+      // lun_id = 3
+    }
+  }
 
   server_bastion {
     name   = "b"
@@ -94,6 +157,7 @@ resource "taikun_project" "foobar" {
 - **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
 - **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - **flavors** (Set of String) List of flavors bound to the project.
+- **images** (Set of String) List of images bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
@@ -109,6 +173,7 @@ resource "taikun_project" "foobar" {
 - **server_kubeworker** (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
 - **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
 - **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- **vm** (Block List) Virtual machines. (see [below for nested schema](#nestedblock--vm))
 
 ### Read-Only
 
@@ -210,6 +275,64 @@ Optional:
 
 - **create** (String)
 - **update** (String)
+
+
+<a id="nestedblock--vm"></a>
+### Nested Schema for `vm`
+
+Required:
+
+- **flavor** (String) The VM's flavor.
+- **image_id** (String) The VM's image ID (updating this field will recreate the VM).
+- **name** (String) Name of the VM (updating this field will recreate the VM).
+- **standalone_profile_id** (String) Standalone profile ID bound to the VM (updating this field will recreate the VM).
+- **volume_size** (Number) The VM's volume size in GBs (updating this field will recreate the VM).
+
+Optional:
+
+- **cloud_init** (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
+- **disk** (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
+- **public_ip** (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
+- **tag** (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
+- **volume_type** (String) Volume type (updating this field will recreate the VM).
+
+Read-Only:
+
+- **access_ip** (String) Access IP of the VM.
+- **created_by** (String) The creator of the VM.
+- **id** (String) ID of the VM.
+- **image_name** (String) The VM's image name.
+- **ip** (String) IP of the VM.
+- **last_modified** (String) The time and date of last modification.
+- **last_modified_by** (String) The last user to have modified the VM.
+- **status** (String) VM status.
+
+<a id="nestedblock--vm--disk"></a>
+### Nested Schema for `vm.disk`
+
+Required:
+
+- **name** (String) Name of the disk.
+- **size** (Number) The disk size in GBs.
+
+Optional:
+
+- **device_name** (String) Name of the device (required with AWS).
+- **lun_id** (Number) LUN ID (required with Azure).
+- **volume_type** (String) Type of the volume (only valid with OpenStack).
+
+Read-Only:
+
+- **id** (String) ID of the disk.
+
+
+<a id="nestedblock--vm--tag"></a>
+### Nested Schema for `vm.tag`
+
+Required:
+
+- **key** (String) Key of the tag.
+- **value** (String) Value of the tag.
 
 ## Import
 

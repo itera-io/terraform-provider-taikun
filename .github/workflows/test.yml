@@ -52,7 +52,7 @@ jobs:
     name: Acceptance Tests
     needs: build
     runs-on: self-hosted
-    timeout-minutes: 70
+    timeout-minutes: 180
     concurrency: test-acc
     steps:
 

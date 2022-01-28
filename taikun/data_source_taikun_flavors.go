@@ -90,9 +90,12 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	endCPU := int32(d.Get("max_cpu").(int))
 	startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
 	endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
+	sortBy := "name"
+	sortDir := "asc"
 
 	params := cloud_credentials.NewCloudCredentialsAllFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 	params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
+	params = params.WithSortBy(&sortBy).WithSortDirection(&sortDir)
 
 	apiClient := meta.(*apiClient)
 	var cloudType string
