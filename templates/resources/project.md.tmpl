@@ -12,10 +12,25 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization. If specified, the project's cloud credential must be in the same organization.
 
-!> **Standalone VMs** Reordering `vm` and `disk` blocks is not yet supported.
-Reordering these blocks will break your project!
-If you wish to delete multiple of these blocks, delete them one at a time and run `terraform apply` each time.
-If you wish to add one or multiple of these blocks, add them below the ones that are already there.
+## Current limitations of the `vm` and `disk` blocks.
+
+!> **Standalone VMs** Reordering `vm` blocks is not yet supported.
+Adding a `vm` block to a `taikun_project` resource is only supported if it is added
+below the preexisting `vm` blocks in the `taikun_project` resource.
+If you insert a `vm` block at the beginning or somewhere in the middle of a list of
+`vm` blocks, the VMs declared in the blocks that follow will be recreated!
+Deletion of `vm` blocks is also only supported for trailing blocks.
+If you delete a `vm` block at the beginning or somewhere in the middle of a list of
+`vm` blocks, the VMs declared in the blocks that follow will be recreated!
+
+!> **Standalone VM disks** Reordering `disk` blocks is not yet supported.
+Adding a `disk` block to a `vm` block is only supported if it is added
+below the preexisting `disk` blocks in the `vm` block.
+If you insert a `disk` block at the beginning or somewhere in the middle of a list of
+`disk` blocks, the disks declared in the blocks that follow will be recreated!
+Deletion of `disk` blocks is also only supported for trailing blocks.
+If you delete a `disk` block at the beginning or somewhere in the middle of a list of
+`disk` blocks, the disks declared in the blocks that follow will be recreated!
 
 ## Example Usage
 
