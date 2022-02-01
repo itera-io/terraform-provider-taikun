@@ -16,8 +16,6 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-  aws_platform = "Ubuntu"
-  aws_owner = "380048663093"
 }
 `
 
