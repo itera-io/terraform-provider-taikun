@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.2
 	github.com/hashicorp/terraform-plugin-docs v0.5.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
-	github.com/itera-io/taikungoclient v0.0.0-20220201005730-e8b08fcbe92c
+	github.com/itera-io/taikungoclient v0.0.0-20220201111059-364dcf242f2e
 	github.com/robfig/cron/v3 v3.0.1
 )
 
@@ -39,7 +39,7 @@ require (
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/loads v0.21.0 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
-	github.com/go-openapi/swag v0.20.0 // indirect
+	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-openapi/validate v0.20.3 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
