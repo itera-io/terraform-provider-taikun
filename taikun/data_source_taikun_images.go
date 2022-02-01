@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/models"
@@ -15,6 +16,12 @@ func dataSourceTaikunImages() *schema.Resource {
 		Description: "Retrieve images for a given cloud credential.",
 		ReadContext: dataSourceTaikunImagesRead,
 		Schema: map[string]*schema.Schema{
+			"aws_limit": {
+				Description:  "Limit the number of listed AWS images (highly recommended as fetching the entire list of images can take a long time) (only valid with AWS cloud credential ID).",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validation.IntAtLeast(1),
+			},
 			"azure_offer": {
 				Description: "Azure offer (only valid with Azure Cloud Credential ID).",
 				Type:        schema.TypeString,
@@ -103,17 +110,27 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 		}
 	case len(list.GetPayload().Amazon) != 0:
 		params := images.NewImagesAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
+		var limit int32 = 0
+		if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
+			limit = int32(limitData.(int))
+		}
 		for {
 			response, err := apiClient.client.Images.ImagesAwsImages(params, apiClient)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 			imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-			if len(imageList) == int(response.Payload.TotalCount) {
+			count := int32(len(imageList))
+			if limit != 0 && count >= limit {
 				break
 			}
-			offset := int32(len(imageList))
-			params = params.WithOffset(&offset)
+			if count == response.Payload.TotalCount {
+				break
+			}
+			params = params.WithOffset(&count)
+		}
+		if limit != 0 && int32(len(imageList)) > limit {
+			imageList = imageList[:limit]
 		}
 	default: // OpenStack
 		params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
