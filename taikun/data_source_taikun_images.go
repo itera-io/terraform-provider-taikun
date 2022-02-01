@@ -16,16 +16,11 @@ func dataSourceTaikunImages() *schema.Resource {
 		Description: "Retrieve images for a given cloud credential.",
 		ReadContext: dataSourceTaikunImagesRead,
 		Schema: map[string]*schema.Schema{
-			"aws_owner": {
-				Description: "AWS owner (only valid with AWS Cloud Credential ID).",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"aws_platform": {
-				Description:  "AWS Platform (only valid with AWS Cloud Credential ID).",
-				Type:         schema.TypeString,
+			"aws_limit": {
+				Description:  "Limit the number of listed AWS images (highly recommended as fetching the entire list of images can take a long time) (only valid with AWS cloud credential ID).",
+				Type:         schema.TypeInt,
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"windows", "Linux", "Ubuntu"}, false),
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"azure_offer": {
 				Description: "Azure offer (only valid with Azure Cloud Credential ID).",
@@ -114,25 +109,28 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 			params = params.WithOffset(&offset)
 		}
 	case len(list.GetPayload().Amazon) != 0:
-		owner, ownerIsSet := d.GetOk("aws_owner")
-		platform, platformIsSet := d.GetOk("aws_platform")
-		if !ownerIsSet || !platformIsSet {
-			return diag.Errorf("One of the following attributes is missing: aws_owner, aws_platform")
-		}
 		params := images.NewImagesAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-		params.WithOwner(owner.(string)).WithPlatform("*" + platform.(string) + "*")
-
+		var limit int32 = 0
+		if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
+			limit = int32(limitData.(int))
+		}
 		for {
 			response, err := apiClient.client.Images.ImagesAwsImages(params, apiClient)
 			if err != nil {
 				return diag.FromErr(err)
 			}
 			imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-			if len(imageList) == int(response.Payload.TotalCount) {
+			count := int32(len(imageList))
+			if limit != 0 && count >= limit {
 				break
 			}
-			offset := int32(len(imageList))
-			params = params.WithOffset(&offset)
+			if count == response.Payload.TotalCount {
+				break
+			}
+			params = params.WithOffset(&count)
+		}
+		if limit != 0 && int32(len(imageList)) > limit {
+			imageList = imageList[:limit]
 		}
 	default: // OpenStack
 		params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
