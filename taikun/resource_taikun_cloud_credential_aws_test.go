@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
@@ -19,7 +19,6 @@ func init() {
 		Name:         "taikun_cloud_credential_aws",
 		Dependencies: []string{"taikun_project"},
 		F: func(r string) error {
-
 			meta, err := sharedConfig()
 			if err != nil {
 				return err
@@ -42,17 +41,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range cloudCredentialsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := cloud_credentials.NewCloudCredentialsDeleteParams().WithV(ApiVersion).WithCloudID(e.ID)
 					_, _, err = apiClient.client.CloudCredentials.CloudCredentialsDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

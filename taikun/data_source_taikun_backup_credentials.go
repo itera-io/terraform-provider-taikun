@@ -15,12 +15,6 @@ func dataSourceTaikunBackupCredentials() *schema.Resource {
 		Description: "Retrieve all backup credentials.",
 		ReadContext: dataSourceTaikunBackupCredentialsRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"backup_credentials": {
 				Description: "List of retrieved backup credentials.",
 				Type:        schema.TypeList,
@@ -29,17 +23,23 @@ func dataSourceTaikunBackupCredentials() *schema.Resource {
 					Schema: dataSourceTaikunBackupCredentialSchema(),
 				},
 			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
+			},
 		},
 	}
 }
 
-func dataSourceTaikunBackupCredentialsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -67,11 +67,11 @@ func dataSourceTaikunBackupCredentialsRead(_ context.Context, data *schema.Resou
 	for i, rawBackupCredential := range backupCredentialsList {
 		backupCredentials[i] = flattenTaikunBackupCredential(rawBackupCredential)
 	}
-	if err := data.Set("backup_credentials", backupCredentials); err != nil {
+	if err := d.Set("backup_credentials", backupCredentials); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

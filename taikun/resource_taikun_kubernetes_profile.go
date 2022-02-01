@@ -12,11 +12,6 @@ import (
 
 func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": {
-			Description: "The ID of the Kubernetes profile.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
 		"bastion_proxy": {
 			Description: "Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.",
 			Type:        schema.TypeBool,
@@ -24,28 +19,20 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 			ForceNew:    true,
 		},
-		"schedule_on_master": {
-			Description: "When enabled, the workload will also run on master nodes (not recommended).",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			ForceNew:    true,
+		"cni": {
+			Description: "Container Network Interface (CNI) of the Kubernetes profile.",
+			Type:        schema.TypeString,
+			Computed:    true,
 		},
 		"created_by": {
 			Description: "The creator of the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"cni": {
-			Description: "Container Network Interface (CNI) of the Kubernetes profile.",
+		"id": {
+			Description: "The ID of the Kubernetes profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"lock": {
-			Description: "Indicates whether to lock the Kubernetes profile.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
 		},
 		"last_modified": {
 			Description: "Time and date of last modification.",
@@ -64,6 +51,12 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:      "Octavia",
 			ForceNew:     true,
 			ValidateFunc: validation.StringInSlice([]string{"None", "Octavia", "Taikun"}, false),
+		},
+		"lock": {
+			Description: "Indicates whether to lock the Kubernetes profile.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description:  "The name of the Kubernetes profile.",
@@ -85,6 +78,13 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"schedule_on_master": {
+			Description: "When enabled, the workload will also run on master nodes (not recommended).",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
 	}
 }
 
@@ -102,23 +102,23 @@ func resourceTaikunKubernetesProfile() *schema.Resource {
 	}
 }
 
-func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	octaviaEnabled, taikunLBEnabled := parseLoadBalancingSolution(data.Get("load_balancing_solution").(string))
+	octaviaEnabled, taikunLBEnabled := parseLoadBalancingSolution(d.Get("load_balancing_solution").(string))
 	body := &models.CreateKubernetesProfileCommand{
-		Name:                    data.Get("name").(string),
-		AllowSchedulingOnMaster: data.Get("schedule_on_master").(bool),
+		Name:                    d.Get("name").(string),
+		AllowSchedulingOnMaster: d.Get("schedule_on_master").(bool),
 		TaikunLBEnabled:         taikunLBEnabled,
 		OctaviaEnabled:          octaviaEnabled,
-		ExposeNodePortOnBastion: data.Get("bastion_proxy").(bool),
+		ExposeNodePortOnBastion: d.Get("bastion_proxy").(bool),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -133,15 +133,15 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, data *schema.Res
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunKubernetesProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunKubernetesProfileReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunKubernetesProfileRead(true)
@@ -150,10 +150,10 @@ func generateResourceTaikunKubernetesProfileReadWithoutRetries() schema.ReadCont
 	return generateResourceTaikunKubernetesProfileRead(false)
 }
 func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -164,7 +164,7 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -172,37 +172,37 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 
 		rawKubernetesProfile := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunKubernetesProfile(rawKubernetesProfile))
+		err = setResourceDataFromMap(d, flattenTaikunKubernetesProfile(rawKubernetesProfile))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunKubernetesProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubernetesProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("lock") {
-		if err := resourceTaikunKubernetesProfileLock(id, data.Get("lock").(bool), apiClient); err != nil {
+	if d.HasChange("lock") {
+		if err := resourceTaikunKubernetesProfileLock(id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubernetesProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -213,7 +213,7 @@ func resourceTaikunKubernetesProfileDelete(_ context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

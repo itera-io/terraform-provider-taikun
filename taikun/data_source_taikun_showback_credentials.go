@@ -32,13 +32,13 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunShowbackCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -66,11 +66,11 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, data *schema.Res
 	for i, rawShowbackCredential := range showbackCredentialsList {
 		showbackCredentials[i] = flattenTaikunShowbackCredential(rawShowbackCredential)
 	}
-	if err := data.Set("showback_credentials", showbackCredentials); err != nil {
+	if err := d.Set("showback_credentials", showbackCredentials); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

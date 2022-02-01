@@ -27,7 +27,7 @@ func dataSourceTaikunOrganizations() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunOrganizationsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunOrganizationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
@@ -55,11 +55,11 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, data *schema.ResourceD
 		organizationsList[i]["servers"] = rawOrganization.Servers
 		organizationsList[i]["users"] = rawOrganization.Users
 	}
-	if err := data.Set("organizations", organizationsList); err != nil {
+	if err := d.Set("organizations", organizationsList); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

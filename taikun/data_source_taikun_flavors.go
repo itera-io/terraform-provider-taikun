@@ -23,34 +23,6 @@ func dataSourceTaikunFlavors() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: stringIsInt,
 			},
-			"min_cpu": {
-				Description:  "Minimal CPU count.",
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      2,
-				ValidateFunc: validation.IntBetween(2, 36),
-			},
-			"max_cpu": {
-				Description:  "Maximal CPU count.",
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      36,
-				ValidateFunc: validation.IntBetween(2, 36),
-			},
-			"min_ram": {
-				Description:  "Minimal RAM size in GB.",
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      2,
-				ValidateFunc: validation.IntBetween(2, 500),
-			},
-			"max_ram": {
-				Description:  "Maximal RAM size in GB.",
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      500,
-				ValidateFunc: validation.IntBetween(2, 500),
-			},
 			"flavors": {
 				Description: "List of retrieved flavors.",
 				Type:        schema.TypeList,
@@ -75,24 +47,55 @@ func dataSourceTaikunFlavors() *schema.Resource {
 					},
 				},
 			},
+			"max_cpu": {
+				Description:  "Maximal CPU count.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      36,
+				ValidateFunc: validation.IntBetween(2, 36),
+			},
+			"max_ram": {
+				Description:  "Maximal RAM size in GB.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      500,
+				ValidateFunc: validation.IntBetween(2, 500),
+			},
+			"min_cpu": {
+				Description:  "Minimal CPU count.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      2,
+				ValidateFunc: validation.IntBetween(2, 36),
+			},
+			"min_ram": {
+				Description:  "Minimal RAM size in GB.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Default:      2,
+				ValidateFunc: validation.IntBetween(2, 500),
+			},
 		},
 	}
 }
 
-func dataSourceTaikunFlavorsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	cloudCredentialID, err := atoi32(data.Get("cloud_credential_id").(string))
+	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	startCPU := int32(data.Get("min_cpu").(int))
-	endCPU := int32(data.Get("max_cpu").(int))
-	startRAM := gibiByteToMebiByte(int32(data.Get("min_ram").(int)))
-	endRAM := gibiByteToMebiByte(int32(data.Get("max_ram").(int)))
+	startCPU := int32(d.Get("min_cpu").(int))
+	endCPU := int32(d.Get("max_cpu").(int))
+	startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
+	endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
+	sortBy := "name"
+	sortDir := "asc"
 
 	params := cloud_credentials.NewCloudCredentialsAllFlavorsParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 	params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
+	params = params.WithSortBy(&sortBy).WithSortDirection(&sortDir)
 
 	apiClient := meta.(*apiClient)
 	var cloudType string
@@ -112,11 +115,11 @@ func dataSourceTaikunFlavorsRead(_ context.Context, data *schema.ResourceData, m
 	}
 
 	flavors := flattenDataSourceTaikunFlavors(cloudType, flavorDTOs)
-	if err := data.Set("flavors", flavors); err != nil {
+	if err := d.Set("flavors", flavors); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(cloudCredentialID))
+	d.SetId(i32toa(cloudCredentialID))
 	return nil
 }
 

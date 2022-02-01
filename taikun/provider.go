@@ -78,6 +78,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_azure":     dataSourceTaikunCloudCredentialsAzure(),
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
 			"taikun_flavors":                     dataSourceTaikunFlavors(),
+			"taikun_images":                      dataSourceTaikunImages(),
 			"taikun_kubeconfig":                  dataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),
@@ -94,6 +95,8 @@ func Provider() *schema.Provider {
 			"taikun_showback_rules":              dataSourceTaikunShowbackRules(),
 			"taikun_slack_configuration":         dataSourceTaikunSlackConfiguration(),
 			"taikun_slack_configurations":        dataSourceTaikunSlackConfigurations(),
+			"taikun_standalone_profile":          dataSourceTaikunStandaloneProfile(),
+			"taikun_standalone_profiles":         dataSourceTaikunStandaloneProfiles(),
 			"taikun_user":                        dataSourceTaikunUser(),
 			"taikun_users":                       dataSourceTaikunUsers(),
 		},
@@ -117,6 +120,7 @@ func Provider() *schema.Provider {
 			"taikun_showback_credential":                  resourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        resourceTaikunShowbackRule(),
 			"taikun_slack_configuration":                  resourceTaikunSlackConfiguration(),
+			"taikun_standalone_profile":                   resourceTaikunStandaloneProfile(),
 			"taikun_user":                                 resourceTaikunUser(),
 		},
 		Schema: map[string]*schema.Schema{
@@ -134,16 +138,6 @@ func Provider() *schema.Provider {
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_EMAIL", nil),
 				ConflictsWith: []string{"keycloak_email"},
 				RequiredWith:  []string{"password"},
-				ValidateFunc:  validation.StringIsNotEmpty,
-			},
-			"password": {
-				Type:          schema.TypeString,
-				Description:   "Taikun password.",
-				Optional:      true,
-				Sensitive:     true,
-				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_PASSWORD", nil),
-				ConflictsWith: []string{"keycloak_password"},
-				RequiredWith:  []string{"email"},
 				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 			"keycloak_email": {
@@ -165,19 +159,29 @@ func Provider() *schema.Provider {
 				RequiredWith:  []string{"keycloak_email"},
 				ValidateFunc:  validation.StringIsNotEmpty,
 			},
+			"password": {
+				Type:          schema.TypeString,
+				Description:   "Taikun password.",
+				Optional:      true,
+				Sensitive:     true,
+				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_PASSWORD", nil),
+				ConflictsWith: []string{"keycloak_password"},
+				RequiredWith:  []string{"email"},
+				ValidateFunc:  validation.StringIsNotEmpty,
+			},
 		},
 		ConfigureContextFunc: configureContextFunc,
 	}
 }
 
-func configureContextFunc(_ context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
-	email, keycloakEnabled := data.GetOk("keycloak_email")
-	password := data.Get("keycloak_password")
+	email, keycloakEnabled := d.GetOk("keycloak_email")
+	password := d.Get("keycloak_password")
 
 	if !keycloakEnabled {
-		email = data.Get("email")
-		password = data.Get("password")
+		email = d.Get("email")
+		password = d.Get("password")
 	}
 
 	if email == "" || password == "" {
@@ -186,7 +190,7 @@ func configureContextFunc(_ context.Context, data *schema.ResourceData) (interfa
 
 	transportConfig := client.DefaultTransportConfig()
 
-	if apiHost, apiHostIsSet := data.GetOk("api_host"); apiHostIsSet {
+	if apiHost, apiHostIsSet := d.GetOk("api_host"); apiHostIsSet {
 		transportConfig = transportConfig.WithHost(apiHost.(string))
 	}
 

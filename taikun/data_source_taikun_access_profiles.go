@@ -16,12 +16,6 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 		Description: "Retrieve all access profiles.",
 		ReadContext: dataSourceTaikunAccessProfilesRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"access_profiles": {
 				Description: "List of retrieved access profiles.",
 				Type:        schema.TypeList,
@@ -30,17 +24,23 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 					Schema: dataSourceTaikunAccessProfileSchema(),
 				},
 			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
+			},
 		},
 	}
 }
 
-func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -75,11 +75,11 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, data *schema.Resource
 
 		accessProfiles[i] = flattenTaikunAccessProfile(rawAccessProfile, sshResponse)
 	}
-	if err := data.Set("access_profiles", accessProfiles); err != nil {
+	if err := d.Set("access_profiles", accessProfiles); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

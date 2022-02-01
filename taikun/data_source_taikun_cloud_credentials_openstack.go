@@ -15,12 +15,6 @@ func dataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
 		Description: "Retrieve all OpenStack cloud credentials.",
 		ReadContext: dataSourceTaikunCloudCredentialsOpenStackRead,
 		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Description:      "Organization ID filter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"cloud_credentials": {
 				Description: "List of retrieved OpenStack cloud credentials.",
 				Type:        schema.TypeList,
@@ -29,17 +23,23 @@ func dataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
 					Schema: dataSourceTaikunCloudCredentialOpenStackSchema(),
 				},
 			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: stringIsInt,
+			},
 		},
 	}
 }
 
-func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -67,11 +67,11 @@ func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, data *sche
 	for i, rawCloudCredential := range cloudCredentialsList {
 		cloudCredentials[i] = flattenTaikunCloudCredentialOpenStack(rawCloudCredential)
 	}
-	if err := data.Set("cloud_credentials", cloudCredentials); err != nil {
+	if err := d.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

@@ -16,9 +16,15 @@ Taikun Kubeconfig
 resource "taikun_kubeconfig" "foo" {
   project_id = "1234"
 
-  name         = "foo"
-  role         = "edit"
-  access_scope = "managers"
+  name         = "all-can-view"
+  role         = "view"
+  access_scope = "all"
+}
+
+resource "local_file" "kubeconfig-foo" {
+  content         = taikun_kubeconfig.foo.content
+  filename        = "${path.module}/${taikun_kubeconfig.foo.project_id}-kubeconfig.yaml"
+  file_permission = "0644"
 }
 ```
 
@@ -34,6 +40,7 @@ resource "taikun_kubeconfig" "foo" {
 
 ### Read-Only
 
+- **content** (String, Sensitive) Content of the kubeconfig's YAML file.
 - **id** (String) The kubeconfig's ID.
 - **project_name** (String) Name of the kubeconfig's project.
 - **user_id** (String) ID of the kubeconfig's user, if the kubeconfig is personal.

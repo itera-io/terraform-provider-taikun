@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/users"
@@ -40,17 +40,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range userList {
-				if strings.HasPrefix(e.Username, testNamePrefix) {
+				if shouldSweep(e.Username) {
 					params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(e.ID)
 					_, _, err = apiClient.client.Users.UsersDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/alerting_profiles"
@@ -42,18 +43,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
 			for _, e := range alertingProfilesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					body := models.DeleteAlertingProfilesCommand{ID: e.ID}
 					params := alerting_profiles.NewAlertingProfilesDeleteParams().WithV(ApiVersion).WithBody(&body)
 					_, _, err = apiClient.client.AlertingProfiles.AlertingProfilesDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

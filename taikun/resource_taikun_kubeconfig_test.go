@@ -1,8 +1,7 @@
 package taikun
 
 import (
-	"strings"
-
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/kube_config"
 	"github.com/itera-io/taikungoclient/models"
@@ -37,20 +36,22 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range kubeconfigDTOs {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 
 					body := models.DeleteKubeConfigCommand{
 						ID: e.ID,
 					}
 					params := kube_config.NewKubeConfigDeleteParams().WithV(ApiVersion).WithBody(&body)
 					if _, err := apiClient.client.KubeConfig.KubeConfigDelete(params, apiClient); err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

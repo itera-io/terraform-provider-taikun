@@ -12,35 +12,34 @@ import (
 
 func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"created_by": {
+			Description: "The creator of the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the showback credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the showback credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the showback credential.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
 		"name": {
 			Description:  "The name of the showback credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"username": {
-			Description:  "The Prometheus username or other credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"password": {
-			Description:  "The Prometheus password or other credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"url": {
-			Description:  "URL of the source.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -59,26 +58,27 @@ func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"lock": {
-			Description: "Indicates whether to lock the showback credential.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
+		"password": {
+			Description:  "The Prometheus password or other credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"created_by": {
-			Description: "The creator of the showback credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"url": {
+			Description:  "URL of the source.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"last_modified": {
-			Description: "Time of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user who modified the showback credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"username": {
+			Description:  "The Prometheus username or other credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }
@@ -97,21 +97,21 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 	}
 }
 
-func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateShowbackCredentialCommand{
-		Name:     data.Get("name").(string),
-		Password: data.Get("password").(string),
-		URL:      data.Get("url").(string),
-		Username: data.Get("username").(string),
+		Name:     d.Get("name").(string),
+		Password: d.Get("password").(string),
+		URL:      d.Get("url").(string),
+		Username: d.Get("username").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -126,15 +126,15 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunShowbackCredentialLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunShowbackCredentialReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackCredentialReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunShowbackCredentialReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunShowbackCredentialRead(true)
@@ -143,10 +143,10 @@ func generateResourceTaikunShowbackCredentialReadWithoutRetries() schema.ReadCon
 	return generateResourceTaikunShowbackCredentialRead(false)
 }
 func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -157,7 +157,7 @@ func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadC
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -165,36 +165,36 @@ func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadC
 
 		rawShowbackCredential := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunShowbackCredential(rawShowbackCredential))
+		err = setResourceDataFromMap(d, flattenTaikunShowbackCredential(rawShowbackCredential))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunShowbackCredentialUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if data.HasChange("lock") {
-		if err := resourceTaikunShowbackCredentialLock(id, data.Get("lock").(bool), apiClient); err != nil {
+	if d.HasChange("lock") {
+		if err := resourceTaikunShowbackCredentialLock(id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunShowbackCredentialReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackCredentialReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunShowbackCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -205,7 +205,7 @@ func resourceTaikunShowbackCredentialDelete(_ context.Context, data *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

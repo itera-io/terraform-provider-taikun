@@ -13,53 +13,10 @@ import (
 
 func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"id": {
-			Description: "The ID of the showback rule.",
+		"created_by": {
+			Description: "The creator of the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"name": {
-			Description: "The name of the showback rule.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ValidateFunc: validation.All(
-				validation.StringLenBetween(3, 30),
-				validation.StringMatch(
-					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
-					"expected only alpha numeric characters or non alpha numeric (_-.)",
-				),
-			),
-		},
-		"metric_name": {
-			Description:  "The metric name.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringLenBetween(3, 256),
-		},
-		"kind": {
-			Description:  "The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"General", "External"}, false),
-		},
-		"type": {
-			Description:  "The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
-			Type:         schema.TypeString,
-			Required:     true,
-			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
-		},
-		"price": {
-			Description:  "Billing in CZK per selected unit.",
-			Type:         schema.TypeFloat,
-			Required:     true,
-			ValidateFunc: validation.FloatAtLeast(0),
-		},
-		"project_alert_limit": {
-			Description:  "Set limit of alerts for one project.",
-			Type:         schema.TypeInt,
-			Optional:     true,
-			Default:      0,
-			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"global_alert_limit": {
 			Description:  "Set limit of alerts for all projects.",
@@ -68,49 +25,20 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			Default:      0,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
-		"organization_id": {
-			Description:      "The ID of the organization which owns the showback rule.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ValidateDiagFunc: stringIsInt,
-			ForceNew:         true,
-		},
-		"organization_name": {
-			Description: "The name of the organization which owns the showback rule.",
+		"id": {
+			Description: "The ID of the showback rule.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"showback_credential_id": {
-			Description:      "Id of the showback rule.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
-		},
-		"showback_credential_name": {
-			Description: "Name of the showback rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the showback rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "Time of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user who modified the showback rule.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"kind": {
+			Description:  "The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"General", "External"}, false),
 		},
 		"label": {
 			Description: "Labels linked to this showback rule.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -126,6 +54,78 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+		},
+		"last_modified": {
+			Description: "Time of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user who modified the showback rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"metric_name": {
+			Description:  "The metric name.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringLenBetween(3, 256),
+		},
+		"name": {
+			Description: "The name of the showback rule.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 30),
+				validation.StringMatch(
+					regexp.MustCompile("^[a-zA-Z0-9-_.]+$"),
+					"expected only alpha numeric characters or non alpha numeric (_-.)",
+				),
+			),
+		},
+		"organization_id": {
+			Description:      "The ID of the organization which owns the showback rule.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: stringIsInt,
+			ForceNew:         true,
+		},
+		"organization_name": {
+			Description: "The name of the organization which owns the showback rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"price": {
+			Description:  "Billing in CZK per selected unit.",
+			Type:         schema.TypeFloat,
+			Required:     true,
+			ValidateFunc: validation.FloatAtLeast(0),
+		},
+		"project_alert_limit": {
+			Description:  "Set limit of alerts for one project.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      0,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"showback_credential_id": {
+			Description:      "Id of the showback rule.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: stringIsInt,
+		},
+		"showback_credential_name": {
+			Description: "Name of the showback rule.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"type": {
+			Description:  "The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).",
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.StringInSlice([]string{"Count", "Sum"}, false),
 		},
 	}
 }
@@ -144,38 +144,38 @@ func resourceTaikunShowbackRule() *schema.Resource {
 	}
 }
 
-func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateShowbackRuleCommand{
-		Name:              data.Get("name").(string),
-		MetricName:        data.Get("metric_name").(string),
-		Type:              getPrometheusType(data.Get("type").(string)),
-		Kind:              getShowbackType(data.Get("kind").(string)),
-		Price:             data.Get("price").(float64),
-		ProjectAlertLimit: int32(data.Get("project_alert_limit").(int)),
-		GlobalAlertLimit:  int32(data.Get("global_alert_limit").(int)),
+		Name:              d.Get("name").(string),
+		MetricName:        d.Get("metric_name").(string),
+		Type:              getPrometheusType(d.Get("type").(string)),
+		Kind:              getShowbackType(d.Get("kind").(string)),
+		Price:             d.Get("price").(float64),
+		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
+		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
 
-	showbackCredentialIDData, showbackCredentialIDIsSet := data.GetOk("showback_credential_id")
+	showbackCredentialIDData, showbackCredentialIDIsSet := d.GetOk("showback_credential_id")
 	if showbackCredentialIDIsSet {
 		showbackCredentialId, err := atoi32(showbackCredentialIDData.(string))
 		if err != nil {
-			return diag.Errorf("showback_credential_id isn't valid: %s", data.Get("showback_credential_id").(string))
+			return diag.Errorf("showback_credential_id isn't valid: %s", d.Get("showback_credential_id").(string))
 		}
 		body.ShowbackCredentialID = &showbackCredentialId
 	}
 
-	rawLabelsList := data.Get("label").([]interface{})
+	rawLabelsList := d.Get("label").(*schema.Set).List()
 	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
@@ -192,9 +192,9 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunShowbackRuleReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunShowbackRuleRead(true)
@@ -203,10 +203,10 @@ func generateResourceTaikunShowbackRuleReadWithoutRetries() schema.ReadContextFu
 	return generateResourceTaikunShowbackRuleRead(false)
 }
 func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,7 +217,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -225,36 +225,36 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 
 		rawShowbackRule := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunShowbackRule(rawShowbackRule))
+		err = setResourceDataFromMap(d, flattenTaikunShowbackRule(rawShowbackRule))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	body := &models.UpdateShowbackRuleCommand{
 		ID:                id,
-		Name:              data.Get("name").(string),
-		MetricName:        data.Get("metric_name").(string),
-		Type:              getPrometheusType(data.Get("type").(string)),
-		Kind:              getShowbackType(data.Get("kind").(string)),
-		Price:             data.Get("price").(float64),
-		ProjectAlertLimit: int32(data.Get("project_alert_limit").(int)),
-		GlobalAlertLimit:  int32(data.Get("global_alert_limit").(int)),
+		Name:              d.Get("name").(string),
+		MetricName:        d.Get("metric_name").(string),
+		Type:              getPrometheusType(d.Get("type").(string)),
+		Kind:              getShowbackType(d.Get("kind").(string)),
+		Price:             d.Get("price").(float64),
+		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
+		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
 	}
 
-	rawLabelsList := data.Get("label").([]interface{})
+	rawLabelsList := d.Get("label").(*schema.Set).List()
 	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
@@ -271,12 +271,12 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,7 +287,7 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

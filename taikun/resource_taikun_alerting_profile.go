@@ -67,12 +67,6 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"lock": {
-			Description: "Indicates whether to lock the profile.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
 		"last_modified": {
 			Description: "The time and date of last modification.",
 			Type:        schema.TypeString,
@@ -82,6 +76,12 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Description: "The last user to have modified the profile.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the profile.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description:  "The alerting profile's name.",
@@ -174,18 +174,18 @@ func resourceTaikunAlertingProfile() *schema.Resource {
 	}
 }
 
-func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := models.CreateAlertingProfileCommand{
-		Name: data.Get("name").(string),
+		Name: d.Get("name").(string),
 	}
 
-	if _, emailsIsSet := data.GetOk("emails"); emailsIsSet {
-		body.Emails = getEmailDTOsFromAlertingProfileResourceData(data)
+	if _, emailsIsSet := d.GetOk("emails"); emailsIsSet {
+		body.Emails = getEmailDTOsFromAlertingProfileResourceData(d)
 	}
 
-	if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -193,11 +193,11 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.OrganizationID = organizationID
 	}
 
-	if reminderData, reminderIsSet := data.GetOk("reminder"); reminderIsSet {
+	if reminderData, reminderIsSet := d.GetOk("reminder"); reminderIsSet {
 		body.Reminder = getAlertingProfileReminder(reminderData.(string))
 	}
 
-	if slackConfigIDData, slackConfigIDIsSet := data.GetOk("slack_configuration_id"); slackConfigIDIsSet {
+	if slackConfigIDData, slackConfigIDIsSet := d.GetOk("slack_configuration_id"); slackConfigIDIsSet {
 		slackConfigID, err := atoi32(slackConfigIDData.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -205,8 +205,8 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		body.SlackConfigurationID = slackConfigID
 	}
 
-	if _, webhookIsSet := data.GetOk("webhook"); webhookIsSet {
-		body.Webhooks = getWebhookDTOsFromAlertingProfileResourceData(data)
+	if _, webhookIsSet := d.GetOk("webhook"); webhookIsSet {
+		body.Webhooks = getWebhookDTOsFromAlertingProfileResourceData(d)
 	}
 
 	params := alerting_profiles.NewAlertingProfilesCreateParams().WithV(ApiVersion).WithBody(&body)
@@ -219,19 +219,19 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	data.SetId(response.Payload.ID)
+	d.SetId(response.Payload.ID)
 
-	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
+	if err := resourceTaikunAlertingProfileSetIntegrations(d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunAlertingProfileReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunAlertingProfileRead(true)
@@ -240,10 +240,10 @@ func generateResourceTaikunAlertingProfileReadWithoutRetries() schema.ReadContex
 	return generateResourceTaikunAlertingProfileRead(false)
 }
 func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -255,7 +255,7 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -266,53 +266,53 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 		alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
 		if err != nil {
 			if _, ok := err.(*alerting_integrations.AlertingIntegrationsListNotFound); ok && withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return diag.FromErr(err)
 		}
 
-		err = setResourceDataFromMap(data, flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload))
+		err = setResourceDataFromMap(d, flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(alertingProfileDTO.ID))
+		d.SetId(i32toa(alertingProfileDTO.ID))
 
 		return nil
 	}
 }
 
-func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunAlertingProfileLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("name", "organization_id", "reminder", "slack_configuration_id") {
+	if d.HasChanges("name", "organization_id", "reminder", "slack_configuration_id") {
 		body := models.UpdateAlertingProfileCommand{
 			ID:   id,
-			Name: data.Get("name").(string),
+			Name: d.Get("name").(string),
 		}
-		if organizationIDData, organizationIDIsSet := data.GetOk("organization_id"); organizationIDIsSet {
+		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 			organizationID, err := atoi32(organizationIDData.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 			body.OrganizationID = organizationID
 		}
-		if reminderData, reminderIsSet := data.GetOk("reminder"); reminderIsSet {
+		if reminderData, reminderIsSet := d.GetOk("reminder"); reminderIsSet {
 			body.Reminder = getAlertingProfileReminder(reminderData.(string))
 		}
-		if slackConfigIDData, slackConfigIDIsSet := data.GetOk("slack_configuration_id"); slackConfigIDIsSet {
+		if slackConfigIDData, slackConfigIDIsSet := d.GetOk("slack_configuration_id"); slackConfigIDIsSet {
 			slackConfigID, err := atoi32(slackConfigIDData.(string))
 			if err != nil {
 				return diag.FromErr(err)
@@ -326,8 +326,8 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	if data.HasChange("emails") {
-		body := getEmailDTOsFromAlertingProfileResourceData(data)
+	if d.HasChange("emails") {
+		body := getEmailDTOsFromAlertingProfileResourceData(d)
 		params := alerting_profiles.NewAlertingProfilesAssignEmailsParams().WithV(ApiVersion).WithID(id).WithBody(body)
 		_, err := apiClient.client.AlertingProfiles.AlertingProfilesAssignEmails(params, apiClient)
 		if err != nil {
@@ -335,8 +335,8 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	if data.HasChange("webhook") {
-		body := getWebhookDTOsFromAlertingProfileResourceData(data)
+	if d.HasChange("webhook") {
+		body := getWebhookDTOsFromAlertingProfileResourceData(d)
 		params := alerting_profiles.NewAlertingProfilesAssignWebhooksParams().WithV(ApiVersion).WithID(id).WithBody(body)
 		_, err := apiClient.client.AlertingProfiles.AlertingProfilesAssignWebhooks(params, apiClient)
 		if err != nil {
@@ -344,26 +344,26 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, data *schema.Resou
 		}
 	}
 
-	if err := resourceTaikunAlertingProfileUnsetIntegrations(data, apiClient); err != nil {
+	if err := resourceTaikunAlertingProfileUnsetIntegrations(d, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := resourceTaikunAlertingProfileSetIntegrations(data, id, apiClient); err != nil {
+	if err := resourceTaikunAlertingProfileSetIntegrations(d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -374,12 +374,12 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 
-func resourceTaikunAlertingProfileUnsetIntegrations(data *schema.ResourceData, apiClient *apiClient) error {
-	oldIntegrationsData, _ := data.GetChange("integration")
+func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiClient *apiClient) error {
+	oldIntegrationsData, _ := d.GetChange("integration")
 	oldIntegrations := oldIntegrationsData.([]interface{})
 	for _, oldIntegrationData := range oldIntegrations {
 		oldIntegration := oldIntegrationData.(map[string]interface{})
@@ -393,9 +393,9 @@ func resourceTaikunAlertingProfileUnsetIntegrations(data *schema.ResourceData, a
 	return nil
 }
 
-func resourceTaikunAlertingProfileSetIntegrations(data *schema.ResourceData, id int32, apiClient *apiClient) error {
-	if _, integrationIsSet := data.GetOk("integration"); integrationIsSet {
-		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(data)
+func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *apiClient) error {
+	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
+		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
 		for _, alertingIntegration := range alertingIntegrationDTOs {
 			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
 				AlertingIntegration: &models.AlertingIntegrationDto{
@@ -454,8 +454,8 @@ func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs [
 	return integrations
 }
 
-func getEmailDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingEmailDto {
-	emails := data.Get("emails").([]interface{})
+func getEmailDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*models.AlertingEmailDto {
+	emails := d.Get("emails").([]interface{})
 	emailDTOs := make([]*models.AlertingEmailDto, len(emails))
 	for i, email := range emails {
 		emailDTOs[i] = &models.AlertingEmailDto{
@@ -465,8 +465,8 @@ func getEmailDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*m
 	return emailDTOs
 }
 
-func getWebhookDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingWebhookDto {
-	webhooks := data.Get("webhook").(*schema.Set).List()
+func getWebhookDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*models.AlertingWebhookDto {
+	webhooks := d.Get("webhook").(*schema.Set).List()
 	alertingWebhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
 	for i, webhookData := range webhooks {
 		webhook := webhookData.(map[string]interface{})
@@ -487,8 +487,8 @@ func getWebhookDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []
 	return alertingWebhookDTOs
 }
 
-func getIntegrationDTOsFromAlertingProfileResourceData(data *schema.ResourceData) []*models.AlertingIntegrationDto {
-	integrations := data.Get("integration").([]interface{})
+func getIntegrationDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*models.AlertingIntegrationDto {
+	integrations := d.Get("integration").([]interface{})
 	alertingIntegrationDTOs := make([]*models.AlertingIntegrationDto, len(integrations))
 	for i, integrationData := range integrations {
 		integration := integrationData.(map[string]interface{})

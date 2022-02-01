@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -42,17 +42,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range PolicyProfilesList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := opa_profiles.NewOpaProfilesDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteOpaProfileCommand{ID: e.ID})
 					_, err = apiClient.client.OpaProfiles.OpaProfilesDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }

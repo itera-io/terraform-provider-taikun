@@ -29,7 +29,7 @@ data "taikun_billing_rule" "foo" {
 
 - **billing_credential_id** (String) ID of the billing credential.
 - **created_by** (String) The creator of the billing rule.
-- **label** (List of Object) Labels linked to the billing rule. (see [below for nested schema](#nestedatt--label))
+- **label** (Set of Object) Labels linked to the billing rule. (see [below for nested schema](#nestedatt--label))
 - **last_modified** (String) Time and date of last modification.
 - **last_modified_by** (String) The last user to have modified the billing rule.
 - **metric_name** (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.

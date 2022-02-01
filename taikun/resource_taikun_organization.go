@@ -61,11 +61,10 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"managers_can_change_subscription": {
-			Description: "Allow subscription to be changed by managers.",
+		"is_read_only": {
+			Description: "Whether the organization is in read-only mode.",
 			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
+			Computed:    true,
 		},
 		"lock": {
 			Description: "Indicates whether to lock the organization.",
@@ -73,10 +72,11 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
-		"is_read_only": {
-			Description: "Whether the organization is in read-only mode.",
+		"managers_can_change_subscription": {
+			Description: "Allow subscription to be changed by managers.",
 			Type:        schema.TypeBool,
-			Computed:    true,
+			Optional:    true,
+			Default:     true,
 		},
 		"name": {
 			Description: "Organization's name.",
@@ -127,21 +127,21 @@ func resourceTaikunOrganization() *schema.Resource {
 	}
 }
 
-func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.OrganizationCreateCommand{
-		Address:                      data.Get("address").(string),
-		BillingEmail:                 data.Get("billing_email").(string),
-		City:                         data.Get("city").(string),
-		Country:                      data.Get("country").(string),
-		DiscountRate:                 data.Get("discount_rate").(float64),
-		Email:                        data.Get("email").(string),
-		FullName:                     data.Get("full_name").(string),
-		IsEligibleUpdateSubscription: data.Get("managers_can_change_subscription").(bool),
-		Name:                         data.Get("name").(string),
-		Phone:                        data.Get("phone").(string),
-		VatNumber:                    data.Get("vat_number").(string),
+		Address:                      d.Get("address").(string),
+		BillingEmail:                 d.Get("billing_email").(string),
+		City:                         d.Get("city").(string),
+		Country:                      d.Get("country").(string),
+		DiscountRate:                 d.Get("discount_rate").(float64),
+		Email:                        d.Get("email").(string),
+		FullName:                     d.Get("full_name").(string),
+		IsEligibleUpdateSubscription: d.Get("managers_can_change_subscription").(bool),
+		Name:                         d.Get("name").(string),
+		Phone:                        d.Get("phone").(string),
+		VatNumber:                    d.Get("vat_number").(string),
 	}
 
 	params := organizations.NewOrganizationsCreateParams().WithV(ApiVersion).WithBody(body)
@@ -154,9 +154,9 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.GetPayload().ID)
+	d.SetId(createResult.GetPayload().ID)
 
-	if isLocked, isLockedIsSet := data.GetOk("lock"); isLockedIsSet {
+	if isLocked, isLockedIsSet := d.GetOk("lock"); isLockedIsSet {
 		updateLockBody := &models.UpdateOrganizationCommand{
 			Address:                      body.Address,
 			BillingEmail:                 body.BillingEmail,
@@ -179,7 +179,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, data *schema.Resource
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunOrganizationReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunOrganizationRead(true)
@@ -188,11 +188,11 @@ func generateResourceTaikunOrganizationReadWithoutRetries() schema.ReadContextFu
 	return generateResourceTaikunOrganizationRead(false)
 }
 func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id := data.Id()
-		id32, _ := atoi32(data.Id())
-		data.SetId("")
+		id := d.Id()
+		id32, _ := atoi32(d.Id())
+		d.SetId("")
 
 		response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32), apiClient)
 		if err != nil {
@@ -200,7 +200,7 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 		}
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(id)
+				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -208,39 +208,39 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 
 		rawOrganization := response.GetPayload().Data[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunOrganization(rawOrganization))
+		err = setResourceDataFromMap(d, flattenTaikunOrganization(rawOrganization))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(id)
+		d.SetId(id)
 
 		return nil
 	}
 }
 
-func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	body := &models.UpdateOrganizationCommand{
-		Address:                      data.Get("address").(string),
-		BillingEmail:                 data.Get("billing_email").(string),
-		City:                         data.Get("city").(string),
-		Country:                      data.Get("country").(string),
-		DiscountRate:                 data.Get("discount_rate").(float64),
-		Email:                        data.Get("email").(string),
-		FullName:                     data.Get("full_name").(string),
+		Address:                      d.Get("address").(string),
+		BillingEmail:                 d.Get("billing_email").(string),
+		City:                         d.Get("city").(string),
+		Country:                      d.Get("country").(string),
+		DiscountRate:                 d.Get("discount_rate").(float64),
+		Email:                        d.Get("email").(string),
+		FullName:                     d.Get("full_name").(string),
 		ID:                           id,
-		IsEligibleUpdateSubscription: data.Get("managers_can_change_subscription").(bool),
-		IsLocked:                     data.Get("lock").(bool),
-		Name:                         data.Get("name").(string),
-		Phone:                        data.Get("phone").(string),
-		VatNumber:                    data.Get("vat_number").(string),
+		IsEligibleUpdateSubscription: d.Get("managers_can_change_subscription").(bool),
+		IsLocked:                     d.Get("lock").(bool),
+		Name:                         d.Get("name").(string),
+		Phone:                        d.Get("phone").(string),
+		VatNumber:                    d.Get("vat_number").(string),
 	}
 
 	updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(body)
@@ -249,12 +249,12 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -265,7 +265,7 @@ func resourceTaikunOrganizationDelete(_ context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 

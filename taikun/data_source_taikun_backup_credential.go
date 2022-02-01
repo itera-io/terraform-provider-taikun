@@ -23,8 +23,8 @@ func dataSourceTaikunBackupCredential() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBackupCredentialRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunBackupCredentialRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunBackupCredentialReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunBackupCredentialReadWithoutRetries()(ctx, d, meta)
 }

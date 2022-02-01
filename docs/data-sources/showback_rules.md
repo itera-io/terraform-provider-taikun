@@ -40,7 +40,7 @@ Read-Only:
 - **global_alert_limit** (Number)
 - **id** (String)
 - **kind** (String)
-- **label** (List of Object) (see [below for nested schema](#nestedobjatt--showback_rules--label))
+- **label** (Set of Object) (see [below for nested schema](#nestedobjatt--showback_rules--label))
 - **last_modified** (String)
 - **last_modified_by** (String)
 - **metric_name** (String)

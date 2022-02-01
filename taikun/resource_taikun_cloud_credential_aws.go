@@ -14,10 +14,50 @@ import (
 
 func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"access_key_id": {
+			Description:  "The AWS access key ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"availability_zone": {
+			Description: "The AWS availability zone for the region.",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+		},
+		"created_by": {
+			Description: "The creator of the AWS cloud credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the AWS cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"is_default": {
+			Description: "Indicates whether the AWS cloud credential is the default one.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "Time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the AWS cloud credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the AWS cloud credential.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description: "The name of the AWS cloud credential.",
@@ -30,36 +70,6 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 					"expected only alpha numeric characters or non alpha numeric (-)",
 				),
 			),
-		},
-		"access_key_id": {
-			Description:  "The AWS access key ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"secret_access_key": {
-			Description:  "The AWS secret access key.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("AWS_SECRET_ACCESS_KEY", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"availability_zone": {
-			Description: "The AWS availability zone for the region.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-		},
-		"region": {
-			Description:  "The AWS region.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("AWS_DEFAULT_REGION", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
 			Description:      "The ID of the organization which owns the AWS cloud credential.",
@@ -74,31 +84,53 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"lock": {
-			Description: "Indicates whether to lock the AWS cloud credential.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
-		"is_default": {
-			Description: "Indicates whether the AWS cloud credential is the default one.",
-			Type:        schema.TypeBool,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the AWS cloud credential.",
+		"region": {
+			Description: "The AWS region.",
 			Type:        schema.TypeString,
-			Computed:    true,
+			Required:    true,
+			ForceNew:    true,
+			DefaultFunc: schema.EnvDefaultFunc("AWS_DEFAULT_REGION", nil),
+			ValidateFunc: validation.StringInSlice(
+				[]string{
+					"af-south-1",
+					"ap-east-1",
+					"ap-northeast-1",
+					"ap-northeast-2",
+					"ap-northeast-3",
+					"ap-south-1",
+					"ap-southeast-1",
+					"ap-southeast-2",
+					"ca-central-1",
+					"eu-central-1",
+					"eu-north-1",
+					"eu-south-1",
+					"eu-west-1",
+					"eu-west-2",
+					"eu-west-3",
+					"me-south-1",
+					"sa-east-1",
+					"us-east-1",
+					"us-east-2",
+					"us-west-1",
+					"us-west-2",
+					"cn-north-1",
+					"cn-northwest-1",
+					"us-gov-east-1",
+					"us-gov-west-1",
+					"us-iso-east-1",
+					"us-iso-west-1",
+					"us-isob-east-1",
+				},
+				false,
+			),
 		},
-		"last_modified": {
-			Description: "Time and date of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user to have modified the AWS cloud credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"secret_access_key": {
+			Description:  "The AWS secret access key.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("AWS_SECRET_ACCESS_KEY", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }
@@ -114,22 +146,22 @@ func resourceTaikunCloudCredentialAWS() *schema.Resource {
 	}
 }
 
-func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateAwsCloudCommand{
-		Name:                data.Get("name").(string),
-		AwsAccessKeyID:      data.Get("access_key_id").(string),
-		AwsSecretAccessKey:  data.Get("secret_access_key").(string),
-		AwsAvailabilityZone: data.Get("availability_zone").(string),
-		AwsRegion:           getAWSRegion(data.Get("region").(string)),
+		Name:                d.Get("name").(string),
+		AwsAccessKeyID:      d.Get("access_key_id").(string),
+		AwsSecretAccessKey:  d.Get("secret_access_key").(string),
+		AwsAvailabilityZone: d.Get("availability_zone").(string),
+		AwsRegion:           d.Get("region").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -144,15 +176,15 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, data *schema.Re
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunCloudCredentialAWSReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunCloudCredentialAWSRead(true)
@@ -161,10 +193,10 @@ func generateResourceTaikunCloudCredentialAWSReadWithoutRetries() schema.ReadCon
 	return generateResourceTaikunCloudCredentialAWSRead(false)
 }
 func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -175,7 +207,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 		}
 		if len(response.Payload.Amazon) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -183,36 +215,36 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 
 		rawCloudCredentialAWS := response.GetPayload().Amazon[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("access_key_id", "secret_access_key", "name") {
+	if d.HasChanges("access_key_id", "secret_access_key", "name") {
 		updateBody := &models.UpdateAwsCommand{
 			ID:                 id,
-			Name:               data.Get("name").(string),
-			AwsAccessKeyID:     data.Get("access_key_id").(string),
-			AwsSecretAccessKey: data.Get("secret_access_key").(string),
+			Name:               d.Get("name").(string),
+			AwsAccessKeyID:     d.Get("access_key_id").(string),
+			AwsSecretAccessKey: d.Get("secret_access_key").(string),
 		}
 		updateParams := aws.NewAwsUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.client.Aws.AwsUpdate(updateParams, apiClient)
@@ -221,13 +253,13 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, data *schema.Re
 		}
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, d, meta)
 }
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {

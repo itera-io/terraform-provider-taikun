@@ -22,8 +22,8 @@ func dataSourceTaikunKubernetesProfile() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunKubernetesProfileRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+func dataSourceTaikunKubernetesProfileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunKubernetesProfileReadWithoutRetries()(ctx, data, meta)
+	return generateResourceTaikunKubernetesProfileReadWithoutRetries()(ctx, d, meta)
 }

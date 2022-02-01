@@ -47,7 +47,7 @@ resource "taikun_showback_rule" "foo" {
 ### Optional
 
 - **global_alert_limit** (Number) Set limit of alerts for all projects. Defaults to `0`.
-- **label** (Block List) Labels linked to this showback rule. (see [below for nested schema](#nestedblock--label))
+- **label** (Block Set) Labels linked to this showback rule. (see [below for nested schema](#nestedblock--label))
 - **organization_id** (String) The ID of the organization which owns the showback rule.
 - **project_alert_limit** (Number) Set limit of alerts for one project. Defaults to `0`.
 - **showback_credential_id** (String) Id of the showback rule.

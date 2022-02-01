@@ -14,12 +14,6 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 		Description: "Retrieve a project's kubeconfigs.",
 		ReadContext: dataSourceTaikunKubeconfigsRead,
 		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Description:      "Project ID filter.",
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: stringIsInt,
-			},
 			"kubeconfigs": {
 				Description: "List of retrieved kubeconfigs.",
 				Type:        schema.TypeList,
@@ -28,14 +22,20 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 					Schema: dataSourceTaikunKubeconfigSchema(),
 				},
 			},
+			"project_id": {
+				Description:      "Project ID filter.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ValidateDiagFunc: stringIsInt,
+			},
 		},
 	}
 }
 
-func dataSourceTaikunKubeconfigsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	projectID, err := atoi32(data.Get("project_id").(string))
+	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -63,13 +63,18 @@ func dataSourceTaikunKubeconfigsRead(ctx context.Context, data *schema.ResourceD
 
 	kubeconfigs := make([]map[string]interface{}, len(kubeconfigDTOs))
 	for i, kubeconfigDTO := range kubeconfigDTOs {
-		kubeconfigs[i] = flattenTaikunKubeconfig(kubeconfigDTO)
+		kubeconfigContent := resourceTaikunKubeconfigGetContent(
+			kubeconfigDTO.ProjectID,
+			kubeconfigDTO.ID,
+			apiClient,
+		)
+		kubeconfigs[i] = flattenTaikunKubeconfig(kubeconfigDTO, kubeconfigContent)
 	}
 
-	if err := data.Set("kubeconfigs", kubeconfigs); err != nil {
+	if err := d.Set("kubeconfigs", kubeconfigs); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(i32toa(projectID))
+	d.SetId(i32toa(projectID))
 	return nil
 }

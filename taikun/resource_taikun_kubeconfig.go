@@ -23,6 +23,12 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 				"personal",
 			}, false),
 		},
+		"content": {
+			Description: "Content of the kubeconfig's YAML file.",
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The kubeconfig's ID.",
 			Type:        schema.TypeString,
@@ -90,16 +96,16 @@ func resourceTaikunKubeconfig() *schema.Resource {
 	}
 }
 
-func resourceTaikunKubeconfigCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := models.CreateKubeConfigCommand{
-		IsAccessibleForAll:     data.Get("access_scope").(string) == "all",
-		IsAccessibleForManager: data.Get("access_scope").(string) == "managers",
-		KubeConfigRoleID:       getKubeconfigRoleID(data.Get("role").(string)),
-		Name:                   data.Get("name").(string),
+		IsAccessibleForAll:     d.Get("access_scope").(string) == "all",
+		IsAccessibleForManager: d.Get("access_scope").(string) == "managers",
+		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
+		Name:                   d.Get("name").(string),
 	}
-	projectID, err := atoi32(data.Get("project_id").(string))
+	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -110,9 +116,9 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, data *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	data.SetId(response.Payload.ID)
+	d.SetId(response.Payload.ID)
 
-	return readAfterCreateWithRetries(generateResourceTaikunKubeconfigReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunKubeconfigReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunKubeconfigReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunKubeconfigRead(true)
@@ -121,11 +127,11 @@ func generateResourceTaikunKubeconfigReadWithoutRetries() schema.ReadContextFunc
 	return generateResourceTaikunKubeconfigRead(false)
 }
 func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFunc {
-	return func(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id := data.Id()
+		id := d.Id()
 		id32, err := atoi32(id)
-		data.SetId("")
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -138,26 +144,31 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 
 		if len(response.Payload.Data) != 1 {
 			if withRetries {
-				data.SetId(id)
+				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
 		}
 
 		kubeconfigDTO := response.Payload.Data[0]
-		if err := setResourceDataFromMap(data, flattenTaikunKubeconfig(kubeconfigDTO)); err != nil {
+		kubeconfigContent := resourceTaikunKubeconfigGetContent(
+			kubeconfigDTO.ProjectID,
+			kubeconfigDTO.ID,
+			apiClient,
+		)
+		if err := setResourceDataFromMap(d, flattenTaikunKubeconfig(kubeconfigDTO, kubeconfigContent)); err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(kubeconfigDTO.ID))
+		d.SetId(i32toa(kubeconfigDTO.ID))
 
 		return nil
 	}
 }
 
-func resourceTaikunKubeconfigDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,12 +181,13 @@ func resourceTaikunKubeconfigDelete(ctx context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 
-func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto) map[string]interface{} {
+func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubeconfigContent string) map[string]interface{} {
 	kubeconfigMap := map[string]interface{}{
+		"content":      kubeconfigContent,
 		"id":           i32toa(kubeconfigDTO.ID),
 		"name":         kubeconfigDTO.ServiceAccountName,
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
@@ -192,4 +204,22 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto) map[str
 		kubeconfigMap["access_scope"] = "personal"
 	}
 	return kubeconfigMap
+}
+
+func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *apiClient) string {
+
+	body := models.DownloadKubeConfigCommand{
+		ProjectID: projectID,
+		ID:        kubeconfigID,
+	}
+
+	params := kube_config.NewKubeConfigDownloadParams().WithV(ApiVersion)
+	params = params.WithBody(&body)
+
+	response, err := apiClient.client.KubeConfig.KubeConfigDownload(params, apiClient)
+	if err != nil {
+		return "Failed to retrieve content of kubeconfig"
+	}
+
+	return response.Payload.(string)
 }

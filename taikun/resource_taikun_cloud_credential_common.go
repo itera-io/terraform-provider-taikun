@@ -8,9 +8,9 @@ import (
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 )
 
-func resourceTaikunCloudCredentialDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -21,6 +21,6 @@ func resourceTaikunCloudCredentialDelete(_ context.Context, data *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }

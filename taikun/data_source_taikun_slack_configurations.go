@@ -33,13 +33,13 @@ func dataSourceTaikunSlackConfigurations() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunSlackConfigurationsRead(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunSlackConfigurationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 	dataSourceID := "all"
 
 	params := slack.NewSlackListParams().WithV(ApiVersion)
 
-	organizationIDData, organizationIDProvided := data.GetOk("organization_id")
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
@@ -68,11 +68,11 @@ func dataSourceTaikunSlackConfigurationsRead(_ context.Context, data *schema.Res
 		slackConfigurations[i] = flattenTaikunSlackConfiguration(rawSlackConfiguration)
 	}
 
-	if err := data.Set("slack_configurations", slackConfigurations); err != nil {
+	if err := d.Set("slack_configurations", slackConfigurations); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(dataSourceID)
+	d.SetId(dataSourceID)
 
 	return nil
 }

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/organizations"
@@ -45,17 +45,19 @@ func init() {
 				params = params.WithOffset(&offset)
 			}
 
+			var result *multierror.Error
+
 			for _, e := range organizationsList {
-				if strings.HasPrefix(e.Name, testNamePrefix) {
+				if shouldSweep(e.Name) {
 					params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(e.ID)
 					_, _, err = apiClient.client.Organizations.OrganizationsDelete(params, apiClient)
 					if err != nil {
-						return err
+						result = multierror.Append(result, err)
 					}
 				}
 			}
 
-			return nil
+			return result.ErrorOrNil()
 		},
 	})
 }
@@ -85,8 +87,8 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 	fullName := randomString()
 	discountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
-	email := "manager@example.org"
-	billingEmail := "billing@example.org"
+	email := randomEmail()
+	billingEmail := randomEmail()
 	phone := "+42424242424242"
 	address := "10 Downing Street"
 	city := "London"
@@ -147,10 +149,10 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 	newDiscountRate := math.Round(rand.Float64()*10000) / 100
 	vatNumber := randomString()
 	newVatNumber := randomString()
-	email := "manager@example.org"
-	newEmail := "manager@example.com"
-	billingEmail := "billing@example.org"
-	newBillingEmail := "billing@example.com"
+	email := randomEmail()
+	newEmail := randomEmail()
+	billingEmail := randomEmail()
+	newBillingEmail := randomEmail()
 	phone := "+42424242424242"
 	newPhone := "+43434343434343"
 	address := "10 Downing Street"

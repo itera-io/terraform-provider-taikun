@@ -14,10 +14,66 @@ import (
 
 func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"availability_zone": {
+			Description:  "The Azure availability zone for the location.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"client_id": {
+			Description:  "The Azure client ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"client_secret": {
+			Description:  "The Azure client secret.",
+			Type:         schema.TypeString,
+			Required:     true,
+			Sensitive:    true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"created_by": {
+			Description: "The creator of the Azure cloud credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"id": {
 			Description: "The ID of the Azure cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"is_default": {
+			Description: "Indicates whether the Azure cloud credential is the default one.",
+			Type:        schema.TypeBool,
+			Computed:    true,
+		},
+		"last_modified": {
+			Description: "Time and date of last modification.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_modified_by": {
+			Description: "The last user to have modified the Azure cloud credential.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"location": {
+			Description:  "The Azure location.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"lock": {
+			Description: "Indicates whether to lock the Azure cloud credential.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 		},
 		"name": {
 			Description: "The name of the Azure cloud credential.",
@@ -30,52 +86,6 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 					"expected only alpha numeric characters or non alpha numeric (-)",
 				),
 			),
-		},
-		"subscription_id": {
-			Description:  "The Azure subscription ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"client_id": {
-			Description:  "The Azure client ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"tenant_id": {
-			Description:  "The Azure tenant ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"client_secret": {
-			Description:  "The Azure client secret.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"availability_zone": {
-			Description:  "The Azure availability zone for the location.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"location": {
-			Description:  "The Azure location.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"organization_id": {
 			Description:      "The ID of the organization which owns the Azure cloud credential.",
@@ -90,31 +100,21 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"lock": {
-			Description: "Indicates whether to lock the Azure cloud credential.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
+		"subscription_id": {
+			Description:  "The Azure subscription ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"is_default": {
-			Description: "Indicates whether the Azure cloud credential is the default one.",
-			Type:        schema.TypeBool,
-			Computed:    true,
-		},
-		"created_by": {
-			Description: "The creator of the Azure cloud credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified": {
-			Description: "Time and date of last modification.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"last_modified_by": {
-			Description: "The last user to have modified the Azure cloud credential.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"tenant_id": {
+			Description:  "The Azure tenant ID.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }
@@ -130,24 +130,24 @@ func resourceTaikunCloudCredentialAzure() *schema.Resource {
 	}
 }
 
-func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
 	body := &models.CreateAzureCloudCommand{
-		Name:                  data.Get("name").(string),
-		AzureTenantID:         data.Get("tenant_id").(string),
-		AzureClientID:         data.Get("client_id").(string),
-		AzureClientSecret:     data.Get("client_secret").(string),
-		AzureSubscriptionID:   data.Get("subscription_id").(string),
-		AzureLocation:         data.Get("location").(string),
-		AzureAvailabilityZone: data.Get("availability_zone").(string),
+		Name:                  d.Get("name").(string),
+		AzureTenantID:         d.Get("tenant_id").(string),
+		AzureClientID:         d.Get("client_id").(string),
+		AzureClientSecret:     d.Get("client_secret").(string),
+		AzureSubscriptionID:   d.Get("subscription_id").(string),
+		AzureLocation:         d.Get("location").(string),
+		AzureAvailabilityZone: d.Get("availability_zone").(string),
 	}
 
-	organizationIDData, organizationIDIsSet := data.GetOk("organization_id")
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", data.Get("organization_id").(string))
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
 		body.OrganizationID = organizationId
 	}
@@ -162,15 +162,15 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, data *schema.
 		return diag.FromErr(err)
 	}
 
-	data.SetId(createResult.Payload.ID)
+	d.SetId(createResult.Payload.ID)
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunCloudCredentialAzureReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunCloudCredentialAzureRead(true)
@@ -179,10 +179,10 @@ func generateResourceTaikunCloudCredentialAzureReadWithoutRetries() schema.ReadC
 	return generateResourceTaikunCloudCredentialAzureRead(false)
 }
 func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		id, err := atoi32(data.Id())
-		data.SetId("")
+		id, err := atoi32(d.Id())
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -193,7 +193,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 		}
 		if len(response.Payload.Azure) != 1 {
 			if withRetries {
-				data.SetId(i32toa(id))
+				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
@@ -201,36 +201,36 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 
 		rawCloudCredentialAzure := response.GetPayload().Azure[0]
 
-		err = setResourceDataFromMap(data, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data.SetId(i32toa(id))
+		d.SetId(i32toa(id))
 
 		return nil
 	}
 }
 
-func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	id, err := atoi32(data.Id())
+	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := data.GetChange("lock"); locked.(bool) {
+	if locked, _ := d.GetChange("lock"); locked.(bool) {
 		if err := resourceTaikunCloudCredentialAzureLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if data.HasChanges("client_id", "client_secret", "name") {
+	if d.HasChanges("client_id", "client_secret", "name") {
 		updateBody := &models.UpdateAzureCommand{
 			ID:                id,
-			Name:              data.Get("name").(string),
-			AzureClientID:     data.Get("client_id").(string),
-			AzureClientSecret: data.Get("client_secret").(string),
+			Name:              d.Get("name").(string),
+			AzureClientID:     d.Get("client_id").(string),
+			AzureClientSecret: d.Get("client_secret").(string),
 		}
 		updateParams := azure.NewAzureUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.client.Azure.AzureUpdate(updateParams, apiClient)
@@ -239,13 +239,13 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, data *schema.
 		}
 	}
 
-	if data.Get("lock").(bool) {
+	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, data, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAzureReadWithRetries(), ctx, d, meta)
 }
 
 func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {

@@ -30,7 +30,7 @@ data "taikun_showback_rule" "foo" {
 - **created_by** (String) The creator of the showback rule.
 - **global_alert_limit** (Number) Set limit of alerts for all projects.
 - **kind** (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
-- **label** (List of Object) Labels linked to this showback rule. (see [below for nested schema](#nestedatt--label))
+- **label** (Set of Object) Labels linked to this showback rule. (see [below for nested schema](#nestedatt--label))
 - **last_modified** (String) Time of last modification.
 - **last_modified_by** (String) The last user who modified the showback rule.
 - **metric_name** (String) The metric name.

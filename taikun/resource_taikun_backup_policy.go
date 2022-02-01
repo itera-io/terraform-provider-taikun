@@ -94,18 +94,18 @@ func resourceTaikunBackupPolicy() *schema.Resource {
 	}
 }
 
-func resourceTaikunBackupPolicyCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	projectId, _ := atoi32(data.Get("project_id").(string))
+	projectId, _ := atoi32(d.Get("project_id").(string))
 
 	body := &models.CreateBackupPolicyCommand{
-		CronPeriod:        data.Get("cron_period").(string),
-		ExcludeNamespaces: resourceGetStringList(data.Get("excluded_namespaces")),
-		IncludeNamespaces: resourceGetStringList(data.Get("included_namespaces")),
-		Name:              data.Get("name").(string),
+		CronPeriod:        d.Get("cron_period").(string),
+		ExcludeNamespaces: resourceGetStringList(d.Get("excluded_namespaces")),
+		IncludeNamespaces: resourceGetStringList(d.Get("included_namespaces")),
+		Name:              d.Get("name").(string),
 		ProjectID:         projectId,
-		RetentionPeriod:   data.Get("retention_period").(string),
+		RetentionPeriod:   d.Get("retention_period").(string),
 	}
 
 	params := backup.NewBackupCreateParams().WithV(ApiVersion).WithBody(body)
@@ -114,9 +114,9 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, data *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	data.SetId(fmt.Sprintf("%d/%s", projectId, data.Get("name").(string)))
+	d.SetId(fmt.Sprintf("%d/%s", projectId, d.Get("name").(string)))
 
-	return readAfterCreateWithRetries(generateResourceTaikunBackupPolicyReadWithRetries(), ctx, data, meta)
+	return readAfterCreateWithRetries(generateResourceTaikunBackupPolicyReadWithRetries(), ctx, d, meta)
 }
 func generateResourceTaikunBackupPolicyReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunBackupPolicyRead(true)
@@ -125,13 +125,13 @@ func generateResourceTaikunBackupPolicyReadWithoutRetries() schema.ReadContextFu
 	return generateResourceTaikunBackupPolicyRead(false)
 }
 func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*apiClient)
-		projectId, backupPolicyName, err := parseBackupPolicyId(data.Id())
+		projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_backup_policy : %s", err)
 		}
-		data.SetId("")
+		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -143,28 +143,28 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 		for _, policy := range response.Payload.Data {
 			if policy.MetadataName == backupPolicyName {
 
-				err = setResourceDataFromMap(data, flattenTaikunBackupPolicy(policy))
+				err = setResourceDataFromMap(d, flattenTaikunBackupPolicy(policy))
 				if err != nil {
 					return diag.FromErr(err)
 				}
 
-				data.SetId(fmt.Sprintf("%d/%s", projectId, backupPolicyName))
+				d.SetId(fmt.Sprintf("%d/%s", projectId, backupPolicyName))
 
 				return nil
 			}
 		}
 
 		if withRetries {
-			data.SetId(fmt.Sprintf("%d/%s", projectId, backupPolicyName))
+			d.SetId(fmt.Sprintf("%d/%s", projectId, backupPolicyName))
 			return diag.Errorf(notFoundAfterCreateOrUpdateError)
 		}
 		return nil
 	}
 }
 
-func resourceTaikunBackupPolicyDelete(_ context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	projectId, backupPolicyName, err := parseBackupPolicyId(data.Id())
+	projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_backup_policy : %s", err)
 	}
@@ -179,7 +179,7 @@ func resourceTaikunBackupPolicyDelete(_ context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	data.SetId("")
+	d.SetId("")
 	return nil
 }
 
