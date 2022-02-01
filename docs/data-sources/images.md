@@ -31,8 +31,6 @@ data "taikun_images" "foo" {
 
 ### Optional
 
-- **aws_owner** (String) AWS owner (only valid with AWS Cloud Credential ID).
-- **aws_platform** (String) AWS Platform (only valid with AWS Cloud Credential ID).
 - **azure_offer** (String) Azure offer (only valid with Azure Cloud Credential ID).
 - **azure_publisher** (String) Azure publisher (only valid with Azure Cloud Credential ID).
 - **azure_sku** (String) Azure sku (only valid with Azure Cloud Credential ID).
