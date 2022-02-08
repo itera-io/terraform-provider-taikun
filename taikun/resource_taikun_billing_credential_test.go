@@ -7,56 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_billing_credential", &resource.Sweeper{
-		Name:         "taikun_billing_credential",
-		Dependencies: []string{"taikun_billing_rule"},
-		F: func(r string) error {
-			var result *multierror.Error
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion)
-
-			var operationCredentialsList []*models.OperationCredentialsListDto
-			for {
-				response, err := apiClient.client.OpsCredentials.OpsCredentialsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				operationCredentialsList = append(operationCredentialsList, response.GetPayload().Data...)
-				if len(operationCredentialsList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(operationCredentialsList))
-				params = params.WithOffset(&offset)
-			}
-
-			for _, e := range operationCredentialsList {
-				if shouldSweep(e.Name) {
-					params := ops_credentials.NewOpsCredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
-					_, _, err = apiClient.client.OpsCredentials.OpsCredentialsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunBillingCredentialConfig = `
 resource "taikun_billing_credential" "foo" {

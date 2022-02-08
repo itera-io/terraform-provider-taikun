@@ -7,98 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/projects"
-	"github.com/itera-io/taikungoclient/client/servers"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_project", &resource.Sweeper{
-		Name:         "taikun_project",
-		Dependencies: []string{},
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := projects.NewProjectsListParams().WithV(ApiVersion)
-
-			var projectList []*models.ProjectListForUIDto
-
-			for {
-				response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				projectList = append(projectList, response.GetPayload().Data...)
-				if len(projectList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(projectList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range projectList {
-				if shouldSweep(e.Name) {
-
-					readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(e.ID)
-					response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-						continue
-					}
-
-					if response.Payload.Project.IsLocked {
-						unlockedMode := getLockMode(false)
-						unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
-						if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
-							result = multierror.Append(result, err)
-							continue
-						}
-					}
-
-					serverIds := make([]int32, 0)
-					for _, e := range response.Payload.Data {
-						serverIds = append(serverIds, e.ID)
-					}
-					if len(serverIds) != 0 {
-						deleteServerBody := &models.DeleteServerCommand{
-							ProjectID: e.ID,
-							ServerIds: serverIds,
-						}
-						deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-						_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
-						if err != nil {
-							result = multierror.Append(result, err)
-							continue
-						}
-
-						if err := resourceTaikunProjectWaitForStatus(context.Background(), []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, e.ID); err != nil {
-							result = multierror.Append(result, err)
-							continue
-						}
-					}
-
-					params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteProjectCommand{ProjectID: e.ID})
-					_, _, err = apiClient.client.Projects.ProjectsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunProjectConfig = `
 resource "taikun_cloud_credential_aws" "foo" {

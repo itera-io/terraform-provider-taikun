@@ -6,56 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/users"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_user", &resource.Sweeper{
-		Name: "taikun_user",
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := users.NewUsersListParams().WithV(ApiVersion)
-
-			var userList []*models.UserForListDto
-			for {
-				response, err := apiClient.client.Users.UsersList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				userList = append(userList, response.GetPayload().Data...)
-				if len(userList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(userList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range userList {
-				if shouldSweep(e.Username) {
-					params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(e.ID)
-					_, _, err = apiClient.client.Users.UsersDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunUserConfig = `
 resource "taikun_user" "foo" {

@@ -6,58 +6,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_policy_profile", &resource.Sweeper{
-		Name:         "taikun_policy_profile",
-		Dependencies: []string{"taikun_project"},
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion)
-
-			var PolicyProfilesList []*models.OpaProfileListDto
-			for {
-				response, err := apiClient.client.OpaProfiles.OpaProfilesList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				PolicyProfilesList = append(PolicyProfilesList, response.GetPayload().Data...)
-				if len(PolicyProfilesList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(PolicyProfilesList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range PolicyProfilesList {
-				if shouldSweep(e.Name) {
-					params := opa_profiles.NewOpaProfilesDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteOpaProfileCommand{ID: e.ID})
-					_, err = apiClient.client.OpaProfiles.OpaProfilesDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunPolicyProfileConfig = `
 resource "taikun_policy_profile" "foo" {
