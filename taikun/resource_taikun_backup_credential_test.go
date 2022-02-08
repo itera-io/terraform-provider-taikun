@@ -7,56 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_backup_credential", &resource.Sweeper{
-		Name:         "taikun_backup_credential",
-		Dependencies: []string{"taikun_project"},
-		F: func(r string) error {
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion)
-
-			var backupCredentialsList []*models.BackupCredentialsListDto
-			for {
-				response, err := apiClient.client.S3Credentials.S3CredentialsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				backupCredentialsList = append(backupCredentialsList, response.GetPayload().Data...)
-				if len(backupCredentialsList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(backupCredentialsList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range backupCredentialsList {
-				if shouldSweep(e.S3Name) {
-					params := s3_credentials.NewS3CredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
-					_, _, err = apiClient.client.S3Credentials.S3CredentialsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunBackupCredentialConfig = `
 resource "taikun_backup_credential" "foo" {

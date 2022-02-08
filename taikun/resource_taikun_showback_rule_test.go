@@ -9,58 +9,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/itera-io/taikungoclient/client/showback"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_showback_rule", &resource.Sweeper{
-		Name: "taikun_showback_rule",
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := showback.NewShowbackRulesListParams().WithV(ApiVersion)
-
-			var showbackRulesList []*models.ShowbackRulesListDto
-
-			for {
-				response, err := apiClient.client.Showback.ShowbackRulesList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				showbackRulesList = append(showbackRulesList, response.GetPayload().Data...)
-				if len(showbackRulesList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(showbackRulesList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range showbackRulesList {
-				if shouldSweep(e.Name) {
-					params := showback.NewShowbackDeleteRuleParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackRuleCommand{ID: e.ID})
-					_, err = apiClient.client.Showback.ShowbackDeleteRule(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunShowbackRuleConfig = `
 resource "taikun_showback_rule" "foo" {

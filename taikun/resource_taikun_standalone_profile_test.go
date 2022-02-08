@@ -6,58 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_standalone_profile", &resource.Sweeper{
-		Name:         "taikun_standalone_profile",
-		Dependencies: []string{"taikun_project"},
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion)
-
-			var standaloneProfilesList []*models.StandAloneProfilesListDto
-			for {
-				response, err := apiClient.client.StandAloneProfile.StandAloneProfileList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				standaloneProfilesList = append(standaloneProfilesList, response.GetPayload().Data...)
-				if len(standaloneProfilesList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(standaloneProfilesList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range standaloneProfilesList {
-				if shouldSweep(e.Name) {
-					body := &models.DeleteStandAloneProfileCommand{ID: e.ID}
-					params := stand_alone_profile.NewStandAloneProfileDeleteParams().WithV(ApiVersion).WithBody(body)
-					_, err = apiClient.client.StandAloneProfile.StandAloneProfileDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunStandaloneProfileConfig = `
 resource "taikun_standalone_profile" "foo" {

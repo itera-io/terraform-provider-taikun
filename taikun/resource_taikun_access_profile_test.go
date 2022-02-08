@@ -6,57 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_access_profile", &resource.Sweeper{
-		Name:         "taikun_access_profile",
-		Dependencies: []string{"taikun_project"},
-		F: func(r string) error {
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
-
-			var accessProfilesList []*models.AccessProfilesListDto
-
-			for {
-				response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				accessProfilesList = append(accessProfilesList, response.GetPayload().Data...)
-				if len(accessProfilesList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(accessProfilesList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range accessProfilesList {
-				if shouldSweep(e.Name) {
-					params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(e.ID)
-					_, _, err = apiClient.client.AccessProfiles.AccessProfilesDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunAccessProfileConfig = `
 resource "taikun_access_profile" "foo" {

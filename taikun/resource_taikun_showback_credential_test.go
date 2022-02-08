@@ -7,56 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/itera-io/taikungoclient/client/showback"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_showback_credential", &resource.Sweeper{
-		Name: "taikun_showback_credential",
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion)
-
-			var showbackCredentialsList []*models.ShowbackCredentialsListDto
-			for {
-				response, err := apiClient.client.Showback.ShowbackCredentialsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				showbackCredentialsList = append(showbackCredentialsList, response.GetPayload().Data...)
-				if len(showbackCredentialsList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(showbackCredentialsList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range showbackCredentialsList {
-				if shouldSweep(e.Name) {
-					params := showback.NewShowbackDeleteShowbackCredentialParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackCredentialCommand{ID: e.ID})
-					_, err = apiClient.client.Showback.ShowbackDeleteShowbackCredential(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunShowbackCredentialConfig = `
 resource "taikun_showback_credential" "foo" {
