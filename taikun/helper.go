@@ -24,21 +24,6 @@ import (
 
 const testNamePrefix = "tf-acc-test-"
 
-var testNamePrefixes = []string{
-	testNamePrefix, // Terraform provider acceptance tests
-	"tk-cli-test-", // Taikun CLI tests
-	"tk-tf-test-",  // Taikun Terraform tests
-}
-
-func shouldSweep(resourceName string) bool {
-	for _, prefix := range testNamePrefixes {
-		if strings.HasPrefix(resourceName, prefix) {
-			return true
-		}
-	}
-	return false
-}
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
