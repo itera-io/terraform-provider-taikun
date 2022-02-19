@@ -291,8 +291,8 @@ func resourceTaikunProject() *schema.Resource {
 			},
 		),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(80 * time.Minute),
+			Update: schema.DefaultTimeout(80 * time.Minute),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -1039,7 +1039,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 
 			return resp, resp.Payload.Project.ProjectStatus, nil
 		},
-		Timeout:                   40 * time.Minute,
+		Timeout:                   80 * time.Minute,
 		Delay:                     5 * time.Second,
 		MinTimeout:                10 * time.Second,
 		ContinuousTargetOccurence: 2,
