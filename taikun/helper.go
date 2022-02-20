@@ -58,8 +58,9 @@ func gibiByteToMebiByte(x int32) int32 {
 	return x * 1024
 }
 
-func mebiByteToGibiByte(x int32) int32 {
-	return x / 1024
+func mebiByteToGibiByte(x int64) int32 {
+	var kibi int64 = 1024
+	return int32(x / kibi)
 }
 
 func gibiByteToByte(x int) int64 {
