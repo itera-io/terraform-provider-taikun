@@ -398,7 +398,6 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk2"
       size = 30
-      volume_type = "gp2"
       device_name = "/dev/sdf"
     }
     tag {
