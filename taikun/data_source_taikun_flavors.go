@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -148,29 +147,25 @@ func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSour
 }
 
 func flattenDataSourceTaikunFlavorsAWSItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
-	cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
-	ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
 	return map[string]interface{}{
-		"cpu":  cpu,
-		"name": flavorDTO.Name.(string),
-		"ram":  mebiByteToGibiByte(ram),
+		"cpu":  flavorDTO.CPU,
+		"name": flavorDTO.Name,
+		"ram":  mebiByteToGibiByte(flavorDTO.RAM),
 	}
 }
 
 func flattenDataSourceTaikunFlavorsAzureItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
 	return map[string]interface{}{
-		"cpu":  jsonNumberAsFloatToInt32(flavorDTO.CPU.(json.Number)),
-		"name": flavorDTO.Name.(string),
-		"ram":  jsonNumberAsFloatToInt32(flavorDTO.RAM.(json.Number)),
+		"cpu":  flavorDTO.CPU,
+		"name": flavorDTO.Name,
+		"ram":  flavorDTO.RAM,
 	}
 }
 
 func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
-	cpu, _ := atoi32(string(flavorDTO.CPU.(json.Number)))
-	ram, _ := atoi32(string(flavorDTO.RAM.(json.Number)))
 	return map[string]interface{}{
-		"cpu":  cpu,
-		"name": flavorDTO.Name.(string),
-		"ram":  mebiByteToGibiByte(ram),
+		"cpu":  flavorDTO.CPU,
+		"name": flavorDTO.Name,
+		"ram":  mebiByteToGibiByte(flavorDTO.RAM),
 	}
 }
