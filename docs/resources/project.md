@@ -85,6 +85,16 @@ resource "taikun_project" "foobar" {
   auto_upgrade    = true
   monitoring      = true
 
+  # If setting the kubernetes_version, be sure to use the meta-argument
+  # ignore_changes to ignore futures changes in case of kubernetes upgrade
+  # https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes
+  kubernetes_version = "v1.21.5"
+  lifecycle {
+    ignore_changes = [
+      kubernetes_version,
+    ]
+  }
+
   quota_cpu_units = 64
   quota_disk_size = 1024
   quota_ram_size  = 256
@@ -159,6 +169,7 @@ resource "taikun_project" "foobar" {
 - **flavors** (Set of String) List of flavors bound to the project.
 - **images** (Set of String) List of images bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
+- **kubernetes_version** (String) Kubernetes version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.
 - **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - **organization_id** (String) ID of the organization which owns the project.

@@ -118,7 +118,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"kubernetes_version": {
-			Description: "Kubernetes Version.",
+			Description: "Kubernetes Version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
