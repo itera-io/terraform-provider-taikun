@@ -332,6 +332,45 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 	})
 }
 
+const testAccResourceTaikunProjectKubernetesVersionConfig = `
+resource "taikun_cloud_credential_aws" "foo" {
+  name = "%s"
+  availability_zone = "%s"
+}
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  auto_upgrade = false
+  kubernetes_version = "%s"
+}
+`
+
+func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := shortRandomTestName()
+	kubernetesVersion := "v1.21.6"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectKubernetesVersionConfig,
+					cloudCredentialName,
+					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					projectName,
+					kubernetesVersion,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "kubernetes_version", kubernetesVersion),
+				),
+			},
+		},
+	})
+}
+
 const testAccResourceTaikunProjectQuotaConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"

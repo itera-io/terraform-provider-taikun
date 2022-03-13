@@ -117,6 +117,16 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"kubernetes_version": {
+			Description: "Kubernetes Version.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ValidateFunc: validation.StringMatch(
+				regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`),
+				"Kubernets version must be in the format vMAJOR.MINOR.PATCH",
+			),
+		},
 		"lock": {
 			Description: "Indicates whether to lock the project.",
 			Type:        schema.TypeBool,
@@ -387,6 +397,11 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
+	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
+		body.KubernetesVersion = kubernetesVersion.(string)
+	}
+
+	// Send project creation request
 	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body)
 	response, err := apiClient.client.Projects.ProjectsCreate(params, apiClient)
 	if err != nil {
@@ -852,6 +867,7 @@ func flattenTaikunProject(
 		"images":                images,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
+		"kubernetes_version":    projectDetailsDTO.KubernetesCurrentVersion,
 		"lock":                  projectDetailsDTO.IsLocked,
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
