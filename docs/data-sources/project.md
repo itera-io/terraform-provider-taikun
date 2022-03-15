@@ -36,6 +36,7 @@ data "taikun_project" "foo" {
 - **flavors** (Set of String) List of flavors bound to the project.
 - **images** (Set of String) List of images bound to the project.
 - **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
+- **kubernetes_version** (String) Kubernetes version.
 - **lock** (Boolean) Indicates whether to lock the project.
 - **monitoring** (Boolean) Kubernetes cluster monitoring.
 - **name** (String) Project name.
