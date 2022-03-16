@@ -23,20 +23,20 @@ data "taikun_kubernetes_profile" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the Kubernetes profile.
+- `id` (String) The ID of the Kubernetes profile.
 
 ### Read-Only
 
-- **bastion_proxy** (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.
-- **cni** (String) Container Network Interface (CNI) of the Kubernetes profile.
-- **created_by** (String) The creator of the Kubernetes profile.
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the Kubernetes profile.
-- **load_balancing_solution** (String) The load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.
-- **lock** (Boolean) Indicates whether to lock the Kubernetes profile.
-- **name** (String) The name of the Kubernetes profile.
-- **organization_id** (String) The ID of the organization which owns the Kubernetes profile.
-- **organization_name** (String) The name of the organization which owns the Kubernetes profile.
-- **schedule_on_master** (Boolean) When enabled, the workload will also run on master nodes (not recommended).
+- `bastion_proxy` (Boolean) Whether to expose the Service on each Node's IP at a static port, the NodePort. You'll be able to contact the NodePort Service, from outside the cluster, by requesting `<NodeIP>:<NodePort>`.
+- `cni` (String) Container Network Interface (CNI) of the Kubernetes profile.
+- `created_by` (String) The creator of the Kubernetes profile.
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the Kubernetes profile.
+- `load_balancing_solution` (String) The load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.
+- `lock` (Boolean) Indicates whether to lock the Kubernetes profile.
+- `name` (String) The name of the Kubernetes profile.
+- `organization_id` (String) The ID of the organization which owns the Kubernetes profile.
+- `organization_name` (String) The name of the organization which owns the Kubernetes profile.
+- `schedule_on_master` (Boolean) When enabled, the workload will also run on master nodes (not recommended).
 
 

@@ -25,23 +25,24 @@ data "taikun_slack_configurations" "all" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `id` (String) The ID of this resource.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **slack_configurations** (List of Object) List of retrieved Slack configurations. (see [below for nested schema](#nestedatt--slack_configurations))
+- `slack_configurations` (List of Object) List of retrieved Slack configurations. (see [below for nested schema](#nestedatt--slack_configurations))
 
 <a id="nestedatt--slack_configurations"></a>
 ### Nested Schema for `slack_configurations`
 
 Read-Only:
 
-- **channel** (String)
-- **id** (String)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **type** (String)
-- **url** (String)
+- `channel` (String)
+- `id` (String)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `type` (String)
+- `url` (String)
 
 

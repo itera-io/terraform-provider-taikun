@@ -27,25 +27,26 @@ data "taikun_images" "foo" {
 
 ### Required
 
-- **cloud_credential_id** (String) Cloud credential ID.
+- `cloud_credential_id` (String) Cloud credential ID.
 
 ### Optional
 
-- **aws_limit** (Number) Limit the number of listed AWS images (highly recommended as fetching the entire list of images can take a long time) (only valid with AWS cloud credential ID).
-- **azure_offer** (String) Azure offer (only valid with Azure Cloud Credential ID).
-- **azure_publisher** (String) Azure publisher (only valid with Azure Cloud Credential ID).
-- **azure_sku** (String) Azure sku (only valid with Azure Cloud Credential ID).
+- `aws_limit` (Number) Limit the number of listed AWS images (highly recommended as fetching the entire list of images can take a long time) (only valid with AWS cloud credential ID).
+- `azure_offer` (String) Azure offer (only valid with Azure Cloud Credential ID).
+- `azure_publisher` (String) Azure publisher (only valid with Azure Cloud Credential ID).
+- `azure_sku` (String) Azure sku (only valid with Azure Cloud Credential ID).
+- `id` (String) The ID of this resource.
 
 ### Read-Only
 
-- **images** (List of Object) List of retrieved images. (see [below for nested schema](#nestedatt--images))
+- `images` (List of Object) List of retrieved images. (see [below for nested schema](#nestedatt--images))
 
 <a id="nestedatt--images"></a>
 ### Nested Schema for `images`
 
 Read-Only:
 
-- **id** (String)
-- **name** (String)
+- `id` (String)
+- `name` (String)
 
 

@@ -25,34 +25,35 @@ data "taikun_cloud_credentials_openstack" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `id` (String) The ID of this resource.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **cloud_credentials** (List of Object) List of retrieved OpenStack cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
+- `cloud_credentials` (List of Object) List of retrieved OpenStack cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
 
 <a id="nestedatt--cloud_credentials"></a>
 ### Nested Schema for `cloud_credentials`
 
 Read-Only:
 
-- **availability_zone** (String)
-- **created_by** (String)
-- **domain** (String)
-- **id** (String)
-- **imported_network_subnet_id** (String)
-- **is_default** (Boolean)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **project_id** (String)
-- **project_name** (String)
-- **public_network_name** (String)
-- **region** (String)
-- **user** (String)
-- **volume_type_name** (String)
+- `availability_zone` (String)
+- `created_by` (String)
+- `domain` (String)
+- `id` (String)
+- `imported_network_subnet_id` (String)
+- `is_default` (Boolean)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `project_id` (String)
+- `project_name` (String)
+- `public_network_name` (String)
+- `region` (String)
+- `user` (String)
+- `volume_type_name` (String)
 
 

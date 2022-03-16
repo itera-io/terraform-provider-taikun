@@ -82,42 +82,42 @@ resource "taikun_alerting_profile" "foo" {
 
 ### Required
 
-- **name** (String) The alerting profile's name.
-- **reminder** (String) The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.
+- `name` (String) The alerting profile's name.
+- `reminder` (String) The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.
 
 ### Optional
 
-- **emails** (List of String) The list of emails to notify.
-- **integration** (Block List) List of alerting integrations. (see [below for nested schema](#nestedblock--integration))
-- **lock** (Boolean) Indicates whether to lock the profile. Defaults to `false`.
-- **organization_id** (String) The ID of the organization which owns the profile.
-- **slack_configuration_id** (String) The ID of the Slack configuration to notify. Defaults to `0`.
-- **webhook** (Block Set) The list of webhooks to notify. (see [below for nested schema](#nestedblock--webhook))
+- `emails` (List of String) The list of emails to notify.
+- `integration` (Block List) List of alerting integrations. (see [below for nested schema](#nestedblock--integration))
+- `lock` (Boolean) Indicates whether to lock the profile. Defaults to `false`.
+- `organization_id` (String) The ID of the organization which owns the profile.
+- `slack_configuration_id` (String) The ID of the Slack configuration to notify. Defaults to `0`.
+- `webhook` (Block Set) The list of webhooks to notify. (see [below for nested schema](#nestedblock--webhook))
 
 ### Read-Only
 
-- **created_by** (String) The creator of the alerting profile.
-- **id** (String) The alerting profile's ID.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the profile.
-- **organization_name** (String) The name of the organization which owns the profile.
-- **slack_configuration_name** (String) The name of the Slack configuration to notify.
+- `created_by` (String) The creator of the alerting profile.
+- `id` (String) The alerting profile's ID.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the profile.
+- `organization_name` (String) The name of the organization which owns the profile.
+- `slack_configuration_name` (String) The name of the Slack configuration to notify.
 
 <a id="nestedblock--integration"></a>
 ### Nested Schema for `integration`
 
 Required:
 
-- **type** (String) The type of integration: `Opsgenie`, `Pagerduty`, `Splunk` or `MicrosoftTeams`.
-- **url** (String) The alerting integration's URL.
+- `type` (String) The type of integration: `Opsgenie`, `Pagerduty`, `Splunk` or `MicrosoftTeams`.
+- `url` (String) The alerting integration's URL.
 
 Optional:
 
-- **token** (String) The token (required by Opsgenie, Pagerduty and Splunk). Defaults to ` `.
+- `token` (String) The token (required by Opsgenie, Pagerduty and Splunk). Defaults to ` `.
 
 Read-Only:
 
-- **id** (String) The alerting integration's ID.
+- `id` (String) The alerting integration's ID.
 
 
 <a id="nestedblock--webhook"></a>
@@ -125,19 +125,19 @@ Read-Only:
 
 Required:
 
-- **url** (String) The webhook URL.
+- `url` (String) The webhook URL.
 
 Optional:
 
-- **header** (Block Set) The list of headers. (see [below for nested schema](#nestedblock--webhook--header))
+- `header` (Block Set) The list of headers. (see [below for nested schema](#nestedblock--webhook--header))
 
 <a id="nestedblock--webhook--header"></a>
 ### Nested Schema for `webhook.header`
 
 Required:
 
-- **key** (String) The header key.
-- **value** (String) The header value.
+- `key` (String) The header key.
+- `value` (String) The header value.
 
 ## Import
 

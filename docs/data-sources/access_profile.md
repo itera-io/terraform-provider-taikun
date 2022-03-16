@@ -23,29 +23,29 @@ data "taikun_access_profile" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the access profile.
+- `id` (String) The ID of the access profile.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the access profile.
-- **dns_server** (List of Object) List of DNS servers. (see [below for nested schema](#nestedatt--dns_server))
-- **http_proxy** (String) HTTP proxy of the access profile.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the profile.
-- **lock** (Boolean) Indicates whether to lock the access profile.
-- **name** (String) The name of the access profile.
-- **ntp_server** (List of Object) List of NTP servers. (see [below for nested schema](#nestedatt--ntp_server))
-- **organization_id** (String) The ID of the organization which owns the access profile.
-- **organization_name** (String) The name of the organization which owns the access profile.
-- **ssh_user** (List of Object) List of SSH users. (see [below for nested schema](#nestedatt--ssh_user))
+- `created_by` (String) The creator of the access profile.
+- `dns_server` (List of Object) List of DNS servers. (see [below for nested schema](#nestedatt--dns_server))
+- `http_proxy` (String) HTTP proxy of the access profile.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the profile.
+- `lock` (Boolean) Indicates whether to lock the access profile.
+- `name` (String) The name of the access profile.
+- `ntp_server` (List of Object) List of NTP servers. (see [below for nested schema](#nestedatt--ntp_server))
+- `organization_id` (String) The ID of the organization which owns the access profile.
+- `organization_name` (String) The name of the organization which owns the access profile.
+- `ssh_user` (List of Object) List of SSH users. (see [below for nested schema](#nestedatt--ssh_user))
 
 <a id="nestedatt--dns_server"></a>
 ### Nested Schema for `dns_server`
 
 Read-Only:
 
-- **address** (String)
-- **id** (String)
+- `address` (String)
+- `id` (String)
 
 
 <a id="nestedatt--ntp_server"></a>
@@ -53,8 +53,8 @@ Read-Only:
 
 Read-Only:
 
-- **address** (String)
-- **id** (String)
+- `address` (String)
+- `id` (String)
 
 
 <a id="nestedatt--ssh_user"></a>
@@ -62,8 +62,8 @@ Read-Only:
 
 Read-Only:
 
-- **id** (String)
-- **name** (String)
-- **public_key** (String)
+- `id` (String)
+- `name` (String)
+- `public_key` (String)
 
 
