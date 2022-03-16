@@ -32,25 +32,25 @@ resource "taikun_user" "foo" {
 
 ### Required
 
-- **email** (String) The email of the user.
-- **role** (String) The role of the user: `Manager` or `User`.
-- **user_name** (String) The name of the user.
+- `email` (String) The email of the user.
+- `role` (String) The role of the user: `Manager` or `User`.
+- `user_name` (String) The name of the user.
 
 ### Optional
 
-- **display_name** (String) The user's display name. Defaults to ` `.
-- **organization_id** (String) The ID of the user's organization.
+- `display_name` (String) The user's display name. Defaults to ` `.
+- `organization_id` (String) The ID of the user's organization.
 
 ### Read-Only
 
-- **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed.
-- **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email.
-- **id** (String) The UUID of the user.
-- **is_approved_by_partner** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
-- **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager.
-- **is_disabled** (Boolean) Indicates whether the user is locked.
-- **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
-- **organization_name** (String) The name of the user's organization.
+- `email_confirmed` (Boolean) Indicates whether the email of the user has been confirmed.
+- `email_notification_enabled` (Boolean) Indicates whether the user has enabled notifications on their email.
+- `id` (String) The UUID of the user.
+- `is_approved_by_partner` (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
+- `is_csm` (Boolean) Indicates whether the user is a Customer Success Manager.
+- `is_disabled` (Boolean) Indicates whether the user is locked.
+- `is_owner` (Boolean) Indicates whether the user is the Owner of their organization.
+- `organization_name` (String) The name of the user's organization.
 
 ## Import
 

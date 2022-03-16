@@ -25,28 +25,29 @@ data "taikun_kubernetes_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `id` (String) The ID of this resource.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **kubernetes_profiles** (List of Object) List of retrieved Kubernetes profiles. (see [below for nested schema](#nestedatt--kubernetes_profiles))
+- `kubernetes_profiles` (List of Object) List of retrieved Kubernetes profiles. (see [below for nested schema](#nestedatt--kubernetes_profiles))
 
 <a id="nestedatt--kubernetes_profiles"></a>
 ### Nested Schema for `kubernetes_profiles`
 
 Read-Only:
 
-- **bastion_proxy** (Boolean)
-- **cni** (String)
-- **created_by** (String)
-- **id** (String)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **load_balancing_solution** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **schedule_on_master** (Boolean)
+- `bastion_proxy` (Boolean)
+- `cni` (String)
+- `created_by` (String)
+- `id` (String)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `load_balancing_solution` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `schedule_on_master` (Boolean)
 
 

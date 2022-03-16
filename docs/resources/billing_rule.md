@@ -40,31 +40,31 @@ resource "taikun_billing_rule" "foo" {
 
 ### Required
 
-- **billing_credential_id** (String) ID of the billing credential.
-- **label** (Block Set, Min: 1) Labels linked to the billing rule. (see [below for nested schema](#nestedblock--label))
-- **metric_name** (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
-- **name** (String) The name of the billing rule.
-- **price** (Number) The price in CZK per selected unit.
-- **type** (String) The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
+- `billing_credential_id` (String) ID of the billing credential.
+- `label` (Block Set, Min: 1) Labels linked to the billing rule. (see [below for nested schema](#nestedblock--label))
+- `metric_name` (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
+- `name` (String) The name of the billing rule.
+- `price` (Number) The price in CZK per selected unit.
+- `type` (String) The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 ### Read-Only
 
-- **created_by** (String) The creator of the billing rule.
-- **id** (String) The ID of the billing rule.
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the billing rule.
+- `created_by` (String) The creator of the billing rule.
+- `id` (String) The ID of the billing rule.
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the billing rule.
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
 
 Required:
 
-- **key** (String) Key of the label.
-- **value** (String) Value of the label.
+- `key` (String) Key of the label.
+- `value` (String) Value of the label.
 
 Read-Only:
 
-- **id** (String) ID of the label.
+- `id` (String) ID of the label.
 
 ## Import
 

@@ -30,17 +30,18 @@ resource "taikun_backup_policy" "foo" {
 
 ### Required
 
-- **cron_period** (String) Frequency of backups.
-- **name** (String) The name of the backup policy.
-- **project_id** (String) The ID of the project.
+- `cron_period` (String) Frequency of backups.
+- `name` (String) The name of the backup policy.
+- `project_id` (String) The ID of the project.
 
 ### Optional
 
-- **excluded_namespaces** (List of String) Namespaces excluded from the backups.
-- **included_namespaces** (List of String) Namespaces included in the backups.
-- **retention_period** (String) How long to store the backups. Defaults to `720h`.
+- `excluded_namespaces` (List of String) Namespaces excluded from the backups.
+- `id` (String) The ID of this resource.
+- `included_namespaces` (List of String) Namespaces included in the backups.
+- `retention_period` (String) How long to store the backups. Defaults to `720h`.
 
 ### Read-Only
 
-- **phase** (String) The phase of the backup policy.
+- `phase` (String) The phase of the backup policy.
 

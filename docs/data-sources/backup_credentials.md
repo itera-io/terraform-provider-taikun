@@ -25,28 +25,29 @@ data "taikun_backup_credentials" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `id` (String) The ID of this resource.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **backup_credentials** (List of Object) List of retrieved backup credentials. (see [below for nested schema](#nestedatt--backup_credentials))
+- `backup_credentials` (List of Object) List of retrieved backup credentials. (see [below for nested schema](#nestedatt--backup_credentials))
 
 <a id="nestedatt--backup_credentials"></a>
 ### Nested Schema for `backup_credentials`
 
 Read-Only:
 
-- **created_by** (String)
-- **id** (String)
-- **is_default** (Boolean)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **s3_access_key_id** (String)
-- **s3_endpoint** (String)
-- **s3_region** (String)
+- `created_by` (String)
+- `id` (String)
+- `is_default` (Boolean)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `s3_access_key_id` (String)
+- `s3_endpoint` (String)
+- `s3_region` (String)
 
 

@@ -85,6 +85,10 @@ resource "taikun_project" "foobar" {
   auto_upgrade    = true
   monitoring      = true
 
+  quota_cpu_units = 64
+  quota_disk_size = 1024
+  quota_ram_size  = 256
+
   # If setting the kubernetes_version, be sure to use the meta-argument
   # ignore_changes to ignore futures changes in case of kubernetes upgrade
   # https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes
@@ -94,10 +98,6 @@ resource "taikun_project" "foobar" {
       kubernetes_version,
     ]
   }
-
-  quota_cpu_units = 64
-  quota_disk_size = 1024
-  quota_ram_size  = 256
 
   flavors = local.flavors
   images  = local.images
@@ -156,63 +156,63 @@ resource "taikun_project" "foobar" {
 
 ### Required
 
-- **cloud_credential_id** (String) ID of the cloud credential used to create the project's servers.
-- **name** (String) Project name.
+- `cloud_credential_id` (String) ID of the cloud credential used to create the project's servers.
+- `name` (String) Project name.
 
 ### Optional
 
-- **access_profile_id** (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
-- **alerting_profile_id** (String) ID of the project's alerting profile.
-- **auto_upgrade** (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available. Defaults to `false`.
-- **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
-- **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
-- **flavors** (Set of String) List of flavors bound to the project.
-- **images** (Set of String) List of images bound to the project.
-- **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
-- **kubernetes_version** (String) Kubernetes version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.
-- **lock** (Boolean) Indicates whether to lock the project. Defaults to `false`.
-- **monitoring** (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
-- **organization_id** (String) ID of the organization which owns the project.
-- **policy_profile_id** (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
-- **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
-- **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
-- **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
-- **router_id_end_range** (Number) Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
-- **router_id_start_range** (Number) Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
-- **server_bastion** (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
-- **server_kubemaster** (Block Set) Kubemaster server. Required with: `server_bastion`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_kubemaster))
-- **server_kubeworker** (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
-- **taikun_lb_flavor** (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
-- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- **vm** (Block List) Virtual machines. (see [below for nested schema](#nestedblock--vm))
+- `access_profile_id` (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
+- `alerting_profile_id` (String) ID of the project's alerting profile.
+- `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available. Defaults to `false`.
+- `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
+- `expiration_date` (String) Project's expiration date in the format: 'dd/mm/yyyy'.
+- `flavors` (Set of String) List of flavors bound to the project.
+- `images` (Set of String) List of images bound to the project.
+- `kubernetes_profile_id` (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
+- `kubernetes_version` (String) Kubernetes Version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.
+- `lock` (Boolean) Indicates whether to lock the project. Defaults to `false`.
+- `monitoring` (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
+- `organization_id` (String) ID of the organization which owns the project.
+- `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
+- `quota_cpu_units` (Number) Maximum CPU units. Unlimited if unspecified.
+- `quota_disk_size` (Number) Maximum disk size in GBs. Unlimited if unspecified.
+- `quota_ram_size` (Number) Maximum RAM size in GBs. Unlimited if unspecified.
+- `router_id_end_range` (Number) Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
+- `router_id_start_range` (Number) Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
+- `server_bastion` (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
+- `server_kubemaster` (Block Set) Kubemaster server. Required with: `server_bastion`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_kubemaster))
+- `server_kubeworker` (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
+- `taikun_lb_flavor` (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `vm` (Block List) Virtual machines. (see [below for nested schema](#nestedblock--vm))
 
 ### Read-Only
 
-- **access_ip** (String) Public IP address of the bastion.
-- **alerting_profile_name** (String) Name of the project's alerting profile.
-- **id** (String) Project ID.
-- **quota_id** (String) ID of the project quota.
+- `access_ip` (String) Public IP address of the bastion.
+- `alerting_profile_name` (String) Name of the project's alerting profile.
+- `id` (String) Project ID.
+- `quota_id` (String) ID of the project quota.
 
 <a id="nestedblock--server_bastion"></a>
 ### Nested Schema for `server_bastion`
 
 Required:
 
-- **flavor** (String) The server's flavor.
-- **name** (String) Name of the server.
+- `flavor` (String) The server's flavor.
+- `name` (String) Name of the server.
 
 Optional:
 
-- **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
+- `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 
 Read-Only:
 
-- **created_by** (String) The creator of the server.
-- **id** (String) ID of the server.
-- **ip** (String) IP of the server.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the server.
-- **status** (String) Server status.
+- `created_by` (String) The creator of the server.
+- `id` (String) ID of the server.
+- `ip` (String) IP of the server.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the server.
+- `status` (String) Server status.
 
 
 <a id="nestedblock--server_kubemaster"></a>
@@ -220,30 +220,30 @@ Read-Only:
 
 Required:
 
-- **flavor** (String) The server's flavor.
-- **name** (String) Name of the server.
+- `flavor` (String) The server's flavor.
+- `name` (String) Name of the server.
 
 Optional:
 
-- **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
-- **kubernetes_node_label** (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
+- `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
+- `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
 
 Read-Only:
 
-- **created_by** (String) The creator of the server.
-- **id** (String) ID of the server.
-- **ip** (String) IP of the server.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the server.
-- **status** (String) Server status.
+- `created_by` (String) The creator of the server.
+- `id` (String) ID of the server.
+- `ip` (String) IP of the server.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the server.
+- `status` (String) Server status.
 
 <a id="nestedblock--server_kubemaster--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubemaster.kubernetes_node_label`
 
 Required:
 
-- **key** (String) Kubernetes node label key.
-- **value** (String) Kubernetes node label value.
+- `key` (String) Kubernetes node label key.
+- `value` (String) Kubernetes node label value.
 
 
 
@@ -252,30 +252,30 @@ Required:
 
 Required:
 
-- **flavor** (String) The server's flavor.
-- **name** (String) Name of the server.
+- `flavor` (String) The server's flavor.
+- `name` (String) Name of the server.
 
 Optional:
 
-- **disk_size** (Number) The server's disk size in GBs. Defaults to `30`.
-- **kubernetes_node_label** (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+- `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
+- `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
 
 Read-Only:
 
-- **created_by** (String) The creator of the server.
-- **id** (String) ID of the server.
-- **ip** (String) IP of the server.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the server.
-- **status** (String) Server status.
+- `created_by` (String) The creator of the server.
+- `id` (String) ID of the server.
+- `ip` (String) IP of the server.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the server.
+- `status` (String) Server status.
 
 <a id="nestedblock--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubeworker.kubernetes_node_label`
 
 Required:
 
-- **key** (String) Kubernetes node label key.
-- **value** (String) Kubernetes node label value.
+- `key` (String) Kubernetes node label key.
+- `value` (String) Kubernetes node label value.
 
 
 
@@ -284,8 +284,8 @@ Required:
 
 Optional:
 
-- **create** (String)
-- **update** (String)
+- `create` (String)
+- `update` (String)
 
 
 <a id="nestedblock--vm"></a>
@@ -293,48 +293,48 @@ Optional:
 
 Required:
 
-- **flavor** (String) The VM's flavor.
-- **image_id** (String) The VM's image ID (updating this field will recreate the VM).
-- **name** (String) Name of the VM (updating this field will recreate the VM).
-- **standalone_profile_id** (String) Standalone profile ID bound to the VM (updating this field will recreate the VM).
-- **volume_size** (Number) The VM's volume size in GBs (updating this field will recreate the VM).
+- `flavor` (String) The VM's flavor.
+- `image_id` (String) The VM's image ID (updating this field will recreate the VM).
+- `name` (String) Name of the VM (updating this field will recreate the VM).
+- `standalone_profile_id` (String) Standalone profile ID bound to the VM (updating this field will recreate the VM).
+- `volume_size` (Number) The VM's volume size in GBs (updating this field will recreate the VM).
 
 Optional:
 
-- **cloud_init** (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
-- **disk** (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
-- **public_ip** (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
-- **tag** (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
-- **volume_type** (String) Volume type (updating this field will recreate the VM).
+- `cloud_init` (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
+- `disk` (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
+- `public_ip` (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
+- `tag` (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
+- `volume_type` (String) Volume type (updating this field will recreate the VM).
 
 Read-Only:
 
-- **access_ip** (String) Access IP of the VM.
-- **created_by** (String) The creator of the VM.
-- **id** (String) ID of the VM.
-- **image_name** (String) The VM's image name.
-- **ip** (String) IP of the VM.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the VM.
-- **status** (String) VM status.
+- `access_ip` (String) Access IP of the VM.
+- `created_by` (String) The creator of the VM.
+- `id` (String) ID of the VM.
+- `image_name` (String) The VM's image name.
+- `ip` (String) IP of the VM.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the VM.
+- `status` (String) VM status.
 
 <a id="nestedblock--vm--disk"></a>
 ### Nested Schema for `vm.disk`
 
 Required:
 
-- **name** (String) Name of the disk.
-- **size** (Number) The disk size in GBs.
+- `name` (String) Name of the disk.
+- `size` (Number) The disk size in GBs.
 
 Optional:
 
-- **device_name** (String) Name of the device (required with AWS).
-- **lun_id** (Number) LUN ID (required with Azure).
-- **volume_type** (String) Type of the volume (only valid with OpenStack).
+- `device_name` (String) Name of the device (required with AWS).
+- `lun_id` (Number) LUN ID (required with Azure).
+- `volume_type` (String) Type of the volume (only valid with OpenStack).
 
 Read-Only:
 
-- **id** (String) ID of the disk.
+- `id` (String) ID of the disk.
 
 
 <a id="nestedblock--vm--tag"></a>
@@ -342,8 +342,8 @@ Read-Only:
 
 Required:
 
-- **key** (String) Key of the tag.
-- **value** (String) Value of the tag.
+- `key` (String) Key of the tag.
+- `value` (String) Value of the tag.
 
 ## Import
 

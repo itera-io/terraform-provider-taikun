@@ -32,23 +32,23 @@ resource "taikun_backup_credential" "foo" {
 
 ### Required
 
-- **name** (String) The name of the backup credential.
-- **s3_access_key_id** (String) The S3 access key ID.
-- **s3_endpoint** (String) The S3 endpoint URL.
-- **s3_region** (String) The S3 region.
-- **s3_secret_access_key** (String, Sensitive) The S3 secret access key.
+- `name` (String) The name of the backup credential.
+- `s3_access_key_id` (String) The S3 access key ID.
+- `s3_endpoint` (String) The S3 endpoint URL.
+- `s3_region` (String) The S3 region.
+- `s3_secret_access_key` (String, Sensitive) The S3 secret access key.
 
 ### Optional
 
-- **lock** (Boolean) Indicates whether to lock the backup credential. Defaults to `false`.
-- **organization_id** (String) The ID of the organization which owns the backup credential.
+- `lock` (Boolean) Indicates whether to lock the backup credential. Defaults to `false`.
+- `organization_id` (String) The ID of the organization which owns the backup credential.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the backup credential.
-- **id** (String) The ID of the backup credential.
-- **is_default** (Boolean) Indicates whether the backup credential is the organization's default.
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the backup credential.
-- **organization_name** (String) The name of the organization which owns the backup credential.
+- `created_by` (String) The creator of the backup credential.
+- `id` (String) The ID of the backup credential.
+- `is_default` (Boolean) Indicates whether the backup credential is the organization's default.
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the backup credential.
+- `organization_name` (String) The name of the organization which owns the backup credential.
 

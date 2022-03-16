@@ -23,26 +23,26 @@ data "taikun_cloud_credential_openstack" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the OpenStack cloud credential.
+- `id` (String) The ID of the OpenStack cloud credential.
 
 ### Read-Only
 
-- **availability_zone** (String) The OpenStack availability zone.
-- **created_by** (String) The creator of the OpenStack cloud credential.
-- **domain** (String) The OpenStack domain.
-- **imported_network_subnet_id** (String) The OpenStack network subnet ID to import a network.
-- **is_default** (Boolean) Indicates whether the OpenStack cloud credential is the default one.
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the OpenStack cloud credential.
-- **lock** (Boolean) Indicates whether to lock the OpenStack cloud credential.
-- **name** (String) The name of the OpenStack cloud credential.
-- **organization_id** (String) The ID of the organization which owns the OpenStack cloud credential.
-- **organization_name** (String) The name of the organization which owns the OpenStack cloud credential.
-- **project_id** (String) The OpenStack project ID.
-- **project_name** (String) The OpenStack project name.
-- **public_network_name** (String) The name of the public OpenStack network to use.
-- **region** (String) The OpenStack region.
-- **user** (String) The OpenStack user.
-- **volume_type_name** (String) The OpenStack type of volume.
+- `availability_zone` (String) The OpenStack availability zone.
+- `created_by` (String) The creator of the OpenStack cloud credential.
+- `domain` (String) The OpenStack domain.
+- `imported_network_subnet_id` (String) The OpenStack network subnet ID to import a network.
+- `is_default` (Boolean) Indicates whether the OpenStack cloud credential is the default one.
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the OpenStack cloud credential.
+- `lock` (Boolean) Indicates whether to lock the OpenStack cloud credential.
+- `name` (String) The name of the OpenStack cloud credential.
+- `organization_id` (String) The ID of the organization which owns the OpenStack cloud credential.
+- `organization_name` (String) The name of the organization which owns the OpenStack cloud credential.
+- `project_id` (String) The OpenStack project ID.
+- `project_name` (String) The OpenStack project name.
+- `public_network_name` (String) The name of the public OpenStack network to use.
+- `region` (String) The OpenStack region.
+- `user` (String) The OpenStack user.
+- `volume_type_name` (String) The OpenStack type of volume.
 
 

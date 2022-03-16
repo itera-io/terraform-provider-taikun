@@ -31,24 +31,24 @@ resource "taikun_billing_credential" "foo" {
 
 ### Required
 
-- **name** (String) The name of the billing credential.
-- **prometheus_password** (String, Sensitive) The Prometheus password.
-- **prometheus_url** (String) The Prometheus URL.
-- **prometheus_username** (String) The Prometheus username.
+- `name` (String) The name of the billing credential.
+- `prometheus_password` (String, Sensitive) The Prometheus password.
+- `prometheus_url` (String) The Prometheus URL.
+- `prometheus_username` (String) The Prometheus username.
 
 ### Optional
 
-- **lock** (Boolean) Indicates whether to lock the billing credential. Defaults to `false`.
-- **organization_id** (String) The ID of the organization which owns the billing credential.
+- `lock` (Boolean) Indicates whether to lock the billing credential. Defaults to `false`.
+- `organization_id` (String) The ID of the organization which owns the billing credential.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the billing credential.
-- **id** (String) The ID of the billing credential.
-- **is_default** (Boolean) Indicates whether the billing credential is the organization's default.
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the billing credential.
-- **organization_name** (String) The name of the organization which owns the billing credential.
+- `created_by` (String) The creator of the billing credential.
+- `id` (String) The ID of the billing credential.
+- `is_default` (Boolean) Indicates whether the billing credential is the organization's default.
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the billing credential.
+- `organization_name` (String) The name of the organization which owns the billing credential.
 
 ## Import
 
