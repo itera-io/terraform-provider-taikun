@@ -25,41 +25,42 @@ data "taikun_alerting_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `id` (String) The ID of this resource.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **alerting_profiles** (List of Object) List of retrieved alerting profiles. (see [below for nested schema](#nestedatt--alerting_profiles))
+- `alerting_profiles` (List of Object) List of retrieved alerting profiles. (see [below for nested schema](#nestedatt--alerting_profiles))
 
 <a id="nestedatt--alerting_profiles"></a>
 ### Nested Schema for `alerting_profiles`
 
 Read-Only:
 
-- **created_by** (String)
-- **emails** (List of String)
-- **id** (String)
-- **integration** (List of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--integration))
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **reminder** (String)
-- **slack_configuration_id** (String)
-- **slack_configuration_name** (String)
-- **webhook** (Set of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--webhook))
+- `created_by` (String)
+- `emails` (List of String)
+- `id` (String)
+- `integration` (List of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--integration))
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `reminder` (String)
+- `slack_configuration_id` (String)
+- `slack_configuration_name` (String)
+- `webhook` (Set of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--webhook))
 
 <a id="nestedobjatt--alerting_profiles--integration"></a>
 ### Nested Schema for `alerting_profiles.integration`
 
 Read-Only:
 
-- **id** (String)
-- **token** (String)
-- **type** (String)
-- **url** (String)
+- `id` (String)
+- `token` (String)
+- `type` (String)
+- `url` (String)
 
 
 <a id="nestedobjatt--alerting_profiles--webhook"></a>
@@ -67,15 +68,15 @@ Read-Only:
 
 Read-Only:
 
-- **header** (Set of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--webhook--header))
-- **url** (String)
+- `header` (Set of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--webhook--header))
+- `url` (String)
 
 <a id="nestedobjatt--alerting_profiles--webhook--header"></a>
 ### Nested Schema for `alerting_profiles.webhook.header`
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 

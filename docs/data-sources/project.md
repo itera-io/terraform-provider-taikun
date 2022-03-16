@@ -21,50 +21,50 @@ data "taikun_project" "foo" {
 
 ### Required
 
-- **id** (String) Project ID.
+- `id` (String) Project ID.
 
 ### Read-Only
 
-- **access_ip** (String) Public IP address of the bastion.
-- **access_profile_id** (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
-- **alerting_profile_id** (String) ID of the project's alerting profile.
-- **alerting_profile_name** (String) Name of the project's alerting profile.
-- **auto_upgrade** (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available.
-- **backup_credential_id** (String) ID of the backup credential. If unspecified, backups are disabled.
-- **cloud_credential_id** (String) ID of the cloud credential used to create the project's servers.
-- **expiration_date** (String) Project's expiration date in the format: 'dd/mm/yyyy'.
-- **flavors** (Set of String) List of flavors bound to the project.
-- **images** (Set of String) List of images bound to the project.
-- **kubernetes_profile_id** (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
-- **kubernetes_version** (String) Kubernetes version.
-- **lock** (Boolean) Indicates whether to lock the project.
-- **monitoring** (Boolean) Kubernetes cluster monitoring.
-- **name** (String) Project name.
-- **organization_id** (String) ID of the organization which owns the project.
-- **policy_profile_id** (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
-- **quota_cpu_units** (Number) Maximum CPU units. Unlimited if unspecified.
-- **quota_disk_size** (Number) Maximum disk size in GBs. Unlimited if unspecified.
-- **quota_id** (String) ID of the project quota.
-- **quota_ram_size** (Number) Maximum RAM size in GBs. Unlimited if unspecified.
-- **server_bastion** (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
-- **server_kubemaster** (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
-- **server_kubeworker** (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
-- **vm** (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
+- `access_ip` (String) Public IP address of the bastion.
+- `access_profile_id` (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
+- `alerting_profile_id` (String) ID of the project's alerting profile.
+- `alerting_profile_name` (String) Name of the project's alerting profile.
+- `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available.
+- `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
+- `cloud_credential_id` (String) ID of the cloud credential used to create the project's servers.
+- `expiration_date` (String) Project's expiration date in the format: 'dd/mm/yyyy'.
+- `flavors` (Set of String) List of flavors bound to the project.
+- `images` (Set of String) List of images bound to the project.
+- `kubernetes_profile_id` (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
+- `kubernetes_version` (String) Kubernetes Version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.
+- `lock` (Boolean) Indicates whether to lock the project.
+- `monitoring` (Boolean) Kubernetes cluster monitoring.
+- `name` (String) Project name.
+- `organization_id` (String) ID of the organization which owns the project.
+- `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
+- `quota_cpu_units` (Number) Maximum CPU units. Unlimited if unspecified.
+- `quota_disk_size` (Number) Maximum disk size in GBs. Unlimited if unspecified.
+- `quota_id` (String) ID of the project quota.
+- `quota_ram_size` (Number) Maximum RAM size in GBs. Unlimited if unspecified.
+- `server_bastion` (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
+- `server_kubemaster` (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
+- `server_kubeworker` (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
+- `vm` (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
 
 <a id="nestedatt--server_bastion"></a>
 ### Nested Schema for `server_bastion`
 
 Read-Only:
 
-- **created_by** (String)
-- **disk_size** (Number)
-- **flavor** (String)
-- **id** (String)
-- **ip** (String)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **name** (String)
-- **status** (String)
+- `created_by` (String)
+- `disk_size` (Number)
+- `flavor` (String)
+- `id` (String)
+- `ip` (String)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `name` (String)
+- `status` (String)
 
 
 <a id="nestedatt--server_kubemaster"></a>
@@ -72,24 +72,24 @@ Read-Only:
 
 Read-Only:
 
-- **created_by** (String)
-- **disk_size** (Number)
-- **flavor** (String)
-- **id** (String)
-- **ip** (String)
-- **kubernetes_node_label** (Set of Object) (see [below for nested schema](#nestedobjatt--server_kubemaster--kubernetes_node_label))
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **name** (String)
-- **status** (String)
+- `created_by` (String)
+- `disk_size` (Number)
+- `flavor` (String)
+- `id` (String)
+- `ip` (String)
+- `kubernetes_node_label` (Set of Object) (see [below for nested schema](#nestedobjatt--server_kubemaster--kubernetes_node_label))
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `name` (String)
+- `status` (String)
 
 <a id="nestedobjatt--server_kubemaster--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubemaster.kubernetes_node_label`
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 
 
@@ -98,24 +98,24 @@ Read-Only:
 
 Read-Only:
 
-- **created_by** (String)
-- **disk_size** (Number)
-- **flavor** (String)
-- **id** (String)
-- **ip** (String)
-- **kubernetes_node_label** (Set of Object) (see [below for nested schema](#nestedobjatt--server_kubeworker--kubernetes_node_label))
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **name** (String)
-- **status** (String)
+- `created_by` (String)
+- `disk_size` (Number)
+- `flavor` (String)
+- `id` (String)
+- `ip` (String)
+- `kubernetes_node_label` (Set of Object) (see [below for nested schema](#nestedobjatt--server_kubeworker--kubernetes_node_label))
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `name` (String)
+- `status` (String)
 
 <a id="nestedobjatt--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubeworker.kubernetes_node_label`
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 
 
@@ -124,36 +124,36 @@ Read-Only:
 
 Read-Only:
 
-- **access_ip** (String)
-- **cloud_init** (String)
-- **created_by** (String)
-- **disk** (List of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
-- **flavor** (String)
-- **id** (String)
-- **image_id** (String)
-- **image_name** (String)
-- **ip** (String)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **name** (String)
-- **public_ip** (Boolean)
-- **standalone_profile_id** (String)
-- **status** (String)
-- **tag** (Set of Object) (see [below for nested schema](#nestedobjatt--vm--tag))
-- **volume_size** (Number)
-- **volume_type** (String)
+- `access_ip` (String)
+- `cloud_init` (String)
+- `created_by` (String)
+- `disk` (List of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
+- `flavor` (String)
+- `id` (String)
+- `image_id` (String)
+- `image_name` (String)
+- `ip` (String)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `name` (String)
+- `public_ip` (Boolean)
+- `standalone_profile_id` (String)
+- `status` (String)
+- `tag` (Set of Object) (see [below for nested schema](#nestedobjatt--vm--tag))
+- `volume_size` (Number)
+- `volume_type` (String)
 
 <a id="nestedobjatt--vm--disk"></a>
 ### Nested Schema for `vm.disk`
 
 Read-Only:
 
-- **device_name** (String)
-- **id** (String)
-- **lun_id** (Number)
-- **name** (String)
-- **size** (Number)
-- **volume_type** (String)
+- `device_name` (String)
+- `id` (String)
+- `lun_id` (Number)
+- `name` (String)
+- `size` (Number)
+- `volume_type` (String)
 
 
 <a id="nestedobjatt--vm--tag"></a>
@@ -161,7 +161,7 @@ Read-Only:
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 

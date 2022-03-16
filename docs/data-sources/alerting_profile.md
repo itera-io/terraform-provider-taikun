@@ -23,33 +23,33 @@ data "taikun_alerting_profile" "foo" {
 
 ### Required
 
-- **id** (String) The alerting profile's ID.
+- `id` (String) The alerting profile's ID.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the alerting profile.
-- **emails** (List of String) The list of emails to notify.
-- **integration** (List of Object) List of alerting integrations. (see [below for nested schema](#nestedatt--integration))
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the profile.
-- **lock** (Boolean) Indicates whether to lock the profile.
-- **name** (String) The alerting profile's name.
-- **organization_id** (String) The ID of the organization which owns the profile.
-- **organization_name** (String) The name of the organization which owns the profile.
-- **reminder** (String) The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.
-- **slack_configuration_id** (String) The ID of the Slack configuration to notify.
-- **slack_configuration_name** (String) The name of the Slack configuration to notify.
-- **webhook** (Set of Object) The list of webhooks to notify. (see [below for nested schema](#nestedatt--webhook))
+- `created_by` (String) The creator of the alerting profile.
+- `emails` (List of String) The list of emails to notify.
+- `integration` (List of Object) List of alerting integrations. (see [below for nested schema](#nestedatt--integration))
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the profile.
+- `lock` (Boolean) Indicates whether to lock the profile.
+- `name` (String) The alerting profile's name.
+- `organization_id` (String) The ID of the organization which owns the profile.
+- `organization_name` (String) The name of the organization which owns the profile.
+- `reminder` (String) The frequency of notifications: `HalfHour`, `Hourly`, `Daily` or `None`.
+- `slack_configuration_id` (String) The ID of the Slack configuration to notify.
+- `slack_configuration_name` (String) The name of the Slack configuration to notify.
+- `webhook` (Set of Object) The list of webhooks to notify. (see [below for nested schema](#nestedatt--webhook))
 
 <a id="nestedatt--integration"></a>
 ### Nested Schema for `integration`
 
 Read-Only:
 
-- **id** (String)
-- **token** (String)
-- **type** (String)
-- **url** (String)
+- `id` (String)
+- `token` (String)
+- `type` (String)
+- `url` (String)
 
 
 <a id="nestedatt--webhook"></a>
@@ -57,15 +57,15 @@ Read-Only:
 
 Read-Only:
 
-- **header** (Set of Object) (see [below for nested schema](#nestedobjatt--webhook--header))
-- **url** (String)
+- `header` (Set of Object) (see [below for nested schema](#nestedobjatt--webhook--header))
+- `url` (String)
 
 <a id="nestedobjatt--webhook--header"></a>
 ### Nested Schema for `webhook.header`
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 

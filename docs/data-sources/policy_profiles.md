@@ -25,30 +25,31 @@ data "taikun_policy_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `id` (String) The ID of this resource.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **policy_profiles** (List of Object) List of retrieved Policy profiles. (see [below for nested schema](#nestedatt--policy_profiles))
+- `policy_profiles` (List of Object) List of retrieved Policy profiles. (see [below for nested schema](#nestedatt--policy_profiles))
 
 <a id="nestedatt--policy_profiles"></a>
 ### Nested Schema for `policy_profiles`
 
 Read-Only:
 
-- **allowed_repos** (Set of String)
-- **forbid_http_ingress** (Boolean)
-- **forbid_node_port** (Boolean)
-- **forbidden_tags** (Set of String)
-- **id** (String)
-- **ingress_whitelist** (Set of String)
-- **is_default** (Boolean)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **require_probe** (Boolean)
-- **unique_ingress** (Boolean)
-- **unique_service_selector** (Boolean)
+- `allowed_repos` (Set of String)
+- `forbid_http_ingress` (Boolean)
+- `forbid_node_port` (Boolean)
+- `forbidden_tags` (Set of String)
+- `id` (String)
+- `ingress_whitelist` (Set of String)
+- `is_default` (Boolean)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `require_probe` (Boolean)
+- `unique_ingress` (Boolean)
+- `unique_service_selector` (Boolean)
 
 

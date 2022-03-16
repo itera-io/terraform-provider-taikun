@@ -33,22 +33,22 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 ### Required
 
-- **access_key_id** (String, Sensitive) The AWS access key ID.
-- **availability_zone** (String) The AWS availability zone for the region.
-- **name** (String) The name of the AWS cloud credential.
-- **region** (String) The AWS region.
-- **secret_access_key** (String, Sensitive) The AWS secret access key.
+- `access_key_id` (String, Sensitive) The AWS access key ID.
+- `availability_zone` (String) The AWS availability zone for the region.
+- `name` (String) The name of the AWS cloud credential.
+- `region` (String) The AWS region.
+- `secret_access_key` (String, Sensitive) The AWS secret access key.
 
 ### Optional
 
-- **lock** (Boolean) Indicates whether to lock the AWS cloud credential. Defaults to `false`.
-- **organization_id** (String) The ID of the organization which owns the AWS cloud credential.
+- `lock` (Boolean) Indicates whether to lock the AWS cloud credential. Defaults to `false`.
+- `organization_id` (String) The ID of the organization which owns the AWS cloud credential.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the AWS cloud credential.
-- **id** (String) The ID of the AWS cloud credential.
-- **is_default** (Boolean) Indicates whether the AWS cloud credential is the default one.
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the AWS cloud credential.
-- **organization_name** (String) The name of the organization which owns the AWS cloud credential.
+- `created_by` (String) The creator of the AWS cloud credential.
+- `id` (String) The ID of the AWS cloud credential.
+- `is_default` (Boolean) Indicates whether the AWS cloud credential is the default one.
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the AWS cloud credential.
+- `organization_name` (String) The name of the organization which owns the AWS cloud credential.

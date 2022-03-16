@@ -23,27 +23,27 @@ data "taikun_billing_rule" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the billing rule.
+- `id` (String) The ID of the billing rule.
 
 ### Read-Only
 
-- **billing_credential_id** (String) ID of the billing credential.
-- **created_by** (String) The creator of the billing rule.
-- **label** (Set of Object) Labels linked to the billing rule. (see [below for nested schema](#nestedatt--label))
-- **last_modified** (String) Time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the billing rule.
-- **metric_name** (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
-- **name** (String) The name of the billing rule.
-- **price** (Number) The price in CZK per selected unit.
-- **type** (String) The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
+- `billing_credential_id` (String) ID of the billing credential.
+- `created_by` (String) The creator of the billing rule.
+- `label` (Set of Object) Labels linked to the billing rule. (see [below for nested schema](#nestedatt--label))
+- `last_modified` (String) Time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the billing rule.
+- `metric_name` (String) The name of the Prometheus metric (e.g. volumes, flavors, networks) to bill.
+- `name` (String) The name of the billing rule.
+- `price` (Number) The price in CZK per selected unit.
+- `type` (String) The type of billing rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 <a id="nestedatt--label"></a>
 ### Nested Schema for `label`
 
 Read-Only:
 
-- **id** (String)
-- **key** (String)
-- **value** (String)
+- `id` (String)
+- `key` (String)
+- `value` (String)
 
 
