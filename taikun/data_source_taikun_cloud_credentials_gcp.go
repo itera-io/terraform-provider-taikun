@@ -31,6 +31,7 @@ func dataSourceTaikunCloudCredentialsGoogle() *schema.Resource {
 }
 
 func dataSourceTaikunCloudCredentialsGoogleRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// FIXME
-	return nil
+	d.SetId(d.Get("id").(string))
+
+	return generateResourceTaikunCloudCredentialGoogleReadWithoutRetries()(ctx, d, meta)
 }
