@@ -312,6 +312,7 @@ func resourceTaikunProject() *schema.Resource {
 
 func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
+	ctx, _ = context.WithTimeout(ctx, 80*time.Minute)
 
 	body := models.CreateProjectCommand{
 		Name:         d.Get("name").(string),
@@ -402,7 +403,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Send project creation request
-	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body)
+	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body).WithContext(ctx)
 	response, err := apiClient.client.Projects.ProjectsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
