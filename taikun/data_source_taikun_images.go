@@ -91,7 +91,7 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 		publisher, publisherIsSet := d.GetOk("azure_publisher")
 		SKU, SKUIsSet := d.GetOk("azure_sku")
 		if !SKUIsSet || !publisherIsSet || !offerIsSet {
-			return diag.Errorf("One of the following attributes is missing: azure_offer, azure_publisher, azure_sku")
+			return diag.Errorf("All of the following attributes must be set: azure_offer, azure_publisher, azure_sku")
 		}
 		params := images.NewImagesAzureImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 		params.WithPublisherName(publisher.(string)).WithOffer(offer.(string)).WithSku(SKU.(string))
