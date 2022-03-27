@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func resourceTaikunCloudCredentialGoogleSchema() map[string]*schema.Schema {
+func resourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"billing_account_id": {
 			Description:   "The ID of the GCP credential's billing account.",
@@ -104,37 +104,37 @@ func resourceTaikunCloudCredentialGoogleSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunCloudCredentialGoogle() *schema.Resource {
+func resourceTaikunCloudCredentialGCP() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Taikun Google Cloud Credential",
-		CreateContext: resourceTaikunCloudCredentialGoogleCreate,
-		ReadContext:   generateResourceTaikunCloudCredentialGoogleReadWithoutRetries(),
-		UpdateContext: resourceTaikunCloudCredentialGoogleUpdate,
+		Description:   "Taikun Google Cloud Platform Credential",
+		CreateContext: resourceTaikunCloudCredentialGCPCreate,
+		ReadContext:   generateResourceTaikunCloudCredentialGCPReadWithoutRetries(),
+		UpdateContext: resourceTaikunCloudCredentialGCPUpdate,
 		DeleteContext: resourceTaikunCloudCredentialDelete,
-		Schema:        resourceTaikunCloudCredentialGoogleSchema(),
+		Schema:        resourceTaikunCloudCredentialGCPSchema(),
 	}
 }
 
-func resourceTaikunCloudCredentialGoogleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// FIXME
 	return nil
 }
 
-func generateResourceTaikunCloudCredentialGoogleReadWithRetries() schema.ReadContextFunc {
-	return generateResourceTaikunCloudCredentialGoogleRead(true)
+func generateResourceTaikunCloudCredentialGCPReadWithRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialGCPRead(true)
 }
-func generateResourceTaikunCloudCredentialGoogleReadWithoutRetries() schema.ReadContextFunc {
-	return generateResourceTaikunCloudCredentialGoogleRead(false)
+func generateResourceTaikunCloudCredentialGCPReadWithoutRetries() schema.ReadContextFunc {
+	return generateResourceTaikunCloudCredentialGCPRead(false)
 }
 
-func generateResourceTaikunCloudCredentialGoogleRead(withRetries bool) schema.ReadContextFunc {
+func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		// FIXME
 		return nil
 	}
 }
 
-func resourceTaikunCloudCredentialGoogleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunCloudCredentialGCPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// FIXME
 	return nil
 }

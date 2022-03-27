@@ -7,23 +7,23 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceTaikunCloudCredentialGoogleSchema() map[string]*schema.Schema {
-	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunCloudCredentialGoogleSchema())
+func dataSourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
+	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunCloudCredentialGCPSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
 	return dsSchema
 }
 
-func dataSourceTaikunCloudCredentialGoogle() *schema.Resource {
+func dataSourceTaikunCloudCredentialGCP() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get a Google cloud credential by its ID.",
-		ReadContext: dataSourceTaikunCloudCredentialGoogleRead,
-		Schema:      dataSourceTaikunCloudCredentialGoogleSchema(),
+		Description: "Get a GCP credential by its ID.",
+		ReadContext: dataSourceTaikunCloudCredentialGCPRead,
+		Schema:      dataSourceTaikunCloudCredentialGCPSchema(),
 	}
 }
 
-func dataSourceTaikunCloudCredentialGoogleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialGCPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId(d.Get("id").(string))
 
-	return generateResourceTaikunCloudCredentialGoogleReadWithoutRetries()(ctx, d, meta)
+	return generateResourceTaikunCloudCredentialGCPReadWithoutRetries()(ctx, d, meta)
 }
