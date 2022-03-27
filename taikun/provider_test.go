@@ -92,6 +92,16 @@ func testAccPreCheckAWS(t *testing.T) {
 	}
 }
 
+func testAccPreCheckGCP(t *testing.T) {
+	if err := os.Getenv("GCP_FOLDER_ID"); err == "" {
+		t.Fatal("GCP_FOLDER_ID must be set for acceptance tests")
+	}
+	if err := os.Getenv("GCP_BILLING_ACCOUNT"); err == "" {
+		t.Fatal("GCP_BILLING_ACCOUNT must be set for acceptance tests")
+	}
+	// TODO: config file
+}
+
 func testAccPreCheckS3(t *testing.T) {
 	if err := os.Getenv("AWS_ACCESS_KEY_ID"); err == "" {
 		t.Fatal("AWS_ACCESS_KEY_ID must be set for acceptance tests")
