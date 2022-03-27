@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/mail"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -88,6 +89,24 @@ func stringIsEmail(i interface{}, path cty.Path) diag.Diagnostics {
 	_, err := mail.ParseAddress(v)
 	if err != nil {
 		return diag.FromErr(path.NewErrorf("expected an email"))
+	}
+
+	return nil
+}
+
+func stringIsFilePath(i interface{}, path cty.Path) diag.Diagnostics {
+	filePath, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return diag.FromErr(path.NewError(err))
+	}
+
+	if fileInfo.IsDir() {
+		return diag.FromErr(path.NewErrorf("expected a file, not a directory"))
 	}
 
 	return nil
