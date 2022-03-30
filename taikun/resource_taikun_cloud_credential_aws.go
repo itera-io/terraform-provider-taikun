@@ -263,7 +263,6 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 }
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {
-
 	return map[string]interface{}{
 		"created_by":        rawAWSCredential.CreatedBy,
 		"id":                i32toa(rawAWSCredential.ID),

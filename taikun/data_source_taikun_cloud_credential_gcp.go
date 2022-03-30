@@ -11,6 +11,11 @@ func dataSourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
 	dsSchema := dataSourceSchemaFromResourceSchema(resourceTaikunCloudCredentialGCPSchema())
 	addRequiredFieldsToSchema(dsSchema, "id")
 	setValidateDiagFuncToSchema(dsSchema, "id", stringIsInt)
+
+	// config_file & import_project only make sense when declaring a resource
+	deleteFieldsFromSchema(dsSchema, "config_file")
+	deleteFieldsFromSchema(dsSchema, "import_project")
+
 	return dsSchema
 }
 
