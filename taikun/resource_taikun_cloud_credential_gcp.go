@@ -222,12 +222,12 @@ func resourceTaikunCloudCredentialGCPUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("lock") {
-		if err := resourceTaikunCloudCredentialAWSLock(id, d.Get("lock").(bool), apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialGCPLock(id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, d, meta)
+	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialGCPReadWithRetries(), ctx, d, meta)
 }
 
 func flattenTaikunCloudCredentialGCP(rawGCPCredential *models.GoogleCredentialsListDto) map[string]interface{} {
@@ -236,11 +236,11 @@ func flattenTaikunCloudCredentialGCP(rawGCPCredential *models.GoogleCredentialsL
 		"billing_account_id":   rawGCPCredential.BillingAccountID,
 		"billing_account_name": rawGCPCredential.BillingAccountName,
 		"folder_id":            rawGCPCredential.FolderID,
-		"id":                   rawGCPCredential.ID,
+		"id":                   i32toa(rawGCPCredential.ID),
 		"is_default":           rawGCPCredential.IsDefault,
 		"lock":                 rawGCPCredential.IsLocked,
 		"name":                 rawGCPCredential.Name,
-		"organization_id":      rawGCPCredential.OrganizationID,
+		"organization_id":      i32toa(rawGCPCredential.OrganizationID),
 		"organization_name":    rawGCPCredential.OrganizationName,
 		"region":               rawGCPCredential.Region,
 		"zone":                 rawGCPCredential.Zone,
