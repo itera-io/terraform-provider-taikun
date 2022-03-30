@@ -14,7 +14,6 @@ import (
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 	"github.com/itera-io/taikungoclient/client/stand_alone"
-	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/flavors"
@@ -369,7 +368,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		body.AccessProfileID, _ = atoi32(accessProfileID.(string))
 	} else {
 		if projectOrganizationID == -1 {
-			if err := resourceTaikunProjectGetDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
+			if err := getDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -385,7 +384,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
 	} else {
 		if projectOrganizationID == -1 {
-			if err := resourceTaikunProjectGetDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
+			if err := getDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -1124,16 +1123,6 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiCl
 		return cloudTypeOpenStack, nil
 	}
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
-}
-
-func resourceTaikunProjectGetDefaultOrganization(defaultOrganizationID *int32, apiClient *apiClient) error {
-	params := users.NewUsersDetailsParams().WithV(ApiVersion)
-	response, err := apiClient.client.Users.UsersDetails(params, apiClient)
-	if err != nil {
-		return err
-	}
-	*defaultOrganizationID = response.Payload.Data.OrganizationID
-	return nil
 }
 
 const defaultAccessProfileName = "default"
