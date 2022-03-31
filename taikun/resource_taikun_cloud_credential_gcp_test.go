@@ -34,7 +34,6 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 					testAccCheckTaikunCloudCredentialGCPExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "name", cloudCredentialName),
 					// FIXME
-					false,
 				),
 			},
 		},
