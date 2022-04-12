@@ -73,6 +73,12 @@ jobs:
         run: |
           go mod download
 
+      - name: Create GCP config file
+        env:
+          GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
+        run: |
+          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
+
       - name: TF acceptance tests
         env:
           TF_ACC: "1"
