@@ -311,7 +311,8 @@ func resourceTaikunProject() *schema.Resource {
 
 func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
-	ctx, _ = context.WithTimeout(ctx, 80*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 80*time.Minute)
+	defer cancel()
 
 	body := models.CreateProjectCommand{
 		Name:         d.Get("name").(string),
