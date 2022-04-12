@@ -99,6 +99,11 @@ jobs:
           OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
           OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
 
+          GCP_FOLDER_ID: ${{ secrets.GCP_FOLDER_ID }}
+          GCP_BILLING_ACCOUNT: ${{ secrets.GCP_BILLING_ACCOUNT }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          GCP_ZONE: ${{ secrets.GCP_ZONE }}
+
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: eu-central-1
