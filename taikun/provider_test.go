@@ -105,7 +105,6 @@ func testAccPreCheckGCP(t *testing.T) {
 	if err := os.Getenv("GCP_ZONE"); err == "" {
 		t.Fatal("GCP_ZONE must be set for acceptance tests")
 	}
-	// TODO: config file
 }
 
 func testAccPreCheckS3(t *testing.T) {
