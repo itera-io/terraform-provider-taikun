@@ -397,7 +397,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
+					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
 					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
 					if err != nil {
 						return 0, "", err

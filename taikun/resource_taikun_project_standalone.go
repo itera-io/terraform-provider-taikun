@@ -374,7 +374,6 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 
 			if hasChanges(old, new, "public_ip") {
 				repairNeeded = true
-				//TODO
 				mode := "enable"
 				if !new["public_ip"].(bool) {
 					mode = "disable"
