@@ -626,9 +626,8 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "taikun_project.foo",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: "taikun_project.foo",
+				ImportState:  true,
 			},
 		},
 	})
