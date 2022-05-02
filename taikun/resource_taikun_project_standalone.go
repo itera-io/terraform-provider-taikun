@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"log"
 	"reflect"
 	"regexp"
 
@@ -214,9 +215,13 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 		}
 		vmMap["id"] = vmId
 
+		log.Print("[DEBUG] SetVms >>>>>>>>>>>>>>>>>>> ")
+		log.Println(unreadableProperties)
 		for key, value := range unreadableProperties {
 			vmMap[key] = value
 		}
+		log.Print("[DEBUG] SetVms >>>>>>>>>>>>>>>>>>> ")
+		log.Println(vmMap)
 	}
 
 	err := d.Set("vm", vmsList)
