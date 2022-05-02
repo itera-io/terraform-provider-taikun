@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"log"
 	"reflect"
 	"regexp"
 
@@ -215,13 +214,9 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 		}
 		vmMap["id"] = vmId
 
-		log.Print("[DEBUG] SetVms >>>>>>>>>>>>>>>>>>> ")
-		log.Println(unreadableProperties)
 		for key, value := range unreadableProperties {
 			vmMap[key] = value
 		}
-		log.Print("[DEBUG] SetVms >>>>>>>>>>>>>>>>>>> ")
-		log.Println(vmMap)
 	}
 
 	err := d.Set("vm", vmsList)
@@ -242,16 +237,13 @@ func findWithId(searchMap []map[string]interface{}, id string) map[string]interf
 }
 
 func hasChanges(old map[string]interface{}, new map[string]interface{}, labels ...string) bool {
-	//log.Println("---------------")
 	for _, label := range labels {
 		// Special compare function for sets
 		if set, isSet := old[label].(*schema.Set); isSet {
 			if !set.Equal(new[label]) {
-				//log.Println("DIFF SET"+label+": ", old[label], new[label])
 				return true
 			}
 		} else if !reflect.DeepEqual(old[label], new[label]) {
-			//log.Println("DIFF "+label+": ", old[label], new[label])
 			return true
 		}
 	}
