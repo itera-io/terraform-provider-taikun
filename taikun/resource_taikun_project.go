@@ -3,8 +3,6 @@ package taikun
 import (
 	"context"
 	"fmt"
-	"log"
-	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -539,13 +537,8 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		log.Print("[DEBUG] Read schema b4 set >>>>>>>>>>>>>>>>>>> ")
-		log.Println(d.Get("vm"))
-
 		projectMap := flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
 		usernames := resourceTaikunProjectGetResourceDataVmUsernames(d)
-		log.Print("[DEBUG] Read get usernames b4 set >>>>>>>>>>>>>>>>>>> ")
-		log.Println(usernames)
 		if err := setResourceDataFromMap(d, projectMap); err != nil {
 			return diag.FromErr(err)
 		}
@@ -553,9 +546,6 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		if err := resourceTaikunProjectRestoreResourceDataVmUsernames(d, usernames); err != nil {
 			return diag.FromErr(err)
 		}
-
-		log.Print("[DEBUG] Read restore usernames after set >>>>>>>>>>>>>>>>>>> ")
-		log.Println(d)
 
 		d.SetId(id)
 
@@ -566,32 +556,20 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 func resourceTaikunProjectGetResourceDataVmUsernames(d *schema.ResourceData) (usernames map[string]string) {
 	usernames = map[string]string{}
 
-	log.Print("[DEBUG] BEGIN get usernames >>>>>>>>>>>>>>>>>>> ")
-	log.Println()
-
 	vmListData, ok := d.GetOk("vm")
 	if !ok {
-		log.Print("[DEBUG] RETURN get usernames >>>>>>>>>>>>>>>>>>> ")
-		log.Println(`NO "vm" key`)
 		return
 	}
 
 	vmList, ok := vmListData.([]interface{})
 	if !ok {
-		log.Print("[DEBUG] RETURN get usernames >>>>>>>>>>>>>>>>>>> ")
-		log.Println(`failed to convert vmListData`, reflect.TypeOf(vmListData))
 		return
 	}
 	for _, vmData := range vmList {
 		vm, ok := vmData.(map[string]interface{})
 		if !ok {
-			log.Print("[DEBUG] RETURN get usernames >>>>>>>>>>>>>>>>>>> ")
-			log.Println(`failed to convert vmData`, reflect.TypeOf(vmData))
 			return
 		}
-
-		log.Print("[DEBUG] in loop get usernames >>>>>>>>>>>>>>>>>>> ")
-		log.Println(vm)
 
 		vmIdData, ok := vm["id"]
 		if !ok {
@@ -612,8 +590,6 @@ func resourceTaikunProjectGetResourceDataVmUsernames(d *schema.ResourceData) (us
 			usernames[vmId] = username
 		}
 	}
-	log.Print("[DEBUG] END get usernames >>>>>>>>>>>>>>>>>>> ")
-	log.Println()
 
 	return usernames
 }
@@ -630,8 +606,6 @@ func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData,
 
 	vmList, ok := vmListData.([]interface{})
 	if !ok {
-		log.Print("[DEBUG] RETURN set usernames >>>>>>>>>>>>>>>>>>> ")
-		log.Println(`failed to convert vmListData`, reflect.TypeOf(vmListData))
 		return nil
 	}
 
@@ -639,8 +613,6 @@ func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData,
 		for _, vmData := range vmList {
 			vm, ok := vmData.(map[string]interface{})
 			if !ok {
-				log.Print("[DEBUG] RETURN set usernames >>>>>>>>>>>>>>>>>>> ")
-				log.Println(`failed to convert vmData`, reflect.TypeOf(vmData))
 				return nil
 			}
 
