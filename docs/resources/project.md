@@ -305,6 +305,7 @@ Optional:
 - `disk` (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
 - `public_ip` (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
 - `tag` (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
+- `username` (String) The VM's username (required for Azure).
 - `volume_type` (String) Volume type (updating this field will recreate the VM).
 
 Read-Only:
