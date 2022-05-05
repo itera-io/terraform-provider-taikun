@@ -595,7 +595,7 @@ func resourceTaikunProjectGetResourceDataVmUsernames(d *schema.ResourceData) (us
 }
 
 func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData, usernames map[string]string) error {
-	if usernames == nil || len(usernames) == 0 {
+	if len(usernames) == 0 {
 		return nil
 	}
 
