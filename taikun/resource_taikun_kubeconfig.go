@@ -41,6 +41,13 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
+		"namespace": {
+			Description:  "The kubeconfig's namespace.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
 		"project_id": {
 			Description:      "ID of the kubeconfig's project.",
 			Type:             schema.TypeString,
@@ -68,6 +75,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 		"user_id": {
 			Description: "ID of the kubeconfig's user, if the kubeconfig is personal.",
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 		},
 		"user_name": {
@@ -79,6 +87,12 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Description: "Role of the kubeconfig's user, if the kubeconfig is personal.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"validity_period": {
+			Description:  "The kubeconfig's validity period in minutes (unlimited by default).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(1),
 		},
 	}
 }
@@ -105,6 +119,9 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
 		Name:                   d.Get("name").(string),
 	}
+
+	// FIXME add user_id, validity_period, namespace
+
 	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -196,6 +213,9 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 		"user_name":    kubeconfigDTO.UserName,
 		"user_role":    kubeconfigDTO.UserRole,
 	}
+
+	// FIXME add validity_period, namespace
+
 	if kubeconfigDTO.IsAccessibleForAll {
 		kubeconfigMap["access_scope"] = "all"
 	} else if kubeconfigDTO.IsAccessibleForManager {
