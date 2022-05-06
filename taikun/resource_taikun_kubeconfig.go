@@ -78,6 +78,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
+			ForceNew:    true,
 		},
 		"user_name": {
 			Description: "Name of the kubeconfig's user, if the kubeconfig is personal.",
@@ -94,6 +95,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(1),
+			ForceNew:     true,
 		},
 	}
 }
@@ -121,7 +123,17 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 		Name:                   d.Get("name").(string),
 	}
 
-	// FIXME add user_id, validity_period, namespace
+	if userId, userIdIsSet := d.GetOk("user_id"); userIdIsSet {
+		body.UserID, _ = userId.(string)
+	}
+
+	if validityPeriod, validityPeriodIsSet := d.GetOk("validity_period"); validityPeriodIsSet {
+		body.TTL, _ = validityPeriod.(int32)
+	}
+
+	if namespace, namespaceIsSet := d.GetOk("namespace"); namespaceIsSet {
+		body.Namespace, _ = namespace.(string)
+	}
 
 	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
@@ -214,9 +226,9 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 		// FIXME: fetch from user ID since no longer included in response
 		// "user_name":    kubeconfigDTO.UserName,
 		// "user_role":    kubeconfigDTO.UserRole,
+		"namespace":       kubeconfigDTO.Namespace,
+		"validity_period": kubeconfigExpirationDataToTTL(kubeconfigDTO.ExpirationDate),
 	}
-
-	// FIXME add validity_period, namespace
 
 	if kubeconfigDTO.IsAccessibleForAll {
 		kubeconfigMap["access_scope"] = "all"

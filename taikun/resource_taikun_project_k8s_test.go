@@ -335,6 +335,7 @@ resource "taikun_kubeconfig" "view" {
 
   role = "view"
   access_scope = "all"
+  namespace = "default"
 }
 
 resource "taikun_kubeconfig" "edit" {
@@ -344,6 +345,7 @@ resource "taikun_kubeconfig" "edit" {
 
   role = "edit"
   access_scope = "all"
+  validity_period = 1440
 }
 
 resource "taikun_kubeconfig" "admin" {
