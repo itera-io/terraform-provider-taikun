@@ -394,24 +394,25 @@ func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiC
 }
 
 func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *apiClient) error {
-	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
-		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
-		for _, alertingIntegration := range alertingIntegrationDTOs {
-			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
-				AlertingIntegration: &models.AlertingIntegrationDto{
-					AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
-					Token:                   alertingIntegration.Token,
-					URL:                     alertingIntegration.URL,
-				},
-				AlertingProfileID: id,
-			}
-			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
-			_, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
-			if err != nil {
-				return err
-			}
-		}
-	}
+	// FIXME: use new AlertingIntegration type
+	// if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
+	// 	alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
+	// 	for _, alertingIntegration := range alertingIntegrationDTOs {
+	// 		alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
+	// 			AlertingIntegration: &models.AlertingIntegrationDto{
+	// 				AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
+	// 				Token:                   alertingIntegration.Token,
+	// 				URL:                     alertingIntegration.URL,
+	// 			},
+	// 			AlertingProfileID: id,
+	// 		}
+	// 		alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
+	// 		_, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
 	return nil
 }
 
