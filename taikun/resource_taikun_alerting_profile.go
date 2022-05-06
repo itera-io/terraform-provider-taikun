@@ -396,28 +396,28 @@ func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiC
 	return nil
 }
 
-// TODO: use new endpoints
-// func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *taikungoclient.Client) error {
-// 	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
-// 		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
-// 		for _, alertingIntegration := range alertingIntegrationDTOs {
-// 			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
-// 				AlertingIntegration: &models.AlertingIntegrationDto{
-// 					AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
-// 					Token:                   alertingIntegration.Token,
-// 					URL:                     alertingIntegration.URL,
-// 				},
-// 				AlertingProfileID: id,
-// 			}
-// 			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
-// 			_, err := apiClient.Client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
-// 	}
-// 	return nil
-// }
+func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *apiClient) error {
+	// FIXME: use new AlertingIntegration type
+	// if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
+	// 	alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
+	// 	for _, alertingIntegration := range alertingIntegrationDTOs {
+	// 		alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
+	// 			AlertingIntegration: &models.AlertingIntegrationDto{
+	// 				AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
+	// 				Token:                   alertingIntegration.Token,
+	// 				URL:                     alertingIntegration.URL,
+	// 			},
+	// 			AlertingProfileID: id,
+	// 		}
+	// 		alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
+	// 		_, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+	return nil
+}
 
 func getAlertingProfileEmailsResourceFromEmailDTOs(emailDTOs []*models.AlertingEmailDto) []string {
 	emails := make([]string, len(emailDTOs))

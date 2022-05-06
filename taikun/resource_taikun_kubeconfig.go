@@ -207,12 +207,13 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 	kubeconfigMap := map[string]interface{}{
 		"content":      kubeconfigContent,
 		"id":           i32toa(kubeconfigDTO.ID),
-		"name":         kubeconfigDTO.ServiceAccountName,
+		"name":         kubeconfigDTO.DisplayName,
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
 		"project_name": kubeconfigDTO.ProjectName,
 		"user_id":      kubeconfigDTO.UserID,
-		"user_name":    kubeconfigDTO.UserName,
-		"user_role":    kubeconfigDTO.UserRole,
+		// FIXME: fetch from user ID since no longer included in response
+		// "user_name":    kubeconfigDTO.UserName,
+		// "user_role":    kubeconfigDTO.UserRole,
 	}
 
 	// FIXME add validity_period, namespace
