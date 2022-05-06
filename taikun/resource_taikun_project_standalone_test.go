@@ -561,6 +561,7 @@ resource "taikun_project" "foo" {
     name = "my-vm"
     flavor = local.flavors[%d]
     image_id = local.images[0]
+    username = "foobar"
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 31
     %s
@@ -625,9 +626,8 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "taikun_project.foo",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: "taikun_project.foo",
+				ImportState:  true,
 			},
 		},
 	})

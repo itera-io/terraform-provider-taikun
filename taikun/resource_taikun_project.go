@@ -538,8 +538,12 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		projectMap := flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
-		err = setResourceDataFromMap(d, projectMap)
-		if err != nil {
+		usernames := resourceTaikunProjectGetResourceDataVmUsernames(d)
+		if err := setResourceDataFromMap(d, projectMap); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := resourceTaikunProjectRestoreResourceDataVmUsernames(d, usernames); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -547,6 +551,88 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 
 		return nil
 	}
+}
+
+func resourceTaikunProjectGetResourceDataVmUsernames(d *schema.ResourceData) (usernames map[string]string) {
+	usernames = map[string]string{}
+
+	vmListData, ok := d.GetOk("vm")
+	if !ok {
+		return
+	}
+
+	vmList, ok := vmListData.([]interface{})
+	if !ok {
+		return
+	}
+	for _, vmData := range vmList {
+		vm, ok := vmData.(map[string]interface{})
+		if !ok {
+			return
+		}
+
+		vmIdData, ok := vm["id"]
+		if !ok {
+			continue
+		}
+
+		vmId, ok := vmIdData.(string)
+		if !ok {
+			continue
+		}
+
+		usernameData, ok := vm["username"]
+		if !ok {
+			continue
+		}
+
+		if username, ok := usernameData.(string); ok {
+			usernames[vmId] = username
+		}
+	}
+
+	return usernames
+}
+
+func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData, usernames map[string]string) error {
+	if len(usernames) == 0 {
+		return nil
+	}
+
+	vmListData, ok := d.GetOk("vm")
+	if !ok {
+		return nil
+	}
+
+	vmList, ok := vmListData.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for usernameVmId, username := range usernames {
+		for _, vmData := range vmList {
+			vm, ok := vmData.(map[string]interface{})
+			if !ok {
+				return nil
+			}
+
+			vmIdData, ok := vm["id"]
+			if !ok {
+				continue
+			}
+
+			vmId, ok := vmIdData.(string)
+			if !ok {
+				continue
+			}
+
+			if vmId == usernameVmId {
+				vm["username"] = username
+			}
+		}
+	}
+
+	return d.Set("vm", vmList)
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

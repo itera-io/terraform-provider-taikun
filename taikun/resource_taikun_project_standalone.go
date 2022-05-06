@@ -179,6 +179,12 @@ func taikunVMSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"username": {
+			Description:  "The VM's username (required for Azure).",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(1, 20),
+		},
 		"volume_size": {
 			Description:  "The VM's volume size in GBs (updating this field will recreate the VM).",
 			Type:         schema.TypeInt,
@@ -202,12 +208,17 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, p
 	for _, vm := range vmsList {
 		vmMap := vm.(map[string]interface{})
 
-		vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
+		vmId, unreadableProperties, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
 		if err != nil {
 			return err
 		}
 		vmMap["id"] = vmId
+
+		for key, value := range unreadableProperties {
+			vmMap[key] = value
+		}
 	}
+
 	err := d.Set("vm", vmsList)
 	if err != nil {
 		return err
@@ -226,16 +237,13 @@ func findWithId(searchMap []map[string]interface{}, id string) map[string]interf
 }
 
 func hasChanges(old map[string]interface{}, new map[string]interface{}, labels ...string) bool {
-	//log.Println("---------------")
 	for _, label := range labels {
 		// Special compare function for sets
 		if set, isSet := old[label].(*schema.Set); isSet {
 			if !set.Equal(new[label]) {
-				//log.Println("DIFF SET"+label+": ", old[label], new[label])
 				return true
 			}
 		} else if !reflect.DeepEqual(old[label], new[label]) {
-			//log.Println("DIFF "+label+": ", old[label], new[label])
 			return true
 		}
 	}
@@ -249,7 +257,17 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			return true
 		}
 
-		return hasChanges(old, new, "cloud_init", "image_id", "name", "standalone_profile_id", "tag", "volume_size", "volume_type")
+		// ForceNew fields within the VM subresource
+		return hasChanges(old, new,
+			"cloud_init",
+			"image_id",
+			"name",
+			"standalone_profile_id",
+			"tag",
+			"username",
+			"volume_size",
+			"volume_type",
+		)
 	}
 }
 
@@ -345,11 +363,15 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 
 		for _, vmMap := range toAdd {
 
-			vmId, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
+			vmId, unreadableProperties, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
 			if err != nil {
 				return err
 			}
 			vmMap["id"] = vmId
+
+			for key, value := range unreadableProperties {
+				vmMap[key] = value
+			}
 
 			vmsList = append(vmsList, vmMap)
 		}
@@ -494,9 +516,10 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	return nil
 }
 
-func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClient, projectID int32) (string, error) {
+func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClient, projectID int32) (string, map[string]interface{}, error) {
 
 	standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
+	unreadableProperties := map[string]interface{}{}
 
 	vmCreateBody := &models.CreateStandAloneVMCommand{
 		CloudInit:           vmMap["cloud_init"].(string),
@@ -506,8 +529,15 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClie
 		Name:                vmMap["name"].(string),
 		ProjectID:           projectID,
 		PublicIPEnabled:     vmMap["public_ip"].(bool),
+		StandAloneMetaDatas: make([]*models.StandAloneMetaDataDto, 0),
 		StandAloneProfileID: standaloneProfileId,
+		StandAloneVMDisks:   make([]*models.StandAloneVMDiskDto, 0),
 		VolumeSize:          int64(vmMap["volume_size"].(int)),
+	}
+
+	if vmMap["username"] != nil {
+		vmCreateBody.Username = vmMap["username"].(string)
+		unreadableProperties["username"] = vmCreateBody.Username
 	}
 
 	if vmMap["volume_type"] != nil {
@@ -546,10 +576,10 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClie
 	vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
 	vmCreateResponse, err := apiClient.client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return vmCreateResponse.Payload.ID, nil
+	return vmCreateResponse.Payload.ID, unreadableProperties, nil
 }
 
 func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *apiClient, vmId int32) error {

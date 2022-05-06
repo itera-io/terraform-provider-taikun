@@ -151,6 +151,7 @@ Read-Only:
 - `standalone_profile_id` (String)
 - `status` (String)
 - `tag` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--vm--tag))
+- `username` (String)
 - `volume_size` (Number)
 - `volume_type` (String)
 
