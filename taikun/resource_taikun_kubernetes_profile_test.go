@@ -40,9 +40,44 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "taikun_kubernetes_profile.foo",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName: "taikun_kubernetes_profile.foo",
+				ImportState:  true,
+			},
+		},
+	})
+}
+
+const testAccResourceTaikunKubernetesProfileNoUniqueClusterNameConfig = `
+resource "taikun_kubernetes_profile" "foo" {
+	name = "%s"
+	unique_cluster_name = false
+}
+`
+
+func TestAccResourceTaikunKubernetesProfileNoUniqueClusterName(t *testing.T) {
+	firstName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileNoUniqueClusterNameConfig, firstName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunKubernetesProfileExists,
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "schedule_on_master", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+				),
+			},
+			{
+				ResourceName: "taikun_kubernetes_profile.foo",
+				ImportState:  true,
 			},
 		},
 	})

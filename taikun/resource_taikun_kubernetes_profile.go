@@ -85,6 +85,13 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 			ForceNew:    true,
 		},
+		"unique_cluster_name": {
+			Description: "If not enabled, the cluster name will be cluster.local.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			ForceNew:    true,
+		},
 	}
 }
 
@@ -112,6 +119,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 		TaikunLBEnabled:         taikunLBEnabled,
 		OctaviaEnabled:          octaviaEnabled,
 		ExposeNodePortOnBastion: d.Get("bastion_proxy").(bool),
+		UniqueClusterName:       d.Get("unique_cluster_name").(bool),
 	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
