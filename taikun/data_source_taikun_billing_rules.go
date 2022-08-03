@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -27,13 +28,13 @@ func dataSourceTaikunBillingRules() *schema.Resource {
 }
 
 func dataSourceTaikunBillingRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion)
 
 	var billingRulesList []*models.PrometheusRuleListDto
 	for {
-		response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

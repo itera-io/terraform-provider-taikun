@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/users"
 )
 
-func getDefaultOrganization(defaultOrganizationID *int32, apiClient *apiClient) error {
+func getDefaultOrganization(defaultOrganizationID *int32, apiClient *taikungoclient.Client) error {
 	params := users.NewUsersDetailsParams().WithV(ApiVersion)
 	response, err := apiClient.client.Users.UsersDetails(params, apiClient)
 	if err != nil {
@@ -17,7 +18,7 @@ func getDefaultOrganization(defaultOrganizationID *int32, apiClient *apiClient) 
 	return nil
 }
 
-func getOrganizationFromDataOrElseDefault(d *schema.ResourceData, apiClient *apiClient) (organizationID int32, err error) {
+func getOrganizationFromDataOrElseDefault(d *schema.ResourceData, apiClient *taikungoclient.Client) (organizationID int32, err error) {
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
 		organizationID, err = atoi32(organizationIDData.(string))

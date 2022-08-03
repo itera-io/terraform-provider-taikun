@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/alerting_integrations"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -35,7 +36,7 @@ func dataSourceTaikunAlertingProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion)
@@ -50,7 +51,7 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceD
 
 	var alertingProfileDTOs []*models.AlertingProfilesListDto
 	for {
-		response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+		response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -66,7 +67,7 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceD
 	for i, alertingProfileDTO := range alertingProfileDTOs {
 
 		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
-		alertingIntegrationsResponse, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
+		alertingIntegrationsResponse, err := apiClient.Client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

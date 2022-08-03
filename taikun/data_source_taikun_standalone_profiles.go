@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/security_group"
 	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
 	"github.com/itera-io/taikungoclient/models"
@@ -34,7 +35,7 @@ func dataSourceTaikunStandaloneProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunStandaloneProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion)
@@ -51,7 +52,7 @@ func dataSourceTaikunStandaloneProfilesRead(_ context.Context, d *schema.Resourc
 
 	var standaloneProfilesListDtos []*models.StandAloneProfilesListDto
 	for {
-		response, err := apiClient.client.StandAloneProfile.StandAloneProfileList(params, apiClient)
+		response, err := apiClient.Client.StandAloneProfile.StandAloneProfileList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -67,7 +68,7 @@ func dataSourceTaikunStandaloneProfilesRead(_ context.Context, d *schema.Resourc
 	for i, rawStandaloneProfile := range standaloneProfilesListDtos {
 
 		params := security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(rawStandaloneProfile.ID)
-		securityGroupResponse, err := apiClient.client.SecurityGroup.SecurityGroupList(params, apiClient)
+		securityGroupResponse, err := apiClient.Client.SecurityGroup.SecurityGroupList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

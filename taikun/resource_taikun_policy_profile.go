@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -293,7 +294,7 @@ func resourceTaikunPolicyProfileDelete(_ context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	lockBody := models.OpaProfileLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -33,7 +34,7 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunKubernetesProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion)
@@ -50,7 +51,7 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, d *schema.Resourc
 
 	var kubernetesProfilesListDtos []*models.KubernetesProfilesListDto
 	for {
-		response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
+		response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

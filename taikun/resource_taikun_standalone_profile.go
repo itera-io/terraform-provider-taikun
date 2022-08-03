@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/security_group"
 	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
 	"github.com/itera-io/taikungoclient/models"
@@ -344,7 +345,7 @@ func flattenTaikunStandaloneProfile(rawStandaloneProfile *models.StandAloneProfi
 	}
 }
 
-func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.StandAloneProfileLockManagementCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

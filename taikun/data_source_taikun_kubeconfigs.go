@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/kube_config"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -33,7 +34,7 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 }
 
 func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
@@ -44,7 +45,7 @@ func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, 
 	var kubeconfigDTOs []*models.KubeConfigForUserDto
 	retrievedKubeconfigCount := 0
 	for {
-		response, err := apiClient.client.KubeConfig.KubeConfigList(params, apiClient)
+		response, err := apiClient.Client.KubeConfig.KubeConfigList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/images"
@@ -876,7 +877,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) error {
+func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungoclient.Client) error {
 	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
 	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
 	if err != nil {
@@ -892,7 +893,7 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) 
 	return nil
 }
 
-func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *apiClient, quotaID int32) error {
+func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, quotaID int32) error {
 
 	quotaEditBody := &models.ProjectQuotaUpdateDto{
 		IsCPUUnlimited:      true,
@@ -1085,7 +1086,7 @@ func flattenTaikunProject(
 	return projectMap
 }
 
-func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundFlavorsForProjectsListDto, error) {
+func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *taikungoclient.Client) ([]*models.BoundFlavorsForProjectsListDto, error) {
 	var boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto
 	boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
@@ -1103,7 +1104,7 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 	return boundFlavorDTOs, nil
 }
 
-func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundImagesForProjectsListDto, error) {
+func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *taikungoclient.Client) ([]*models.BoundImagesForProjectsListDto, error) {
 	var boundImageDTOs []*models.BoundImagesForProjectsListDto
 	boundImageParams := images.NewImagesGetSelectedImagesForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
@@ -1129,7 +1130,7 @@ func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMaste
 	return servers
 }
 
-func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *taikungoclient.Client, projectID int32) error {
 	createStateConf := &resource.StateChangeConf{
 		Pending: pendingList,
 		Target:  targetList,
@@ -1155,7 +1156,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 	return nil
 }
 
-func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if kubernetesProfileIDData, kubernetesProfileIsSet := d.GetOk("kubernetes_profile_id"); kubernetesProfileIsSet {
 		kubernetesProfileID, _ := atoi32(kubernetesProfileIDData.(string))
 		lbSolution, err := resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID, apiClient)
@@ -1181,7 +1182,7 @@ func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, ap
 	return nil
 }
 
-func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *apiClient) (string, error) {
+func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *taikungoclient.Client) (string, error) {
 	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&kubernetesProfileID)
 	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
 	if err != nil {
@@ -1194,7 +1195,7 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 	return getLoadBalancingSolution(kubernetesProfile.OctaviaEnabled, kubernetesProfile.TaikunLBEnabled), nil
 }
 
-func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiClient) (string, error) {
+func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *taikungoclient.Client) (string, error) {
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
 	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
 	if err != nil {
@@ -1214,7 +1215,7 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiCl
 
 const defaultAccessProfileName = "default"
 
-func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *apiClient) (accessProfileID int32, found bool, err error) {
+func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *taikungoclient.Client) (accessProfileID int32, found bool, err error) {
 	params := access_profiles.NewAccessProfilesAccessProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
 	response, err := apiClient.client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
 	if err != nil {
@@ -1230,7 +1231,7 @@ func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClien
 
 const defaultKubernetesProfileName = "default"
 
-func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *apiClient) (kubernetesProfileID int32, found bool, err error) {
+func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *taikungoclient.Client) (kubernetesProfileID int32, found bool, err error) {
 	params := kubernetes_profiles.NewKubernetesProfilesKubernetesProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
 	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
 	if err != nil {
@@ -1244,7 +1245,7 @@ func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiC
 	return 0, false, nil
 }
 
-func resourceTaikunProjectLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunProjectLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	lockMode := getLockMode(lock)
 	params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
 	_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)

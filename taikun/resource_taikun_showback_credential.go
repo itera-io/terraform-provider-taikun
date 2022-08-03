@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/models"
 	"github.com/itera-io/taikungoclient/showbackclient/showback_credentials"
 )
@@ -226,7 +227,7 @@ func flattenTaikunShowbackCredential(rawShowbackCredential *models.ShowbackCrede
 	}
 }
 
-func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.ShowbackCredentialLockCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/alerting_integrations"
 	"github.com/itera-io/taikungoclient/client/alerting_profiles"
 	"github.com/itera-io/taikungoclient/models"
@@ -378,7 +379,7 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	oldIntegrationsData, _ := d.GetChange("integration")
 	oldIntegrations := oldIntegrationsData.([]interface{})
 	for _, oldIntegrationData := range oldIntegrations {
@@ -393,7 +394,7 @@ func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiC
 	return nil
 }
 
-func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *apiClient) error {
+func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *taikungoclient.Client) error {
 	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
 		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
 		for _, alertingIntegration := range alertingIntegrationDTOs {
@@ -520,7 +521,7 @@ func flattenTaikunAlertingProfile(alertingProfileDTO *models.AlertingProfilesLis
 	}
 }
 
-func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.AlertingProfilesLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

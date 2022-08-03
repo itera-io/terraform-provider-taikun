@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/models"
@@ -73,9 +74,9 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
-	list, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+	list, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,7 +98,7 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 		params.WithPublisherName(publisher.(string)).WithOffer(offer.(string)).WithSku(SKU.(string))
 
 		for {
-			response, err := apiClient.client.Images.ImagesAzureImages(params, apiClient)
+			response, err := apiClient.Client.Images.ImagesAzureImages(params, apiClient)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -137,7 +138,7 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 		params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 
 		for {
-			response, err := apiClient.client.Images.ImagesOpenstackImages(params, apiClient)
+			response, err := apiClient.Client.Images.ImagesOpenstackImages(params, apiClient)
 			if err != nil {
 				return diag.FromErr(err)
 			}

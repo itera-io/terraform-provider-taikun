@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/kube_config"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -206,7 +207,7 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 	return kubeconfigMap
 }
 
-func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *apiClient) string {
+func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *taikungoclient.Client) string {
 
 	body := models.DownloadKubeConfigCommand{
 		ProjectID: projectID,

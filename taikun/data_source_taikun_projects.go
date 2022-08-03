@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 	"github.com/itera-io/taikungoclient/client/stand_alone"
 
@@ -36,7 +37,7 @@ func dataSourceTaikunProjects() *schema.Resource {
 }
 
 func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := projects.NewProjectsListParams().WithV(ApiVersion)
@@ -50,7 +51,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 		params = params.WithOrganizationID(&organizationID)
 	}
 
-	response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+	response, err := apiClient.Client.Projects.ProjectsList(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -58,13 +59,13 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 	projects := make([]map[string]interface{}, len(response.Payload.Data))
 	for i, projectEntityDTO := range response.Payload.Data {
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectEntityDTO.ID)
-		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(projectEntityDTO.ID)
-		responseVM, err := apiClient.client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		responseVM, err := apiClient.Client.StandAlone.StandAloneDetails(paramsVM, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -80,7 +81,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 		}
 
 		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&response.Payload.Project.QuotaID)
-		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+		quotaResponse, err := apiClient.Client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

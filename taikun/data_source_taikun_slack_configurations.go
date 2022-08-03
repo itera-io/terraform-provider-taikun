@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/slack"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,7 +35,7 @@ func dataSourceTaikunSlackConfigurations() *schema.Resource {
 }
 
 func dataSourceTaikunSlackConfigurationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := slack.NewSlackListParams().WithV(ApiVersion)
@@ -51,7 +52,7 @@ func dataSourceTaikunSlackConfigurationsRead(_ context.Context, d *schema.Resour
 
 	var slackConfigurationsList []*models.SlackConfigurationDto
 	for {
-		response, err := apiClient.client.Slack.SlackList(params, apiClient)
+		response, err := apiClient.Client.Slack.SlackList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

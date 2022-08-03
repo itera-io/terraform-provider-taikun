@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/ssh_users"
 	"github.com/itera-io/taikungoclient/models"
@@ -156,7 +157,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 }
 
 func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAccessProfileCommand{
 		Name: d.Get("name").(string),
@@ -164,7 +165,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	resourceTaikunAccessProfileUpsertSetBody(d, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient)
+	createResult, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -191,14 +192,14 @@ func generateResourceTaikunAccessProfileReadWithoutRetries() schema.ReadContextF
 }
 func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.AccessProfiles.AccessProfilesList(access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -211,7 +212,7 @@ func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContex
 			return nil
 		}
 
-		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
+		sshResponse, err := apiClient.Client.SSHUsers.SSHUsersList(ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(id), apiClient)
 		if err != nil {
 			if _, ok := err.(*ssh_users.SSHUsersListNotFound); ok && withRetries {
 				d.SetId(i32toa(id))
@@ -234,7 +235,7 @@ func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContex
 }
 
 func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -264,7 +265,7 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	resourceTaikunAccessProfileUpsertSetBody(d, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	if _, err := apiClient.client.AccessProfiles.AccessProfilesCreate(params, apiClient); err != nil {
+	if _, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -278,14 +279,14 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceTaikunAccessProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	params := access_profiles.NewAccessProfilesDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.client.AccessProfiles.AccessProfilesDelete(params, apiClient)
+	_, _, err = apiClient.Client.AccessProfiles.AccessProfilesDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -337,7 +338,7 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 	}
 }
 
-func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	oldDNSServersData, _ := d.GetChange("dns_server")
 	oldDNSServers := oldDNSServersData.([]interface{})
 	for _, oldDNSServerData := range oldDNSServers {
@@ -352,7 +353,7 @@ func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d *schema.ResourceData
 	return nil
 }
 
-func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	oldNTPServersData, _ := d.GetChange("ntp_server")
 	oldNTPServers := oldNTPServersData.([]interface{})
 	for _, oldNTPServerData := range oldNTPServers {
@@ -367,7 +368,7 @@ func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d *schema.ResourceData
 	return nil
 }
 
-func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	oldSSHUsersData, _ := d.GetChange("ssh_user")
 	oldSSHUsers := oldSSHUsersData.([]interface{})
 	for _, oldSSHUserData := range oldSSHUsers {
@@ -425,7 +426,7 @@ func resourceTaikunAccessProfileUpsertSetBody(d *schema.ResourceData, body *mode
 	}
 }
 
-func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.AccessProfilesLockManagementCommand{
 		ID:   id,
 		Mode: getLockMode(lock),
