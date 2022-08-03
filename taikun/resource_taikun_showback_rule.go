@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/client/showback"
 	"github.com/itera-io/taikungoclient/models"
+	"github.com/itera-io/taikungoclient/showbackclient/showback_rules"
 )
 
 func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
@@ -186,7 +186,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	params := showback.NewShowbackCreateRuleParams().WithV(ApiVersion).WithBody(body)
+	params := showback_rules.NewShowbackCreateRuleParams().WithV(ApiVersion).WithBody(body)
 	createResult, err := apiClient.client.Showback.ShowbackCreateRule(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
@@ -211,7 +211,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.Showback.ShowbackRulesList(showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.client.Showback.ShowbackRulesList(showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -265,7 +265,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	params := showback.NewShowbackUpdateRuleParams().WithV(ApiVersion).WithBody(body)
+	params := showback_rules.NewShowbackUpdateRuleParams().WithV(ApiVersion).WithBody(body)
 	_, err = apiClient.client.Showback.ShowbackUpdateRule(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
@@ -281,7 +281,7 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	params := showback.NewShowbackDeleteRuleParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackRuleCommand{ID: id})
+	params := showback_rules.NewShowbackDeleteRuleParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackRuleCommand{ID: id})
 	_, err = apiClient.client.Showback.ShowbackDeleteRule(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
