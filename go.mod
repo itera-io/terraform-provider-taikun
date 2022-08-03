@@ -3,13 +3,13 @@ module github.com/itera-io/terraform-provider-taikun
 go 1.17
 
 require (
-	github.com/go-openapi/runtime v0.23.3
-	github.com/go-openapi/strfmt v0.21.2
+	github.com/go-openapi/runtime v0.24.1
+	github.com/go-openapi/strfmt v0.21.3
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/terraform-plugin-docs v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.14.0
-	github.com/itera-io/taikungoclient v0.0.0-20220728140756-88c28797f0b2
+	github.com/itera-io/taikungoclient v0.0.0-20220801133405-f10221ee630a
 	github.com/robfig/cron/v3 v3.0.1
 )
 
@@ -34,8 +34,7 @@ require (
 	github.com/go-openapi/loads v0.21.1 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
-	github.com/go-openapi/validate v0.21.0 // indirect
-	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/go-openapi/validate v0.22.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/uuid v1.1.2 // indirect
@@ -77,8 +76,8 @@ require (
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect
 	github.com/zclconf/go-cty v1.10.0 // indirect
-	go.mongodb.org/mongo-driver v1.8.3 // indirect
-	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
+	go.mongodb.org/mongo-driver v1.10.1 // indirect
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
