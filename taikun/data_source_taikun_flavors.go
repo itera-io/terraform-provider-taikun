@@ -87,8 +87,10 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 
 	startCPU := int32(d.Get("min_cpu").(int))
 	endCPU := int32(d.Get("max_cpu").(int))
-	startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
-	endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
+	// startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
+	startRAM := float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int)))) // TODO check validity of conversion
+	// endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
+	endRAM := float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int)))) // TODO check validity of conversion
 	sortBy := "name"
 	sortDir := "asc"
 

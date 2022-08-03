@@ -158,7 +158,7 @@ func resourceTaikunAccessProfile() *schema.Resource {
 func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*apiClient)
 
-	body := &models.UpsertAccessProfileCommand{
+	body := &models.CreateAccessProfileCommand{
 		Name: d.Get("name").(string),
 	}
 	resourceTaikunAccessProfileUpsertSetBody(d, body)
@@ -382,7 +382,7 @@ func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d *schema.ResourceData, 
 	return nil
 }
 
-func resourceTaikunAccessProfileUpsertSetBody(d *schema.ResourceData, body *models.UpsertAccessProfileCommand) {
+func resourceTaikunAccessProfileUpsertSetBody(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
 	if DNSServers, isDNSServersSet := d.GetOk("dns_server"); isDNSServersSet {
 		rawDNSServersList := DNSServers.([]interface{})
 		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
