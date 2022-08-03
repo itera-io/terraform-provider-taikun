@@ -109,29 +109,30 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 			params = params.WithOffset(&offset)
 		}
 	case len(list.GetPayload().Amazon) != 0:
-		params := images.NewImagesAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-		var limit int32 = 0
-		if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
-			limit = int32(limitData.(int))
-		}
-		for {
-			response, err := apiClient.client.Images.ImagesAwsImages(params, apiClient)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-			count := int32(len(imageList))
-			if limit != 0 && count >= limit {
-				break
-			}
-			if count == response.Payload.TotalCount {
-				break
-			}
-			params = params.WithOffset(&count)
-		}
-		if limit != 0 && int32(len(imageList)) > limit {
-			imageList = imageList[:limit]
-		}
+	// TODO: fix response types
+	// params := images.NewImagesCommonAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
+	// var limit int32 = 0
+	// if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
+	// 	limit = int32(limitData.(int))
+	// }
+	// for {
+	// 	response, err := apiClient.client.Images.ImagesCommonAwsImages(params, apiClient)
+	// 	if err != nil {
+	// 		return diag.FromErr(err)
+	// 	}
+	// 	imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
+	// 	count := int32(len(imageList))
+	// 	if limit != 0 && count >= limit {
+	// 		break
+	// 	}
+	// 	if count == response.Payload.TotalCount {
+	// 		break
+	// 	}
+	// 	params = params.WithOffset(&count)
+	// }
+	// if limit != 0 && int32(len(imageList)) > limit {
+	// 	imageList = imageList[:limit]
+	// }
 	default: // OpenStack
 		params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 
