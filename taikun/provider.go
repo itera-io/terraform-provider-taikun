@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client"
+	"github.com/itera-io/taikungoclient"
 )
 
 func init() {
@@ -179,28 +179,24 @@ func Provider() *schema.Provider {
 
 func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 
-	email, keycloakEnabled := d.GetOk("keycloak_email")
-	password := d.Get("keycloak_password")
+	rawEmail, keycloakEnabled := d.GetOk("keycloak_email")
+	rawPassword := d.Get("keycloak_password")
 
 	if !keycloakEnabled {
-		email = d.Get("email")
-		password = d.Get("password")
+		rawEmail = d.Get("email")
+		rawPassword = d.Get("password")
 	}
+
+	email, _ := rawEmail.(string)
+	password, _ := rawPassword.(string)
 
 	if email == "" || password == "" {
 		return nil, diag.Errorf("You must define an email and a password")
 	}
 
-	transportConfig := client.DefaultTransportConfig()
+	apiHost, _ := d.Get("api_host").(string)
 
-	if apiHost, apiHostIsSet := d.GetOk("api_host"); apiHostIsSet {
-		transportConfig = transportConfig.WithHost(apiHost.(string))
-	}
+	client, err := taikungoclient.NewClientFromCredentials(email, password, keycloakEnabled, apiHost)
 
-	return &apiClient{
-		client:              client.NewHTTPClientWithConfig(nil, transportConfig),
-		email:               email.(string),
-		password:            password.(string),
-		useKeycloakEndpoint: keycloakEnabled,
-	}, nil
+	return client, diag.FromErr(err)
 }

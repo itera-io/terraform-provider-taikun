@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -255,7 +256,7 @@ func flattenTaikunBackupCredential(rawBackupCredential *models.BackupCredentials
 	}
 }
 
-func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.BackupLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/aws"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
@@ -278,7 +279,7 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsL
 	}
 }
 
-func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.CloudLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

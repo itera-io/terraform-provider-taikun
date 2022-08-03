@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/models"
 	"github.com/itera-io/taikungoclient/showbackclient/showback_rules"
 )
@@ -33,7 +34,7 @@ func dataSourceTaikunShowbackRules() *schema.Resource {
 }
 
 func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := showback_rules.NewShowbackRulesListParams().WithV(ApiVersion)
@@ -50,7 +51,7 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData
 
 	var showbackRulesList []*models.ShowbackRulesListDto
 	for {
-		response, err := apiClient.ShowbackClient.Showback.ShowbackRulesList(params, apiClient)
+		response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

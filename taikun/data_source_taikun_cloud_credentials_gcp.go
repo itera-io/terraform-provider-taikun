@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -33,7 +34,7 @@ func dataSourceTaikunCloudCredentialsGCP() *schema.Resource {
 }
 
 func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
@@ -50,7 +51,7 @@ func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.Resour
 
 	var cloudCredentialsList []*models.GoogleCredentialsListDto
 	for {
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

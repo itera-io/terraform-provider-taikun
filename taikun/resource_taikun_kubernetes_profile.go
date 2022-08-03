@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -235,7 +236,7 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *models.KubernetesProfi
 	}
 }
 
-func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.KubernetesProfilesLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/client/stand_alone"
 	"github.com/itera-io/taikungoclient/client/stand_alone_vm_disks"
@@ -200,7 +201,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
 
 	vms := d.Get("vm")
 
@@ -312,7 +313,7 @@ func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{
 	return toDelete, toAdd, intersection
 }
 
-func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
 
 	oldVms, newVms := d.GetChange("vm")
 	oldVmsList := oldVms.([]interface{})
@@ -449,7 +450,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{}, newDisks interface{}, apiClient *apiClient, vmID int32, projectID int32) error {
+func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{}, newDisks interface{}, apiClient *taikungoclient.Client, vmID int32, projectID int32) error {
 	oldDisksList := oldDisks.([]interface{})
 	newDisksList := newDisks.([]interface{})
 	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
@@ -516,7 +517,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	return nil
 }
 
-func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClient, projectID int32) (string, map[string]interface{}, error) {
+func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *taikungoclient.Client, projectID int32) (string, map[string]interface{}, error) {
 
 	standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
 	unreadableProperties := map[string]interface{}{}
@@ -582,7 +583,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *apiClie
 	return vmCreateResponse.Payload.ID, unreadableProperties, nil
 }
 
-func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *apiClient, vmId int32) error {
+func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *taikungoclient.Client, vmId int32) error {
 
 	diskCreateBody := &models.CreateStandAloneDiskCommand{
 		DeviceName:     diskMap["device_name"].(string),
@@ -602,7 +603,7 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *api
 	return nil
 }
 
-func resourceTaikunProjectStandaloneCommit(apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectStandaloneCommit(apiClient *taikungoclient.Client, projectID int32) error {
 	body := &models.CommitStandAloneVMCommand{ProjectID: projectID}
 	params := stand_alone.NewStandAloneCommitParams().WithV(ApiVersion).WithBody(body)
 	_, err := apiClient.client.StandAlone.StandAloneCommit(params, apiClient)
@@ -612,7 +613,7 @@ func resourceTaikunProjectStandaloneCommit(apiClient *apiClient, projectID int32
 	return nil
 }
 
-func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *apiClient, id int32) error {
+func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *taikungoclient.Client, id int32) error {
 	oldImageData, newImageData := d.GetChange("images")
 	oldImages := oldImageData.(*schema.Set)
 	newImages := newImageData.(*schema.Set)
@@ -649,7 +650,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *apiClien
 	return nil
 }
 
-func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *taikungoclient.Client, projectID int32) error {
 	vmIds := make([]int32, 0)
 
 	for _, vm := range vmsToPurge {

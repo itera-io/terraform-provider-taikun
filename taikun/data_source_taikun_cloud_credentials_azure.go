@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,7 +35,7 @@ func dataSourceTaikunCloudCredentialsAzure() *schema.Resource {
 }
 
 func dataSourceTaikunCloudCredentialsAzureRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
@@ -51,7 +52,7 @@ func dataSourceTaikunCloudCredentialsAzureRead(_ context.Context, d *schema.Reso
 
 	var cloudCredentialsList []*models.AzureCredentialsListDto
 	for {
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

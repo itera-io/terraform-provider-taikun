@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/backup"
 	"github.com/itera-io/taikungoclient/client/flavors"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
@@ -126,7 +127,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
 
 	bastions := d.Get("server_bastion")
 	kubeMasters := d.Get("server_kubemaster")
@@ -209,7 +210,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClien
 	return nil
 }
 
-func resourceTaikunProjectCommit(apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectCommit(apiClient *taikungoclient.Client, projectID int32) error {
 	params := projects.NewProjectsCommitParams().WithV(ApiVersion).WithProjectID(projectID)
 	_, err := apiClient.client.Projects.ProjectsCommit(params, apiClient)
 	if err != nil {
@@ -218,7 +219,7 @@ func resourceTaikunProjectCommit(apiClient *apiClient, projectID int32) error {
 	return nil
 }
 
-func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *taikungoclient.Client, projectID int32) error {
 	serverIds := make([]int32, 0)
 
 	for _, server := range serversToPurge {
@@ -262,7 +263,7 @@ func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []
 	return labelsToAdd
 }
 
-func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if err := resourceTaikunProjectUpdateToggleMonitoring(ctx, d, apiClient); err != nil {
 		return err
 	}
@@ -275,7 +276,7 @@ func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("monitoring") {
 		projectID, _ := atoi32(d.Id())
 		body := models.MonitoringOperationsCommand{ProjectID: projectID}
@@ -292,7 +293,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("backup_credential_id") {
 		projectID, _ := atoi32(d.Id())
 		oldCredential, _ := d.GetChange("backup_credential_id")
@@ -364,7 +365,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("policy_profile_id") {
 		projectID, _ := atoi32(d.Id())
 		oldOPAProfile, _ := d.GetChange("policy_profile_id")
@@ -433,7 +434,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *apiClient, id int32) error {
+func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *taikungoclient.Client, id int32) error {
 	oldFlavorData, newFlavorData := d.GetChange("flavors")
 	oldFlavors := oldFlavorData.(*schema.Set)
 	newFlavors := newFlavorData.(*schema.Set)

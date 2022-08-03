@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/google_cloud"
 	"github.com/itera-io/taikungoclient/models"
@@ -247,7 +248,7 @@ func flattenTaikunCloudCredentialGCP(rawGCPCredential *models.GoogleCredentialsL
 	}
 }
 
-func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.CloudLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),

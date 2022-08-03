@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/organizations"
 )
 
@@ -44,7 +45,7 @@ func dataSourceTaikunOrganization() *schema.Resource {
 }
 
 func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	var limit int32 = 1
 	params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithLimit(&limit)
@@ -57,7 +58,7 @@ func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData,
 
 	d.SetId("")
 
-	response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
+	response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
