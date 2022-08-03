@@ -225,14 +225,14 @@ func getPrometheusType(prometheusType string) models.PrometheusType {
 	if prometheusType == "Count" {
 		return 100
 	}
-	return 200
+	return 200 // Sum
 }
 
-func getShowbackType(showbackType string) models.ShowbackType {
+func getShowbackType(showbackType string) models.EShowbackType {
 	if showbackType == "General" {
 		return 100
 	}
-	return 200
+	return 200 // External
 }
 
 func getUserRole(role string) models.UserRole {
