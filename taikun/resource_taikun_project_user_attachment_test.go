@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -67,7 +68,7 @@ func TestAccResourceTaikunProjectUserAttachment(t *testing.T) {
 }
 
 func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project_user_attachment" {
@@ -80,7 +81,7 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 		}
 
 		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-		response, err := apiClient.client.Users.UsersList(params, apiClient)
+		response, err := apiClient.Client.Users.UsersList(params, apiClient)
 		if err != nil {
 			return err
 		}
@@ -103,7 +104,7 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 }
 
 func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project_user_attachment" {
@@ -117,7 +118,7 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-			response, err := apiClient.client.Users.UsersList(params, apiClient)
+			response, err := apiClient.Client.Users.UsersList(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

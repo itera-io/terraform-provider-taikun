@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
 )
 
@@ -160,7 +161,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 }
 
 func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_backup_credential" {
@@ -180,7 +181,7 @@ func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBackupCredentialDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_backup_credential" {

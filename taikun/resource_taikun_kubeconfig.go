@@ -98,7 +98,7 @@ func resourceTaikunKubeconfig() *schema.Resource {
 }
 
 func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := models.CreateKubeConfigCommand{
 		IsAccessibleForAll:     d.Get("access_scope").(string) == "all",
@@ -113,7 +113,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 	body.ProjectID = projectID
 
 	params := kube_config.NewKubeConfigCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.client.KubeConfig.KubeConfigCreate(params, apiClient)
+	response, err := apiClient.Client.KubeConfig.KubeConfigCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,7 +129,7 @@ func generateResourceTaikunKubeconfigReadWithoutRetries() schema.ReadContextFunc
 }
 func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id := d.Id()
 		id32, err := atoi32(id)
 		d.SetId("")
@@ -138,7 +138,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 		}
 
 		params := kube_config.NewKubeConfigListParams().WithV(ApiVersion).WithID(&id32)
-		response, err := apiClient.client.KubeConfig.KubeConfigList(params, apiClient)
+		response, err := apiClient.Client.KubeConfig.KubeConfigList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -168,7 +168,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 }
 
 func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -178,7 +178,7 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 		ID: id,
 	}
 	params := kube_config.NewKubeConfigDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, err := apiClient.client.KubeConfig.KubeConfigDelete(params, apiClient); err != nil {
+	if _, err := apiClient.Client.KubeConfig.KubeConfigDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -217,7 +217,7 @@ func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, api
 	params := kube_config.NewKubeConfigDownloadParams().WithV(ApiVersion)
 	params = params.WithBody(&body)
 
-	response, err := apiClient.client.KubeConfig.KubeConfigDownload(params, apiClient)
+	response, err := apiClient.Client.KubeConfig.KubeConfigDownload(params, apiClient)
 	if err != nil {
 		return "Failed to retrieve content of kubeconfig"
 	}

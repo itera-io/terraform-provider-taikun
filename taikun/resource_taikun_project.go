@@ -311,7 +311,7 @@ func resourceTaikunProject() *schema.Resource {
 }
 
 func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	ctx, cancel := context.WithTimeout(ctx, 80*time.Minute)
 	defer cancel()
 
@@ -405,7 +405,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 	// Send project creation request
 	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body).WithContext(ctx)
-	response, err := apiClient.client.Projects.ProjectsCreate(params, apiClient)
+	response, err := apiClient.Client.Projects.ProjectsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -419,7 +419,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	if quotaCPUIsSet || quotaDiskIsSet || quotaRAMIsSet {
 
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -483,7 +483,7 @@ func generateResourceTaikunProjectReadWithoutRetries() schema.ReadContextFunc {
 }
 func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id := d.Id()
 		id32, err := atoi32(id)
 		d.SetId("")
@@ -492,7 +492,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32)
-		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -502,7 +502,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(id32)
-		responseVM, err := apiClient.client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		responseVM, err := apiClient.Client.StandAlone.StandAloneDetails(paramsVM, apiClient)
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -526,7 +526,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
-		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+		quotaResponse, err := apiClient.Client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -637,7 +637,7 @@ func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData,
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -652,14 +652,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			ProjectID: id,
 		}
 		detachParams := alerting_profiles.NewAlertingProfilesDetachParams().WithV(ApiVersion).WithBody(&body)
-		if _, err := apiClient.client.AlertingProfiles.AlertingProfilesDetach(detachParams, apiClient); err != nil {
+		if _, err := apiClient.Client.AlertingProfiles.AlertingProfilesDetach(detachParams, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 		if newAlertingProfileIDData, newAlertingProfileIDProvided := d.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
 			newAlertingProfileID, _ := atoi32(newAlertingProfileIDData.(string))
 			body.AlertingProfileID = newAlertingProfileID
 			attachParams := alerting_profiles.NewAlertingProfilesAttachParams().WithV(ApiVersion).WithBody(&body)
-			if _, err := apiClient.client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
+			if _, err := apiClient.Client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -675,7 +675,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.ExpireAt = nil
 		}
 		params := projects.NewProjectsExtendLifeTimeParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.Projects.ProjectsExtendLifeTime(params, apiClient)
+		_, err := apiClient.Client.Projects.ProjectsExtendLifeTime(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -762,7 +762,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					ServerIds: serverIds,
 				}
 				deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-				_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+				_, _, err := apiClient.Client.Servers.ServersDelete(deleteServerParams, apiClient)
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -789,7 +789,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 						Role:                 300,
 					}
 					serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-					serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+					serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -831,7 +831,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -869,7 +869,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
 	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
+	if _, _, err := apiClient.Client.Projects.ProjectsDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -879,7 +879,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 
 func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungoclient.Client) error {
 	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+	response, err := apiClient.Client.Servers.ServersDetails(readParams, apiClient)
 	if err != nil {
 		return err
 	}
@@ -917,7 +917,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungo
 	}
 
 	quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaID).WithBody(quotaEditBody)
-	_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
+	_, err := apiClient.Client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
 	if err != nil {
 		return err
 	}
@@ -1090,7 +1090,7 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *taikung
 	var boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto
 	boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
-		response, err := apiClient.client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
+		response, err := apiClient.Client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
 		if err != nil {
 			return nil, err
 		}
@@ -1108,7 +1108,7 @@ func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *taikungo
 	var boundImageDTOs []*models.BoundImagesForProjectsListDto
 	boundImageParams := images.NewImagesGetSelectedImagesForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
-		response, err := apiClient.client.Images.ImagesGetSelectedImagesForProject(boundImageParams, apiClient)
+		response, err := apiClient.Client.Images.ImagesGetSelectedImagesForProject(boundImageParams, apiClient)
 		if err != nil {
 			return nil, err
 		}
@@ -1136,7 +1136,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 		Target:  targetList,
 		Refresh: func() (interface{}, string, error) {
 			params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-			resp, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+			resp, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 			if err != nil {
 				return nil, "", err
 			}
@@ -1184,7 +1184,7 @@ func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, ap
 
 func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *taikungoclient.Client) (string, error) {
 	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&kubernetesProfileID)
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
+	response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
 	if err != nil {
 		return "", err
 	}
@@ -1197,7 +1197,7 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 
 func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *taikungoclient.Client) (string, error) {
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
-	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+	response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
 	if err != nil {
 		return "", err
 	}
@@ -1217,7 +1217,7 @@ const defaultAccessProfileName = "default"
 
 func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *taikungoclient.Client) (accessProfileID int32, found bool, err error) {
 	params := access_profiles.NewAccessProfilesAccessProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
+	response, err := apiClient.Client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
@@ -1233,7 +1233,7 @@ const defaultKubernetesProfileName = "default"
 
 func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *taikungoclient.Client) (kubernetesProfileID int32, found bool, err error) {
 	params := kubernetes_profiles.NewKubernetesProfilesKubernetesProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
+	response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
@@ -1248,6 +1248,6 @@ func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiC
 func resourceTaikunProjectLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	lockMode := getLockMode(lock)
 	params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
-	_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+	_, err := apiClient.Client.Projects.ProjectsLockManager(params, apiClient)
 	return err
 }

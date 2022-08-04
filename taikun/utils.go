@@ -10,7 +10,7 @@ import (
 
 func getDefaultOrganization(defaultOrganizationID *int32, apiClient *taikungoclient.Client) error {
 	params := users.NewUsersDetailsParams().WithV(ApiVersion)
-	response, err := apiClient.client.Users.UsersDetails(params, apiClient)
+	response, err := apiClient.Client.Users.UsersDetails(params, apiClient)
 	if err != nil {
 		return err
 	}

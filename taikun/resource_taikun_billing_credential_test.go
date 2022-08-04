@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 )
 
@@ -89,7 +90,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 }
 
 func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_credential" {
@@ -109,7 +110,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_credential" {

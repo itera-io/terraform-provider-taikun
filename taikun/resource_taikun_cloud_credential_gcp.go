@@ -121,7 +121,7 @@ func resourceTaikunCloudCredentialGCP() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	params := google_cloud.NewGoogleCloudCreateParams().WithV(ApiVersion)
 
@@ -153,7 +153,7 @@ func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.Resou
 	}
 	params = params.WithOrganizationID(&organizationID)
 
-	createResult, err := apiClient.client.GoogleCloud.GoogleCloudCreate(params, apiClient)
+	createResult, err := apiClient.Client.GoogleCloud.GoogleCloudCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -183,14 +183,14 @@ func generateResourceTaikunCloudCredentialGCPReadWithoutRetries() schema.ReadCon
 
 func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -216,7 +216,7 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunCloudCredentialGCPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -254,7 +254,7 @@ func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *taikun
 		Mode: getLockMode(lock),
 	}
 	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
 
 	return err
 }

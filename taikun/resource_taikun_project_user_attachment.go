@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/projects"
 	"github.com/itera-io/taikungoclient/client/user_projects"
 	"github.com/itera-io/taikungoclient/client/users"
@@ -50,7 +51,7 @@ func resourceTaikunProjectUserAttachment() *schema.Resource {
 }
 
 func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*apiClient)
+	client := meta.(*taikungoclient.Client)
 
 	userId := d.Get("user_id").(string)
 
@@ -87,7 +88,7 @@ func generateResourceTaikunProjectUserAttachmentReadWithoutRetries() schema.Read
 }
 func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 
 		id := d.Id()
 		d.SetId("")
@@ -97,7 +98,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 		}
 
 		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-		response, err := apiClient.client.Users.UsersList(params, apiClient)
+		response, err := apiClient.Client.Users.UsersList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -136,7 +137,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 }
 
 func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	projectId, userId, err := parseProjectUserAttachmentId(d.Id())
 	if err != nil {
@@ -144,7 +145,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 	}
 
 	usersListParams := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-	usersListResponse, err := apiClient.client.Users.UsersList(usersListParams, apiClient)
+	usersListResponse, err := apiClient.Client.Users.UsersList(usersListParams, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -154,7 +155,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 	}
 
 	projectsListParams := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&projectId)
-	projectsListResponse, err := apiClient.client.Projects.ProjectsList(projectsListParams, apiClient)
+	projectsListResponse, err := apiClient.Client.Projects.ProjectsList(projectsListParams, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,7 +174,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		ProjectID: projectId,
 	}
 	params := user_projects.NewUserProjectsBindUsersParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.client.UserProjects.UserProjectsBindUsers(params, apiClient)
+	_, err = apiClient.Client.UserProjects.UserProjectsBindUsers(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

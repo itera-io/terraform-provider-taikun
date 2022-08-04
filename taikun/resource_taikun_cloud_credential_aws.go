@@ -148,7 +148,7 @@ func resourceTaikunCloudCredentialAWS() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAwsCloudCommand{
 		Name:                d.Get("name").(string),
@@ -168,7 +168,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 	}
 
 	params := aws.NewAwsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Aws.AwsCreate(params, apiClient)
+	createResult, err := apiClient.Client.Aws.AwsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,14 +195,14 @@ func generateResourceTaikunCloudCredentialAWSReadWithoutRetries() schema.ReadCon
 }
 func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -228,7 +228,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,7 +248,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 			AwsSecretAccessKey: d.Get("secret_access_key").(string),
 		}
 		updateParams := aws.NewAwsUpdateParams().WithV(ApiVersion).WithBody(updateBody)
-		_, err := apiClient.client.Aws.AwsUpdate(updateParams, apiClient)
+		_, err := apiClient.Client.Aws.AwsUpdate(updateParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -285,6 +285,6 @@ func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *taikun
 		Mode: getLockMode(lock),
 	}
 	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
 	return err
 }

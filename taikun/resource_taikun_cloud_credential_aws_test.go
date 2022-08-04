@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 )
 
@@ -154,7 +155,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 }
 
 func testAccCheckTaikunCloudCredentialAWSExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential_aws" {
@@ -174,7 +175,7 @@ func testAccCheckTaikunCloudCredentialAWSExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunCloudCredentialAWSDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential_aws" {
