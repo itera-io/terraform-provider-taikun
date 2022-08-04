@@ -127,7 +127,7 @@ func resourceTaikunStandaloneProfile() *schema.Resource {
 }
 
 func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.StandAloneProfileCreateCommand{
 		Name:      d.Get("name").(string),
@@ -160,7 +160,7 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 	}
 
 	params := stand_alone_profile.NewStandAloneProfileCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.StandAloneProfile.StandAloneProfileCreate(params, apiClient)
+	createResult, err := apiClient.Client.StandAloneProfile.StandAloneProfileCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,14 +187,14 @@ func generateResourceTaikunStandaloneProfileReadWithoutRetries() schema.ReadCont
 }
 func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.StandAloneProfile.StandAloneProfileList(stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.StandAloneProfile.StandAloneProfileList(stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -208,7 +208,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 
 		rawStandaloneProfile := response.GetPayload().Data[0]
 
-		securityGroupResponse, err := apiClient.client.SecurityGroup.SecurityGroupList(security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(id), apiClient)
+		securityGroupResponse, err := apiClient.Client.SecurityGroup.SecurityGroupList(security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(id), apiClient)
 		if err != nil {
 			if _, ok := err.(*security_group.SecurityGroupListNotFound); ok && withRetries {
 				d.SetId(i32toa(id))
@@ -229,7 +229,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 }
 
 func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -242,7 +242,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 			Name: d.Get("name").(string),
 		}
 		params := stand_alone_profile.NewStandAloneProfileEditParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.StandAloneProfile.StandAloneProfileEdit(params, apiClient)
+		_, err := apiClient.Client.StandAloneProfile.StandAloneProfileEdit(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -267,7 +267,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 			}
 			body := &models.DeleteSecurityGroupCommand{ID: id}
 			params := security_group.NewSecurityGroupDeleteParams().WithV(ApiVersion).WithBody(body)
-			_, err = apiClient.client.SecurityGroup.SecurityGroupDelete(params, apiClient)
+			_, err = apiClient.Client.SecurityGroup.SecurityGroupDelete(params, apiClient)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -286,7 +286,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 				StandAloneProfileID: id,
 			}
 			params := security_group.NewSecurityGroupCreateParams().WithV(ApiVersion).WithBody(body)
-			_, err = apiClient.client.SecurityGroup.SecurityGroupCreate(params, apiClient)
+			_, err = apiClient.Client.SecurityGroup.SecurityGroupCreate(params, apiClient)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -297,7 +297,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceTaikunStandaloneProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -307,7 +307,7 @@ func resourceTaikunStandaloneProfileDelete(_ context.Context, d *schema.Resource
 		ID: id,
 	}
 	params := stand_alone_profile.NewStandAloneProfileDeleteParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.client.StandAloneProfile.StandAloneProfileDelete(params, apiClient)
+	_, err = apiClient.Client.StandAloneProfile.StandAloneProfileDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -351,6 +351,6 @@ func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *taikung
 		Mode: getLockMode(lock),
 	}
 	params := stand_alone_profile.NewStandAloneProfileLockManagementParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.StandAloneProfile.StandAloneProfileLockManagement(params, apiClient)
+	_, err := apiClient.Client.StandAloneProfile.StandAloneProfileLockManagement(params, apiClient)
 	return err
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 )
 
@@ -199,7 +200,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_access_profile" {
@@ -219,7 +220,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_access_profile" {

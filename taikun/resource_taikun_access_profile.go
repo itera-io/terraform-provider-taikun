@@ -162,7 +162,8 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	body := &models.CreateAccessProfileCommand{
 		Name: d.Get("name").(string),
 	}
-	resourceTaikunAccessProfileUpsertSetBody(d, body)
+	// TODO: use new endpoints
+	// resourceTaikunAccessProfileUpsertSetBody(d, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
 	createResult, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient)
@@ -248,26 +249,28 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	if err := resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d, apiClient); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d, apiClient); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d, apiClient); err != nil {
-		return diag.FromErr(err)
-	}
+	// TODO use new endpoints
+	// if err := resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d, apiClient); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err := resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d, apiClient); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+	// if err := resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d, apiClient); err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
-	body := &models.UpsertAccessProfileCommand{
-		ID:   id,
-		Name: d.Get("name").(string),
-	}
-	resourceTaikunAccessProfileUpsertSetBody(d, body)
+	// TODO use new endpoints
+	// body := &models.UpsertAccessProfileCommand{
+	// 	ID:   id,
+	// 	Name: d.Get("name").(string),
+	// }
+	// resourceTaikunAccessProfileUpsertSetBody(d, body)
 
-	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	if _, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient); err != nil {
-		return diag.FromErr(err)
-	}
+	// params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
+	// if _, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient); err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {
@@ -338,93 +341,97 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 	}
 }
 
-func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	oldDNSServersData, _ := d.GetChange("dns_server")
-	oldDNSServers := oldDNSServersData.([]interface{})
-	for _, oldDNSServerData := range oldDNSServers {
-		oldDNSServer := oldDNSServerData.(map[string]interface{})
-		oldDNSServerID, _ := atoi32(oldDNSServer["id"].(string))
-		params := access_profiles.NewAccessProfilesDeleteDNSServerParams().WithV(ApiVersion).WithBody(&models.DNSServerDeleteCommand{ID: oldDNSServerID})
-		_, err := apiClient.client.AccessProfiles.AccessProfilesDeleteDNSServer(params, apiClient)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// TODO: use new endpoints
+// func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+// 	oldDNSServersData, _ := d.GetChange("dns_server")
+// 	oldDNSServers := oldDNSServersData.([]interface{})
+// 	for _, oldDNSServerData := range oldDNSServers {
+// 		oldDNSServer := oldDNSServerData.(map[string]interface{})
+// 		oldDNSServerID, _ := atoi32(oldDNSServer["id"].(string))
+// 		params := access_profiles.NewAccessProfilesDeleteDNSServerParams().WithV(ApiVersion).WithBody(&models.DNSServerDeleteCommand{ID: oldDNSServerID})
+// 		_, err := apiClient.Client.AccessProfiles.AccessProfilesDeleteDNSServer(params, apiClient)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
-func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	oldNTPServersData, _ := d.GetChange("ntp_server")
-	oldNTPServers := oldNTPServersData.([]interface{})
-	for _, oldNTPServerData := range oldNTPServers {
-		oldNTPServer := oldNTPServerData.(map[string]interface{})
-		oldNTPServerID, _ := atoi32(oldNTPServer["id"].(string))
-		params := access_profiles.NewAccessProfilesDeleteNtpServerParams().WithV(ApiVersion).WithBody(&models.NtpServerDeleteCommand{ID: oldNTPServerID})
-		_, err := apiClient.client.AccessProfiles.AccessProfilesDeleteNtpServer(params, apiClient)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// TODO: use new endpoints
+// func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+// 	oldNTPServersData, _ := d.GetChange("ntp_server")
+// 	oldNTPServers := oldNTPServersData.([]interface{})
+// 	for _, oldNTPServerData := range oldNTPServers {
+// 		oldNTPServer := oldNTPServerData.(map[string]interface{})
+// 		oldNTPServerID, _ := atoi32(oldNTPServer["id"].(string))
+// 		params := access_profiles.NewAccessProfilesDeleteNtpServerParams().WithV(ApiVersion).WithBody(&models.NtpServerDeleteCommand{ID: oldNTPServerID})
+// 		_, err := apiClient.Client.AccessProfiles.AccessProfilesDeleteNtpServer(params, apiClient)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
-func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	oldSSHUsersData, _ := d.GetChange("ssh_user")
-	oldSSHUsers := oldSSHUsersData.([]interface{})
-	for _, oldSSHUserData := range oldSSHUsers {
-		oldSSHUser := oldSSHUserData.(map[string]interface{})
-		oldSSHUserID, _ := atoi32(oldSSHUser["id"].(string))
-		params := ssh_users.NewSSHUsersDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteSSHUserCommand{ID: oldSSHUserID})
-		_, err := apiClient.client.SSHUsers.SSHUsersDelete(params, apiClient)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// TODO: use new endpoints
+// func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+// 	oldSSHUsersData, _ := d.GetChange("ssh_user")
+// 	oldSSHUsers := oldSSHUsersData.([]interface{})
+// 	for _, oldSSHUserData := range oldSSHUsers {
+// 		oldSSHUser := oldSSHUserData.(map[string]interface{})
+// 		oldSSHUserID, _ := atoi32(oldSSHUser["id"].(string))
+// 		params := ssh_users.NewSSHUsersDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteSSHUserCommand{ID: oldSSHUserID})
+// 		_, err := apiClient.Client.SSHUsers.SSHUsersDelete(params, apiClient)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
-func resourceTaikunAccessProfileUpsertSetBody(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
-	if DNSServers, isDNSServersSet := d.GetOk("dns_server"); isDNSServersSet {
-		rawDNSServersList := DNSServers.([]interface{})
-		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
-		for i, e := range rawDNSServersList {
-			rawDNSServer := e.(map[string]interface{})
-			DNSServersList[i] = &models.DNSServerListDto{
-				Address: rawDNSServer["address"].(string),
-			}
-		}
-		body.DNSServers = DNSServersList
-	}
-	if NtpServers, isNTPServersSet := d.GetOk("ntp_server"); isNTPServersSet {
-		rawNtpServersList := NtpServers.([]interface{})
-		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
-		for i, e := range rawNtpServersList {
-			rawNtpServer := e.(map[string]interface{})
-			NTPServersList[i] = &models.NtpServerListDto{
-				Address: rawNtpServer["address"].(string),
-			}
-		}
-		body.NtpServers = NTPServersList
-	}
-	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-		body.OrganizationID, _ = atoi32(organizationIDData.(string))
-	}
-	if proxy, isProxySet := d.GetOk("http_proxy"); isProxySet {
-		body.HTTPProxy = proxy.(string)
-	}
-	if SSHUsers, isSSHUsersSet := d.GetOk("ssh_user"); isSSHUsersSet {
-		rawSSHUsersList := SSHUsers.([]interface{})
-		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
-		for i, e := range rawSSHUsersList {
-			rawSSHUser := e.(map[string]interface{})
-			SSHUsersList[i] = &models.SSHUserCreateDto{
-				Name:         rawSSHUser["name"].(string),
-				SSHPublicKey: rawSSHUser["public_key"].(string),
-			}
-		}
-		body.SSHUsers = SSHUsersList
-	}
-}
+// TODO: use new endpoints
+// func resourceTaikunAccessProfileUpsertSetBody(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+// 	if DNSServers, isDNSServersSet := d.GetOk("dns_server"); isDNSServersSet {
+// 		rawDNSServersList := DNSServers.([]interface{})
+// 		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
+// 		for i, e := range rawDNSServersList {
+// 			rawDNSServer := e.(map[string]interface{})
+// 			DNSServersList[i] = &models.DNSServerListDto{
+// 				Address: rawDNSServer["address"].(string),
+// 			}
+// 		}
+// 		body.DNSServers = DNSServersList
+// 	}
+// 	if NtpServers, isNTPServersSet := d.GetOk("ntp_server"); isNTPServersSet {
+// 		rawNtpServersList := NtpServers.([]interface{})
+// 		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
+// 		for i, e := range rawNtpServersList {
+// 			rawNtpServer := e.(map[string]interface{})
+// 			NTPServersList[i] = &models.NtpServerListDto{
+// 				Address: rawNtpServer["address"].(string),
+// 			}
+// 		}
+// 		body.NtpServers = NTPServersList
+// 	}
+// 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
+// 		body.OrganizationID, _ = atoi32(organizationIDData.(string))
+// 	}
+// 	if proxy, isProxySet := d.GetOk("http_proxy"); isProxySet {
+// 		body.HTTPProxy = proxy.(string)
+// 	}
+// 	if SSHUsers, isSSHUsersSet := d.GetOk("ssh_user"); isSSHUsersSet {
+// 		rawSSHUsersList := SSHUsers.([]interface{})
+// 		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
+// 		for i, e := range rawSSHUsersList {
+// 			rawSSHUser := e.(map[string]interface{})
+// 			SSHUsersList[i] = &models.SSHUserCreateDto{
+// 				Name:         rawSSHUser["name"].(string),
+// 				SSHPublicKey: rawSSHUser["public_key"].(string),
+// 			}
+// 		}
+// 		body.SSHUsers = SSHUsersList
+// 	}
+// }
 
 func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.AccessProfilesLockManagementCommand{
@@ -432,6 +439,6 @@ func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *taikungocli
 		Mode: getLockMode(lock),
 	}
 	params := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.AccessProfiles.AccessProfilesLockManager(params, apiClient)
+	_, err := apiClient.Client.AccessProfiles.AccessProfilesLockManager(params, apiClient)
 	return err
 }

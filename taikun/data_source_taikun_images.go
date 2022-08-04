@@ -117,7 +117,7 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 	// 	limit = int32(limitData.(int))
 	// }
 	// for {
-	// 	response, err := apiClient.client.Images.ImagesCommonAwsImages(params, apiClient)
+	// 	response, err := apiClient.Client.Images.ImagesCommonAwsImages(params, apiClient)
 	// 	if err != nil {
 	// 		return diag.FromErr(err)
 	// 	}

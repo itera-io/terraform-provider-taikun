@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -197,7 +198,7 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_policy_profile" {
@@ -217,7 +218,7 @@ func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_policy_profile" {

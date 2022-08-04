@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/organizations"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 	"github.com/itera-io/taikungoclient/models"
@@ -56,7 +57,7 @@ func resourceTaikunOrganizationBillingRuleAttachment() *schema.Resource {
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*apiClient)
+	client := meta.(*taikungoclient.Client)
 
 	billingRuleId, err := atoi32(d.Get("billing_rule_id").(string))
 	if err != nil {
@@ -97,7 +98,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentReadWithoutRetries()
 }
 func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 
 		id := d.Id()
 		d.SetId("")
@@ -107,7 +108,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 		}
 
 		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-		response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -149,7 +150,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(d.Id())
 	if err != nil {
@@ -157,7 +158,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 	}
 
 	organizationsListParams := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&organizationId)
-	organizationsListResponse, err := apiClient.client.Organizations.OrganizationsList(organizationsListParams, apiClient)
+	organizationsListResponse, err := apiClient.Client.Organizations.OrganizationsList(organizationsListParams, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -167,7 +168,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 	}
 
 	billingRulesListParams := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-	billingRulesListResponse, err := apiClient.client.Prometheus.PrometheusListOfRules(billingRulesListParams, apiClient)
+	billingRulesListResponse, err := apiClient.Client.Prometheus.PrometheusListOfRules(billingRulesListParams, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,7 +187,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		PrometheusRuleID: billingRuleId,
 	}
 	params := prometheus.NewPrometheusBindOrganizationsParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.client.Prometheus.PrometheusBindOrganizations(params, apiClient)
+	_, err = apiClient.Client.Prometheus.PrometheusBindOrganizations(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

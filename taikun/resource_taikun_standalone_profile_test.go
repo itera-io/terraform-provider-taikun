@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
 )
 
@@ -223,7 +224,7 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 }
 
 func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_standalone_profile" {
@@ -243,7 +244,7 @@ func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_standalone_profile" {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/projects"
 )
 
@@ -578,7 +579,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 }
 
 func testAccCheckTaikunProjectExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project" {
@@ -588,7 +589,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+		response, err := apiClient.Client.Projects.ProjectsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
 			return fmt.Errorf("project doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -598,7 +599,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project" {
@@ -609,7 +610,7 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+			response, err := apiClient.Client.Projects.ProjectsList(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
