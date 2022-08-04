@@ -42,6 +42,13 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
+		"namespace": {
+			Description:  "The kubeconfig's namespace.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
 		"project_id": {
 			Description:      "ID of the kubeconfig's project.",
 			Type:             schema.TypeString,
@@ -69,7 +76,9 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 		"user_id": {
 			Description: "ID of the kubeconfig's user, if the kubeconfig is personal.",
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
+			ForceNew:    true,
 		},
 		"user_name": {
 			Description: "Name of the kubeconfig's user, if the kubeconfig is personal.",
@@ -80,6 +89,13 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Description: "Role of the kubeconfig's user, if the kubeconfig is personal.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"validity_period": {
+			Description:  "The kubeconfig's validity period in minutes (unlimited by default).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			ForceNew:     true,
 		},
 	}
 }
@@ -106,6 +122,19 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
 		Name:                   d.Get("name").(string),
 	}
+
+	if userId, userIdIsSet := d.GetOk("user_id"); userIdIsSet {
+		body.UserID, _ = userId.(string)
+	}
+
+	if validityPeriod, validityPeriodIsSet := d.GetOk("validity_period"); validityPeriodIsSet {
+		body.TTL, _ = validityPeriod.(int32)
+	}
+
+	if namespace, namespaceIsSet := d.GetOk("namespace"); namespaceIsSet {
+		body.Namespace, _ = namespace.(string)
+	}
+
 	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -190,13 +219,17 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 	kubeconfigMap := map[string]interface{}{
 		"content":      kubeconfigContent,
 		"id":           i32toa(kubeconfigDTO.ID),
-		"name":         kubeconfigDTO.ServiceAccountName,
+		"name":         kubeconfigDTO.DisplayName,
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
 		"project_name": kubeconfigDTO.ProjectName,
 		"user_id":      kubeconfigDTO.UserID,
-		"user_name":    kubeconfigDTO.UserName,
-		"user_role":    kubeconfigDTO.UserRole,
+		// FIXME: fetch from user ID since no longer included in response
+		// "user_name":    kubeconfigDTO.UserName,
+		// "user_role":    kubeconfigDTO.UserRole,
+		"namespace":       kubeconfigDTO.Namespace,
+		"validity_period": kubeconfigExpirationDataToTTL(kubeconfigDTO.ExpirationDate),
 	}
+
 	if kubeconfigDTO.IsAccessibleForAll {
 		kubeconfigMap["access_scope"] = "all"
 	} else if kubeconfigDTO.IsAccessibleForManager {

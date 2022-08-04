@@ -4,6 +4,9 @@ resource "taikun_kubeconfig" "foo" {
   name         = "all-can-view"
   role         = "view"
   access_scope = "all"
+
+  validity_period = 1440 # 24 hours
+  namespace = "helm"
 }
 
 resource "local_file" "kubeconfig-foo" {
