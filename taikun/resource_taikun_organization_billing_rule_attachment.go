@@ -80,7 +80,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 		PrometheusRuleID: billingRuleId,
 	}
 	params := prometheus.NewPrometheusBindOrganizationsParams().WithV(ApiVersion).WithBody(body)
-	_, err = client.client.Prometheus.PrometheusBindOrganizations(params, client)
+	_, err = client.Client.Prometheus.PrometheusBindOrganizations(params, client)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -117,8 +117,8 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, d *schema.Resou
 		body.OrganizationID = organizationId
 	}
 
-	params := showback_credentials.NewShowbackCreateCredentialParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.ShowbackClient.Showback.ShowbackCreateCredential(params, apiClient)
+	params := showback_credentials.NewShowbackCredentialsCreateParams().WithV(ApiVersion).WithBody(body)
+	createResult, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,7 +152,7 @@ func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.Showback.ShowbackCredentialsList(showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -200,8 +200,8 @@ func resourceTaikunShowbackCredentialDelete(_ context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	params := showback_credentials.NewShowbackDeleteShowbackCredentialParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackCredentialCommand{ID: id})
-	_, err = apiClient.Client.Showback.ShowbackDeleteShowbackCredential(params, apiClient)
+	params := showback_credentials.NewShowbackCredentialsDeleteParams().WithV(ApiVersion).WithID(id)
+	_, err = apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -232,7 +232,7 @@ func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *taikun
 		ID:   id,
 		Mode: getLockMode(lock),
 	}
-	params := showback_credentials.NewShowbackLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.Showback.ShowbackLockManager(params, apiClient)
+	params := showback_credentials.NewShowbackCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
+	_, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsLockManager(params, apiClient)
 	return err
 }
