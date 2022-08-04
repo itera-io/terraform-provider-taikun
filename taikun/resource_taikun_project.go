@@ -895,32 +895,33 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungocli
 
 func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, quotaID int32) error {
 
-	quotaEditBody := &models.ProjectQuotaUpdateDto{
-		IsCPUUnlimited:      true,
-		IsRAMUnlimited:      true,
-		IsDiskSizeUnlimited: true,
-	}
+	// TODO: use new API endpoints
+	// 	quotaEditBody := &models.ProjectQuotaUpdateDto{
+	// 		IsCPUUnlimited:      true,
+	// 		IsRAMUnlimited:      true,
+	// 		IsDiskSizeUnlimited: true,
+	// 	}
 
-	if quotaCPU, quotaCPUIsSet := d.GetOk("quota_cpu_units"); quotaCPUIsSet {
-		quotaEditBody.CPU = int64(quotaCPU.(int))
-		quotaEditBody.IsCPUUnlimited = false
-	}
+	// 	if quotaCPU, quotaCPUIsSet := d.GetOk("quota_cpu_units"); quotaCPUIsSet {
+	// 		quotaEditBody.CPU = int64(quotaCPU.(int))
+	// 		quotaEditBody.IsCPUUnlimited = false
+	// 	}
 
-	if quotaDisk, quotaDiskIsSet := d.GetOk("quota_disk_size"); quotaDiskIsSet {
-		quotaEditBody.DiskSize = gibiByteToByte(quotaDisk.(int))
-		quotaEditBody.IsDiskSizeUnlimited = false
-	}
+	// 	if quotaDisk, quotaDiskIsSet := d.GetOk("quota_disk_size"); quotaDiskIsSet {
+	// 		quotaEditBody.DiskSize = gibiByteToByte(quotaDisk.(int))
+	// 		quotaEditBody.IsDiskSizeUnlimited = false
+	// 	}
 
-	if quotaRAM, quotaRAMIsSet := d.GetOk("quota_ram_size"); quotaRAMIsSet {
-		quotaEditBody.RAM = gibiByteToByte(quotaRAM.(int))
-		quotaEditBody.IsRAMUnlimited = false
-	}
+	// 	if quotaRAM, quotaRAMIsSet := d.GetOk("quota_ram_size"); quotaRAMIsSet {
+	// 		quotaEditBody.RAM = gibiByteToByte(quotaRAM.(int))
+	// 		quotaEditBody.IsRAMUnlimited = false
+	// 	}
 
-	quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaID).WithBody(quotaEditBody)
-	_, err := apiClient.Client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
-	if err != nil {
-		return err
-	}
+	// 	quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaID).WithBody(quotaEditBody)
+	// 	_, err := apiClient.Client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 	return nil
 }
 
@@ -1058,30 +1059,31 @@ func flattenTaikunProject(
 	}
 	projectMap["vm"] = vms
 
-	var nullID int32
-	if projectDetailsDTO.AlertingProfileID != nullID {
-		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.AlertingProfileID)
-	}
+	// TODO: use new API endpoints
+	// var nullID int32
+	// if projectDetailsDTO.AlertingProfileID != nullID {
+	// 	projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.AlertingProfileID)
+	// }
 
-	if projectDetailsDTO.IsBackupEnabled {
-		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
-	}
+	// if projectDetailsDTO.IsBackupEnabled {
+	// 	projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
+	// }
 
-	if projectDetailsDTO.IsOpaEnabled {
-		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
-	}
+	// if projectDetailsDTO.IsOpaEnabled {
+	// 	projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
+	// }
 
-	if !projectQuotaDTO.IsCPUUnlimited {
-		projectMap["quota_cpu_units"] = projectQuotaDTO.CPU
-	}
+	// if !projectQuotaDTO.IsCPUUnlimited {
+	// 	projectMap["quota_cpu_units"] = projectQuotaDTO.CPU
+	// }
 
-	if !projectQuotaDTO.IsDiskSizeUnlimited {
-		projectMap["quota_disk_size"] = byteToGibiByte(projectQuotaDTO.DiskSize)
-	}
+	// if !projectQuotaDTO.IsDiskSizeUnlimited {
+	// 	projectMap["quota_disk_size"] = byteToGibiByte(projectQuotaDTO.DiskSize)
+	// }
 
-	if !projectQuotaDTO.IsRAMUnlimited {
-		projectMap["quota_ram_size"] = byteToGibiByte(projectQuotaDTO.RAM)
-	}
+	// if !projectQuotaDTO.IsRAMUnlimited {
+	// 	projectMap["quota_ram_size"] = byteToGibiByte(projectQuotaDTO.RAM)
+	// }
 
 	return projectMap
 }

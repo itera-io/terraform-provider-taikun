@@ -226,6 +226,10 @@ func getLockMode(locked bool) string {
 	return "unlock"
 }
 
+func getEPrometheusType(prometheusType string) models.EPrometheusType {
+	return getEPrometheusType(prometheusType)
+}
+
 func getPrometheusType(prometheusType string) models.PrometheusType {
 	if prometheusType == "Count" {
 		return 100

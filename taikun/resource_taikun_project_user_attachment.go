@@ -70,7 +70,7 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 		ProjectID: projectId,
 	}
 	params := user_projects.NewUserProjectsBindUsersParams().WithV(ApiVersion).WithBody(body)
-	_, err = client.client.UserProjects.UserProjectsBindUsers(params, client)
+	_, err = client.Client.UserProjects.UserProjectsBindUsers(params, client)
 	if err != nil {
 		return diag.FromErr(err)
 	}

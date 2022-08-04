@@ -80,7 +80,7 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*taikungoclient.Client)
 
-	body := models.UpsertSlackConfigurationCommand{
+	body := models.CreateSlackConfigurationCommand{
 		Name:      d.Get("name").(string),
 		URL:       d.Get("url").(string),
 		Channel:   d.Get("channel").(string),
@@ -96,12 +96,13 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.Resou
 	}
 
 	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.Client.Slack.SlackCreate(params, apiClient)
+	// TODO: use new API response
+	_, err := apiClient.Client.Slack.SlackCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(i32toa(response.Payload))
+	// d.SetId(i32toa(response.Payload))
 
 	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
@@ -155,8 +156,8 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	body := models.UpsertSlackConfigurationCommand{
-		ID:        id,
+	body := models.UpdateSlackConfigurationDto{
+		// ID:        id, TODO: use new endpoints
 		Name:      d.Get("name").(string),
 		URL:       d.Get("url").(string),
 		Channel:   d.Get("channel").(string),
@@ -171,8 +172,8 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 		body.OrganizationID = organizationID
 	}
 
-	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	if _, err := apiClient.Client.Slack.SlackCreate(params, apiClient); err != nil {
+	params := slack.NewSlackUpdateParams().WithV(ApiVersion).WithID(id).WithBody(&body)
+	if _, err := apiClient.Client.Slack.SlackUpdate(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -187,9 +188,9 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	body := models.DeleteSlackConfigurationCommand{ID: id}
-	params := slack.NewSlackDeleteParams().WithV(ApiVersion).WithBody(&body)
-	_, _, err = apiClient.Client.Slack.SlackDelete(params, apiClient)
+	body := models.DeleteSlackConfigCommand{Ids: []int32{id}}
+	params := slack.NewSlackDeleteMultipleParams().WithV(ApiVersion).WithBody(&body)
+	_, err = apiClient.Client.Slack.SlackDeleteMultiple(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -151,7 +151,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 	body := &models.CreateShowbackRuleCommand{
 		Name:              d.Get("name").(string),
 		MetricName:        d.Get("metric_name").(string),
-		Type:              getPrometheusType(d.Get("type").(string)),
+		Type:              getEPrometheusType(d.Get("type").(string)),
 		Kind:              getShowbackType(d.Get("kind").(string)),
 		Price:             d.Get("price").(float64),
 		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
@@ -187,8 +187,8 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	params := showback_rules.NewShowbackCreateRuleParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.Showback.ShowbackCreateRule(params, apiClient)
+	params := showback_rules.NewShowbackRulesCreateParams().WithV(ApiVersion).WithBody(body)
+	createResult, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -212,7 +212,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.Showback.ShowbackRulesList(showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -248,7 +248,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 		ID:                id,
 		Name:              d.Get("name").(string),
 		MetricName:        d.Get("metric_name").(string),
-		Type:              getPrometheusType(d.Get("type").(string)),
+		Type:              getEPrometheusType(d.Get("type").(string)),
 		Kind:              getShowbackType(d.Get("kind").(string)),
 		Price:             d.Get("price").(float64),
 		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
@@ -266,8 +266,8 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	params := showback_rules.NewShowbackUpdateRuleParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.Client.Showback.ShowbackUpdateRule(params, apiClient)
+	params := showback_rules.NewShowbackRulesUpdateParams().WithV(ApiVersion).WithBody(body)
+	_, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesUpdate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -282,8 +282,8 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	params := showback_rules.NewShowbackDeleteRuleParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackRuleCommand{ID: id})
-	_, err = apiClient.Client.Showback.ShowbackDeleteRule(params, apiClient)
+	params := showback_rules.NewShowbackRulesDeleteParams().WithV(ApiVersion).WithID(id)
+	_, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
