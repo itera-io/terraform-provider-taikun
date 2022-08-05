@@ -338,3 +338,8 @@ func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
 		return 300
 	}
 }
+
+func setResourceDataId(d *schema.ResourceData, id int32) {
+	idAsString := strconv.FormatInt(int64(id), 10)
+	d.SetId(idAsString)
+}
