@@ -16,6 +16,37 @@ import (
 
 func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"allowed_host": {
+			Description: "List of allowed hosts.",
+			Type:        schema.TypeList,
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"description": {
+						Description: "Description of the host.",
+						Type:        schema.TypeString,
+						Required:    true,
+					},
+					"id": {
+						Description: "ID of the host.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"ip_address": {
+						Description:  "IPv4 address of the host",
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.IsIPv4Address,
+					},
+					"mask_bits": {
+						Description:  "Number of bits in the network mask.",
+						Type:         schema.TypeInt,
+						Required:     true,
+						ValidateFunc: validation.IntBetween(0, 32),
+					},
+				},
+			},
+		},
 		"created_by": {
 			Description: "The creator of the access profile.",
 			Type:        schema.TypeString,
@@ -162,29 +193,62 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	body := &models.CreateAccessProfileCommand{
 		Name: d.Get("name").(string),
 	}
-	// TODO: use new endpoints
-	// resourceTaikunAccessProfileUpsertSetBody(d, body)
+
+	resourceTaikunAccessProfileCreateAllowedHosts(d, body)
+	resourceTaikunAccessProfileCreateDnsServers(d, body)
+	resourceTaikunAccessProfileCreateNtpServers(d, body)
+	resourceTaikunAccessProfileCreateSshUsers(d, body)
 
 	params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	id, err := atoi32(createResult.Payload.ID)
+	id, err := resourceTaikunAccessProfileCreateSendRequest(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(createResult.Payload.ID)
+	setResourceDataId(d, id)
 
-	if d.Get("lock").(bool) {
-		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {
-			return diag.FromErr(err)
-		}
+	err = resourceTaikunAccessProfileCreateLock(d, id, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return readAfterCreateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, d, meta)
 }
+
+// FIXME: set allowed hosts in create request body
+func resourceTaikunAccessProfileCreateAllowedHosts(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+}
+
+// FIXME: set DNS servers in create request body
+func resourceTaikunAccessProfileCreateDnsServers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+}
+
+// FIXME: set NTP servers in create request body
+func resourceTaikunAccessProfileCreateNtpServers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+}
+
+// FIXME: set SSH users in create request body
+func resourceTaikunAccessProfileCreateSshUsers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+}
+
+// send access profile creation request
+// returns the ID of the new resource or an error
+func resourceTaikunAccessProfileCreateSendRequest(params *access_profiles.AccessProfilesCreateParams, apiClient *taikungoclient.Client) (int32, error) {
+	createResult, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient)
+	if err != nil {
+		return 0, err
+	}
+	return atoi32(createResult.Payload.ID)
+}
+
+// lock access profile after creation
+func resourceTaikunAccessProfileCreateLock(d *schema.ResourceData, id int32, apiClient *taikungoclient.Client) (err error) {
+	if d.Get("lock").(bool) {
+		err = resourceTaikunAccessProfileLock(id, true, apiClient)
+	}
+	return
+}
+
 func generateResourceTaikunAccessProfileReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunAccessProfileRead(true)
 }
@@ -281,6 +345,26 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, d, meta)
 }
 
+// FIXME: Update the access profile's allowed hosts
+func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+	return nil
+}
+
+// FIXME: Update the access profile's DNS servers
+func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+	return nil
+}
+
+// FIXME: Update the access profile's NTP servers
+func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+	return nil
+}
+
+// FIXME: Update the access profile's SSH users
+func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+	return nil
+}
+
 func resourceTaikunAccessProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
@@ -299,6 +383,16 @@ func resourceTaikunAccessProfileDelete(_ context.Context, d *schema.ResourceData
 }
 
 func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, sshResponse *ssh_users.SSHUsersListOK) map[string]interface{} {
+
+	AllowedHosts := make([]map[string]interface{}, len(rawAccessProfile.AllowedHosts))
+	for i, rawAllowedHost := range rawAccessProfile.AllowedHosts {
+		AllowedHosts[i] = map[string]interface{}{
+			"description": rawAllowedHost.Description,
+			"id":          i32toa(rawAllowedHost.ID),
+			"ip_address":  rawAllowedHost.IPAddress,
+			"mask_bits":   rawAllowedHost.MaskBits,
+		}
+	}
 
 	DNSServers := make([]map[string]interface{}, len(rawAccessProfile.DNSServers))
 	for i, rawDNSServer := range rawAccessProfile.DNSServers {
@@ -326,13 +420,14 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 	}
 
 	return map[string]interface{}{
+		"allowed_host":      AllowedHosts,
 		"created_by":        rawAccessProfile.CreatedBy,
 		"dns_server":        DNSServers,
 		"http_proxy":        rawAccessProfile.HTTPProxy,
 		"id":                i32toa(rawAccessProfile.ID),
-		"lock":              rawAccessProfile.IsLocked,
 		"last_modified":     rawAccessProfile.LastModified,
 		"last_modified_by":  rawAccessProfile.LastModifiedBy,
+		"lock":              rawAccessProfile.IsLocked,
 		"name":              rawAccessProfile.Name,
 		"ntp_server":        NTPServers,
 		"organization_id":   i32toa(rawAccessProfile.OrganizationID),
