@@ -32,7 +32,7 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
-					"ip_address": {
+					"address": {
 						Description:  "IPv4 address of the host",
 						Type:         schema.TypeString,
 						Required:     true,
@@ -194,6 +194,13 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 		Name: d.Get("name").(string),
 	}
 
+	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
+		body.OrganizationID, _ = atoi32(organizationIDData.(string))
+	}
+	if proxy, isProxySet := d.GetOk("http_proxy"); isProxySet {
+		body.HTTPProxy = proxy.(string)
+	}
+
 	resourceTaikunAccessProfileCreateAllowedHosts(d, body)
 	resourceTaikunAccessProfileCreateDnsServers(d, body)
 	resourceTaikunAccessProfileCreateNtpServers(d, body)
@@ -215,20 +222,63 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	return readAfterCreateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, d, meta)
 }
 
-// FIXME: set allowed hosts in create request body
+// set allowed hosts in create request body
 func resourceTaikunAccessProfileCreateAllowedHosts(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+	if allowedHostData, allowedHostIsSet := d.GetOk("allowed_host"); allowedHostIsSet {
+		allowedHosts := allowedHostData.([]interface{})
+		body.AllowedHosts = make([]*models.AllowedHostCreateDto, len(allowedHosts))
+		for i, rawAllowedHost := range allowedHosts {
+			allowedHost := rawAllowedHost.(map[string]interface{})
+			body.AllowedHosts[i] = &models.AllowedHostCreateDto{
+				Description: allowedHost["description"].(string),
+				IPAddress:   allowedHost["address"].(string),
+				MaskBits:    allowedHost["mask_bits"].(int32),
+			}
+		}
+	}
 }
 
-// FIXME: set DNS servers in create request body
+// set DNS servers in create request body
 func resourceTaikunAccessProfileCreateDnsServers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+	if dnsServerData, dnsServerIsSet := d.GetOk("dns_server"); dnsServerIsSet {
+		dnsServers := dnsServerData.([]interface{})
+		body.DNSServers = make([]*models.DNSServerCreateDto, len(dnsServers))
+		for i, rawDnsServer := range dnsServers {
+			dnsServer := rawDnsServer.(map[string]interface{})
+			body.DNSServers[i] = &models.DNSServerCreateDto{
+				Address: dnsServer["address"].(string),
+			}
+		}
+	}
 }
 
-// FIXME: set NTP servers in create request body
+// set NTP servers in create request body
 func resourceTaikunAccessProfileCreateNtpServers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+	if ntpServerData, ntpServerIsSet := d.GetOk("ntp_server"); ntpServerIsSet {
+		ntpServers := ntpServerData.([]interface{})
+		body.NtpServers = make([]*models.NtpServerCreateDto, len(ntpServers))
+		for i, rawNtpServer := range ntpServers {
+			ntpServer := rawNtpServer.(map[string]interface{})
+			body.NtpServers[i] = &models.NtpServerCreateDto{
+				Address: ntpServer["address"].(string),
+			}
+		}
+	}
 }
 
-// FIXME: set SSH users in create request body
+// set SSH users in create request body
 func resourceTaikunAccessProfileCreateSshUsers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
+	if sshUserData, sshUserIsSet := d.GetOk("ssh_user"); sshUserIsSet {
+		sshUsers := sshUserData.([]interface{})
+		body.SSHUsers = make([]*models.SSHUserCreateDto, len(sshUsers))
+		for i, rawSshUser := range sshUsers {
+			sshUser := rawSshUser.(map[string]interface{})
+			body.SSHUsers[i] = &models.SSHUserCreateDto{
+				Name:         sshUser["name"].(string),
+				SSHPublicKey: sshUser["public_key"].(string),
+			}
+		}
+	}
 }
 
 // send access profile creation request
@@ -345,22 +395,22 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, d, meta)
 }
 
-// FIXME: Update the access profile's allowed hosts
+// TODO: Update the access profile's allowed hosts
 func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	return nil
 }
 
-// FIXME: Update the access profile's DNS servers
+// TODO: Update the access profile's DNS servers
 func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	return nil
 }
 
-// FIXME: Update the access profile's NTP servers
+// TODO: Update the access profile's NTP servers
 func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	return nil
 }
 
-// FIXME: Update the access profile's SSH users
+// TODO: Update the access profile's SSH users
 func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	return nil
 }
@@ -482,50 +532,6 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 // 		}
 // 	}
 // 	return nil
-// }
-
-// TODO: use new endpoints
-// func resourceTaikunAccessProfileUpsertSetBody(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
-// 	if DNSServers, isDNSServersSet := d.GetOk("dns_server"); isDNSServersSet {
-// 		rawDNSServersList := DNSServers.([]interface{})
-// 		DNSServersList := make([]*models.DNSServerListDto, len(rawDNSServersList))
-// 		for i, e := range rawDNSServersList {
-// 			rawDNSServer := e.(map[string]interface{})
-// 			DNSServersList[i] = &models.DNSServerListDto{
-// 				Address: rawDNSServer["address"].(string),
-// 			}
-// 		}
-// 		body.DNSServers = DNSServersList
-// 	}
-// 	if NtpServers, isNTPServersSet := d.GetOk("ntp_server"); isNTPServersSet {
-// 		rawNtpServersList := NtpServers.([]interface{})
-// 		NTPServersList := make([]*models.NtpServerListDto, len(rawNtpServersList))
-// 		for i, e := range rawNtpServersList {
-// 			rawNtpServer := e.(map[string]interface{})
-// 			NTPServersList[i] = &models.NtpServerListDto{
-// 				Address: rawNtpServer["address"].(string),
-// 			}
-// 		}
-// 		body.NtpServers = NTPServersList
-// 	}
-// 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-// 		body.OrganizationID, _ = atoi32(organizationIDData.(string))
-// 	}
-// 	if proxy, isProxySet := d.GetOk("http_proxy"); isProxySet {
-// 		body.HTTPProxy = proxy.(string)
-// 	}
-// 	if SSHUsers, isSSHUsersSet := d.GetOk("ssh_user"); isSSHUsersSet {
-// 		rawSSHUsersList := SSHUsers.([]interface{})
-// 		SSHUsersList := make([]*models.SSHUserCreateDto, len(rawSSHUsersList))
-// 		for i, e := range rawSSHUsersList {
-// 			rawSSHUser := e.(map[string]interface{})
-// 			SSHUsersList[i] = &models.SSHUserCreateDto{
-// 				Name:         rawSSHUser["name"].(string),
-// 				SSHPublicKey: rawSSHUser["public_key"].(string),
-// 			}
-// 		}
-// 		body.SSHUsers = SSHUsersList
-// 	}
 // }
 
 func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
