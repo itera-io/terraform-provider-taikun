@@ -59,9 +59,9 @@ resource "taikun_organization_billing_rule_attachment" "foo" {
 ### Optional
 
 - `discount_rate` (Number) Discount rate in percents (0-100 %). Defaults to `100`.
-- `id` (String) The ID of this resource.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `organization_name` (String) Name of the organisation.
 

@@ -6,7 +6,7 @@ resource "taikun_kubeconfig" "foo" {
   access_scope = "all"
 
   validity_period = 1440 # 24 hours
-  namespace = "helm"
+  namespace       = "helm"
 }
 
 resource "local_file" "kubeconfig-foo" {

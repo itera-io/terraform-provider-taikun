@@ -23,12 +23,12 @@ data "taikun_billing_credentials" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
 - `billing_credentials` (List of Object) List of retrieved billing credentials. (see [below for nested schema](#nestedatt--billing_credentials))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--billing_credentials"></a>
 ### Nested Schema for `billing_credentials`

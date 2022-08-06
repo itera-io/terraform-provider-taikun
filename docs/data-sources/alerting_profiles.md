@@ -25,12 +25,12 @@ data "taikun_alerting_profiles" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
 - `alerting_profiles` (List of Object) List of retrieved alerting profiles. (see [below for nested schema](#nestedatt--alerting_profiles))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--alerting_profiles"></a>
 ### Nested Schema for `alerting_profiles`
