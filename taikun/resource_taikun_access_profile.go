@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
+	"github.com/itera-io/taikungoclient/client/dns_servers"
+	"github.com/itera-io/taikungoclient/client/ntp_servers"
 	"github.com/itera-io/taikungoclient/client/ssh_users"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -104,6 +106,7 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringLenBetween(3, 30),
+			ForceNew:     true,
 		},
 		"ntp_server": {
 			Description: "List of NTP servers.",
@@ -349,6 +352,10 @@ func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContex
 	}
 }
 
+// Update an access profile resource.
+// If there have been changes to the allowed hosts, DNS servers, NTP servers or
+// SSH users, these will be deleted and recreated as there is no easy way to
+// tell which of them are new and which have been modified.
 func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*taikungoclient.Client)
 
@@ -357,34 +364,31 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if locked, _ := d.GetChange("lock"); locked.(bool) {
+	if isLocked, _ := d.GetChange("lock"); isLocked.(bool) {
 		if err := resourceTaikunAccessProfileLock(id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	// TODO use new endpoints
-	// if err := resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
-	// if err := resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
-	// if err := resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
+	if err := resourceTaikunAccessProfileUpdateHttpProxy(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
 
-	// TODO use new endpoints
-	// body := &models.UpsertAccessProfileCommand{
-	// 	ID:   id,
-	// 	Name: d.Get("name").(string),
-	// }
-	// resourceTaikunAccessProfileUpsertSetBody(d, body)
+	if err := resourceTaikunAccessProfileUpdateAllowedHosts(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
 
-	// params := access_profiles.NewAccessProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	// if _, err := apiClient.Client.AccessProfiles.AccessProfilesCreate(params, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
+	if err := resourceTaikunAccessProfileUpdateDnsServers(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := resourceTaikunAccessProfileUpdateNtpServers(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := resourceTaikunAccessProfileUpdateSshUsers(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {
@@ -395,24 +399,143 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	return readAfterUpdateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, d, meta)
 }
 
-// TODO: Update the access profile's allowed hosts
-func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	return nil
+// Update the access profile's HTTP proxy
+func resourceTaikunAccessProfileUpdateHttpProxy(d *schema.ResourceData, id int32, apiClient *taikungoclient.Client) (err error) {
+	if d.HasChange("http_proxy") {
+		body := models.UpdateAccessProfileDto{
+			Name:      d.Get("name").(string),
+			HTTPProxy: "",
+		}
+
+		if newHttpProxy, newHttpProxyIsSet := d.GetOk("http_proxy"); newHttpProxyIsSet {
+			body.HTTPProxy = newHttpProxy.(string)
+		}
+
+		params := access_profiles.NewAccessProfilesUpdateParams().WithV(ApiVersion).WithID(id)
+		_, err = apiClient.Client.AccessProfiles.AccessProfilesUpdate(params, apiClient)
+	}
+	return
 }
 
-// TODO: Update the access profile's DNS servers
-func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	return nil
+// Update the access profile's allowed hosts
+func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, accessProfileId int32, apiClient *taikungoclient.Client) (err error) {
+	if !d.HasChange("allowed_host") {
+		return
+	}
+
+	// Delete old allowed hosts
+	// FIXME
+
+	// Add new allowed hosts
+	// FIXME
+
+	return
 }
 
-// TODO: Update the access profile's NTP servers
-func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	return nil
+// Update the access profile's DNS servers
+func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessProfileId int32, apiClient *taikungoclient.Client) (err error) {
+	if !d.HasChange("dns_server") {
+		return
+	}
+
+	// Delete old servers
+	oldDnsServerData, newDnsServerData := d.GetChange("dns_server")
+	oldDnsServers := oldDnsServerData.([]interface{})
+	for _, rawOldDnsServer := range oldDnsServers {
+		oldDnsServer := rawOldDnsServer.(map[string]interface{})
+		id, _ := atoi32(oldDnsServer["id"].(string))
+		params := dns_servers.NewDNSServersDeleteParams().WithV(ApiVersion).WithID(id)
+		if _, _, err = apiClient.Client.DNSServers.DNSServersDelete(params, apiClient); err != nil {
+			return
+		}
+	}
+
+	// Add new servers
+	newDnsServers := newDnsServerData.([]interface{})
+	for _, rawNewDnsServer := range newDnsServers {
+		newDnsServer := rawNewDnsServer.(map[string]interface{})
+		body := models.CreateDNSServerCommand{
+			AccessProfileID: accessProfileId,
+			Address:         newDnsServer["address"].(string),
+		}
+		params := dns_servers.NewDNSServersCreateParams().WithV(ApiVersion).WithBody(&body)
+		if _, err = apiClient.Client.DNSServers.DNSServersCreate(params, apiClient); err != nil {
+			return
+		}
+	}
+
+	return
 }
 
-// TODO: Update the access profile's SSH users
-func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	return nil
+// Update the access profile's NTP servers
+func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, accessProfileId int32, apiClient *taikungoclient.Client) (err error) {
+	if !d.HasChange("ntp_server") {
+		return
+	}
+
+	// Delete old servers
+	oldNtpServerData, newNtpServerData := d.GetChange("ntp_server")
+	oldNtpServers := oldNtpServerData.([]interface{})
+	for _, rawOldNtpServer := range oldNtpServers {
+		oldNtpServer := rawOldNtpServer.(map[string]interface{})
+		id, _ := atoi32(oldNtpServer["id"].(string))
+		params := ntp_servers.NewNtpServersDeleteParams().WithV(ApiVersion).WithID(id)
+		if _, _, err = apiClient.Client.NtpServers.NtpServersDelete(params, apiClient); err != nil {
+			return
+		}
+	}
+
+	// Add new servers
+	newNtpServers := newNtpServerData.([]interface{})
+	for _, rawNewNtpServer := range newNtpServers {
+		newNtpServer := rawNewNtpServer.(map[string]interface{})
+		body := models.CreateNtpServerCommand{
+			AccessProfileID: accessProfileId,
+			Address:         newNtpServer["address"].(string),
+		}
+		params := ntp_servers.NewNtpServersCreateParams().WithV(ApiVersion).WithBody(&body)
+		if _, err = apiClient.Client.NtpServers.NtpServersCreate(params, apiClient); err != nil {
+			return
+		}
+	}
+
+	return
+}
+
+// Update the access profile's SSH users
+func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessProfileId int32, apiClient *taikungoclient.Client) (err error) {
+	if !d.HasChange("ssh_user") {
+		return
+	}
+
+	// Delete old SSH users
+	oldSshUserData, newSshUserData := d.GetChange("ssh_user")
+	oldSshUsers := oldSshUserData.([]interface{})
+	for _, rawOldSshUser := range oldSshUsers {
+		oldSshUser := rawOldSshUser.(map[string]interface{})
+		id, _ := atoi32(oldSshUser["id"].(string))
+		params := ssh_users.NewSSHUsersDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteSSHUserCommand{ID: id})
+		if _, err = apiClient.Client.SSHUsers.SSHUsersDelete(params, apiClient); err != nil {
+			return
+		}
+	}
+
+	// Add new SSH users
+	newSshUsers := newSshUserData.([]interface{})
+	for _, rawNewSshUser := range newSshUsers {
+		newSshUser := rawNewSshUser.(map[string]interface{})
+		body := models.CreateSSHUserCommand{
+			AccessProfileID: accessProfileId,
+			Name:            newSshUser["name"].(string),
+			SSHPublicKey:    newSshUser["public_key"].(string),
+		}
+		params := ssh_users.NewSSHUsersCreateParams().WithV(ApiVersion).WithBody(&body)
+		if _, err = apiClient.Client.SSHUsers.SSHUsersCreate(params, apiClient); err != nil {
+			return
+		}
+	}
+
+	return
 }
 
 func resourceTaikunAccessProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -485,54 +608,6 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 		"ssh_user":          SSHUsers,
 	}
 }
-
-// TODO: use new endpoints
-// func resourceTaikunAccessProfileUpdateDeleteOldDNSServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-// 	oldDNSServersData, _ := d.GetChange("dns_server")
-// 	oldDNSServers := oldDNSServersData.([]interface{})
-// 	for _, oldDNSServerData := range oldDNSServers {
-// 		oldDNSServer := oldDNSServerData.(map[string]interface{})
-// 		oldDNSServerID, _ := atoi32(oldDNSServer["id"].(string))
-// 		params := access_profiles.NewAccessProfilesDeleteDNSServerParams().WithV(ApiVersion).WithBody(&models.DNSServerDeleteCommand{ID: oldDNSServerID})
-// 		_, err := apiClient.Client.AccessProfiles.AccessProfilesDeleteDNSServer(params, apiClient)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-
-// TODO: use new endpoints
-// func resourceTaikunAccessProfileUpdateDeleteOldNTPServers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-// 	oldNTPServersData, _ := d.GetChange("ntp_server")
-// 	oldNTPServers := oldNTPServersData.([]interface{})
-// 	for _, oldNTPServerData := range oldNTPServers {
-// 		oldNTPServer := oldNTPServerData.(map[string]interface{})
-// 		oldNTPServerID, _ := atoi32(oldNTPServer["id"].(string))
-// 		params := access_profiles.NewAccessProfilesDeleteNtpServerParams().WithV(ApiVersion).WithBody(&models.NtpServerDeleteCommand{ID: oldNTPServerID})
-// 		_, err := apiClient.Client.AccessProfiles.AccessProfilesDeleteNtpServer(params, apiClient)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-
-// TODO: use new endpoints
-// func resourceTaikunAccessProfileUpdateDeleteOldSSHUsers(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-// 	oldSSHUsersData, _ := d.GetChange("ssh_user")
-// 	oldSSHUsers := oldSSHUsersData.([]interface{})
-// 	for _, oldSSHUserData := range oldSSHUsers {
-// 		oldSSHUser := oldSSHUserData.(map[string]interface{})
-// 		oldSSHUserID, _ := atoi32(oldSSHUser["id"].(string))
-// 		params := ssh_users.NewSSHUsersDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteSSHUserCommand{ID: oldSSHUserID})
-// 		_, err := apiClient.Client.SSHUsers.SSHUsersDelete(params, apiClient)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
 
 func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.AccessProfilesLockManagementCommand{
