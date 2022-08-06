@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: update-access-profile # TODO: set branch to dev
+          ref: ${{ inputs.branch }}
 
       - name: Setup Git
         shell: bash
