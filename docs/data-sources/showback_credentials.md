@@ -25,11 +25,11 @@ data "taikun_showback_credentials" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `showback_credentials` (List of Object) List of retrieved showback credentials. (see [below for nested schema](#nestedatt--showback_credentials))
 
 <a id="nestedatt--showback_credentials"></a>

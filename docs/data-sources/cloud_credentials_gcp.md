@@ -17,12 +17,12 @@ Retrieve all Google Cloud Platform credentials.
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
 - `cloud_credentials` (List of Object) List of retrieved Google Cloud Platform credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--cloud_credentials"></a>
 ### Nested Schema for `cloud_credentials`

@@ -25,11 +25,11 @@ data "taikun_standalone_profiles" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `standalone_profiles` (List of Object) List of retrieved standalone profiles. (see [below for nested schema](#nestedatt--standalone_profiles))
 
 <a id="nestedatt--standalone_profiles"></a>

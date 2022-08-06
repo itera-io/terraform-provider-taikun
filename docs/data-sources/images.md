@@ -35,10 +35,10 @@ data "taikun_images" "foo" {
 - `azure_offer` (String) Azure offer (only valid with Azure Cloud Credential ID).
 - `azure_publisher` (String) Azure publisher (only valid with Azure Cloud Credential ID).
 - `azure_sku` (String) Azure sku (only valid with Azure Cloud Credential ID).
-- `id` (String) The ID of this resource.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `images` (List of Object) List of retrieved images. (see [below for nested schema](#nestedatt--images))
 
 <a id="nestedatt--images"></a>
