@@ -32,6 +32,9 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
+      - name: Setup node
+        uses: actions/setup-node@v3
+
       - name: Generate documentation
         run: go generate
         shell: bash
