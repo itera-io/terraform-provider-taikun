@@ -2,11 +2,6 @@ name: Generate documentation
 
 on:
   workflow_dispatch:
-  workflow_call:
-    inputs:
-      branch:
-        required: true
-        type: string
 
 jobs:
   generate:
@@ -17,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: ${{ inputs.branch }}
+          ref: update-access-profile # TODO: set branch to dev
 
       - name: Setup Git
         shell: bash
