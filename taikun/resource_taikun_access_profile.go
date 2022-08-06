@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
+	"github.com/itera-io/taikungoclient/client/allowed_host"
 	"github.com/itera-io/taikungoclient/client/dns_servers"
 	"github.com/itera-io/taikungoclient/client/ntp_servers"
 	"github.com/itera-io/taikungoclient/client/ssh_users"
@@ -225,7 +226,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	return readAfterCreateWithRetries(generateResourceTaikunAccessProfileReadWithRetries(), ctx, d, meta)
 }
 
-// set allowed hosts in create request body
+// set allowed hosts in create request's body
 func resourceTaikunAccessProfileCreateAllowedHosts(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
 	if allowedHostData, allowedHostIsSet := d.GetOk("allowed_host"); allowedHostIsSet {
 		allowedHosts := allowedHostData.([]interface{})
@@ -241,7 +242,7 @@ func resourceTaikunAccessProfileCreateAllowedHosts(d *schema.ResourceData, body 
 	}
 }
 
-// set DNS servers in create request body
+// set DNS servers in create request's body
 func resourceTaikunAccessProfileCreateDnsServers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
 	if dnsServerData, dnsServerIsSet := d.GetOk("dns_server"); dnsServerIsSet {
 		dnsServers := dnsServerData.([]interface{})
@@ -255,7 +256,7 @@ func resourceTaikunAccessProfileCreateDnsServers(d *schema.ResourceData, body *m
 	}
 }
 
-// set NTP servers in create request body
+// set NTP servers in create request's body
 func resourceTaikunAccessProfileCreateNtpServers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
 	if ntpServerData, ntpServerIsSet := d.GetOk("ntp_server"); ntpServerIsSet {
 		ntpServers := ntpServerData.([]interface{})
@@ -269,7 +270,7 @@ func resourceTaikunAccessProfileCreateNtpServers(d *schema.ResourceData, body *m
 	}
 }
 
-// set SSH users in create request body
+// set SSH users in create request's body
 func resourceTaikunAccessProfileCreateSshUsers(d *schema.ResourceData, body *models.CreateAccessProfileCommand) {
 	if sshUserData, sshUserIsSet := d.GetOk("ssh_user"); sshUserIsSet {
 		sshUsers := sshUserData.([]interface{})
@@ -424,10 +425,32 @@ func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, acces
 	}
 
 	// Delete old allowed hosts
-	// FIXME
+	oldAllowedHostData, newAllowedHostData := d.GetChange("allowed_host")
+	oldAllowedHosts := oldAllowedHostData.([]interface{})
+	for _, rawOldAllowedHost := range oldAllowedHosts {
+		oldAllowedHost := rawOldAllowedHost.(map[string]interface{})
+		id, _ := atoi32(oldAllowedHost["id"].(string))
+		params := allowed_host.NewAllowedHostDeleteParams().WithV(ApiVersion).WithID(id)
+		if _, _, err = apiClient.Client.AllowedHost.AllowedHostDelete(params, apiClient); err != nil {
+			return
+		}
+	}
 
 	// Add new allowed hosts
-	// FIXME
+	newAllowedHosts := newAllowedHostData.([]interface{})
+	for _, rawNewAllowedHost := range newAllowedHosts {
+		newAllowedHost := rawNewAllowedHost.(map[string]interface{})
+		body := models.CreateAllowedHostCommand{
+			AccessProfileID: accessProfileId,
+			Description:     newAllowedHost["description"].(string),
+			IPAddress:       newAllowedHost["address"].(string),
+			MaskBits:        newAllowedHost["mask_bits"].(int32),
+		}
+		params := allowed_host.NewAllowedHostCreateParams().WithV(ApiVersion).WithBody(&body)
+		if _, err = apiClient.Client.AllowedHost.AllowedHostCreate(params, apiClient); err != nil {
+			return
+		}
+	}
 
 	return
 }
@@ -562,7 +585,7 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 		AllowedHosts[i] = map[string]interface{}{
 			"description": rawAllowedHost.Description,
 			"id":          i32toa(rawAllowedHost.ID),
-			"ip_address":  rawAllowedHost.IPAddress,
+			"address":     rawAllowedHost.IPAddress,
 			"mask_bits":   rawAllowedHost.MaskBits,
 		}
 	}
