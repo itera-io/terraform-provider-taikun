@@ -1,6 +1,11 @@
 name: Generate documentation
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        required: true
+        type: string
 
 jobs:
   generate:
