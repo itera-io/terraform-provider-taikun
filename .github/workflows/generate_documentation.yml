@@ -1,5 +1,12 @@
 name: Generate documentation
 
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+
 jobs:
   generate:
     name: Generate
