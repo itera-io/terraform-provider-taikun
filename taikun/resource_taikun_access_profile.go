@@ -236,7 +236,7 @@ func resourceTaikunAccessProfileCreateAllowedHosts(d *schema.ResourceData, body 
 			body.AllowedHosts[i] = &models.AllowedHostCreateDto{
 				Description: allowedHost["description"].(string),
 				IPAddress:   allowedHost["address"].(string),
-				MaskBits:    allowedHost["mask_bits"].(int32),
+				MaskBits:    int32(allowedHost["mask_bits"].(int)),
 			}
 		}
 	}
@@ -444,7 +444,7 @@ func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, acces
 			AccessProfileID: accessProfileId,
 			Description:     newAllowedHost["description"].(string),
 			IPAddress:       newAllowedHost["address"].(string),
-			MaskBits:        newAllowedHost["mask_bits"].(int32),
+			MaskBits:        int32(newAllowedHost["mask_bits"].(int)),
 		}
 		params := allowed_host.NewAllowedHostCreateParams().WithV(ApiVersion).WithBody(&body)
 		if _, err = apiClient.Client.AllowedHost.AllowedHostCreate(params, apiClient); err != nil {

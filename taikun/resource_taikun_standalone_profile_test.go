@@ -234,7 +234,7 @@ func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.StandAloneProfile.StandAloneProfileList(params, client)
+		response, err := client.Client.StandAloneProfile.StandAloneProfileList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("standalone profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -255,7 +255,7 @@ func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.StandAloneProfile.StandAloneProfileList(params, client)
+			response, err := client.Client.StandAloneProfile.StandAloneProfileList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

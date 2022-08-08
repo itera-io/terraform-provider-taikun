@@ -165,7 +165,7 @@ func testAccCheckTaikunCloudCredentialAWSExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+		response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
 		if err != nil || response.Payload.TotalCountAws != 1 {
 			return fmt.Errorf("aws cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -186,7 +186,7 @@ func testAccCheckTaikunCloudCredentialAWSDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+			response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

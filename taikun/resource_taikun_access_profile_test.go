@@ -68,7 +68,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, unlocked),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
@@ -280,7 +280,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
+		response, err := client.Client.AccessProfiles.AccessProfilesList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("access profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -301,7 +301,7 @@ func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
+			response, err := client.Client.AccessProfiles.AccessProfilesList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
