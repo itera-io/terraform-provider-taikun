@@ -21,4 +21,10 @@ resource "taikun_access_profile" "foo" {
   dns_server {
     address = "8.8.4.4"
   }
+
+  allowed_host {
+    description = "Host A"
+    address     = "10.0.0.1"
+    mask_bits   = 24
+  }
 }

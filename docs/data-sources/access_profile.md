@@ -27,6 +27,7 @@ data "taikun_access_profile" "foo" {
 
 ### Read-Only
 
+- `allowed_host` (List of Object) List of allowed hosts. (see [below for nested schema](#nestedatt--allowed_host))
 - `created_by` (String) The creator of the access profile.
 - `dns_server` (List of Object) List of DNS servers. (see [below for nested schema](#nestedatt--dns_server))
 - `http_proxy` (String) HTTP proxy of the access profile.
@@ -38,6 +39,17 @@ data "taikun_access_profile" "foo" {
 - `organization_id` (String) The ID of the organization which owns the access profile.
 - `organization_name` (String) The name of the organization which owns the access profile.
 - `ssh_user` (List of Object) List of SSH users. (see [below for nested schema](#nestedatt--ssh_user))
+
+<a id="nestedatt--allowed_host"></a>
+### Nested Schema for `allowed_host`
+
+Read-Only:
+
+- `address` (String)
+- `description` (String)
+- `id` (String)
+- `mask_bits` (Number)
+
 
 <a id="nestedatt--dns_server"></a>
 ### Nested Schema for `dns_server`

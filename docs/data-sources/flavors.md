@@ -36,7 +36,6 @@ data "taikun_flavors" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `max_cpu` (Number) Maximal CPU count. Defaults to `36`.
 - `max_ram` (Number) Maximal RAM size in GB. Defaults to `500`.
 - `min_cpu` (Number) Minimal CPU count. Defaults to `2`.
@@ -45,6 +44,7 @@ data "taikun_flavors" "foo" {
 ### Read-Only
 
 - `flavors` (List of Object) List of retrieved flavors. (see [below for nested schema](#nestedatt--flavors))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--flavors"></a>
 ### Nested Schema for `flavors`

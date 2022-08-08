@@ -30,10 +30,12 @@ data "taikun_kubeconfig" "foo" {
 - `access_scope` (String) Who can use the kubeconfig: `personal` (only you), `managers` (managers only) or `all` (all users with access to this project).
 - `content` (String, Sensitive) Content of the kubeconfig's YAML file.
 - `name` (String) The kubeconfig's name.
+- `namespace` (String) The kubeconfig's namespace.
 - `project_id` (String) ID of the kubeconfig's project.
 - `project_name` (String) Name of the kubeconfig's project.
 - `user_id` (String) ID of the kubeconfig's user, if the kubeconfig is personal.
 - `user_name` (String) Name of the kubeconfig's user, if the kubeconfig is personal.
 - `user_role` (String) Role of the kubeconfig's user, if the kubeconfig is personal.
+- `validity_period` (Number) The kubeconfig's validity period in minutes (unlimited by default).
 
 

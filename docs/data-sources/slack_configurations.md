@@ -25,11 +25,11 @@ data "taikun_slack_configurations" "all" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `slack_configurations` (List of Object) List of retrieved Slack configurations. (see [below for nested schema](#nestedatt--slack_configurations))
 
 <a id="nestedatt--slack_configurations"></a>
