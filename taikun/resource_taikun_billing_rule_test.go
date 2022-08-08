@@ -214,7 +214,7 @@ func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
+		response, err := client.Client.Prometheus.PrometheusListOfRules(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("billing rule doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -235,7 +235,7 @@ func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
+			response, err := client.Client.Prometheus.PrometheusListOfRules(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

@@ -100,7 +100,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
+		response, err := client.Client.OpsCredentials.OpsCredentialsList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -121,7 +121,7 @@ func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
+			response, err := client.Client.OpsCredentials.OpsCredentialsList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

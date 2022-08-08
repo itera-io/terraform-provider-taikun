@@ -171,7 +171,7 @@ func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.S3Credentials.S3CredentialsList(params, client)
+		response, err := client.Client.S3Credentials.S3CredentialsList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("backup credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -192,7 +192,7 @@ func testAccCheckTaikunBackupCredentialDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.S3Credentials.S3CredentialsList(params, client)
+			response, err := client.Client.S3Credentials.S3CredentialsList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

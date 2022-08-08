@@ -118,7 +118,7 @@ func testAccCheckTaikunShowbackCredentialExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.ShowbackClient.Showback.ShowbackCredentialsList(params, client)
+		response, err := client.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("showback credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -139,7 +139,7 @@ func testAccCheckTaikunShowbackCredentialDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.ShowbackClient.ShowbackCredentialsList(params, client)
+			response, err := client.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

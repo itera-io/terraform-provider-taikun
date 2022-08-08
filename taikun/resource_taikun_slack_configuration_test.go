@@ -111,7 +111,7 @@ func testAccCheckTaikunSlackConfigurationExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.Slack.SlackList(params, client)
+		response, err := client.Client.Slack.SlackList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("slack configuration doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -132,7 +132,7 @@ func testAccCheckTaikunSlackConfigurationDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.Slack.SlackList(params, client)
+			response, err := client.Client.Slack.SlackList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

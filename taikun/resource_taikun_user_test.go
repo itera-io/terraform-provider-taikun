@@ -143,7 +143,7 @@ func testAccCheckTaikunUserExists(state *terraform.State) error {
 
 		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&rs.Primary.ID)
 
-		response, err := client.client.Users.UsersList(params, client)
+		response, err := client.Client.Users.UsersList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -163,7 +163,7 @@ func testAccCheckTaikunUserDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			params := users.NewUsersListParams().WithV(ApiVersion).WithID(&rs.Primary.ID)
 
-			response, err := client.client.Users.UsersList(params, client)
+			response, err := client.Client.Users.UsersList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
