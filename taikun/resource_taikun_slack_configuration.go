@@ -96,13 +96,12 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.Resou
 	}
 
 	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	// TODO: use new API response
-	_, err := apiClient.Client.Slack.SlackCreate(params, apiClient)
+	response, err := apiClient.Client.Slack.SlackCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// d.SetId(i32toa(response.Payload))
+	d.SetId(response.Payload.ID)
 
 	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
@@ -157,7 +156,6 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	body := models.UpdateSlackConfigurationDto{
-		// ID:        id, TODO: use new endpoints
 		Name:      d.Get("name").(string),
 		URL:       d.Get("url").(string),
 		Channel:   d.Get("channel").(string),
