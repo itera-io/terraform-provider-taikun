@@ -223,7 +223,7 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
 		"project_name": kubeconfigDTO.ProjectName,
 		"user_id":      kubeconfigDTO.UserID,
-		// FIXME: fetch from user ID since no longer included in response
+		// TODO: fetch from user ID since no longer included in response
 		// "user_name":    kubeconfigDTO.UserName,
 		// "user_role":    kubeconfigDTO.UserRole,
 		"namespace":       kubeconfigDTO.Namespace,
