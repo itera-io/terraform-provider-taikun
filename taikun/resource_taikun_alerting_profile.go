@@ -210,6 +210,10 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 		body.Webhooks = getWebhookDTOsFromAlertingProfileResourceData(d)
 	}
 
+	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
+		body.AlertingIntegrations = getIntegrationDTOsFromAlertingProfileResourceData(d)
+	}
+
 	params := alerting_profiles.NewAlertingProfilesCreateParams().WithV(ApiVersion).WithBody(&body)
 	response, err := apiClient.Client.AlertingProfiles.AlertingProfilesCreate(params, apiClient)
 	if err != nil {
@@ -222,11 +226,6 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 
 	d.SetId(response.Payload.ID)
 
-	// TODO: use new endpoints
-	// if err := resourceTaikunAlertingProfileSetIntegrations(d, id, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
-
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
 			return diag.FromErr(err)
@@ -235,6 +234,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 
 	return readAfterCreateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, d, meta)
 }
+
 func generateResourceTaikunAlertingProfileReadWithRetries() schema.ReadContextFunc {
 	return generateResourceTaikunAlertingProfileRead(true)
 }
@@ -346,13 +346,9 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	// TODO: use new endpoints
-	// if err := resourceTaikunAlertingProfileUnsetIntegrations(d, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
-	// if err := resourceTaikunAlertingProfileSetIntegrations(d, id, apiClient); err != nil {
-	// 	return diag.FromErr(err)
-	// }
+	if err := resourceTaikunAlertingProfileUpdateIntegrations(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
@@ -361,6 +357,44 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, d, meta)
+}
+
+func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id int32, apiClient *taikungoclient.Client) (err error) {
+	if !d.HasChange("integration") {
+		return
+	}
+
+	// Remove old integrations
+	oldIntegrationsData, _ := d.GetChange("integration")
+	oldIntegrations := oldIntegrationsData.([]interface{})
+	for _, oldIntegrationData := range oldIntegrations {
+		oldIntegration := oldIntegrationData.(map[string]interface{})
+		oldIntegrationID, _ := atoi32(oldIntegration["id"].(string))
+		params := alerting_integrations.NewAlertingIntegrationsDeleteParams().WithV(ApiVersion).WithID(oldIntegrationID)
+		_, _, err = apiClient.Client.AlertingIntegrations.AlertingIntegrationsDelete(params, apiClient)
+		if err != nil {
+			return
+		}
+	}
+
+	// Set new integrations
+	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
+		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
+		for _, alertingIntegration := range alertingIntegrationDTOs {
+			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
+				AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
+				Token:                   alertingIntegration.Token,
+				URL:                     alertingIntegration.URL,
+				AlertingProfileID:       id,
+			}
+			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
+			_, err = apiClient.Client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
 }
 
 func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -378,44 +412,6 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId("")
-	return nil
-}
-
-func resourceTaikunAlertingProfileUnsetIntegrations(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
-	oldIntegrationsData, _ := d.GetChange("integration")
-	oldIntegrations := oldIntegrationsData.([]interface{})
-	for _, oldIntegrationData := range oldIntegrations {
-		oldIntegration := oldIntegrationData.(map[string]interface{})
-		oldIntegrationID, _ := atoi32(oldIntegration["id"].(string))
-		params := alerting_integrations.NewAlertingIntegrationsDeleteParams().WithV(ApiVersion).WithID(oldIntegrationID)
-		_, _, err := apiClient.Client.AlertingIntegrations.AlertingIntegrationsDelete(params, apiClient)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func resourceTaikunAlertingProfileSetIntegrations(d *schema.ResourceData, id int32, apiClient *apiClient) error {
-	// FIXME: use new AlertingIntegration type
-	// if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
-	// 	alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
-	// 	for _, alertingIntegration := range alertingIntegrationDTOs {
-	// 		alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
-	// 			AlertingIntegration: &models.AlertingIntegrationDto{
-	// 				AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
-	// 				Token:                   alertingIntegration.Token,
-	// 				URL:                     alertingIntegration.URL,
-	// 			},
-	// 			AlertingProfileID: id,
-	// 		}
-	// 		alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
-	// 		_, err := apiClient.client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
 	return nil
 }
 
