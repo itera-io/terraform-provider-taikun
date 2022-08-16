@@ -12,6 +12,8 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+// DEPRECATED: this data source is deprecated in favour of `taikun_images_aws`, `taikun_images_azure`, `taikun_images_gcp` and `taikun_images_openstack`.
+
 func dataSourceTaikunImages() *schema.Resource {
 	return &schema.Resource{
 		Description: "Retrieve images for a given cloud credential.",
