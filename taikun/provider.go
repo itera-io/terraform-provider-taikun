@@ -64,7 +64,6 @@ func Provider() *schema.Provider {
 			// TODO: "taikun_images_aws":         dataSourceTaikunImagesAWS(),
 			// TODO: "taikun_images_azure":       dataSourceTaikunImagesAzure(),
 			// TODO: "taikun_images_gcp":         dataSourceTaikunImagesGCP(),
-			// TODO: "taikun_images_openstack":   dataSourceTaikunImagesOpenStack(),
 			"taikun_access_profile":              dataSourceTaikunAccessProfile(),
 			"taikun_access_profiles":             dataSourceTaikunAccessProfiles(),
 			"taikun_alerting_profile":            dataSourceTaikunAlertingProfile(),
@@ -85,6 +84,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
 			"taikun_flavors":                     dataSourceTaikunFlavors(),
 			"taikun_images":                      dataSourceTaikunImages(), // DEPRECATED
+			"taikun_images_openstack":            dataSourceTaikunImagesOpenStack(),
 			"taikun_kubeconfig":                  dataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),
