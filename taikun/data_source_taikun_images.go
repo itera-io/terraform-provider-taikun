@@ -16,8 +16,9 @@ import (
 
 func dataSourceTaikunImages() *schema.Resource {
 	return &schema.Resource{
-		Description: "Retrieve images for a given cloud credential.",
-		ReadContext: dataSourceTaikunImagesRead,
+		Description:        "Retrieve images for a given cloud credential.",
+		DeprecationMessage: "This data source is deprecated in favour of taikun_images_aws, taikun_images_azure, taikun_images_gcp and taikun_images_openstack.",
+		ReadContext:        dataSourceTaikunImagesRead,
 		Schema: map[string]*schema.Schema{
 			"aws_limit": {
 				Description:  "Limit the number of listed AWS images (highly recommended as fetching the entire list of images can take a long time) (only valid with AWS cloud credential ID).",
