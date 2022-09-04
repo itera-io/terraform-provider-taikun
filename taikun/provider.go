@@ -61,7 +61,6 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
-			// TODO: "taikun_images_aws":         dataSourceTaikunImagesAWS(),
 			// TODO: "taikun_images_azure":       dataSourceTaikunImagesAzure(),
 			// TODO: "taikun_images_gcp":         dataSourceTaikunImagesGCP(),
 			"taikun_access_profile":              dataSourceTaikunAccessProfile(),
@@ -84,6 +83,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
 			"taikun_flavors":                     dataSourceTaikunFlavors(),
 			"taikun_images":                      dataSourceTaikunImages(), // DEPRECATED
+			"taikun_images_aws":                  dataSourceTaikunImagesAWS(),
 			"taikun_images_openstack":            dataSourceTaikunImagesOpenStack(),
 			"taikun_kubeconfig":                  dataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
