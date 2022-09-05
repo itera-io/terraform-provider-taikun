@@ -12,10 +12,13 @@ import (
 	"github.com/itera-io/taikungoclient/models"
 )
 
+// DEPRECATED: this data source is deprecated in favour of `taikun_images_aws`, `taikun_images_azure`, `taikun_images_gcp` and `taikun_images_openstack`.
+
 func dataSourceTaikunImages() *schema.Resource {
 	return &schema.Resource{
-		Description: "Retrieve images for a given cloud credential.",
-		ReadContext: dataSourceTaikunImagesRead,
+		Description:        "Retrieve images for a given cloud credential.",
+		DeprecationMessage: "This data source is deprecated in favour of taikun_images_aws, taikun_images_azure, taikun_images_gcp and taikun_images_openstack.",
+		ReadContext:        dataSourceTaikunImagesRead,
 		Schema: map[string]*schema.Schema{
 			"aws_limit": {
 				Description:  "Limit the number of listed AWS images (highly recommended as fetching the entire list of images can take a long time) (only valid with AWS cloud credential ID).",
@@ -110,30 +113,19 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 			params = params.WithOffset(&offset)
 		}
 	case len(list.GetPayload().Amazon) != 0:
-	// TODO: fix response types
-	// params := images.NewImagesCommonAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-	// var limit int32 = 0
-	// if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
-	// 	limit = int32(limitData.(int))
-	// }
-	// for {
-	// 	response, err := apiClient.Client.Images.ImagesCommonAwsImages(params, apiClient)
-	// 	if err != nil {
-	// 		return diag.FromErr(err)
-	// 	}
-	// 	imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-	// 	count := int32(len(imageList))
-	// 	if limit != 0 && count >= limit {
-	// 		break
-	// 	}
-	// 	if count == response.Payload.TotalCount {
-	// 		break
-	// 	}
-	// 	params = params.WithOffset(&count)
-	// }
-	// if limit != 0 && int32(len(imageList)) > limit {
-	// 	imageList = imageList[:limit]
-	// }
+		params := images.NewImagesCommonAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
+		var limit int32 = 0
+		if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
+			limit = int32(limitData.(int))
+		}
+		response, err := apiClient.Client.Images.ImagesCommonAwsImages(params, apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		imageList = flattenTaikunImagesAwsOwnerDetails(response.Payload)
+		if limit != 0 && int32(len(imageList)) > limit {
+			imageList = imageList[:limit]
+		}
 	default: // OpenStack
 		params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
 
@@ -166,6 +158,18 @@ func flattenTaikunImages(rawImages ...*models.CommonStringBasedDropdownDto) []ma
 		images[i] = map[string]interface{}{
 			"id":   rawImage.ID,
 			"name": rawImage.Name,
+		}
+	}
+	return images
+}
+
+func flattenTaikunImagesAwsOwnerDetails(rawImages []*models.AwsOwnerDetails) []map[string]interface{} {
+
+	images := make([]map[string]interface{}, len(rawImages))
+	for i, rawImage := range rawImages {
+		images[i] = map[string]interface{}{
+			"id":   rawImage.Image.ID,
+			"name": rawImage.Image.Name,
 		}
 	}
 	return images

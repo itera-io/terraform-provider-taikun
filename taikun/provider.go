@@ -80,7 +80,11 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_gcp":       dataSourceTaikunCloudCredentialsGCP(),
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
 			"taikun_flavors":                     dataSourceTaikunFlavors(),
-			"taikun_images":                      dataSourceTaikunImages(),
+			"taikun_images":                      dataSourceTaikunImages(), // DEPRECATED
+			"taikun_images_aws":                  dataSourceTaikunImagesAWS(),
+			"taikun_images_azure":                dataSourceTaikunImagesAzure(),
+			"taikun_images_gcp":                  dataSourceTaikunImagesGCP(),
+			"taikun_images_openstack":            dataSourceTaikunImagesOpenStack(),
 			"taikun_kubeconfig":                  dataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),

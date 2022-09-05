@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-const testAccDataSourceTaikunImagesAWSConfig = `
+const testAccDataSourceTaikunImagesDeprecatedAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
   availability_zone = "%s"
@@ -16,11 +16,11 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-  aws_limit = 10
+  aws_limit = 3
 }
 `
 
-func TestAccDataSourceTaikunImagesAWS(t *testing.T) {
+func TestAccDataSourceTaikunImagesDeprecatedAWS(t *testing.T) {
 	cloudCredentialName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -28,12 +28,12 @@ func TestAccDataSourceTaikunImagesAWS(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunImagesAWSConfig,
+				Config: fmt.Sprintf(testAccDataSourceTaikunImagesDeprecatedAWSConfig,
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.taikun_images.foo", "images.#", "10"),
+					resource.TestCheckResourceAttr("data.taikun_images.foo", "images.#", "3"),
 					resource.TestCheckResourceAttrSet("data.taikun_images.foo", "images.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_images.foo", "images.0.id"),
 				),
@@ -42,7 +42,7 @@ func TestAccDataSourceTaikunImagesAWS(t *testing.T) {
 	})
 }
 
-const testAccDataSourceTaikunImagesAzureConfig = `
+const testAccDataSourceTaikunImagesDeprecatedAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
   availability_zone = "%s"
@@ -57,7 +57,7 @@ data "taikun_images" "foo" {
 }
 `
 
-func TestAccDataSourceTaikunImagesAzure(t *testing.T) {
+func TestAccDataSourceTaikunImagesDeprecatedAzure(t *testing.T) {
 	cloudCredentialName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -65,7 +65,7 @@ func TestAccDataSourceTaikunImagesAzure(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunImagesAzureConfig,
+				Config: fmt.Sprintf(testAccDataSourceTaikunImagesDeprecatedAzureConfig,
 					cloudCredentialName,
 					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
@@ -80,7 +80,7 @@ func TestAccDataSourceTaikunImagesAzure(t *testing.T) {
 	})
 }
 
-const testAccDataSourceTaikunImagesOpenStackConfig = `
+const testAccDataSourceTaikunImagesDeprecatedOpenStackConfig = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 }
@@ -90,7 +90,7 @@ data "taikun_images" "foo" {
 }
 `
 
-func TestAccDataSourceTaikunImagesOpenStack(t *testing.T) {
+func TestAccDataSourceTaikunImagesDeprecatedOpenStack(t *testing.T) {
 	cloudCredentialName := randomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -98,7 +98,7 @@ func TestAccDataSourceTaikunImagesOpenStack(t *testing.T) {
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunImagesOpenStackConfig,
+				Config: fmt.Sprintf(testAccDataSourceTaikunImagesDeprecatedOpenStackConfig,
 					cloudCredentialName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
