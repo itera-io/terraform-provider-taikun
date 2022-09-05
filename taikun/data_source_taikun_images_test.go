@@ -16,7 +16,7 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-  aws_limit = 10
+  aws_limit = 3
 }
 `
 
@@ -33,7 +33,7 @@ func TestAccDataSourceTaikunImagesDeprecatedAWS(t *testing.T) {
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.taikun_images.foo", "images.#", "10"),
+					resource.TestCheckResourceAttr("data.taikun_images.foo", "images.#", "3"),
 					resource.TestCheckResourceAttrSet("data.taikun_images.foo", "images.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_images.foo", "images.0.id"),
 				),
