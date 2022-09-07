@@ -80,16 +80,6 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Computed:    true,
 			ForceNew:    true,
 		},
-		"user_name": {
-			Description: "Name of the kubeconfig's user, if the kubeconfig is personal.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"user_role": {
-			Description: "Role of the kubeconfig's user, if the kubeconfig is personal.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
 		"validity_period": {
 			Description:  "The kubeconfig's validity period in minutes (unlimited by default).",
 			Type:         schema.TypeInt,
@@ -217,15 +207,12 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 
 func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubeconfigContent string) map[string]interface{} {
 	kubeconfigMap := map[string]interface{}{
-		"content":      kubeconfigContent,
-		"id":           i32toa(kubeconfigDTO.ID),
-		"name":         kubeconfigDTO.DisplayName,
-		"project_id":   i32toa(kubeconfigDTO.ProjectID),
-		"project_name": kubeconfigDTO.ProjectName,
-		"user_id":      kubeconfigDTO.UserID,
-		// TODO: fetch from user ID since no longer included in response
-		// "user_name":    kubeconfigDTO.UserName,
-		// "user_role":    kubeconfigDTO.UserRole,
+		"content":         kubeconfigContent,
+		"id":              i32toa(kubeconfigDTO.ID),
+		"name":            kubeconfigDTO.DisplayName,
+		"project_id":      i32toa(kubeconfigDTO.ProjectID),
+		"project_name":    kubeconfigDTO.ProjectName,
+		"user_id":         kubeconfigDTO.UserID,
 		"namespace":       kubeconfigDTO.Namespace,
 		"validity_period": kubeconfigExpirationDataToTTL(kubeconfigDTO.ExpirationDate),
 	}
