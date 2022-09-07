@@ -66,11 +66,6 @@ func byteToGibiByte(x int64) int64 {
 	return x / 1073741824
 }
 
-func kubeconfigExpirationDataToTTL(expirationDate string) int32 {
-	// TODO: implement conversion
-	return 0
-}
-
 func stringIsInt(i interface{}, path cty.Path) diag.Diagnostics {
 	v, ok := i.(string)
 	if !ok {
