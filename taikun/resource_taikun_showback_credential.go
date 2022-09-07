@@ -201,7 +201,7 @@ func resourceTaikunShowbackCredentialDelete(_ context.Context, d *schema.Resourc
 	}
 
 	params := showback_credentials.NewShowbackCredentialsDeleteParams().WithV(ApiVersion).WithID(id)
-	_, err = apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsDelete(params, apiClient)
+	_, _, err = apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

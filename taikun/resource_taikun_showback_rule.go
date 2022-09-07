@@ -283,7 +283,7 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData,
 	}
 
 	params := showback_rules.NewShowbackRulesDeleteParams().WithV(ApiVersion).WithID(id)
-	_, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesDelete(params, apiClient)
+	_, _, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
