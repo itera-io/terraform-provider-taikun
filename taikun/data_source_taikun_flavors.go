@@ -88,10 +88,8 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 
 	startCPU := int32(d.Get("min_cpu").(int))
 	endCPU := int32(d.Get("max_cpu").(int))
-	// startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
-	startRAM := float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int)))) // TODO check validity of conversion
-	// endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
-	endRAM := float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int)))) // TODO check validity of conversion
+	startRAM := float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
+	endRAM := float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
 	sortBy := "name"
 	sortDir := "asc"
 
@@ -144,8 +142,8 @@ func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSour
 		return flattenDataSourceTaikunFlavorsAzureItem
 	case "openstack":
 		return flattenDataSourceTaikunFlavorsOpenStackItem
-	default:
-		return nil
+	default: // GCP
+		return flattenDataSourceTaikunFlavorsGCPItem
 	}
 }
 
@@ -170,5 +168,13 @@ func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *models.FlavorsListDt
 		"cpu":  flavorDTO.CPU,
 		"name": flavorDTO.Name,
 		"ram":  mebiByteToGibiByte(flavorDTO.RAM),
+	}
+}
+
+func flattenDataSourceTaikunFlavorsGCPItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
+	return map[string]interface{}{
+		"cpu":  flavorDTO.CPU,
+		"name": flavorDTO.Name,
+		"ram":  flavorDTO.RAM, // TODO: check conversion isn't needed
 	}
 }
