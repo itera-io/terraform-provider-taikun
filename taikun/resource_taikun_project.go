@@ -1085,19 +1085,18 @@ func flattenTaikunProject(
 	}
 	projectMap["vm"] = vms
 
-	// TODO: use new API endpoints
-	// var nullID int32
-	// if projectDetailsDTO.AlertingProfileID != nullID {
-	// 	projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.AlertingProfileID)
-	// }
+	var nullID int32
+	if projectDetailsDTO.AlertingProfileID != nullID {
+		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.AlertingProfileID)
+	}
 
-	// if projectDetailsDTO.IsBackupEnabled {
-	// 	projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
-	// }
+	if projectDetailsDTO.IsBackupEnabled {
+		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
+	}
 
-	// if projectDetailsDTO.IsOpaEnabled {
-	// 	projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
-	// }
+	if projectDetailsDTO.IsOpaEnabled {
+		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
+	}
 
 	return projectMap
 }
