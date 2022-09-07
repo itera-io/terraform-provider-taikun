@@ -92,6 +92,10 @@ resource "taikun_project" "foo" {
   flavors = local.flavors
   images = local.images
 
+  quota_vm_cpu_units = 64
+  quota_vm_ram_size = 256
+  quota_vm_volume_size = 512
+
   vm {
     name = "my-vm"
     flavor = local.flavors[%d]
@@ -153,6 +157,9 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_vm_cpu_units", "64"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_vm_ram_size", "256"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_vm_volume_size", "512"),
 				),
 			},
 			{

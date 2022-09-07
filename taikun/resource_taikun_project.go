@@ -175,26 +175,45 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"quota_cpu_units": {
-			Description:  "Maximum CPU units. Unlimited if unspecified.",
+			Description:  "Maximum CPU units.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_disk_size": {
-			Description:  "Maximum disk size in GBs. Unlimited if unspecified.",
+			Description:  "Maximum disk size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
-		"quota_id": {
-			Description: "ID of the project quota.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
 		"quota_ram_size": {
-			Description:  "Maximum RAM size in GBs. Unlimited if unspecified.",
+			Description:  "Maximum RAM size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"quota_vm_cpu_units": {
+			Description:  "Maximum CPU units for standalone VMs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"quota_vm_volume_size": {
+			Description:  "Maximum volume size in GBs for standalone VMs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"quota_vm_ram_size": {
+			Description:  "Maximum RAM size in GBs for standalone VMs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"router_id_end_range": {
@@ -424,18 +443,8 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	d.SetId(response.Payload.ID)
 	projectID, _ := atoi32(response.Payload.ID)
 
-	_, quotaCPUIsSet := d.GetOk("quota_cpu_units")
-	_, quotaDiskIsSet := d.GetOk("quota_disk_size")
-	_, quotaRAMIsSet := d.GetOk("quota_ram_size")
-	if quotaCPUIsSet || quotaDiskIsSet || quotaRAMIsSet {
-
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if err = resourceTaikunProjectEditQuotas(d, apiClient, response.Payload.Project.QuotaID); err != nil {
+	if resourceTaikunProjectQuotaIsSet(d) {
+		if err = resourceTaikunProjectEditQuotas(d, apiClient, projectID); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -536,7 +545,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
-		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
+		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&id32)
 		quotaResponse, err := apiClient.Client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
@@ -701,10 +710,8 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
-	if d.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
-		quotaId, _ := atoi32(d.Get("quota_id").(string))
-
-		if err := resourceTaikunProjectEditQuotas(d, apiClient, quotaId); err != nil {
+	if d.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size", "quota_vm_cpu_units", "quota_vm_ram_size", "quota_vm_volume_size") {
+		if err := resourceTaikunProjectEditQuotas(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -904,36 +911,39 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungocli
 	return nil
 }
 
-func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, quotaID int32) error {
+func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) (err error) {
 
-	// TODO: use new API endpoints
-	// 	quotaEditBody := &models.ProjectQuotaUpdateDto{
-	// 		IsCPUUnlimited:      true,
-	// 		IsRAMUnlimited:      true,
-	// 		IsDiskSizeUnlimited: true,
-	// 	}
+	body := &models.UpdateQuotaCommand{
+		QuotaID: projectID,
+	}
 
-	// 	if quotaCPU, quotaCPUIsSet := d.GetOk("quota_cpu_units"); quotaCPUIsSet {
-	// 		quotaEditBody.CPU = int64(quotaCPU.(int))
-	// 		quotaEditBody.IsCPUUnlimited = false
-	// 	}
+	if cpu, ok := d.GetOk("quota_cpu_units"); ok {
+		body.ServerCPU = int64(cpu.(int))
+	}
 
-	// 	if quotaDisk, quotaDiskIsSet := d.GetOk("quota_disk_size"); quotaDiskIsSet {
-	// 		quotaEditBody.DiskSize = gibiByteToByte(quotaDisk.(int))
-	// 		quotaEditBody.IsDiskSizeUnlimited = false
-	// 	}
+	if ram, ok := d.GetOk("quota_ram_size"); ok {
+		body.ServerRAM = gibiByteToByte(ram.(int))
+	}
 
-	// 	if quotaRAM, quotaRAMIsSet := d.GetOk("quota_ram_size"); quotaRAMIsSet {
-	// 		quotaEditBody.RAM = gibiByteToByte(quotaRAM.(int))
-	// 		quotaEditBody.IsRAMUnlimited = false
-	// 	}
+	if disk, ok := d.GetOk("quota_disk_size"); ok {
+		body.ServerDiskSize = gibiByteToByte(disk.(int))
+	}
 
-	// 	quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaID).WithBody(quotaEditBody)
-	// 	_, err := apiClient.Client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	return nil
+	if vmCpu, ok := d.GetOk("quota_vm_cpu_units"); ok {
+		body.VMCPU = int64(vmCpu.(int))
+	}
+
+	if vmRam, ok := d.GetOk("quota_vm_ram_size"); ok {
+		body.VMRAM = gibiByteToByte(vmRam.(int))
+	}
+
+	if vmVolume, ok := d.GetOk("quota_vm_volume_size"); ok {
+		body.VMVolumeSize = gibiByteToByte(vmVolume.(int))
+	}
+
+	params := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithBody(body)
+	_, err = apiClient.Client.ProjectQuotas.ProjectQuotasEdit(params, apiClient)
+	return
 }
 
 func flattenTaikunProject(
@@ -971,7 +981,12 @@ func flattenTaikunProject(
 		"lock":                  projectDetailsDTO.IsLocked,
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
-		"quota_id":              i32toa(projectDetailsDTO.QuotaID),
+		"quota_cpu_units":       projectQuotaDTO.ServerCPU,
+		"quota_ram_size":        byteToGibiByte(projectQuotaDTO.ServerRAM),
+		"quota_disk_size":       byteToGibiByte(projectQuotaDTO.ServerDiskSize),
+		"quota_vm_cpu_units":    projectQuotaDTO.VMCPU,
+		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.VMRAM),
+		"quota_vm_volume_size":  projectQuotaDTO.VMVolumeSize,
 	}
 
 	bastions := make([]map[string]interface{}, 0)
@@ -1082,18 +1097,6 @@ func flattenTaikunProject(
 
 	// if projectDetailsDTO.IsOpaEnabled {
 	// 	projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
-	// }
-
-	// if !projectQuotaDTO.IsCPUUnlimited {
-	// 	projectMap["quota_cpu_units"] = projectQuotaDTO.CPU
-	// }
-
-	// if !projectQuotaDTO.IsDiskSizeUnlimited {
-	// 	projectMap["quota_disk_size"] = byteToGibiByte(projectQuotaDTO.DiskSize)
-	// }
-
-	// if !projectQuotaDTO.IsRAMUnlimited {
-	// 	projectMap["quota_ram_size"] = byteToGibiByte(projectQuotaDTO.RAM)
 	// }
 
 	return projectMap
@@ -1263,4 +1266,32 @@ func resourceTaikunProjectLock(id int32, lock bool, apiClient *taikungoclient.Cl
 	params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
 	_, err := apiClient.Client.Projects.ProjectsLockManager(params, apiClient)
 	return err
+}
+
+func resourceTaikunProjectQuotaIsSet(d *schema.ResourceData) bool {
+	if _, ok := d.GetOk("quota_cpu_units"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_disk_size"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_ram_size"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_vm_cpu_units"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_vm_volume_size"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_vm_ram_size"); ok {
+		return true
+	}
+
+	return false
 }
