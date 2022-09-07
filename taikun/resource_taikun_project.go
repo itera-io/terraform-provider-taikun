@@ -74,10 +74,18 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"delete_on_expiration": {
+			Description: "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
 		"expiration_date": {
 			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
 			Type:             schema.TypeString,
 			Optional:         true,
+			RequiredWith:     []string{"delete_on_expiration"},
 			ValidateDiagFunc: stringIsDate,
 		},
 		"flavors": {
@@ -341,6 +349,9 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 	if enableMonitoring, enableMonitoringIsSet := d.GetOk("monitoring"); enableMonitoringIsSet {
 		body.IsMonitoringEnabled = enableMonitoring.(bool)
+	}
+	if deleteOnExpiration, deleteOnExpirationIsSet := d.GetOk("delete_on_expiration"); deleteOnExpirationIsSet {
+		body.DeleteOnExpiration = deleteOnExpiration.(bool)
 	}
 	if expirationDate, expirationDateIsSet := d.GetOk("expiration_date"); expirationDateIsSet {
 		dateTime := dateToDateTime(expirationDate.(string))
