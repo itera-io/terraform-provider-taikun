@@ -45,15 +45,13 @@ resource "local_file" "kubeconfig-foo" {
 
 - `namespace` (String) The kubeconfig's namespace.
 - `user_id` (String) ID of the kubeconfig's user, if the kubeconfig is personal.
-- `validity_period` (Number) The kubeconfig's validity period in minutes (unlimited by default).
+- `validity_period` (Number) The kubeconfig's validity period in minutes. Unlimited (-1) by default. Defaults to `-1`.
 
 ### Read-Only
 
 - `content` (String, Sensitive) Content of the kubeconfig's YAML file.
 - `id` (String) The kubeconfig's ID.
 - `project_name` (String) Name of the kubeconfig's project.
-- `user_name` (String) Name of the kubeconfig's user, if the kubeconfig is personal.
-- `user_role` (String) Role of the kubeconfig's user, if the kubeconfig is personal.
 
 ## Import
 
