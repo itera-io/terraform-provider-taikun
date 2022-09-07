@@ -80,11 +80,12 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Computed:    true,
 			ForceNew:    true,
 		},
-		"validity_period": { // TODO review unit
-			Description:  "The kubeconfig's validity period in minutes (unlimited by default).",
+		"validity_period": {
+			Description:  "The kubeconfig's validity period in minutes. Unlimited (-1) by default.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ValidateFunc: validation.IntAtLeast(1),
+			Default:      -1,
+			ValidateFunc: validation.IntAtLeast(-1),
 			ForceNew:     true,
 		},
 	}
@@ -111,14 +112,11 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 		IsAccessibleForManager: d.Get("access_scope").(string) == "managers",
 		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
 		Name:                   d.Get("name").(string),
+		TTL:                    d.Get("validity_period").(int32),
 	}
 
 	if userId, userIdIsSet := d.GetOk("user_id"); userIdIsSet {
 		body.UserID, _ = userId.(string)
-	}
-
-	if validityPeriod, validityPeriodIsSet := d.GetOk("validity_period"); validityPeriodIsSet {
-		body.TTL, _ = validityPeriod.(int32)
 	}
 
 	if namespace, namespaceIsSet := d.GetOk("namespace"); namespaceIsSet {
@@ -207,14 +205,13 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 
 func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubeconfigContent string) map[string]interface{} {
 	kubeconfigMap := map[string]interface{}{
-		"content":         kubeconfigContent,
-		"id":              i32toa(kubeconfigDTO.ID),
-		"name":            kubeconfigDTO.DisplayName,
-		"project_id":      i32toa(kubeconfigDTO.ProjectID),
-		"project_name":    kubeconfigDTO.ProjectName,
-		"user_id":         kubeconfigDTO.UserID,
-		"namespace":       kubeconfigDTO.Namespace,
-		"validity_period": kubeconfigExpirationDataToTTL(kubeconfigDTO.ExpirationDate),
+		"content":      kubeconfigContent,
+		"id":           i32toa(kubeconfigDTO.ID),
+		"name":         kubeconfigDTO.DisplayName,
+		"project_id":   i32toa(kubeconfigDTO.ProjectID),
+		"project_name": kubeconfigDTO.ProjectName,
+		"user_id":      kubeconfigDTO.UserID,
+		"namespace":    kubeconfigDTO.Namespace,
 	}
 
 	if kubeconfigDTO.IsAccessibleForAll {
