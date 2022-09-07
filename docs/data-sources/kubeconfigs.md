@@ -43,8 +43,6 @@ Read-Only:
 - `project_id` (String)
 - `project_name` (String)
 - `user_id` (String)
-- `user_name` (String)
-- `user_role` (String)
 - `validity_period` (Number)
 
 
