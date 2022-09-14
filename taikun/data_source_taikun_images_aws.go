@@ -80,6 +80,9 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 
 	apiClient := meta.(*taikungoclient.Client)
 	owners, err := dataSourceTaikunImagesAWSGetOwnerID(apiClient, d.Get("owners").(*schema.Set).List())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	body := models.AwsImagesPostListCommand{
 		Latest:  d.Get("latest").(bool),
