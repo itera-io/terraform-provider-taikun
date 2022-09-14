@@ -311,6 +311,10 @@ resource "taikun_project" "foo" {
   backup_credential_id = resource.taikun_backup_credential.foo.id
   policy_profile_id = resource.taikun_policy_profile.foo.id
 
+  quota_cpu_units = 64
+  quota_ram_size = 256
+  quota_disk_size = 512
+
   server_bastion {
      name = "b"
      disk_size = 30
@@ -335,6 +339,7 @@ resource "taikun_kubeconfig" "view" {
 
   role = "view"
   access_scope = "all"
+  namespace = "default"
 }
 
 resource "taikun_kubeconfig" "edit" {
@@ -344,6 +349,7 @@ resource "taikun_kubeconfig" "edit" {
 
   role = "edit"
   access_scope = "all"
+  validity_period = 1440
 }
 
 resource "taikun_kubeconfig" "admin" {
@@ -447,6 +453,9 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubeconfig.edit", "content"),
 					resource.TestCheckResourceAttrSet("taikun_kubeconfig.admin", "content"),
 					resource.TestCheckResourceAttrSet("taikun_kubeconfig.cluster_admin", "content"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "64"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "256"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "512"),
 				),
 			},
 			{

@@ -25,11 +25,11 @@ data "taikun_showback_rules" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `showback_rules` (List of Object) List of retrieved showback rules. (see [below for nested schema](#nestedatt--showback_rules))
 
 <a id="nestedatt--showback_rules"></a>

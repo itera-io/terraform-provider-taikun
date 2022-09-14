@@ -165,7 +165,8 @@ resource "taikun_project" "foobar" {
 - `alerting_profile_id` (String) ID of the project's alerting profile.
 - `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available. Defaults to `false`.
 - `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
-- `expiration_date` (String) Project's expiration date in the format: 'dd/mm/yyyy'.
+- `delete_on_expiration` (Boolean) If enabled, the project will be deleted on the expiration date and it will not be possible to recover it. Defaults to `false`.
+- `expiration_date` (String) Project's expiration date in the format: 'dd/mm/yyyy'. Required with: `delete_on_expiration`.
 - `flavors` (Set of String) List of flavors bound to the project.
 - `images` (Set of String) List of images bound to the project.
 - `kubernetes_profile_id` (String) ID of the project's Kubernetes profile. Defaults to the default Kubernetes profile of the project's organization.
@@ -174,9 +175,12 @@ resource "taikun_project" "foobar" {
 - `monitoring` (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - `organization_id` (String) ID of the organization which owns the project.
 - `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
-- `quota_cpu_units` (Number) Maximum CPU units. Unlimited if unspecified.
-- `quota_disk_size` (Number) Maximum disk size in GBs. Unlimited if unspecified.
-- `quota_ram_size` (Number) Maximum RAM size in GBs. Unlimited if unspecified.
+- `quota_cpu_units` (Number) Maximum CPU units.
+- `quota_disk_size` (Number) Maximum disk size in GBs.
+- `quota_ram_size` (Number) Maximum RAM size in GBs.
+- `quota_vm_cpu_units` (Number) Maximum CPU units for standalone VMs.
+- `quota_vm_ram_size` (Number) Maximum RAM size in GBs for standalone VMs.
+- `quota_vm_volume_size` (Number) Maximum volume size in GBs for standalone VMs.
 - `router_id_end_range` (Number) Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
 - `router_id_start_range` (Number) Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
 - `server_bastion` (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
@@ -191,7 +195,6 @@ resource "taikun_project" "foobar" {
 - `access_ip` (String) Public IP address of the bastion.
 - `alerting_profile_name` (String) Name of the project's alerting profile.
 - `id` (String) Project ID.
-- `quota_id` (String) ID of the project quota.
 
 <a id="nestedblock--server_bastion"></a>
 ### Nested Schema for `server_bastion`

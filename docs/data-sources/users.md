@@ -25,11 +25,11 @@ data "taikun_users" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `users` (List of Object) List of retrieved users. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>

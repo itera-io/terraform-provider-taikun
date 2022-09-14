@@ -25,11 +25,11 @@ data "taikun_kubernetes_profiles" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `kubernetes_profiles` (List of Object) List of retrieved Kubernetes profiles. (see [below for nested schema](#nestedatt--kubernetes_profiles))
 
 <a id="nestedatt--kubernetes_profiles"></a>
@@ -49,5 +49,6 @@ Read-Only:
 - `organization_id` (String)
 - `organization_name` (String)
 - `schedule_on_master` (Boolean)
+- `unique_cluster_name` (Boolean)
 
 

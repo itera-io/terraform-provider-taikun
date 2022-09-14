@@ -25,12 +25,12 @@ data "taikun_cloud_credentials_azure" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
 - `cloud_credentials` (List of Object) List of retrieved Azure cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--cloud_credentials"></a>
 ### Nested Schema for `cloud_credentials`

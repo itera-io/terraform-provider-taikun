@@ -5,8 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client/showback"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/models"
+	"github.com/itera-io/taikungoclient/showbackclient/showback_credentials"
 )
 
 func dataSourceTaikunShowbackCredentials() *schema.Resource {
@@ -33,10 +34,10 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 }
 
 func dataSourceTaikunShowbackCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
-	params := showback.NewShowbackCredentialsListParams().WithV(ApiVersion)
+	params := showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -50,7 +51,7 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, d *schema.Resour
 
 	var showbackCredentialsList []*models.ShowbackCredentialsListDto
 	for {
-		response, err := apiClient.client.Showback.ShowbackCredentialsList(params, apiClient)
+		response, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

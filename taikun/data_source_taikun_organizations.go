@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/organizations"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,14 +29,14 @@ func dataSourceTaikunOrganizations() *schema.Resource {
 }
 
 func dataSourceTaikunOrganizationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := organizations.NewOrganizationsListParams().WithV(ApiVersion)
 
 	var rawOrganizationsList []*models.OrganizationDetailsDto
 	for {
-		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
+		response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

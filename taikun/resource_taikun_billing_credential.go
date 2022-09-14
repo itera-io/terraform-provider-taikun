@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -103,7 +104,7 @@ func resourceTaikunBillingCredential() *schema.Resource {
 }
 
 func resourceTaikunBillingCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.OperationCredentialsCreateCommand{
 		Name:               d.Get("name").(string),
@@ -122,7 +123,7 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, d *schema.Resour
 	}
 
 	params := ops_credentials.NewOpsCredentialsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.OpsCredentials.OpsCredentialsCreate(params, apiClient)
+	createResult, err := apiClient.Client.OpsCredentials.OpsCredentialsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,14 +150,14 @@ func generateResourceTaikunBillingCredentialReadWithoutRetries() schema.ReadCont
 }
 func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.OpsCredentials.OpsCredentialsList(ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.OpsCredentials.OpsCredentialsList(ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -182,7 +183,7 @@ func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadCo
 }
 
 func resourceTaikunBillingCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -198,14 +199,14 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, d *schema.Resour
 }
 
 func resourceTaikunBillingCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	params := ops_credentials.NewOpsCredentialsDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.client.OpsCredentials.OpsCredentialsDelete(params, apiClient)
+	_, _, err = apiClient.Client.OpsCredentials.OpsCredentialsDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -232,12 +233,12 @@ func flattenTaikunBillingCredential(rawOperationCredential *models.OperationCred
 	}
 }
 
-func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.OperationCredentialLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),
 	}
 	params := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.OpsCredentials.OpsCredentialsLockManager(params, apiClient)
+	_, err := apiClient.Client.OpsCredentials.OpsCredentialsLockManager(params, apiClient)
 	return err
 }

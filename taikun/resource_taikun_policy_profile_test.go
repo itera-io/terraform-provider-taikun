@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -197,7 +198,7 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_policy_profile" {
@@ -207,7 +208,7 @@ func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.OpaProfiles.OpaProfilesList(params, client)
+		response, err := client.Client.OpaProfiles.OpaProfilesList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("policy profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -217,7 +218,7 @@ func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_policy_profile" {
@@ -228,7 +229,7 @@ func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.OpaProfiles.OpaProfilesList(params, client)
+			response, err := client.Client.OpaProfiles.OpaProfilesList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

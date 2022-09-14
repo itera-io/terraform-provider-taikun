@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
 )
 
@@ -223,7 +224,7 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 }
 
 func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_standalone_profile" {
@@ -233,7 +234,7 @@ func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.StandAloneProfile.StandAloneProfileList(params, client)
+		response, err := client.Client.StandAloneProfile.StandAloneProfileList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("standalone profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -243,7 +244,7 @@ func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_standalone_profile" {
@@ -254,7 +255,7 @@ func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.StandAloneProfile.StandAloneProfileList(params, client)
+			response, err := client.Client.StandAloneProfile.StandAloneProfileList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

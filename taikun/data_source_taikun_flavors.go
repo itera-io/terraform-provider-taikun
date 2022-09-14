@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -87,8 +88,8 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 
 	startCPU := int32(d.Get("min_cpu").(int))
 	endCPU := int32(d.Get("max_cpu").(int))
-	startRAM := gibiByteToMebiByte(int32(d.Get("min_ram").(int)))
-	endRAM := gibiByteToMebiByte(int32(d.Get("max_ram").(int)))
+	startRAM := float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
+	endRAM := float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
 	sortBy := "name"
 	sortDir := "asc"
 
@@ -96,11 +97,11 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
 	params = params.WithSortBy(&sortBy).WithSortDirection(&sortDir)
 
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	var cloudType string
 	var flavorDTOs []*models.FlavorsListDto
 	for {
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsAllFlavors(params, apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsAllFlavors(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -141,8 +142,8 @@ func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSour
 		return flattenDataSourceTaikunFlavorsAzureItem
 	case "openstack":
 		return flattenDataSourceTaikunFlavorsOpenStackItem
-	default:
-		return nil
+	default: // GCP
+		return flattenDataSourceTaikunFlavorsGCPItem
 	}
 }
 
@@ -167,5 +168,13 @@ func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *models.FlavorsListDt
 		"cpu":  flavorDTO.CPU,
 		"name": flavorDTO.Name,
 		"ram":  mebiByteToGibiByte(flavorDTO.RAM),
+	}
+}
+
+func flattenDataSourceTaikunFlavorsGCPItem(flavorDTO *models.FlavorsListDto) map[string]interface{} {
+	return map[string]interface{}{
+		"cpu":  flavorDTO.CPU,
+		"name": flavorDTO.Name,
+		"ram":  flavorDTO.RAM, // TODO: check conversion isn't needed
 	}
 }

@@ -25,12 +25,9 @@ data "taikun_kubeconfigs" "foo" {
 
 - `project_id` (String) Project ID filter.
 
-### Optional
-
-- `id` (String) The ID of this resource.
-
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `kubeconfigs` (List of Object) List of retrieved kubeconfigs. (see [below for nested schema](#nestedatt--kubeconfigs))
 
 <a id="nestedatt--kubeconfigs"></a>
@@ -42,10 +39,10 @@ Read-Only:
 - `content` (String)
 - `id` (String)
 - `name` (String)
+- `namespace` (String)
 - `project_id` (String)
 - `project_name` (String)
 - `user_id` (String)
-- `user_name` (String)
-- `user_role` (String)
+- `validity_period` (Number)
 
 

@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/ssh_users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -35,7 +36,7 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
@@ -52,7 +53,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceDat
 
 	var accessProfilesList []*models.AccessProfilesListDto
 	for {
-		response, err := apiClient.client.AccessProfiles.AccessProfilesList(params, apiClient)
+		response, err := apiClient.Client.AccessProfiles.AccessProfilesList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -68,7 +69,7 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceDat
 	for i, rawAccessProfile := range accessProfilesList {
 
 		sshParams := ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(rawAccessProfile.ID)
-		sshResponse, err := apiClient.client.SSHUsers.SSHUsersList(sshParams, apiClient)
+		sshResponse, err := apiClient.Client.SSHUsers.SSHUsersList(sshParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

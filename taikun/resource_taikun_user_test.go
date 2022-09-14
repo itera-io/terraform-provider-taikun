@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/users"
 )
 
@@ -133,7 +134,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunUserExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_user" {
@@ -142,7 +143,7 @@ func testAccCheckTaikunUserExists(state *terraform.State) error {
 
 		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&rs.Primary.ID)
 
-		response, err := client.client.Users.UsersList(params, client)
+		response, err := client.Client.Users.UsersList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -152,7 +153,7 @@ func testAccCheckTaikunUserExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunUserDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_user" {
@@ -162,7 +163,7 @@ func testAccCheckTaikunUserDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			params := users.NewUsersListParams().WithV(ApiVersion).WithID(&rs.Primary.ID)
 
-			response, err := client.client.Users.UsersList(params, client)
+			response, err := client.Client.Users.UsersList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

@@ -25,18 +25,19 @@ data "taikun_access_profiles" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
 - `access_profiles` (List of Object) List of retrieved access profiles. (see [below for nested schema](#nestedatt--access_profiles))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--access_profiles"></a>
 ### Nested Schema for `access_profiles`
 
 Read-Only:
 
+- `allowed_host` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--allowed_host))
 - `created_by` (String)
 - `dns_server` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--dns_server))
 - `http_proxy` (String)
@@ -49,6 +50,17 @@ Read-Only:
 - `organization_id` (String)
 - `organization_name` (String)
 - `ssh_user` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ssh_user))
+
+<a id="nestedobjatt--access_profiles--allowed_host"></a>
+### Nested Schema for `access_profiles.allowed_host`
+
+Read-Only:
+
+- `address` (String)
+- `description` (String)
+- `id` (String)
+- `mask_bits` (Number)
+
 
 <a id="nestedobjatt--access_profiles--dns_server"></a>
 ### Nested Schema for `access_profiles.dns_server`

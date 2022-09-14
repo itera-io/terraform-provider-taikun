@@ -25,12 +25,12 @@ data "taikun_backup_credentials" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
 - `backup_credentials` (List of Object) List of retrieved backup credentials. (see [below for nested schema](#nestedatt--backup_credentials))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--backup_credentials"></a>
 ### Nested Schema for `backup_credentials`

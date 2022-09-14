@@ -32,6 +32,7 @@ data "taikun_project" "foo" {
 - `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available.
 - `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
 - `cloud_credential_id` (String) ID of the cloud credential used to create the project's servers.
+- `delete_on_expiration` (Boolean) If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.
 - `expiration_date` (String) Project's expiration date in the format: 'dd/mm/yyyy'.
 - `flavors` (Set of String) List of flavors bound to the project.
 - `images` (Set of String) List of images bound to the project.
@@ -42,10 +43,12 @@ data "taikun_project" "foo" {
 - `name` (String) Project name.
 - `organization_id` (String) ID of the organization which owns the project.
 - `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
-- `quota_cpu_units` (Number) Maximum CPU units. Unlimited if unspecified.
-- `quota_disk_size` (Number) Maximum disk size in GBs. Unlimited if unspecified.
-- `quota_id` (String) ID of the project quota.
-- `quota_ram_size` (Number) Maximum RAM size in GBs. Unlimited if unspecified.
+- `quota_cpu_units` (Number) Maximum CPU units.
+- `quota_disk_size` (Number) Maximum disk size in GBs.
+- `quota_ram_size` (Number) Maximum RAM size in GBs.
+- `quota_vm_cpu_units` (Number) Maximum CPU units for standalone VMs.
+- `quota_vm_ram_size` (Number) Maximum RAM size in GBs for standalone VMs.
+- `quota_vm_volume_size` (Number) Maximum volume size in GBs for standalone VMs.
 - `server_bastion` (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
 - `server_kubemaster` (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
 - `server_kubeworker` (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))

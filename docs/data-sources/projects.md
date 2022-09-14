@@ -23,11 +23,11 @@ data "taikun_projects" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `projects` (List of Object) List of retrieved projects. (see [below for nested schema](#nestedatt--projects))
 
 <a id="nestedatt--projects"></a>
@@ -42,6 +42,7 @@ Read-Only:
 - `auto_upgrade` (Boolean)
 - `backup_credential_id` (String)
 - `cloud_credential_id` (String)
+- `delete_on_expiration` (Boolean)
 - `expiration_date` (String)
 - `flavors` (Set of String)
 - `id` (String)
@@ -55,8 +56,10 @@ Read-Only:
 - `policy_profile_id` (String)
 - `quota_cpu_units` (Number)
 - `quota_disk_size` (Number)
-- `quota_id` (String)
 - `quota_ram_size` (Number)
+- `quota_vm_cpu_units` (Number)
+- `quota_vm_ram_size` (Number)
+- `quota_vm_volume_size` (Number)
 - `server_bastion` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_bastion))
 - `server_kubemaster` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster))
 - `server_kubeworker` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker))

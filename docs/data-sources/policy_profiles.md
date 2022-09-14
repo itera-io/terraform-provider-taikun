@@ -25,11 +25,11 @@ data "taikun_policy_profiles" "foo" {
 
 ### Optional
 
-- `id` (String) The ID of this resource.
 - `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `policy_profiles` (List of Object) List of retrieved Policy profiles. (see [below for nested schema](#nestedatt--policy_profiles))
 
 <a id="nestedatt--policy_profiles"></a>

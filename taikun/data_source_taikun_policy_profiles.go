@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,7 +35,7 @@ func dataSourceTaikunPolicyProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunPolicyProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion)
@@ -51,7 +52,7 @@ func dataSourceTaikunPolicyProfilesRead(_ context.Context, d *schema.ResourceDat
 
 	var opaProfilesListDtos []*models.OpaProfileListDto
 	for {
-		response, err := apiClient.client.OpaProfiles.OpaProfilesList(params, apiClient)
+		response, err := apiClient.Client.OpaProfiles.OpaProfilesList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

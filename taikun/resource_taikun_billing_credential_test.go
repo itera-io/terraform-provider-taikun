@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 )
 
@@ -89,7 +90,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 }
 
 func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_credential" {
@@ -99,7 +100,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
+		response, err := client.Client.OpsCredentials.OpsCredentialsList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -109,7 +110,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_credential" {
@@ -120,7 +121,7 @@ func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
+			response, err := client.Client.OpsCredentials.OpsCredentialsList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 )
 
@@ -36,11 +37,30 @@ resource "taikun_access_profile" "foo" {
   dns_server {
     address = "8.8.4.4"
   }
+
+  allowed_host {
+    description = "Host A"
+    address = "10.0.0.1"
+    mask_bits = 8
+  }
+
+  allowed_host {
+    description = "Host B"
+    address = "10.0.0.2"
+    mask_bits = 8
+  }
+
+  allowed_host {
+    description = "Host C"
+    address = "172.19.42.2"
+    mask_bits = 24
+  }
 }
 `
 
 func TestAccResourceTaikunAccessProfile(t *testing.T) {
-	firstName := randomTestName()
+	name := randomTestName()
+	const unlocked = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -48,10 +68,10 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
@@ -62,6 +82,16 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
@@ -74,9 +104,10 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 	})
 }
 
-func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
-	firstName := randomTestName()
-	secondName := randomTestName()
+func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
+	name := randomTestName()
+	const locked = true
+	const unlocked = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -84,10 +115,10 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
@@ -98,14 +129,24 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, secondName, true),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, locked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
@@ -116,6 +157,16 @@ func TestAccResourceTaikunAccessProfileRenameAndLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
@@ -146,12 +197,18 @@ resource "taikun_access_profile" "foo" {
   dns_server {
     address = "1.1.1.1"
   }
+
+  allowed_host {
+    description = "Host A"
+    address = "192.168.1.2"
+    mask_bits = 24
+  }
 }
 `
 
 func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
-	firstName := randomTestName()
-	secondName := randomTestName()
+	name := randomTestName()
+	const unlocked = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -159,10 +216,10 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, firstName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "8.8.8.8"),
@@ -173,14 +230,24 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, secondName, false),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", secondName),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.0.address", "1.1.1.1"),
@@ -191,6 +258,10 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.1.name", "non_non"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.1.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :non_non:"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "192.168.1.2"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
@@ -199,7 +270,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_access_profile" {
@@ -209,7 +280,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
+		response, err := client.Client.AccessProfiles.AccessProfilesList(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("access profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -219,7 +290,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_access_profile" {
@@ -230,7 +301,7 @@ func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.AccessProfiles.AccessProfilesList(params, client)
+			response, err := client.Client.AccessProfiles.AccessProfilesList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

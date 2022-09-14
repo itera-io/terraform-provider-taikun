@@ -221,18 +221,26 @@ func getLockMode(locked bool) string {
 	return "unlock"
 }
 
+func getEPrometheusType(prometheusType string) models.EPrometheusType {
+	return models.EPrometheusType(getPrometheusTypeInt(prometheusType))
+}
+
 func getPrometheusType(prometheusType string) models.PrometheusType {
+	return models.PrometheusType(getPrometheusTypeInt(prometheusType))
+}
+
+func getPrometheusTypeInt(prometheusType string) int32 {
 	if prometheusType == "Count" {
 		return 100
 	}
-	return 200
+	return 200 // Sum
 }
 
-func getShowbackType(showbackType string) models.ShowbackType {
+func getShowbackType(showbackType string) models.EShowbackType {
 	if showbackType == "General" {
 		return 100
 	}
-	return 200
+	return 200 // External
 }
 
 func getUserRole(role string) models.UserRole {
@@ -328,4 +336,9 @@ func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
 	default: // UDP
 		return 300
 	}
+}
+
+func setResourceDataId(d *schema.ResourceData, id int32) {
+	idAsString := strconv.FormatInt(int64(id), 10)
+	d.SetId(idAsString)
 }

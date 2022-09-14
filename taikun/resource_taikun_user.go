@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -111,7 +112,7 @@ func resourceTaikunUser() *schema.Resource {
 }
 
 func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateUserCommand{
 		Username:    d.Get("user_name").(string),
@@ -130,7 +131,7 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	params := users.NewUsersCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Users.UsersCreate(params, apiClient)
+	createResult, err := apiClient.Client.Users.UsersCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -147,11 +148,11 @@ func generateResourceTaikunUserReadWithoutRetries() schema.ReadContextFunc {
 }
 func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id := d.Id()
 		d.SetId("")
 
-		response, err := apiClient.client.Users.UsersList(users.NewUsersListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.Users.UsersList(users.NewUsersListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -177,7 +178,7 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 }
 
 func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.UpdateUserCommand{
 		ID:                  d.Id(),
@@ -189,7 +190,7 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	updateUserParams := users.NewUsersUpdateUserParams().WithV(ApiVersion).WithBody(body)
-	_, err := apiClient.client.Users.UsersUpdateUser(updateUserParams, apiClient)
+	_, err := apiClient.Client.Users.UsersUpdateUser(updateUserParams, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -198,10 +199,10 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceTaikunUserDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(d.Id())
-	_, _, err := apiClient.client.Users.UsersDelete(params, apiClient)
+	_, _, err := apiClient.Client.Users.UsersDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

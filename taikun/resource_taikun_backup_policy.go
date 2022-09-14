@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/backup"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -95,7 +96,7 @@ func resourceTaikunBackupPolicy() *schema.Resource {
 }
 
 func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	projectId, _ := atoi32(d.Get("project_id").(string))
 
@@ -109,7 +110,7 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	params := backup.NewBackupCreateParams().WithV(ApiVersion).WithBody(body)
-	_, err := apiClient.client.Backup.BackupCreate(params, apiClient)
+	_, err := apiClient.Client.Backup.BackupCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,7 +127,7 @@ func generateResourceTaikunBackupPolicyReadWithoutRetries() schema.ReadContextFu
 }
 func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_backup_policy : %s", err)
@@ -136,7 +137,7 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.Backup.BackupListAllSchedules(backup.NewBackupListAllSchedulesParams().WithV(ApiVersion).WithProjectID(projectId), apiClient)
+		response, err := apiClient.Client.Backup.BackupListAllSchedules(backup.NewBackupListAllSchedulesParams().WithV(ApiVersion).WithProjectID(projectId), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -163,7 +164,7 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 }
 
 func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_backup_policy : %s", err)
@@ -174,7 +175,7 @@ func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData,
 		ProjectID: projectId,
 	}
 	params := backup.NewBackupDeleteScheduleParams().WithV(ApiVersion).WithBody(deleteBody)
-	_, err = apiClient.client.Backup.BackupDeleteSchedule(params, apiClient)
+	_, err = apiClient.Client.Backup.BackupDeleteSchedule(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -43,11 +43,8 @@ resource "taikun_project_user_attachment" "foo" {
 - `project_id` (String) ID of the project.
 - `user_id` (String) ID of the user.
 
-### Optional
-
-- `id` (String) The ID of this resource.
-
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `project_name` (String) Name of the project.
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/ops_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -33,7 +34,7 @@ func dataSourceTaikunBillingCredentials() *schema.Resource {
 }
 
 func dataSourceTaikunBillingCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion)
@@ -50,7 +51,7 @@ func dataSourceTaikunBillingCredentialsRead(_ context.Context, d *schema.Resourc
 
 	var operationCredentialsList []*models.OperationCredentialsListDto
 	for {
-		response, err := apiClient.client.OpsCredentials.OpsCredentialsList(params, apiClient)
+		response, err := apiClient.Client.OpsCredentials.OpsCredentialsList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
