@@ -8,7 +8,7 @@ require (
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
-	github.com/itera-io/taikungoclient v0.0.0-20220915121737-720dc78b227c
+	github.com/itera-io/taikungoclient v0.0.0-20220915131131-065da49742f6
 	github.com/robfig/cron/v3 v3.0.1
 )
 
