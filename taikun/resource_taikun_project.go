@@ -938,7 +938,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungo
 	}
 
 	if vmVolume, ok := d.GetOk("quota_vm_volume_size"); ok {
-		body.VMVolumeSize = gibiByteToByte(vmVolume.(int))
+		body.VMVolumeSize = int64(vmVolume.(int)) // No conversion needed, API takes GBs
 	}
 
 	params := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithBody(body)
