@@ -75,17 +75,17 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"delete_on_expiration": {
-			Description: "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			ForceNew:    true,
+			Description:  "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Default:      false,
+			ForceNew:     true,
+			RequiredWith: []string{"expiration_date"},
 		},
 		"expiration_date": {
 			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
 			Type:             schema.TypeString,
 			Optional:         true,
-			RequiredWith:     []string{"delete_on_expiration"},
 			ValidateDiagFunc: stringIsDate,
 		},
 		"flavors": {
