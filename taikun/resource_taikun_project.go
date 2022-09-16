@@ -972,6 +972,7 @@ func flattenTaikunProject(
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
 		"auto_upgrade":          projectDetailsDTO.IsAutoUpgrade,
 		"monitoring":            projectDetailsDTO.IsMonitoringEnabled,
+		"delete_on_expiration":  projectDetailsDTO.DeleteOnExpiration,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"flavors":               flavors,
 		"images":                images,
