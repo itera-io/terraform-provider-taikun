@@ -157,19 +157,17 @@ func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.OpsCredentials.OpsCredentialsList(ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		rawBillingCredential, err := resourceTaikunBillingCredentialFind(id, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Data) != 1 {
+		if rawBillingCredential == nil {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
 		}
-
-		rawBillingCredential := response.GetPayload().Data[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunBillingCredential(rawBillingCredential))
 		if err != nil {
@@ -241,4 +239,32 @@ func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *taikung
 	params := ops_credentials.NewOpsCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
 	_, err := apiClient.Client.OpsCredentials.OpsCredentialsLockManager(params, apiClient)
 	return err
+}
+
+// Returns the Billing Credential with the given ID or nil if it wasn't found
+func resourceTaikunBillingCredentialFind(id int32, apiClient *taikungoclient.Client) (*models.OperationCredentialsListDto, error) {
+	params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion)
+	var offset int32 = 0
+
+	for {
+		response, err := apiClient.Client.OpsCredentials.OpsCredentialsList(params, apiClient)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, billingCredential := range response.Payload.Data {
+			if billingCredential.ID == id {
+				return billingCredential, nil
+			}
+		}
+
+		offset += int32(len(response.Payload.Data))
+		if offset == response.Payload.TotalCount {
+			break
+		}
+
+		params = params.WithOffset(&offset)
+	}
+
+	return nil, nil
 }
