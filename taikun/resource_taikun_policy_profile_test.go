@@ -224,11 +224,11 @@ func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			resource, err := resourceTaikunPolicyProfileFind(id, client)
+			policyProfile, err := resourceTaikunPolicyProfileFind(id, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if resource != nil {
+			if policyProfile != nil {
 				return resource.RetryableError(errors.New("policy profile still exists"))
 			}
 			return nil
