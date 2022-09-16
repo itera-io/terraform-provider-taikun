@@ -237,8 +237,8 @@ github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH
 github.com/imdario/mergo v0.3.13 h1:lFzP57bqS/wsqKssCGmtLAb8A0wKjLGrve2q3PPVcBk=
 github.com/imdario/mergo v0.3.13/go.mod h1:4lJ1jqUDcsbIECGy0RUJAXNIhg+6ocWgb1ALK2O4oXg=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/itera-io/taikungoclient v0.0.0-20220915131131-065da49742f6 h1:O4I9CPA2KZVvT5nipEasMZlmwsX6VSkbjNizIP7qSu0=
-github.com/itera-io/taikungoclient v0.0.0-20220915131131-065da49742f6/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
+github.com/itera-io/taikungoclient v0.0.0-20220916123218-9a76a72b785a h1:r5pammWC0zVyFGt4Xuz3RnN29fAv5jg9EXDBAHEIyJU=
+github.com/itera-io/taikungoclient v0.0.0-20220916123218-9a76a72b785a/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
