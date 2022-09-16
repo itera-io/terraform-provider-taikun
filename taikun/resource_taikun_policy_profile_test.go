@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -206,10 +205,8 @@ func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
-
-		response, err := client.Client.OpaProfiles.OpaProfilesList(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		resource, err := resourceTaikunPolicyProfileFind(id, client)
+		if err != nil || resource == nil {
 			return fmt.Errorf("policy profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -227,13 +224,11 @@ func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id)
-
-			response, err := client.Client.OpaProfiles.OpaProfilesList(params, client)
+			resource, err := resourceTaikunPolicyProfileFind(id, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if resource != nil {
 				return resource.RetryableError(errors.New("policy profile still exists"))
 			}
 			return nil
