@@ -97,7 +97,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		resource, err := resourceTaikunBillingCredentialFind(id, apiClient)
+		resource, err := resourceTaikunBillingCredentialFind(id, client)
 		if err != nil || resource == nil {
 			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -117,11 +117,11 @@ func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			resource, err := resourceTaikunBillingCredentialFind(id, client)
+			billingCredential, err := resourceTaikunBillingCredentialFind(id, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if resource != nil {
+			if billingCredential != nil {
 				return resource.RetryableError(errors.New("billing credential still exists"))
 			}
 			return nil
