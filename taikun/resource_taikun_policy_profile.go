@@ -205,19 +205,17 @@ func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.OpaProfiles.OpaProfilesList(opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		rawPolicyProfile, err := resourceTaikunPolicyProfileFind(id, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Data) != 1 {
+		if rawPolicyProfile == nil {
 			if isAfterUpdateOrCreate {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
 		}
-
-		rawPolicyProfile := response.GetPayload().Data[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunPolicyProfile(rawPolicyProfile))
 		if err != nil {
@@ -323,4 +321,31 @@ func flattenTaikunPolicyProfile(rawPolicyProfile *models.OpaProfileListDto) map[
 		"unique_ingress":          rawPolicyProfile.UniqueIngresses,
 		"unique_service_selector": rawPolicyProfile.UniqueServiceSelector,
 	}
+}
+
+func resourceTaikunPolicyProfileFind(id int32, apiClient *taikungoclient.Client) (*models.OpaProfileListDto, error) {
+	params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion)
+	var offset int32 = 0
+
+	for {
+		response, err := apiClient.Client.OpaProfiles.OpaProfilesList(params, apiClient)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, policyProfile := range response.Payload.Data {
+			if policyProfile.ID == id {
+				return policyProfile, nil
+			}
+		}
+
+		offset += int32(len(response.Payload.Data))
+		if offset == response.Payload.TotalCount {
+			break
+		}
+
+		params = params.WithOffset(&offset)
+	}
+
+	return nil, nil
 }
