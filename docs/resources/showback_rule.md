@@ -50,7 +50,7 @@ resource "taikun_showback_rule" "foo" {
 - `label` (Block Set) Labels linked to this showback rule. (see [below for nested schema](#nestedblock--label))
 - `organization_id` (String) The ID of the organization which owns the showback rule.
 - `project_alert_limit` (Number) Set limit of alerts for one project. Defaults to `0`.
-- `showback_credential_id` (String) Id of the showback rule.
+- `showback_credential_id` (String) ID of the showback credential.
 
 ### Read-Only
 
@@ -59,7 +59,7 @@ resource "taikun_showback_rule" "foo" {
 - `last_modified` (String) Time of last modification.
 - `last_modified_by` (String) The last user who modified the showback rule.
 - `organization_name` (String) The name of the organization which owns the showback rule.
-- `showback_credential_name` (String) Name of the showback rule.
+- `showback_credential_name` (String) Name of the showback credential.
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
