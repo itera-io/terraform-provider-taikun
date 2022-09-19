@@ -75,17 +75,17 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"delete_on_expiration": {
-			Description: "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			ForceNew:    true,
+			Description:  "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Default:      false,
+			ForceNew:     true,
+			RequiredWith: []string{"expiration_date"},
 		},
 		"expiration_date": {
 			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
 			Type:             schema.TypeString,
 			Optional:         true,
-			RequiredWith:     []string{"delete_on_expiration"},
 			ValidateDiagFunc: stringIsDate,
 		},
 		"flavors": {
@@ -178,42 +178,42 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Maximum CPU units.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Computed:     true,
+			Default:      1000000,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_disk_size": {
 			Description:  "Maximum disk size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Computed:     true,
+			Default:      102400, // 100 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_ram_size": {
 			Description:  "Maximum RAM size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Computed:     true,
+			Default:      102400, // 100 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_cpu_units": {
 			Description:  "Maximum CPU units for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Computed:     true,
+			Default:      1000000,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_volume_size": {
 			Description:  "Maximum volume size in GBs for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Computed:     true,
+			Default:      102400, // 100 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_ram_size": {
 			Description:  "Maximum RAM size in GBs for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Computed:     true,
+			Default:      102400, // 100 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"router_id_end_range": {
@@ -938,7 +938,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungo
 	}
 
 	if vmVolume, ok := d.GetOk("quota_vm_volume_size"); ok {
-		body.VMVolumeSize = gibiByteToByte(vmVolume.(int))
+		body.VMVolumeSize = int64(vmVolume.(int)) // No conversion needed, API takes GBs
 	}
 
 	params := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithBody(body)
@@ -972,6 +972,7 @@ func flattenTaikunProject(
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
 		"auto_upgrade":          projectDetailsDTO.IsAutoUpgrade,
 		"monitoring":            projectDetailsDTO.IsMonitoringEnabled,
+		"delete_on_expiration":  projectDetailsDTO.DeleteOnExpiration,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"flavors":               flavors,
 		"images":                images,
@@ -1011,6 +1012,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.AzureVMSize
 		case "openstack":
 			serverMap["flavor"] = server.OpenstackFlavor
+		case "gcp", "google":
+			serverMap["flavor"] = server.GoogleMachineType
 		}
 
 		// Bastion
@@ -1224,6 +1227,9 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *taiku
 	}
 	if len(response.Payload.Openstack) == 1 {
 		return cloudTypeOpenStack, nil
+	}
+	if len(response.Payload.Google) == 1 {
+		return cloudTypeGCP, nil
 	}
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }

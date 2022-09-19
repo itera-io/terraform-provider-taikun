@@ -39,8 +39,8 @@ data "taikun_showback_rule" "foo" {
 - `organization_name` (String) The name of the organization which owns the showback rule.
 - `price` (Number) Billing in CZK per selected unit.
 - `project_alert_limit` (Number) Set limit of alerts for one project.
-- `showback_credential_id` (String) Id of the showback rule.
-- `showback_credential_name` (String) Name of the showback rule.
+- `showback_credential_id` (String) ID of the showback credential.
+- `showback_credential_name` (String) Name of the showback credential.
 - `type` (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 <a id="nestedatt--label"></a>
