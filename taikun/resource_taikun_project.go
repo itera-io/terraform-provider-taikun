@@ -1012,6 +1012,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.AzureVMSize
 		case "openstack":
 			serverMap["flavor"] = server.OpenstackFlavor
+		case "gcp", "google":
+			serverMap["flavor"] = server.GoogleMachineType
 		}
 
 		// Bastion
