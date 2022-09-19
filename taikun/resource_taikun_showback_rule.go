@@ -111,14 +111,14 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"showback_credential_id": {
-			Description:      "Id of the showback rule.",
+			Description:      "ID of the showback credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ForceNew:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"showback_credential_name": {
-			Description: "Name of the showback rule.",
+			Description: "Name of the showback credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
