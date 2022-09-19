@@ -7,8 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/client/showback"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/models"
+	"github.com/itera-io/taikungoclient/showbackclient/showback_rules"
 )
 
 func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
@@ -110,14 +111,14 @@ func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"showback_credential_id": {
-			Description:      "Id of the showback rule.",
+			Description:      "ID of the showback credential.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ForceNew:         true,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"showback_credential_name": {
-			Description: "Name of the showback rule.",
+			Description: "Name of the showback credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -145,12 +146,12 @@ func resourceTaikunShowbackRule() *schema.Resource {
 }
 
 func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateShowbackRuleCommand{
 		Name:              d.Get("name").(string),
 		MetricName:        d.Get("metric_name").(string),
-		Type:              getPrometheusType(d.Get("type").(string)),
+		Type:              getEPrometheusType(d.Get("type").(string)),
 		Kind:              getShowbackType(d.Get("kind").(string)),
 		Price:             d.Get("price").(float64),
 		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
@@ -186,8 +187,8 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	params := showback.NewShowbackCreateRuleParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Showback.ShowbackCreateRule(params, apiClient)
+	params := showback_rules.NewShowbackRulesCreateParams().WithV(ApiVersion).WithBody(body)
+	createResult, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,14 +205,14 @@ func generateResourceTaikunShowbackRuleReadWithoutRetries() schema.ReadContextFu
 }
 func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.Showback.ShowbackRulesList(showback.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -237,7 +238,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 }
 
 func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -247,7 +248,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 		ID:                id,
 		Name:              d.Get("name").(string),
 		MetricName:        d.Get("metric_name").(string),
-		Type:              getPrometheusType(d.Get("type").(string)),
+		Type:              getEPrometheusType(d.Get("type").(string)),
 		Kind:              getShowbackType(d.Get("kind").(string)),
 		Price:             d.Get("price").(float64),
 		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
@@ -265,8 +266,8 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	params := showback.NewShowbackUpdateRuleParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.client.Showback.ShowbackUpdateRule(params, apiClient)
+	params := showback_rules.NewShowbackRulesUpdateParams().WithV(ApiVersion).WithBody(body)
+	_, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesUpdate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -275,14 +276,14 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := showback.NewShowbackDeleteRuleParams().WithV(ApiVersion).WithBody(&models.DeleteShowbackRuleCommand{ID: id})
-	_, err = apiClient.client.Showback.ShowbackDeleteRule(params, apiClient)
+	params := showback_rules.NewShowbackRulesDeleteParams().WithV(ApiVersion).WithID(id)
+	_, _, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

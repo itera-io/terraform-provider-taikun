@@ -7,57 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_cloud_credential_openstack", &resource.Sweeper{
-		Name:         "taikun_cloud_credential_openstack",
-		Dependencies: []string{"taikun_project"},
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
-
-			var cloudCredentialsList []*models.OpenstackCredentialsListDto
-			for {
-				response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				cloudCredentialsList = append(cloudCredentialsList, response.GetPayload().Openstack...)
-				if len(cloudCredentialsList) == int(response.GetPayload().TotalCountOpenstack) {
-					break
-				}
-				offset := int32(len(cloudCredentialsList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range cloudCredentialsList {
-				if shouldSweep(e.Name) {
-					params := cloud_credentials.NewCloudCredentialsDeleteParams().WithV(ApiVersion).WithCloudID(e.ID)
-					_, _, err = apiClient.client.CloudCredentials.CloudCredentialsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunCloudCredentialOpenStackConfig = `
 resource "taikun_cloud_credential_openstack" "foo" {
@@ -215,7 +169,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackRename(t *testing.T) {
 }
 
 func testAccCheckTaikunCloudCredentialOpenStackExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential_openstack" {
@@ -225,7 +179,7 @@ func testAccCheckTaikunCloudCredentialOpenStackExists(state *terraform.State) er
 		id, _ := atoi32(rs.Primary.ID)
 		params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+		response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
 		if err != nil || response.Payload.TotalCountOpenstack != 1 {
 			return fmt.Errorf("openstack cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -235,7 +189,7 @@ func testAccCheckTaikunCloudCredentialOpenStackExists(state *terraform.State) er
 }
 
 func testAccCheckTaikunCloudCredentialOpenStackDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential_openstack" {
@@ -246,7 +200,7 @@ func testAccCheckTaikunCloudCredentialOpenStackDestroy(state *terraform.State) e
 			id, _ := atoi32(rs.Primary.ID)
 			params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+			response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

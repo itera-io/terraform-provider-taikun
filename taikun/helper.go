@@ -1,10 +1,10 @@
 package taikun
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/mail"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -23,21 +23,6 @@ import (
 )
 
 const testNamePrefix = "tf-acc-test-"
-
-var testNamePrefixes = []string{
-	testNamePrefix, // Terraform provider acceptance tests
-	"tk-cli-test-", // Taikun CLI tests
-	"tk-tf-test-",  // Taikun Terraform tests
-}
-
-func shouldSweep(resourceName string) bool {
-	for _, prefix := range testNamePrefixes {
-		if strings.HasPrefix(resourceName, prefix) {
-			return true
-		}
-	}
-	return false
-}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -64,17 +49,13 @@ func i32toa(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
 }
 
-func jsonNumberAsFloatToInt32(value json.Number) int32 {
-	x, _ := strconv.ParseFloat(string(value), 32)
-	return int32(x)
-}
-
 func gibiByteToMebiByte(x int32) int32 {
 	return x * 1024
 }
 
-func mebiByteToGibiByte(x int32) int32 {
-	return x / 1024
+func mebiByteToGibiByte(x int64) int32 {
+	var kibi int64 = 1024
+	return int32(x / kibi)
 }
 
 func gibiByteToByte(x int) int64 {
@@ -108,6 +89,24 @@ func stringIsEmail(i interface{}, path cty.Path) diag.Diagnostics {
 	_, err := mail.ParseAddress(v)
 	if err != nil {
 		return diag.FromErr(path.NewErrorf("expected an email"))
+	}
+
+	return nil
+}
+
+func stringIsFilePath(i interface{}, path cty.Path) diag.Diagnostics {
+	filePath, ok := i.(string)
+	if !ok {
+		return diag.FromErr(path.NewErrorf("expected type to be string"))
+	}
+
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return diag.FromErr(path.NewError(err))
+	}
+
+	if fileInfo.IsDir() {
+		return diag.FromErr(path.NewErrorf("expected a file, not a directory"))
 	}
 
 	return nil
@@ -222,18 +221,26 @@ func getLockMode(locked bool) string {
 	return "unlock"
 }
 
+func getEPrometheusType(prometheusType string) models.EPrometheusType {
+	return models.EPrometheusType(getPrometheusTypeInt(prometheusType))
+}
+
 func getPrometheusType(prometheusType string) models.PrometheusType {
+	return models.PrometheusType(getPrometheusTypeInt(prometheusType))
+}
+
+func getPrometheusTypeInt(prometheusType string) int32 {
 	if prometheusType == "Count" {
 		return 100
 	}
-	return 200
+	return 200 // Sum
 }
 
-func getShowbackType(showbackType string) models.ShowbackType {
+func getShowbackType(showbackType string) models.EShowbackType {
 	if showbackType == "General" {
 		return 100
 	}
-	return 200
+	return 200 // External
 }
 
 func getUserRole(role string) models.UserRole {
@@ -318,6 +325,7 @@ const (
 	cloudTypeAWS       = "AWS"
 	cloudTypeAzure     = "Azure"
 	cloudTypeOpenStack = "OpenStack"
+	cloudTypeGCP       = "GCP"
 )
 
 func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
@@ -329,4 +337,9 @@ func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
 	default: // UDP
 		return 300
 	}
+}
+
+func setResourceDataId(d *schema.ResourceData, id int32) {
+	idAsString := strconv.FormatInt(int64(id), 10)
+	d.SetId(idAsString)
 }

@@ -25,35 +25,36 @@ data "taikun_standalone_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **standalone_profiles** (List of Object) List of retrieved standalone profiles. (see [below for nested schema](#nestedatt--standalone_profiles))
+- `id` (String) The ID of this resource.
+- `standalone_profiles` (List of Object) List of retrieved standalone profiles. (see [below for nested schema](#nestedatt--standalone_profiles))
 
 <a id="nestedatt--standalone_profiles"></a>
 ### Nested Schema for `standalone_profiles`
 
 Read-Only:
 
-- **id** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **public_key** (String)
-- **security_group** (List of Object) (see [below for nested schema](#nestedobjatt--standalone_profiles--security_group))
+- `id` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `public_key` (String)
+- `security_group` (List of Object) (see [below for nested schema](#nestedobjatt--standalone_profiles--security_group))
 
 <a id="nestedobjatt--standalone_profiles--security_group"></a>
 ### Nested Schema for `standalone_profiles.security_group`
 
 Read-Only:
 
-- **cidr** (String)
-- **from_port** (Number)
-- **id** (String)
-- **ip_protocol** (String)
-- **name** (String)
-- **to_port** (Number)
+- `cidr` (String)
+- `from_port` (Number)
+- `id` (String)
+- `ip_protocol` (String)
+- `name` (String)
+- `to_port` (Number)
 
 

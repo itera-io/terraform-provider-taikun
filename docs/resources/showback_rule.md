@@ -38,36 +38,36 @@ resource "taikun_showback_rule" "foo" {
 
 ### Required
 
-- **kind** (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
-- **metric_name** (String) The metric name.
-- **name** (String) The name of the showback rule.
-- **price** (Number) Billing in CZK per selected unit.
-- **type** (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
+- `kind` (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
+- `metric_name` (String) The metric name.
+- `name` (String) The name of the showback rule.
+- `price` (Number) Billing in CZK per selected unit.
+- `type` (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 ### Optional
 
-- **global_alert_limit** (Number) Set limit of alerts for all projects. Defaults to `0`.
-- **label** (Block Set) Labels linked to this showback rule. (see [below for nested schema](#nestedblock--label))
-- **organization_id** (String) The ID of the organization which owns the showback rule.
-- **project_alert_limit** (Number) Set limit of alerts for one project. Defaults to `0`.
-- **showback_credential_id** (String) Id of the showback rule.
+- `global_alert_limit` (Number) Set limit of alerts for all projects. Defaults to `0`.
+- `label` (Block Set) Labels linked to this showback rule. (see [below for nested schema](#nestedblock--label))
+- `organization_id` (String) The ID of the organization which owns the showback rule.
+- `project_alert_limit` (Number) Set limit of alerts for one project. Defaults to `0`.
+- `showback_credential_id` (String) ID of the showback credential.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the showback rule.
-- **id** (String) The ID of the showback rule.
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the showback rule.
-- **organization_name** (String) The name of the organization which owns the showback rule.
-- **showback_credential_name** (String) Name of the showback rule.
+- `created_by` (String) The creator of the showback rule.
+- `id` (String) The ID of the showback rule.
+- `last_modified` (String) Time of last modification.
+- `last_modified_by` (String) The last user who modified the showback rule.
+- `organization_name` (String) The name of the organization which owns the showback rule.
+- `showback_credential_name` (String) Name of the showback credential.
 
 <a id="nestedblock--label"></a>
 ### Nested Schema for `label`
 
 Required:
 
-- **key** (String) Key of the label.
-- **value** (String) Value of the label.
+- `key` (String) Key of the label.
+- `value` (String) Value of the label.
 
 ## Import
 

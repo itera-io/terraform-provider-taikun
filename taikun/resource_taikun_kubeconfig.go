@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/kube_config"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -41,6 +42,13 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
+		"namespace": {
+			Description:  "The kubeconfig's namespace.",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+		},
 		"project_id": {
 			Description:      "ID of the kubeconfig's project.",
 			Type:             schema.TypeString,
@@ -68,17 +76,17 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 		"user_id": {
 			Description: "ID of the kubeconfig's user, if the kubeconfig is personal.",
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
+			ForceNew:    true,
 		},
-		"user_name": {
-			Description: "Name of the kubeconfig's user, if the kubeconfig is personal.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
-		"user_role": {
-			Description: "Role of the kubeconfig's user, if the kubeconfig is personal.",
-			Type:        schema.TypeString,
-			Computed:    true,
+		"validity_period": {
+			Description:  "The kubeconfig's validity period in minutes. Unlimited (-1) by default.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      -1,
+			ValidateFunc: validation.IntAtLeast(-1),
+			ForceNew:     true,
 		},
 	}
 }
@@ -97,14 +105,24 @@ func resourceTaikunKubeconfig() *schema.Resource {
 }
 
 func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := models.CreateKubeConfigCommand{
 		IsAccessibleForAll:     d.Get("access_scope").(string) == "all",
 		IsAccessibleForManager: d.Get("access_scope").(string) == "managers",
 		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
 		Name:                   d.Get("name").(string),
+		TTL:                    d.Get("validity_period").(int32),
 	}
+
+	if userId, userIdIsSet := d.GetOk("user_id"); userIdIsSet {
+		body.UserID, _ = userId.(string)
+	}
+
+	if namespace, namespaceIsSet := d.GetOk("namespace"); namespaceIsSet {
+		body.Namespace, _ = namespace.(string)
+	}
+
 	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -112,7 +130,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 	body.ProjectID = projectID
 
 	params := kube_config.NewKubeConfigCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.client.KubeConfig.KubeConfigCreate(params, apiClient)
+	response, err := apiClient.Client.KubeConfig.KubeConfigCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -128,7 +146,7 @@ func generateResourceTaikunKubeconfigReadWithoutRetries() schema.ReadContextFunc
 }
 func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id := d.Id()
 		id32, err := atoi32(id)
 		d.SetId("")
@@ -137,7 +155,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 		}
 
 		params := kube_config.NewKubeConfigListParams().WithV(ApiVersion).WithID(&id32)
-		response, err := apiClient.client.KubeConfig.KubeConfigList(params, apiClient)
+		response, err := apiClient.Client.KubeConfig.KubeConfigList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -167,7 +185,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 }
 
 func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -177,7 +195,7 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 		ID: id,
 	}
 	params := kube_config.NewKubeConfigDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, err := apiClient.client.KubeConfig.KubeConfigDelete(params, apiClient); err != nil {
+	if _, err := apiClient.Client.KubeConfig.KubeConfigDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -189,13 +207,13 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 	kubeconfigMap := map[string]interface{}{
 		"content":      kubeconfigContent,
 		"id":           i32toa(kubeconfigDTO.ID),
-		"name":         kubeconfigDTO.ServiceAccountName,
+		"name":         kubeconfigDTO.DisplayName,
 		"project_id":   i32toa(kubeconfigDTO.ProjectID),
 		"project_name": kubeconfigDTO.ProjectName,
 		"user_id":      kubeconfigDTO.UserID,
-		"user_name":    kubeconfigDTO.UserName,
-		"user_role":    kubeconfigDTO.UserRole,
+		"namespace":    kubeconfigDTO.Namespace,
 	}
+
 	if kubeconfigDTO.IsAccessibleForAll {
 		kubeconfigMap["access_scope"] = "all"
 	} else if kubeconfigDTO.IsAccessibleForManager {
@@ -206,7 +224,7 @@ func flattenTaikunKubeconfig(kubeconfigDTO *models.KubeConfigForUserDto, kubecon
 	return kubeconfigMap
 }
 
-func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *apiClient) string {
+func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *taikungoclient.Client) string {
 
 	body := models.DownloadKubeConfigCommand{
 		ProjectID: projectID,
@@ -216,7 +234,7 @@ func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, api
 	params := kube_config.NewKubeConfigDownloadParams().WithV(ApiVersion)
 	params = params.WithBody(&body)
 
-	response, err := apiClient.client.KubeConfig.KubeConfigDownload(params, apiClient)
+	response, err := apiClient.Client.KubeConfig.KubeConfigDownload(params, apiClient)
 	if err != nil {
 		return "Failed to retrieve content of kubeconfig"
 	}

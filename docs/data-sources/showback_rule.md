@@ -23,32 +23,32 @@ data "taikun_showback_rule" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the showback rule.
+- `id` (String) The ID of the showback rule.
 
 ### Read-Only
 
-- **created_by** (String) The creator of the showback rule.
-- **global_alert_limit** (Number) Set limit of alerts for all projects.
-- **kind** (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
-- **label** (Set of Object) Labels linked to this showback rule. (see [below for nested schema](#nestedatt--label))
-- **last_modified** (String) Time of last modification.
-- **last_modified_by** (String) The last user who modified the showback rule.
-- **metric_name** (String) The metric name.
-- **name** (String) The name of the showback rule.
-- **organization_id** (String) The ID of the organization which owns the showback rule.
-- **organization_name** (String) The name of the organization which owns the showback rule.
-- **price** (Number) Billing in CZK per selected unit.
-- **project_alert_limit** (Number) Set limit of alerts for one project.
-- **showback_credential_id** (String) Id of the showback rule.
-- **showback_credential_name** (String) Name of the showback rule.
-- **type** (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
+- `created_by` (String) The creator of the showback rule.
+- `global_alert_limit` (Number) Set limit of alerts for all projects.
+- `kind` (String) The kind of showback rule: `General` (data source is Taikun) or `External` (data source is external, see `showback_credential_id`).
+- `label` (Set of Object) Labels linked to this showback rule. (see [below for nested schema](#nestedatt--label))
+- `last_modified` (String) Time of last modification.
+- `last_modified_by` (String) The last user who modified the showback rule.
+- `metric_name` (String) The metric name.
+- `name` (String) The name of the showback rule.
+- `organization_id` (String) The ID of the organization which owns the showback rule.
+- `organization_name` (String) The name of the organization which owns the showback rule.
+- `price` (Number) Billing in CZK per selected unit.
+- `project_alert_limit` (Number) Set limit of alerts for one project.
+- `showback_credential_id` (String) ID of the showback credential.
+- `showback_credential_name` (String) Name of the showback credential.
+- `type` (String) The type of showback rule: `Count` (calculate package as unit) or `Sum` (calculate per quantity).
 
 <a id="nestedatt--label"></a>
 ### Nested Schema for `label`
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 

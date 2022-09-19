@@ -23,21 +23,21 @@ data "taikun_user" "foo" {
 
 ### Required
 
-- **id** (String) The UUID of the user.
+- `id` (String) The UUID of the user.
 
 ### Read-Only
 
-- **display_name** (String) The user's display name.
-- **email** (String) The email of the user.
-- **email_confirmed** (Boolean) Indicates whether the email of the user has been confirmed.
-- **email_notification_enabled** (Boolean) Indicates whether the user has enabled notifications on their email.
-- **is_approved_by_partner** (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
-- **is_csm** (Boolean) Indicates whether the user is a Customer Success Manager.
-- **is_disabled** (Boolean) Indicates whether the user is locked.
-- **is_owner** (Boolean) Indicates whether the user is the Owner of their organization.
-- **organization_id** (String) The ID of the user's organization.
-- **organization_name** (String) The name of the user's organization.
-- **role** (String) The role of the user: `Manager` or `User`.
-- **user_name** (String) The name of the user.
+- `display_name` (String) The user's display name.
+- `email` (String) The email of the user.
+- `email_confirmed` (Boolean) Indicates whether the email of the user has been confirmed.
+- `email_notification_enabled` (Boolean) Indicates whether the user has enabled notifications on their email.
+- `is_approved_by_partner` (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
+- `is_csm` (Boolean) Indicates whether the user is a Customer Success Manager.
+- `is_disabled` (Boolean) Indicates whether the user is locked.
+- `is_owner` (Boolean) Indicates whether the user is the Owner of their organization.
+- `organization_id` (String) The ID of the user's organization.
+- `organization_name` (String) The name of the user's organization.
+- `role` (String) The role of the user: `Manager` or `User`.
+- `user_name` (String) The name of the user.
 
 

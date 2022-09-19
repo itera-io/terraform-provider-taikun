@@ -38,6 +38,12 @@ resource "taikun_access_profile" "foo" {
   dns_server {
     address = "8.8.4.4"
   }
+
+  allowed_host {
+    description = "Host A"
+    address     = "10.0.0.1"
+    mask_bits   = 24
+  }
 }
 ```
 
@@ -46,35 +52,50 @@ resource "taikun_access_profile" "foo" {
 
 ### Required
 
-- **name** (String) The name of the access profile.
+- `name` (String) The name of the access profile.
 
 ### Optional
 
-- **dns_server** (Block List, Max: 2) List of DNS servers. (see [below for nested schema](#nestedblock--dns_server))
-- **http_proxy** (String) HTTP proxy of the access profile.
-- **lock** (Boolean) Indicates whether to lock the access profile. Defaults to `false`.
-- **ntp_server** (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
-- **organization_id** (String) The ID of the organization which owns the access profile.
-- **ssh_user** (Block List) List of SSH users. (see [below for nested schema](#nestedblock--ssh_user))
+- `allowed_host` (Block List) List of allowed hosts. (see [below for nested schema](#nestedblock--allowed_host))
+- `dns_server` (Block List, Max: 2) List of DNS servers. (see [below for nested schema](#nestedblock--dns_server))
+- `http_proxy` (String) HTTP proxy of the access profile.
+- `lock` (Boolean) Indicates whether to lock the access profile. Defaults to `false`.
+- `ntp_server` (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
+- `organization_id` (String) The ID of the organization which owns the access profile.
+- `ssh_user` (Block List) List of SSH users. (see [below for nested schema](#nestedblock--ssh_user))
 
 ### Read-Only
 
-- **created_by** (String) The creator of the access profile.
-- **id** (String) The ID of the access profile.
-- **last_modified** (String) The time and date of last modification.
-- **last_modified_by** (String) The last user to have modified the profile.
-- **organization_name** (String) The name of the organization which owns the access profile.
+- `created_by` (String) The creator of the access profile.
+- `id` (String) The ID of the access profile.
+- `last_modified` (String) The time and date of last modification.
+- `last_modified_by` (String) The last user to have modified the profile.
+- `organization_name` (String) The name of the organization which owns the access profile.
+
+<a id="nestedblock--allowed_host"></a>
+### Nested Schema for `allowed_host`
+
+Required:
+
+- `address` (String) IPv4 address of the host
+- `description` (String) Description of the host.
+- `mask_bits` (Number) Number of bits in the network mask.
+
+Read-Only:
+
+- `id` (String) ID of the host.
+
 
 <a id="nestedblock--dns_server"></a>
 ### Nested Schema for `dns_server`
 
 Required:
 
-- **address** (String) Address of the DNS server.
+- `address` (String) Address of the DNS server.
 
 Read-Only:
 
-- **id** (String) ID of the DNS server.
+- `id` (String) ID of the DNS server.
 
 
 <a id="nestedblock--ntp_server"></a>
@@ -82,11 +103,11 @@ Read-Only:
 
 Required:
 
-- **address** (String) Address of the NTP server.
+- `address` (String) Address of the NTP server.
 
 Read-Only:
 
-- **id** (String) ID of the NTP server.
+- `id` (String) ID of the NTP server.
 
 
 <a id="nestedblock--ssh_user"></a>
@@ -94,12 +115,12 @@ Read-Only:
 
 Required:
 
-- **name** (String) Name of the SSH user.
-- **public_key** (String) Public key of the SSH user.
+- `name` (String) Name of the SSH user.
+- `public_key` (String) Public key of the SSH user.
 
 Read-Only:
 
-- **id** (String) ID of the SSH user.
+- `id` (String) ID of the SSH user.
 
 ## Import
 

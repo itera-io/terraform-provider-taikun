@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,7 +35,7 @@ func dataSourceTaikunUsers() *schema.Resource {
 }
 
 func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := users.NewUsersListParams().WithV(ApiVersion)
@@ -51,7 +52,7 @@ func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta i
 
 	var rawUserList []*models.UserForListDto
 	for {
-		response, err := apiClient.client.Users.UsersList(params, apiClient)
+		response, err := apiClient.Client.Users.UsersList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

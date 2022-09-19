@@ -25,40 +25,41 @@ data "taikun_showback_rules" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **showback_rules** (List of Object) List of retrieved showback rules. (see [below for nested schema](#nestedatt--showback_rules))
+- `id` (String) The ID of this resource.
+- `showback_rules` (List of Object) List of retrieved showback rules. (see [below for nested schema](#nestedatt--showback_rules))
 
 <a id="nestedatt--showback_rules"></a>
 ### Nested Schema for `showback_rules`
 
 Read-Only:
 
-- **created_by** (String)
-- **global_alert_limit** (Number)
-- **id** (String)
-- **kind** (String)
-- **label** (Set of Object) (see [below for nested schema](#nestedobjatt--showback_rules--label))
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **metric_name** (String)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **price** (Number)
-- **project_alert_limit** (Number)
-- **showback_credential_id** (String)
-- **showback_credential_name** (String)
-- **type** (String)
+- `created_by` (String)
+- `global_alert_limit` (Number)
+- `id` (String)
+- `kind` (String)
+- `label` (Set of Object) (see [below for nested schema](#nestedobjatt--showback_rules--label))
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `metric_name` (String)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `price` (Number)
+- `project_alert_limit` (Number)
+- `showback_credential_id` (String)
+- `showback_credential_name` (String)
+- `type` (String)
 
 <a id="nestedobjatt--showback_rules--label"></a>
 ### Nested Schema for `showback_rules.label`
 
 Read-Only:
 
-- **key** (String)
-- **value** (String)
+- `key` (String)
+- `value` (String)
 
 

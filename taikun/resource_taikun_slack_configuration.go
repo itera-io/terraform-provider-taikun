@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/slack"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -77,9 +78,9 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 }
 
 func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
-	body := models.UpsertSlackConfigurationCommand{
+	body := models.CreateSlackConfigurationCommand{
 		Name:      d.Get("name").(string),
 		URL:       d.Get("url").(string),
 		Channel:   d.Get("channel").(string),
@@ -95,12 +96,12 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.Resou
 	}
 
 	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.client.Slack.SlackCreate(params, apiClient)
+	response, err := apiClient.Client.Slack.SlackCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(i32toa(response.Payload))
+	d.SetId(response.Payload.ID)
 
 	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
@@ -112,7 +113,7 @@ func generateResourceTaikunSlackConfigurationReadWithoutRetries() schema.ReadCon
 }
 func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 
 		id, err := atoi32(d.Id())
 		d.SetId("")
@@ -121,7 +122,7 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 		}
 
 		params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
-		response, err := apiClient.client.Slack.SlackList(params, apiClient)
+		response, err := apiClient.Client.Slack.SlackList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -147,15 +148,14 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := models.UpsertSlackConfigurationCommand{
-		ID:        id,
+	body := models.UpdateSlackConfigurationDto{
 		Name:      d.Get("name").(string),
 		URL:       d.Get("url").(string),
 		Channel:   d.Get("channel").(string),
@@ -170,8 +170,8 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 		body.OrganizationID = organizationID
 	}
 
-	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	if _, err := apiClient.client.Slack.SlackCreate(params, apiClient); err != nil {
+	params := slack.NewSlackUpdateParams().WithV(ApiVersion).WithID(id).WithBody(&body)
+	if _, err := apiClient.Client.Slack.SlackUpdate(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -179,16 +179,16 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := models.DeleteSlackConfigurationCommand{ID: id}
-	params := slack.NewSlackDeleteParams().WithV(ApiVersion).WithBody(&body)
-	_, _, err = apiClient.client.Slack.SlackDelete(params, apiClient)
+	body := models.DeleteSlackConfigCommand{Ids: []int32{id}}
+	params := slack.NewSlackDeleteMultipleParams().WithV(ApiVersion).WithBody(&body)
+	_, err = apiClient.Client.Slack.SlackDeleteMultiple(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

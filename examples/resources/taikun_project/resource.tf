@@ -52,6 +52,16 @@ resource "taikun_project" "foobar" {
   quota_disk_size = 1024
   quota_ram_size  = 256
 
+  # If setting the kubernetes_version, be sure to use the meta-argument
+  # ignore_changes to ignore futures changes in case of kubernetes upgrade
+  # https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes
+  kubernetes_version = "v1.21.5"
+  lifecycle {
+    ignore_changes = [
+      kubernetes_version,
+    ]
+  }
+
   flavors = local.flavors
   images  = local.images
 

@@ -7,98 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/projects"
-	"github.com/itera-io/taikungoclient/client/servers"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_project", &resource.Sweeper{
-		Name:         "taikun_project",
-		Dependencies: []string{},
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := projects.NewProjectsListParams().WithV(ApiVersion)
-
-			var projectList []*models.ProjectListForUIDto
-
-			for {
-				response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				projectList = append(projectList, response.GetPayload().Data...)
-				if len(projectList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(projectList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range projectList {
-				if shouldSweep(e.Name) {
-
-					readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(e.ID)
-					response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-						continue
-					}
-
-					if response.Payload.Project.IsLocked {
-						unlockedMode := getLockMode(false)
-						unlockParams := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&e.ID).WithMode(&unlockedMode)
-						if _, err := apiClient.client.Projects.ProjectsLockManager(unlockParams, apiClient); err != nil {
-							result = multierror.Append(result, err)
-							continue
-						}
-					}
-
-					serverIds := make([]int32, 0)
-					for _, e := range response.Payload.Data {
-						serverIds = append(serverIds, e.ID)
-					}
-					if len(serverIds) != 0 {
-						deleteServerBody := &models.DeleteServerCommand{
-							ProjectID: e.ID,
-							ServerIds: serverIds,
-						}
-						deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-						_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
-						if err != nil {
-							result = multierror.Append(result, err)
-							continue
-						}
-
-						if err := resourceTaikunProjectWaitForStatus(context.Background(), []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, e.ID); err != nil {
-							result = multierror.Append(result, err)
-							continue
-						}
-					}
-
-					params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteProjectCommand{ProjectID: e.ID})
-					_, _, err = apiClient.client.Projects.ProjectsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunProjectConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
@@ -420,7 +333,7 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 	})
 }
 
-const testAccResourceTaikunProjectQuotaConfig = `
+const testAccResourceTaikunProjectKubernetesVersionConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
   availability_zone = "%s"
@@ -428,13 +341,15 @@ resource "taikun_cloud_credential_aws" "foo" {
 resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-  %s
+  auto_upgrade = false
+  kubernetes_version = "%s"
 }
 `
 
-func TestAccResourceTaikunProjectQuota(t *testing.T) {
+func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := shortRandomTestName()
+	kubernetesVersion := "v1.21.6"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -442,99 +357,15 @@ func TestAccResourceTaikunProjectQuota(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
+				Config: fmt.Sprintf(testAccResourceTaikunProjectKubernetesVersionConfig,
 					cloudCredentialName,
 					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
-					`
-					quota_cpu_units = 500
-					quota_disk_size = 200
-					`,
+					kubernetesVersion,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "500"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "200"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
-					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
-					projectName,
-					`
-					quota_cpu_units = 501
-					quota_ram_size = 200
-					`,
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "501"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "200"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
-					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
-					projectName,
-					"",
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "0"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "0"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "0"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(testAccResourceTaikunProjectQuotaConfig,
-					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
-					projectName,
-					`
-					quota_cpu_units = 502
-					quota_disk_size = 201
-					quota_ram_size = 201
-					`,
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "auto_upgrade"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "quota_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "502"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "201"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "201"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "kubernetes_version", kubernetesVersion),
 				),
 			},
 		},
@@ -627,7 +458,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 }
 
 func testAccCheckTaikunProjectExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project" {
@@ -637,7 +468,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+		response, err := apiClient.Client.Projects.ProjectsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
 			return fmt.Errorf("project doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -647,7 +478,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project" {
@@ -658,7 +489,7 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := apiClient.client.Projects.ProjectsList(params, apiClient)
+			response, err := apiClient.Client.Projects.ProjectsList(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

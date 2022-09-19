@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/access_profiles"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/images"
 	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 	"github.com/itera-io/taikungoclient/client/project_quotas"
 	"github.com/itera-io/taikungoclient/client/stand_alone"
-	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/itera-io/taikungoclient/client/flavors"
@@ -74,6 +74,14 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"delete_on_expiration": {
+			Description:  "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Default:      false,
+			ForceNew:     true,
+			RequiredWith: []string{"expiration_date"},
+		},
 		"expiration_date": {
 			Description:      "Project's expiration date in the format: 'dd/mm/yyyy'.",
 			Type:             schema.TypeString,
@@ -117,6 +125,16 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 			ForceNew:         true,
 		},
+		"kubernetes_version": {
+			Description: "Kubernetes Version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ValidateFunc: validation.StringMatch(
+				regexp.MustCompile(`^v[0-9]+\.[0-9]+\.[0-9]+$`),
+				"Kubernets version must be in the format vMAJOR.MINOR.PATCH",
+			),
+		},
 		"lock": {
 			Description: "Indicates whether to lock the project.",
 			Type:        schema.TypeBool,
@@ -157,26 +175,45 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: stringIsInt,
 		},
 		"quota_cpu_units": {
-			Description:  "Maximum CPU units. Unlimited if unspecified.",
+			Description:  "Maximum CPU units.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			Default:      1000000,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_disk_size": {
-			Description:  "Maximum disk size in GBs. Unlimited if unspecified.",
+			Description:  "Maximum disk size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			Default:      102400, // 100 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
-		"quota_id": {
-			Description: "ID of the project quota.",
-			Type:        schema.TypeString,
-			Computed:    true,
-		},
 		"quota_ram_size": {
-			Description:  "Maximum RAM size in GBs. Unlimited if unspecified.",
+			Description:  "Maximum RAM size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
+			Default:      102400, // 100 TB
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"quota_vm_cpu_units": {
+			Description:  "Maximum CPU units for standalone VMs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      1000000,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"quota_vm_volume_size": {
+			Description:  "Maximum volume size in GBs for standalone VMs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      102400, // 100 TB
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"quota_vm_ram_size": {
+			Description:  "Maximum RAM size in GBs for standalone VMs.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      102400, // 100 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"router_id_end_range": {
@@ -291,8 +328,8 @@ func resourceTaikunProject() *schema.Resource {
 			},
 		),
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(80 * time.Minute),
+			Update: schema.DefaultTimeout(80 * time.Minute),
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -301,7 +338,9 @@ func resourceTaikunProject() *schema.Resource {
 }
 
 func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
+	ctx, cancel := context.WithTimeout(ctx, 80*time.Minute)
+	defer cancel()
 
 	body := models.CreateProjectCommand{
 		Name:         d.Get("name").(string),
@@ -329,6 +368,9 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 	if enableMonitoring, enableMonitoringIsSet := d.GetOk("monitoring"); enableMonitoringIsSet {
 		body.IsMonitoringEnabled = enableMonitoring.(bool)
+	}
+	if deleteOnExpiration, deleteOnExpirationIsSet := d.GetOk("delete_on_expiration"); deleteOnExpirationIsSet {
+		body.DeleteOnExpiration = deleteOnExpiration.(bool)
 	}
 	if expirationDate, expirationDateIsSet := d.GetOk("expiration_date"); expirationDateIsSet {
 		dateTime := dateToDateTime(expirationDate.(string))
@@ -358,7 +400,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		body.AccessProfileID, _ = atoi32(accessProfileID.(string))
 	} else {
 		if projectOrganizationID == -1 {
-			if err := resourceTaikunProjectGetDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
+			if err := getDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -374,7 +416,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
 	} else {
 		if projectOrganizationID == -1 {
-			if err := resourceTaikunProjectGetDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
+			if err := getDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -387,8 +429,13 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.client.Projects.ProjectsCreate(params, apiClient)
+	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
+		body.KubernetesVersion = kubernetesVersion.(string)
+	}
+
+	// Send project creation request
+	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body).WithContext(ctx)
+	response, err := apiClient.Client.Projects.ProjectsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -396,18 +443,8 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	d.SetId(response.Payload.ID)
 	projectID, _ := atoi32(response.Payload.ID)
 
-	_, quotaCPUIsSet := d.GetOk("quota_cpu_units")
-	_, quotaDiskIsSet := d.GetOk("quota_disk_size")
-	_, quotaRAMIsSet := d.GetOk("quota_ram_size")
-	if quotaCPUIsSet || quotaDiskIsSet || quotaRAMIsSet {
-
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if err = resourceTaikunProjectEditQuotas(d, apiClient, response.Payload.Project.QuotaID); err != nil {
+	if resourceTaikunProjectQuotaIsSet(d) {
+		if err = resourceTaikunProjectEditQuotas(d, apiClient, projectID); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -466,7 +503,7 @@ func generateResourceTaikunProjectReadWithoutRetries() schema.ReadContextFunc {
 }
 func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id := d.Id()
 		id32, err := atoi32(id)
 		d.SetId("")
@@ -475,7 +512,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32)
-		response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -485,7 +522,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(id32)
-		responseVM, err := apiClient.client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		responseVM, err := apiClient.Client.StandAlone.StandAloneDetails(paramsVM, apiClient)
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -508,8 +545,8 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
-		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&projectDetailsDTO.QuotaID)
-		quotaResponse, err := apiClient.client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&id32)
+		quotaResponse, err := apiClient.Client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -522,8 +559,12 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		projectMap := flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
-		err = setResourceDataFromMap(d, projectMap)
-		if err != nil {
+		usernames := resourceTaikunProjectGetResourceDataVmUsernames(d)
+		if err := setResourceDataFromMap(d, projectMap); err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := resourceTaikunProjectRestoreResourceDataVmUsernames(d, usernames); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -533,8 +574,90 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 	}
 }
 
+func resourceTaikunProjectGetResourceDataVmUsernames(d *schema.ResourceData) (usernames map[string]string) {
+	usernames = map[string]string{}
+
+	vmListData, ok := d.GetOk("vm")
+	if !ok {
+		return
+	}
+
+	vmList, ok := vmListData.([]interface{})
+	if !ok {
+		return
+	}
+	for _, vmData := range vmList {
+		vm, ok := vmData.(map[string]interface{})
+		if !ok {
+			return
+		}
+
+		vmIdData, ok := vm["id"]
+		if !ok {
+			continue
+		}
+
+		vmId, ok := vmIdData.(string)
+		if !ok {
+			continue
+		}
+
+		usernameData, ok := vm["username"]
+		if !ok {
+			continue
+		}
+
+		if username, ok := usernameData.(string); ok {
+			usernames[vmId] = username
+		}
+	}
+
+	return usernames
+}
+
+func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData, usernames map[string]string) error {
+	if len(usernames) == 0 {
+		return nil
+	}
+
+	vmListData, ok := d.GetOk("vm")
+	if !ok {
+		return nil
+	}
+
+	vmList, ok := vmListData.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	for usernameVmId, username := range usernames {
+		for _, vmData := range vmList {
+			vm, ok := vmData.(map[string]interface{})
+			if !ok {
+				return nil
+			}
+
+			vmIdData, ok := vm["id"]
+			if !ok {
+				continue
+			}
+
+			vmId, ok := vmIdData.(string)
+			if !ok {
+				continue
+			}
+
+			if vmId == usernameVmId {
+				vm["username"] = username
+			}
+		}
+	}
+
+	return d.Set("vm", vmList)
+}
+
 func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -549,14 +672,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			ProjectID: id,
 		}
 		detachParams := alerting_profiles.NewAlertingProfilesDetachParams().WithV(ApiVersion).WithBody(&body)
-		if _, err := apiClient.client.AlertingProfiles.AlertingProfilesDetach(detachParams, apiClient); err != nil {
+		if _, err := apiClient.Client.AlertingProfiles.AlertingProfilesDetach(detachParams, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 		if newAlertingProfileIDData, newAlertingProfileIDProvided := d.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
 			newAlertingProfileID, _ := atoi32(newAlertingProfileIDData.(string))
 			body.AlertingProfileID = newAlertingProfileID
 			attachParams := alerting_profiles.NewAlertingProfilesAttachParams().WithV(ApiVersion).WithBody(&body)
-			if _, err := apiClient.client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
+			if _, err := apiClient.Client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -572,7 +695,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.ExpireAt = nil
 		}
 		params := projects.NewProjectsExtendLifeTimeParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.Projects.ProjectsExtendLifeTime(params, apiClient)
+		_, err := apiClient.Client.Projects.ProjectsExtendLifeTime(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -587,10 +710,8 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
-	if d.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size") {
-		quotaId, _ := atoi32(d.Get("quota_id").(string))
-
-		if err := resourceTaikunProjectEditQuotas(d, apiClient, quotaId); err != nil {
+	if d.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size", "quota_vm_cpu_units", "quota_vm_ram_size", "quota_vm_volume_size") {
+		if err := resourceTaikunProjectEditQuotas(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -659,7 +780,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					ServerIds: serverIds,
 				}
 				deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-				_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+				_, _, err := apiClient.Client.Servers.ServersDelete(deleteServerParams, apiClient)
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -686,7 +807,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 						Role:                 300,
 					}
 					serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-					serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+					serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
 					if err != nil {
 						return diag.FromErr(err)
 					}
@@ -728,7 +849,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -766,7 +887,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	// Delete the project
 	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
 	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, _, err := apiClient.client.Projects.ProjectsDelete(params, apiClient); err != nil {
+	if _, _, err := apiClient.Client.Projects.ProjectsDelete(params, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -774,9 +895,9 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) error {
+func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungoclient.Client) error {
 	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-	response, err := apiClient.client.Servers.ServersDetails(readParams, apiClient)
+	response, err := apiClient.Client.Servers.ServersDetails(readParams, apiClient)
 	if err != nil {
 		return err
 	}
@@ -790,35 +911,39 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *apiClient) 
 	return nil
 }
 
-func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *apiClient, quotaID int32) error {
+func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) (err error) {
 
-	quotaEditBody := &models.ProjectQuotaUpdateDto{
-		IsCPUUnlimited:      true,
-		IsRAMUnlimited:      true,
-		IsDiskSizeUnlimited: true,
+	body := &models.UpdateQuotaCommand{
+		QuotaID: projectID,
 	}
 
-	if quotaCPU, quotaCPUIsSet := d.GetOk("quota_cpu_units"); quotaCPUIsSet {
-		quotaEditBody.CPU = int64(quotaCPU.(int))
-		quotaEditBody.IsCPUUnlimited = false
+	if cpu, ok := d.GetOk("quota_cpu_units"); ok {
+		body.ServerCPU = int64(cpu.(int))
 	}
 
-	if quotaDisk, quotaDiskIsSet := d.GetOk("quota_disk_size"); quotaDiskIsSet {
-		quotaEditBody.DiskSize = gibiByteToByte(quotaDisk.(int))
-		quotaEditBody.IsDiskSizeUnlimited = false
+	if ram, ok := d.GetOk("quota_ram_size"); ok {
+		body.ServerRAM = gibiByteToByte(ram.(int))
 	}
 
-	if quotaRAM, quotaRAMIsSet := d.GetOk("quota_ram_size"); quotaRAMIsSet {
-		quotaEditBody.RAM = gibiByteToByte(quotaRAM.(int))
-		quotaEditBody.IsRAMUnlimited = false
+	if disk, ok := d.GetOk("quota_disk_size"); ok {
+		body.ServerDiskSize = gibiByteToByte(disk.(int))
 	}
 
-	quotaEditParams := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithQuotaID(quotaID).WithBody(quotaEditBody)
-	_, err := apiClient.client.ProjectQuotas.ProjectQuotasEdit(quotaEditParams, apiClient)
-	if err != nil {
-		return err
+	if vmCpu, ok := d.GetOk("quota_vm_cpu_units"); ok {
+		body.VMCPU = int64(vmCpu.(int))
 	}
-	return nil
+
+	if vmRam, ok := d.GetOk("quota_vm_ram_size"); ok {
+		body.VMRAM = gibiByteToByte(vmRam.(int))
+	}
+
+	if vmVolume, ok := d.GetOk("quota_vm_volume_size"); ok {
+		body.VMVolumeSize = int64(vmVolume.(int)) // No conversion needed, API takes GBs
+	}
+
+	params := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithBody(body)
+	_, err = apiClient.Client.ProjectQuotas.ProjectQuotasEdit(params, apiClient)
+	return
 }
 
 func flattenTaikunProject(
@@ -847,15 +972,22 @@ func flattenTaikunProject(
 		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
 		"auto_upgrade":          projectDetailsDTO.IsAutoUpgrade,
 		"monitoring":            projectDetailsDTO.IsMonitoringEnabled,
+		"delete_on_expiration":  projectDetailsDTO.DeleteOnExpiration,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
 		"flavors":               flavors,
 		"images":                images,
 		"id":                    i32toa(projectDetailsDTO.ProjectID),
 		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
+		"kubernetes_version":    projectDetailsDTO.KubernetesCurrentVersion,
 		"lock":                  projectDetailsDTO.IsLocked,
 		"name":                  projectDetailsDTO.ProjectName,
 		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
-		"quota_id":              i32toa(projectDetailsDTO.QuotaID),
+		"quota_cpu_units":       projectQuotaDTO.ServerCPU,
+		"quota_ram_size":        byteToGibiByte(projectQuotaDTO.ServerRAM),
+		"quota_disk_size":       byteToGibiByte(projectQuotaDTO.ServerDiskSize),
+		"quota_vm_cpu_units":    projectQuotaDTO.VMCPU,
+		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.VMRAM),
+		"quota_vm_volume_size":  projectQuotaDTO.VMVolumeSize,
 	}
 
 	bastions := make([]map[string]interface{}, 0)
@@ -880,6 +1012,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.AzureVMSize
 		case "openstack":
 			serverMap["flavor"] = server.OpenstackFlavor
+		case "gcp", "google":
+			serverMap["flavor"] = server.GoogleMachineType
 		}
 
 		// Bastion
@@ -967,26 +1101,14 @@ func flattenTaikunProject(
 		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
 	}
 
-	if !projectQuotaDTO.IsCPUUnlimited {
-		projectMap["quota_cpu_units"] = projectQuotaDTO.CPU
-	}
-
-	if !projectQuotaDTO.IsDiskSizeUnlimited {
-		projectMap["quota_disk_size"] = byteToGibiByte(projectQuotaDTO.DiskSize)
-	}
-
-	if !projectQuotaDTO.IsRAMUnlimited {
-		projectMap["quota_ram_size"] = byteToGibiByte(projectQuotaDTO.RAM)
-	}
-
 	return projectMap
 }
 
-func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundFlavorsForProjectsListDto, error) {
+func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *taikungoclient.Client) ([]*models.BoundFlavorsForProjectsListDto, error) {
 	var boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto
 	boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
-		response, err := apiClient.client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
+		response, err := apiClient.Client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
 		if err != nil {
 			return nil, err
 		}
@@ -1000,11 +1122,11 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *apiClie
 	return boundFlavorDTOs, nil
 }
 
-func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *apiClient) ([]*models.BoundImagesForProjectsListDto, error) {
+func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *taikungoclient.Client) ([]*models.BoundImagesForProjectsListDto, error) {
 	var boundImageDTOs []*models.BoundImagesForProjectsListDto
 	boundImageParams := images.NewImagesGetSelectedImagesForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
 	for {
-		response, err := apiClient.client.Images.ImagesGetSelectedImagesForProject(boundImageParams, apiClient)
+		response, err := apiClient.Client.Images.ImagesGetSelectedImagesForProject(boundImageParams, apiClient)
 		if err != nil {
 			return nil, err
 		}
@@ -1026,20 +1148,20 @@ func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMaste
 	return servers
 }
 
-func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *taikungoclient.Client, projectID int32) error {
 	createStateConf := &resource.StateChangeConf{
 		Pending: pendingList,
 		Target:  targetList,
 		Refresh: func() (interface{}, string, error) {
 			params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-			resp, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+			resp, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 			if err != nil {
 				return nil, "", err
 			}
 
 			return resp, resp.Payload.Project.ProjectStatus, nil
 		},
-		Timeout:                   40 * time.Minute,
+		Timeout:                   80 * time.Minute,
 		Delay:                     5 * time.Second,
 		MinTimeout:                10 * time.Second,
 		ContinuousTargetOccurence: 2,
@@ -1052,7 +1174,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 	return nil
 }
 
-func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if kubernetesProfileIDData, kubernetesProfileIsSet := d.GetOk("kubernetes_profile_id"); kubernetesProfileIsSet {
 		kubernetesProfileID, _ := atoi32(kubernetesProfileIDData.(string))
 		lbSolution, err := resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID, apiClient)
@@ -1078,9 +1200,9 @@ func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, ap
 	return nil
 }
 
-func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *apiClient) (string, error) {
+func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *taikungoclient.Client) (string, error) {
 	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&kubernetesProfileID)
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
+	response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
 	if err != nil {
 		return "", err
 	}
@@ -1091,9 +1213,9 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 	return getLoadBalancingSolution(kubernetesProfile.OctaviaEnabled, kubernetesProfile.TaikunLBEnabled), nil
 }
 
-func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiClient) (string, error) {
+func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *taikungoclient.Client) (string, error) {
 	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
-	response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+	response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
 	if err != nil {
 		return "", err
 	}
@@ -1106,24 +1228,17 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *apiCl
 	if len(response.Payload.Openstack) == 1 {
 		return cloudTypeOpenStack, nil
 	}
-	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
-}
-
-func resourceTaikunProjectGetDefaultOrganization(defaultOrganizationID *int32, apiClient *apiClient) error {
-	params := users.NewUsersDetailsParams().WithV(ApiVersion)
-	response, err := apiClient.client.Users.UsersDetails(params, apiClient)
-	if err != nil {
-		return err
+	if len(response.Payload.Google) == 1 {
+		return cloudTypeGCP, nil
 	}
-	*defaultOrganizationID = response.Payload.Data.OrganizationID
-	return nil
+	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
 
 const defaultAccessProfileName = "default"
 
-func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *apiClient) (accessProfileID int32, found bool, err error) {
+func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *taikungoclient.Client) (accessProfileID int32, found bool, err error) {
 	params := access_profiles.NewAccessProfilesAccessProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
+	response, err := apiClient.Client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
@@ -1137,9 +1252,9 @@ func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClien
 
 const defaultKubernetesProfileName = "default"
 
-func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *apiClient) (kubernetesProfileID int32, found bool, err error) {
+func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *taikungoclient.Client) (kubernetesProfileID int32, found bool, err error) {
 	params := kubernetes_profiles.NewKubernetesProfilesKubernetesProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
+	response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
 	if err != nil {
 		return 0, false, err
 	}
@@ -1151,9 +1266,37 @@ func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiC
 	return 0, false, nil
 }
 
-func resourceTaikunProjectLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunProjectLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	lockMode := getLockMode(lock)
 	params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
-	_, err := apiClient.client.Projects.ProjectsLockManager(params, apiClient)
+	_, err := apiClient.Client.Projects.ProjectsLockManager(params, apiClient)
 	return err
+}
+
+func resourceTaikunProjectQuotaIsSet(d *schema.ResourceData) bool {
+	if _, ok := d.GetOk("quota_cpu_units"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_disk_size"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_ram_size"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_vm_cpu_units"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_vm_volume_size"); ok {
+		return true
+	}
+
+	if _, ok := d.GetOk("quota_vm_ram_size"); ok {
+		return true
+	}
+
+	return false
 }

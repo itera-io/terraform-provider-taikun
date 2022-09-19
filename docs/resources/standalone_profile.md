@@ -56,37 +56,37 @@ resource "taikun_standalone_profile" "foo" {
 
 ### Required
 
-- **name** (String) The name of the standalone profile.
-- **public_key** (String) The public key of the standalone profile.
+- `name` (String) The name of the standalone profile.
+- `public_key` (String) The public key of the standalone profile.
 
 ### Optional
 
-- **lock** (Boolean) Indicates whether to lock the standalone profile. Defaults to `false`.
-- **organization_id** (String) The ID of the organization which owns the standalone profile.
-- **security_group** (Block List) List of security groups. (see [below for nested schema](#nestedblock--security_group))
+- `lock` (Boolean) Indicates whether to lock the standalone profile. Defaults to `false`.
+- `organization_id` (String) The ID of the organization which owns the standalone profile.
+- `security_group` (Block List) List of security groups. (see [below for nested schema](#nestedblock--security_group))
 
 ### Read-Only
 
-- **id** (String) The ID of the standalone profile.
-- **organization_name** (String) The name of the organization which owns the standalone profile.
+- `id` (String) The ID of the standalone profile.
+- `organization_name` (String) The name of the organization which owns the standalone profile.
 
 <a id="nestedblock--security_group"></a>
 ### Nested Schema for `security_group`
 
 Required:
 
-- **cidr** (String) Remote IP prefix.
-- **ip_protocol** (String) IP Protocol: `TCP`, `UDP` or `ICMP`.
-- **name** (String) Name of the security group.
+- `cidr` (String) Remote IP prefix.
+- `ip_protocol` (String) IP Protocol: `TCP`, `UDP` or `ICMP`.
+- `name` (String) Name of the security group.
 
 Optional:
 
-- **from_port** (Number) Min range port.
-- **to_port** (Number) Max range port.
+- `from_port` (Number) Min range port.
+- `to_port` (Number) Max range port.
 
 Read-Only:
 
-- **id** (String) ID of the security group.
+- `id` (String) ID of the security group.
 
 ## Import
 

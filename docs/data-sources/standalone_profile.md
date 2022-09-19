@@ -23,27 +23,27 @@ data "taikun_standalone_profile" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the standalone profile.
+- `id` (String) The ID of the standalone profile.
 
 ### Read-Only
 
-- **lock** (Boolean) Indicates whether to lock the standalone profile.
-- **name** (String) The name of the standalone profile.
-- **organization_id** (String) The ID of the organization which owns the standalone profile.
-- **organization_name** (String) The name of the organization which owns the standalone profile.
-- **public_key** (String) The public key of the standalone profile.
-- **security_group** (List of Object) List of security groups. (see [below for nested schema](#nestedatt--security_group))
+- `lock` (Boolean) Indicates whether to lock the standalone profile.
+- `name` (String) The name of the standalone profile.
+- `organization_id` (String) The ID of the organization which owns the standalone profile.
+- `organization_name` (String) The name of the organization which owns the standalone profile.
+- `public_key` (String) The public key of the standalone profile.
+- `security_group` (List of Object) List of security groups. (see [below for nested schema](#nestedatt--security_group))
 
 <a id="nestedatt--security_group"></a>
 ### Nested Schema for `security_group`
 
 Read-Only:
 
-- **cidr** (String)
-- **from_port** (Number)
-- **id** (String)
-- **ip_protocol** (String)
-- **name** (String)
-- **to_port** (Number)
+- `cidr` (String)
+- `from_port` (Number)
+- `id` (String)
+- `ip_protocol` (String)
+- `name` (String)
+- `to_port` (Number)
 
 

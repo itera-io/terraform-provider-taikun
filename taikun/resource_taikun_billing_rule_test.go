@@ -7,55 +7,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/prometheus"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_billing_rule", &resource.Sweeper{
-		Name: "taikun_billing_rule",
-		F: func(r string) error {
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion)
-
-			var billingRulesList []*models.PrometheusRuleListDto
-			for {
-				response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
-				if err != nil {
-					return err
-				}
-				billingRulesList = append(billingRulesList, response.GetPayload().Data...)
-				if len(billingRulesList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(billingRulesList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range billingRulesList {
-				if shouldSweep(e.Name) {
-					params := prometheus.NewPrometheusDeleteParams().WithV(ApiVersion).WithID(e.ID)
-					_, err = apiClient.client.Prometheus.PrometheusDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunBillingRuleConfig = `
 resource "taikun_billing_credential" "foo" {
@@ -248,7 +204,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 }
 
 func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_rule" {
@@ -258,7 +214,7 @@ func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
+		response, err := client.Client.Prometheus.PrometheusListOfRules(params, client)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("billing rule doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -268,7 +224,7 @@ func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_rule" {
@@ -279,7 +235,7 @@ func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.Prometheus.PrometheusListOfRules(params, client)
+			response, err := client.Client.Prometheus.PrometheusListOfRules(params, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

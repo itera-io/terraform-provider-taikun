@@ -25,27 +25,28 @@ data "taikun_showback_credentials" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **showback_credentials** (List of Object) List of retrieved showback credentials. (see [below for nested schema](#nestedatt--showback_credentials))
+- `id` (String) The ID of this resource.
+- `showback_credentials` (List of Object) List of retrieved showback credentials. (see [below for nested schema](#nestedatt--showback_credentials))
 
 <a id="nestedatt--showback_credentials"></a>
 ### Nested Schema for `showback_credentials`
 
 Read-Only:
 
-- **created_by** (String)
-- **id** (String)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **password** (String)
-- **url** (String)
-- **username** (String)
+- `created_by` (String)
+- `id` (String)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `password` (String)
+- `url` (String)
+- `username` (String)
 
 

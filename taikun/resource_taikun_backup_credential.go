@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -105,7 +106,7 @@ func resourceTaikunBackupCredential() *schema.Resource {
 }
 
 func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.BackupCredentialsCreateCommand{
 		S3Name:        d.Get("name").(string),
@@ -125,7 +126,7 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.Resourc
 	}
 
 	params := s3_credentials.NewS3CredentialsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.S3Credentials.S3CredentialsCreate(params, apiClient)
+	createResult, err := apiClient.Client.S3Credentials.S3CredentialsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -152,14 +153,14 @@ func generateResourceTaikunBackupCredentialReadWithoutRetries() schema.ReadConte
 }
 func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.S3Credentials.S3CredentialsList(s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.S3Credentials.S3CredentialsList(s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -185,7 +186,7 @@ func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadCon
 }
 
 func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -205,7 +206,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 			S3Name:        d.Get("name").(string),
 		}
 		updateParams := s3_credentials.NewS3CredentialsUpdateParams().WithV(ApiVersion).WithBody(&updateBody)
-		_, err = apiClient.client.S3Credentials.S3CredentialsUpdate(updateParams, apiClient)
+		_, err = apiClient.Client.S3Credentials.S3CredentialsUpdate(updateParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -221,14 +222,14 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceTaikunBackupCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	params := s3_credentials.NewS3CredentialsDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.client.S3Credentials.S3CredentialsDelete(params, apiClient)
+	_, _, err = apiClient.Client.S3Credentials.S3CredentialsDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -255,12 +256,12 @@ func flattenTaikunBackupCredential(rawBackupCredential *models.BackupCredentials
 	}
 }
 
-func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.BackupLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),
 	}
 	params := s3_credentials.NewS3CredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.S3Credentials.S3CredentialsLockManager(params, apiClient)
+	_, err := apiClient.Client.S3Credentials.S3CredentialsLockManager(params, apiClient)
 	return err
 }

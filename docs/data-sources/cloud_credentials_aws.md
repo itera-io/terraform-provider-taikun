@@ -25,27 +25,28 @@ data "taikun_cloud_credentials_aws" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **cloud_credentials** (List of Object) List of retrieved AWS cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
+- `cloud_credentials` (List of Object) List of retrieved AWS cloud credentials. (see [below for nested schema](#nestedatt--cloud_credentials))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--cloud_credentials"></a>
 ### Nested Schema for `cloud_credentials`
 
 Read-Only:
 
-- **availability_zone** (String)
-- **created_by** (String)
-- **id** (String)
-- **is_default** (Boolean)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **region** (String)
+- `availability_zone` (String)
+- `created_by` (String)
+- `id` (String)
+- `is_default` (Boolean)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `region` (String)
 
 

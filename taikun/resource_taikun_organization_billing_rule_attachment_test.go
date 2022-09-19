@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -87,7 +88,7 @@ func TestAccResourceTaikunOrganizationBillingRuleAttachment(t *testing.T) {
 }
 
 func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization_billing_rule_attachment" {
@@ -100,7 +101,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 		}
 
 		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-		response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
 		if err != nil {
 			return err
 		}
@@ -123,7 +124,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 }
 
 func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization_billing_rule_attachment" {
@@ -137,7 +138,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-			response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+			response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

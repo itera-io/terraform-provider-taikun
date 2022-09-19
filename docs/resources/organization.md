@@ -35,29 +35,29 @@ resource "taikun_organization" "foo" {
 
 ### Required
 
-- **full_name** (String) Full name.
-- **name** (String) Organization's name.
+- `full_name` (String) Full name.
+- `name` (String) Organization's name.
 
 ### Optional
 
-- **address** (String) Address.
-- **billing_email** (String) Billing email.
-- **city** (String) City.
-- **country** (String) Country.
-- **discount_rate** (Number) Discount rate, must be between 0 and 100 (included). Defaults to `100`.
-- **email** (String) Email.
-- **lock** (Boolean) Indicates whether to lock the organization. Defaults to `false`.
-- **managers_can_change_subscription** (Boolean) Allow subscription to be changed by managers. Defaults to `true`.
-- **phone** (String) Phone number.
-- **vat_number** (String) VAT number.
+- `address` (String) Address.
+- `billing_email` (String) Billing email.
+- `city` (String) City.
+- `country` (String) Country.
+- `discount_rate` (Number) Discount rate, must be between 0 and 100 (included). Defaults to `100`.
+- `email` (String) Email.
+- `lock` (Boolean) Indicates whether to lock the organization. Defaults to `false`.
+- `managers_can_change_subscription` (Boolean) Allow subscription to be changed by managers. Defaults to `true`.
+- `phone` (String) Phone number.
+- `vat_number` (String) VAT number.
 
 ### Read-Only
 
-- **created_at** (String) Time and date of creation.
-- **id** (String) Organization's ID.
-- **is_read_only** (Boolean) Whether the organization is in read-only mode.
-- **partner_id** (String) ID of the organization's partner.
-- **partner_name** (String) Name of the organization's partner.
+- `created_at` (String) Time and date of creation.
+- `id` (String) Organization's ID.
+- `is_read_only` (Boolean) Whether the organization is in read-only mode.
+- `partner_id` (String) ID of the organization's partner.
+- `partner_name` (String) Name of the organization's partner.
 
 ## Import
 

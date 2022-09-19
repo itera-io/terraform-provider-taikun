@@ -23,22 +23,22 @@ data "taikun_policy_profile" "foo" {
 
 ### Required
 
-- **id** (String) The ID of the Policy profile.
+- `id` (String) The ID of the Policy profile.
 
 ### Read-Only
 
-- **allowed_repos** (Set of String) Requires container images to begin with a string from the specified list.
-- **forbid_http_ingress** (Boolean) Requires Ingress resources to be HTTPS only.
-- **forbid_node_port** (Boolean) Disallows all Services with type NodePort.
-- **forbidden_tags** (Set of String) Container images must have an image tag different from the ones in the list.
-- **ingress_whitelist** (Set of String) List of allowed Ingress rule hosts.
-- **is_default** (Boolean) Indicates whether the Policy Profile is the default one.
-- **lock** (Boolean) Indicates whether to lock the Policy profile.
-- **name** (String) The name of the Policy profile.
-- **organization_id** (String) The ID of the organization which owns the Policy profile.
-- **organization_name** (String) The name of the organization which owns the Policy profile.
-- **require_probe** (Boolean) Requires Pods to have readiness and liveness probes.
-- **unique_ingress** (Boolean) Requires all Ingress rule hosts to be unique.
-- **unique_service_selector** (Boolean) Whether services must have globally unique service selectors or not.
+- `allowed_repos` (Set of String) Requires container images to begin with a string from the specified list.
+- `forbid_http_ingress` (Boolean) Requires Ingress resources to be HTTPS only.
+- `forbid_node_port` (Boolean) Disallows all Services with type NodePort.
+- `forbidden_tags` (Set of String) Container images must have an image tag different from the ones in the list.
+- `ingress_whitelist` (Set of String) List of allowed Ingress rule hosts.
+- `is_default` (Boolean) Indicates whether the Policy Profile is the default one.
+- `lock` (Boolean) Indicates whether to lock the Policy profile.
+- `name` (String) The name of the Policy profile.
+- `organization_id` (String) The ID of the organization which owns the Policy profile.
+- `organization_name` (String) The name of the organization which owns the Policy profile.
+- `require_probe` (Boolean) Requires Pods to have readiness and liveness probes.
+- `unique_ingress` (Boolean) Requires all Ingress rule hosts to be unique.
+- `unique_service_selector` (Boolean) Whether services must have globally unique service selectors or not.
 
 

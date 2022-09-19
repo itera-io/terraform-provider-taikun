@@ -8,59 +8,11 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/organizations"
-
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_organization", &resource.Sweeper{
-		Name:         "taikun_organization",
-		Dependencies: []string{"taikun_user", "taikun_cloud_credential_openstack", "taikun_cloud_credential_aws", "taikun_cloud_credential_azure", "taikun_project"},
-		F: func(r string) error {
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := organizations.NewOrganizationsListParams().WithV(ApiVersion)
-
-			var organizationsList []*models.OrganizationDetailsDto
-
-			for {
-				response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				organizationsList = append(organizationsList, response.GetPayload().Data...)
-				if len(organizationsList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(organizationsList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-
-			for _, e := range organizationsList {
-				if shouldSweep(e.Name) {
-					params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(e.ID)
-					_, _, err = apiClient.client.Organizations.OrganizationsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunOrganizationConfig = `
 resource "taikun_organization" "foo" {
@@ -236,7 +188,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization" {
@@ -246,7 +198,7 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
+		response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
 		if err != nil || len(response.Payload.Data) != 1 {
 			return fmt.Errorf("organization doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -256,7 +208,7 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization" {
@@ -267,7 +219,7 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := apiClient.client.Organizations.OrganizationsList(params, apiClient)
+			response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/organizations"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -128,7 +129,7 @@ func resourceTaikunOrganization() *schema.Resource {
 }
 
 func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.OrganizationCreateCommand{
 		Address:                      d.Get("address").(string),
@@ -145,7 +146,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	params := organizations.NewOrganizationsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Organizations.OrganizationsCreate(params, apiClient)
+	createResult, err := apiClient.Client.Organizations.OrganizationsCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,7 +174,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 			VatNumber:                    body.VatNumber,
 		}
 		updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(updateLockBody)
-		_, err := apiClient.client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
+		_, err := apiClient.Client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -189,12 +190,12 @@ func generateResourceTaikunOrganizationReadWithoutRetries() schema.ReadContextFu
 }
 func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id := d.Id()
 		id32, _ := atoi32(d.Id())
 		d.SetId("")
 
-		response, err := apiClient.client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32), apiClient)
+		response, err := apiClient.Client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -220,7 +221,7 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 }
 
 func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -244,7 +245,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
+	_, err = apiClient.Client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -253,14 +254,14 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func resourceTaikunOrganizationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(id)
-	_, _, err = apiClient.client.Organizations.OrganizationsDelete(params, apiClient)
+	_, _, err = apiClient.Client.Organizations.OrganizationsDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

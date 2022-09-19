@@ -32,26 +32,27 @@ data "taikun_flavors" "foo" {
 
 ### Required
 
-- **cloud_credential_id** (String) Cloud credential ID.
+- `cloud_credential_id` (String) Cloud credential ID.
 
 ### Optional
 
-- **max_cpu** (Number) Maximal CPU count. Defaults to `36`.
-- **max_ram** (Number) Maximal RAM size in GB. Defaults to `500`.
-- **min_cpu** (Number) Minimal CPU count. Defaults to `2`.
-- **min_ram** (Number) Minimal RAM size in GB. Defaults to `2`.
+- `max_cpu` (Number) Maximal CPU count. Defaults to `36`.
+- `max_ram` (Number) Maximal RAM size in GB. Defaults to `500`.
+- `min_cpu` (Number) Minimal CPU count. Defaults to `2`.
+- `min_ram` (Number) Minimal RAM size in GB. Defaults to `2`.
 
 ### Read-Only
 
-- **flavors** (List of Object) List of retrieved flavors. (see [below for nested schema](#nestedatt--flavors))
+- `flavors` (List of Object) List of retrieved flavors. (see [below for nested schema](#nestedatt--flavors))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--flavors"></a>
 ### Nested Schema for `flavors`
 
 Read-Only:
 
-- **cpu** (Number)
-- **name** (String)
-- **ram** (Number)
+- `cpu` (Number)
+- `name` (String)
+- `ram` (Number)
 
 

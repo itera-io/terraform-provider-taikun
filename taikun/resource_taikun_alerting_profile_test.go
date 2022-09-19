@@ -8,57 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/alerting_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_alerting_profile", &resource.Sweeper{
-		Name:         "taikun_alerting_profile",
-		Dependencies: []string{"taikun_project"},
-		F: func(r string) error {
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion)
-
-			var alertingProfilesList []*models.AlertingProfilesListDto
-
-			for {
-				response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				alertingProfilesList = append(alertingProfilesList, response.Payload.Data...)
-				if len(alertingProfilesList) == int(response.Payload.TotalCount) {
-					break
-				}
-				offset := int32(len(alertingProfilesList))
-				params = params.WithOffset(&offset)
-			}
-
-			var result *multierror.Error
-			for _, e := range alertingProfilesList {
-				if shouldSweep(e.Name) {
-					body := models.DeleteAlertingProfilesCommand{ID: e.ID}
-					params := alerting_profiles.NewAlertingProfilesDeleteParams().WithV(ApiVersion).WithBody(&body)
-					_, _, err = apiClient.client.AlertingProfiles.AlertingProfilesDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 func testAccResourceTaikunAlertingProfileRandomEmails(n int) string {
 	if n == 0 {
@@ -359,7 +313,7 @@ integration {
 }
 
 func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_alerting_profile" {
@@ -369,7 +323,7 @@ func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
 		id, _ := atoi32(rs.Primary.ID)
 		params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+		response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
 		if err != nil || response.Payload.TotalCount != 1 {
 			return fmt.Errorf("alerting profile with ID %d doesn't exist", id)
 		}
@@ -379,7 +333,7 @@ func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*apiClient)
+	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_alerting_profile" {
@@ -390,7 +344,7 @@ func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
 			id, _ := atoi32(rs.Primary.ID)
 			params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := apiClient.client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+			response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

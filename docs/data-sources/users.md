@@ -25,29 +25,30 @@ data "taikun_users" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **users** (List of Object) List of retrieved users. (see [below for nested schema](#nestedatt--users))
+- `id` (String) The ID of this resource.
+- `users` (List of Object) List of retrieved users. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>
 ### Nested Schema for `users`
 
 Read-Only:
 
-- **display_name** (String)
-- **email** (String)
-- **email_confirmed** (Boolean)
-- **email_notification_enabled** (Boolean)
-- **id** (String)
-- **is_approved_by_partner** (Boolean)
-- **is_csm** (Boolean)
-- **is_disabled** (Boolean)
-- **is_owner** (Boolean)
-- **organization_id** (String)
-- **organization_name** (String)
-- **role** (String)
-- **user_name** (String)
+- `display_name` (String)
+- `email` (String)
+- `email_confirmed` (Boolean)
+- `email_notification_enabled` (Boolean)
+- `id` (String)
+- `is_approved_by_partner` (Boolean)
+- `is_csm` (Boolean)
+- `is_disabled` (Boolean)
+- `is_owner` (Boolean)
+- `organization_id` (String)
+- `organization_name` (String)
+- `role` (String)
+- `user_name` (String)
 
 

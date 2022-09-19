@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/backup"
 	"github.com/itera-io/taikungoclient/client/flavors"
 	"github.com/itera-io/taikungoclient/client/opa_profiles"
@@ -126,7 +127,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
 
 	bastions := d.Get("server_bastion")
 	kubeMasters := d.Get("server_kubemaster")
@@ -145,7 +146,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClien
 	}
 
 	serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-	serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+	serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
 	if err != nil {
 		return err
 	}
@@ -170,7 +171,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClien
 		}
 
 		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-		serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+		serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
 		if err != nil {
 			return err
 		}
@@ -195,7 +196,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClien
 			Role:                 300,
 		}
 		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-		serverCreateResponse, err := apiClient.client.Servers.ServersCreate(serverCreateParams, apiClient)
+		serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
 		if err != nil {
 			return err
 		}
@@ -209,16 +210,16 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *apiClien
 	return nil
 }
 
-func resourceTaikunProjectCommit(apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectCommit(apiClient *taikungoclient.Client, projectID int32) error {
 	params := projects.NewProjectsCommitParams().WithV(ApiVersion).WithProjectID(projectID)
-	_, err := apiClient.client.Projects.ProjectsCommit(params, apiClient)
+	_, err := apiClient.Client.Projects.ProjectsCommit(params, apiClient)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *apiClient, projectID int32) error {
+func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *taikungoclient.Client, projectID int32) error {
 	serverIds := make([]int32, 0)
 
 	for _, server := range serversToPurge {
@@ -237,7 +238,7 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 			ServerIds: serverIds,
 		}
 		deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-		_, _, err := apiClient.client.Servers.ServersDelete(deleteServerParams, apiClient)
+		_, _, err := apiClient.Client.Servers.ServersDelete(deleteServerParams, apiClient)
 		if err != nil {
 			return err
 		}
@@ -262,7 +263,7 @@ func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []
 	return labelsToAdd
 }
 
-func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if err := resourceTaikunProjectUpdateToggleMonitoring(ctx, d, apiClient); err != nil {
 		return err
 	}
@@ -275,12 +276,12 @@ func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("monitoring") {
 		projectID, _ := atoi32(d.Id())
 		body := models.MonitoringOperationsCommand{ProjectID: projectID}
 		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.client.Projects.ProjectsMonitoringOperations(params, apiClient)
+		_, err := apiClient.Client.Projects.ProjectsMonitoringOperations(params, apiClient)
 		if err != nil {
 			return err
 		}
@@ -292,7 +293,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("backup_credential_id") {
 		projectID, _ := atoi32(d.Id())
 		oldCredential, _ := d.GetChange("backup_credential_id")
@@ -306,7 +307,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 				S3CredentialID: oldCredentialID,
 			}
 			disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
-			_, err := apiClient.client.Backup.BackupDisableBackup(disableParams, apiClient)
+			_, err := apiClient.Client.Backup.BackupDisableBackup(disableParams, apiClient)
 			if err != nil {
 				return err
 			}
@@ -329,7 +330,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 				},
 				Refresh: func() (interface{}, string, error) {
 					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+					response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 					if err != nil {
 						return 0, "", err
 					}
@@ -351,7 +352,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 				S3CredentialID: newCredentialID,
 			}
 			enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
-			_, err = apiClient.client.Backup.BackupEnableBackup(enableParams, apiClient)
+			_, err = apiClient.Client.Backup.BackupEnableBackup(enableParams, apiClient)
 			if err != nil {
 				return err
 			}
@@ -364,7 +365,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.ResourceData, apiClient *apiClient) error {
+func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("policy_profile_id") {
 		projectID, _ := atoi32(d.Id())
 		oldOPAProfile, _ := d.GetChange("policy_profile_id")
@@ -375,7 +376,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 				ProjectID: projectID,
 			}
 			disableParams := opa_profiles.NewOpaProfilesDisableGatekeeperParams().WithV(ApiVersion).WithBody(disableBody)
-			_, err := apiClient.client.OpaProfiles.OpaProfilesDisableGatekeeper(disableParams, apiClient)
+			_, err := apiClient.Client.OpaProfiles.OpaProfilesDisableGatekeeper(disableParams, apiClient)
 			if err != nil {
 				return err
 			}
@@ -397,8 +398,8 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID) // TODO use /api/v1/projects endpoint?
-					response, err := apiClient.client.Servers.ServersDetails(params, apiClient)
+					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
+					response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
 					if err != nil {
 						return 0, "", err
 					}
@@ -420,7 +421,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 				OpaProfileID: newOPAProfilelID,
 			}
 			enableParams := opa_profiles.NewOpaProfilesEnableGatekeeperParams().WithV(ApiVersion).WithBody(enableBody)
-			_, err = apiClient.client.OpaProfiles.OpaProfilesEnableGatekeeper(enableParams, apiClient)
+			_, err = apiClient.Client.OpaProfiles.OpaProfilesEnableGatekeeper(enableParams, apiClient)
 			if err != nil {
 				return err
 			}
@@ -433,7 +434,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *apiClient, id int32) error {
+func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *taikungoclient.Client, id int32) error {
 	oldFlavorData, newFlavorData := d.GetChange("flavors")
 	oldFlavors := oldFlavorData.(*schema.Set)
 	newFlavors := newFlavorData.(*schema.Set)
@@ -452,7 +453,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *apiClie
 		}
 		unbindBody := models.UnbindFlavorFromProjectCommand{Ids: flavorBindingsToUndo}
 		unbindParams := flavors.NewFlavorsUnbindFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
-		if _, err := apiClient.client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
+		if _, err := apiClient.Client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
 			return err
 		}
 	}
@@ -463,7 +464,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *apiClie
 		}
 		bindBody := models.BindFlavorToProjectCommand{ProjectID: id, Flavors: flavorsToBindNames}
 		bindParams := flavors.NewFlavorsBindToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
-		if _, err := apiClient.client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
+		if _, err := apiClient.Client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
 			return err
 		}
 	}

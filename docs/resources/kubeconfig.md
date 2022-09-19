@@ -19,6 +19,9 @@ resource "taikun_kubeconfig" "foo" {
   name         = "all-can-view"
   role         = "view"
   access_scope = "all"
+
+  validity_period = 1440 # 24 hours
+  namespace       = "helm"
 }
 
 resource "local_file" "kubeconfig-foo" {
@@ -33,19 +36,22 @@ resource "local_file" "kubeconfig-foo" {
 
 ### Required
 
-- **access_scope** (String) Who can use the kubeconfig: `personal` (only you), `managers` (managers only) or `all` (all users with access to this project).
-- **name** (String) The kubeconfig's name.
-- **project_id** (String) ID of the kubeconfig's project.
-- **role** (String) The kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.
+- `access_scope` (String) Who can use the kubeconfig: `personal` (only you), `managers` (managers only) or `all` (all users with access to this project).
+- `name` (String) The kubeconfig's name.
+- `project_id` (String) ID of the kubeconfig's project.
+- `role` (String) The kubeconfig's role: `cluster-admin`, `admin`, `edit` or `view`.
+
+### Optional
+
+- `namespace` (String) The kubeconfig's namespace.
+- `user_id` (String) ID of the kubeconfig's user, if the kubeconfig is personal.
+- `validity_period` (Number) The kubeconfig's validity period in minutes. Unlimited (-1) by default. Defaults to `-1`.
 
 ### Read-Only
 
-- **content** (String, Sensitive) Content of the kubeconfig's YAML file.
-- **id** (String) The kubeconfig's ID.
-- **project_name** (String) Name of the kubeconfig's project.
-- **user_id** (String) ID of the kubeconfig's user, if the kubeconfig is personal.
-- **user_name** (String) Name of the kubeconfig's user, if the kubeconfig is personal.
-- **user_role** (String) Role of the kubeconfig's user, if the kubeconfig is personal.
+- `content` (String, Sensitive) Content of the kubeconfig's YAML file.
+- `id` (String) The kubeconfig's ID.
+- `project_name` (String) Name of the kubeconfig's project.
 
 ## Import
 

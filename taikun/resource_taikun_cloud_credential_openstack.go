@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/client/openstack"
 	"github.com/itera-io/taikungoclient/models"
@@ -163,7 +164,7 @@ func resourceTaikunCloudCredentialOpenStack() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateOpenstackCloudCommand{
 		Name:                   d.Get("name").(string),
@@ -202,7 +203,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 	}
 
 	params := openstack.NewOpenstackCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Openstack.OpenstackCreate(params, apiClient)
+	createResult, err := apiClient.Client.Openstack.OpenstackCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -229,14 +230,14 @@ func generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries() schema.R
 }
 func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -262,7 +263,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 }
 
 func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -282,7 +283,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 			OpenStackUser:     d.Get("user").(string),
 		}
 		updateParams := openstack.NewOpenstackUpdateParams().WithV(ApiVersion).WithBody(updateBody)
-		_, err := apiClient.client.Openstack.OpenstackUpdate(updateParams, apiClient)
+		_, err := apiClient.Client.Openstack.OpenstackUpdate(updateParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -321,12 +322,12 @@ func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.Openst
 	}
 }
 
-func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.CloudLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),
 	}
 	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
 	return err
 }

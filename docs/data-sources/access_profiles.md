@@ -25,37 +25,50 @@ data "taikun_access_profiles" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **access_profiles** (List of Object) List of retrieved access profiles. (see [below for nested schema](#nestedatt--access_profiles))
+- `access_profiles` (List of Object) List of retrieved access profiles. (see [below for nested schema](#nestedatt--access_profiles))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--access_profiles"></a>
 ### Nested Schema for `access_profiles`
 
 Read-Only:
 
-- **created_by** (String)
-- **dns_server** (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--dns_server))
-- **http_proxy** (String)
-- **id** (String)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **ntp_server** (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ntp_server))
-- **organization_id** (String)
-- **organization_name** (String)
-- **ssh_user** (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ssh_user))
+- `allowed_host` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--allowed_host))
+- `created_by` (String)
+- `dns_server` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--dns_server))
+- `http_proxy` (String)
+- `id` (String)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `ntp_server` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ntp_server))
+- `organization_id` (String)
+- `organization_name` (String)
+- `ssh_user` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ssh_user))
+
+<a id="nestedobjatt--access_profiles--allowed_host"></a>
+### Nested Schema for `access_profiles.allowed_host`
+
+Read-Only:
+
+- `address` (String)
+- `description` (String)
+- `id` (String)
+- `mask_bits` (Number)
+
 
 <a id="nestedobjatt--access_profiles--dns_server"></a>
 ### Nested Schema for `access_profiles.dns_server`
 
 Read-Only:
 
-- **address** (String)
-- **id** (String)
+- `address` (String)
+- `id` (String)
 
 
 <a id="nestedobjatt--access_profiles--ntp_server"></a>
@@ -63,8 +76,8 @@ Read-Only:
 
 Read-Only:
 
-- **address** (String)
-- **id** (String)
+- `address` (String)
+- `id` (String)
 
 
 <a id="nestedobjatt--access_profiles--ssh_user"></a>
@@ -72,8 +85,8 @@ Read-Only:
 
 Read-Only:
 
-- **id** (String)
-- **name** (String)
-- **public_key** (String)
+- `id` (String)
+- `name` (String)
+- `public_key` (String)
 
 

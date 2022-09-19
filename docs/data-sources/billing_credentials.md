@@ -23,28 +23,29 @@ data "taikun_billing_credentials" "foo" {
 
 ### Optional
 
-- **organization_id** (String) Organization ID filter.
+- `organization_id` (String) Organization ID filter.
 
 ### Read-Only
 
-- **billing_credentials** (List of Object) List of retrieved billing credentials. (see [below for nested schema](#nestedatt--billing_credentials))
+- `billing_credentials` (List of Object) List of retrieved billing credentials. (see [below for nested schema](#nestedatt--billing_credentials))
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--billing_credentials"></a>
 ### Nested Schema for `billing_credentials`
 
 Read-Only:
 
-- **created_by** (String)
-- **id** (String)
-- **is_default** (Boolean)
-- **last_modified** (String)
-- **last_modified_by** (String)
-- **lock** (Boolean)
-- **name** (String)
-- **organization_id** (String)
-- **organization_name** (String)
-- **prometheus_password** (String)
-- **prometheus_url** (String)
-- **prometheus_username** (String)
+- `created_by` (String)
+- `id` (String)
+- `is_default` (Boolean)
+- `last_modified` (String)
+- `last_modified_by` (String)
+- `lock` (Boolean)
+- `name` (String)
+- `organization_id` (String)
+- `organization_name` (String)
+- `prometheus_password` (String)
+- `prometheus_url` (String)
+- `prometheus_username` (String)
 
 

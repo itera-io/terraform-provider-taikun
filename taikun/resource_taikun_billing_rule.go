@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/prometheus"
 	"github.com/itera-io/taikungoclient/models"
 )
@@ -106,7 +107,7 @@ func resourceTaikunBillingRule() *schema.Resource {
 }
 
 func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	billingCredentialId, err := atoi32(d.Get("billing_credential_id").(string))
 	if err != nil {
@@ -123,7 +124,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	params := prometheus.NewPrometheusCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Prometheus.PrometheusCreate(params, apiClient)
+	createResult, err := apiClient.Client.Prometheus.PrometheusCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +141,7 @@ func generateResourceTaikunBillingRuleReadWithoutRetries() schema.ReadContextFun
 }
 func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
@@ -148,7 +149,7 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 		}
 
 		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
-		response, err := apiClient.client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -174,7 +175,7 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 }
 
 func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -196,7 +197,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	params := prometheus.NewPrometheusUpdateParams().WithV(ApiVersion).WithID(id).WithBody(body)
-	_, err = apiClient.client.Prometheus.PrometheusUpdate(params, apiClient)
+	_, err = apiClient.Client.Prometheus.PrometheusUpdate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -205,14 +206,14 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceTaikunBillingRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	params := prometheus.NewPrometheusDeleteParams().WithV(ApiVersion).WithID(id)
-	_, err = apiClient.client.Prometheus.PrometheusDelete(params, apiClient)
+	_, err = apiClient.Client.Prometheus.PrometheusDelete(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}

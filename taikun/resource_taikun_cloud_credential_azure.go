@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/azure"
 	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 	"github.com/itera-io/taikungoclient/models"
@@ -131,7 +132,7 @@ func resourceTaikunCloudCredentialAzure() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAzureCloudCommand{
 		Name:                  d.Get("name").(string),
@@ -153,7 +154,7 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 	}
 
 	params := azure.NewAzureCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.client.Azure.AzureCreate(params, apiClient)
+	createResult, err := apiClient.Client.Azure.AzureCreate(params, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -180,14 +181,14 @@ func generateResourceTaikunCloudCredentialAzureReadWithoutRetries() schema.ReadC
 }
 func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*apiClient)
+		apiClient := meta.(*taikungoclient.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -213,7 +214,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 }
 
 func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -233,7 +234,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 			AzureClientSecret: d.Get("client_secret").(string),
 		}
 		updateParams := azure.NewAzureUpdateParams().WithV(ApiVersion).WithBody(updateBody)
-		_, err := apiClient.client.Azure.AzureUpdate(updateParams, apiClient)
+		_, err := apiClient.Client.Azure.AzureUpdate(updateParams, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -266,12 +267,12 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentia
 	}
 }
 
-func resourceTaikunCloudCredentialAzureLock(id int32, lock bool, apiClient *apiClient) error {
+func resourceTaikunCloudCredentialAzureLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.CloudLockManagerCommand{
 		ID:   id,
 		Mode: getLockMode(lock),
 	}
 	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
 	return err
 }

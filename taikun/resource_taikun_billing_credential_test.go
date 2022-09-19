@@ -7,56 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient/client/ops_credentials"
-	"github.com/itera-io/taikungoclient/models"
+	"github.com/itera-io/taikungoclient"
 )
-
-func init() {
-	resource.AddTestSweepers("taikun_billing_credential", &resource.Sweeper{
-		Name:         "taikun_billing_credential",
-		Dependencies: []string{"taikun_billing_rule"},
-		F: func(r string) error {
-			var result *multierror.Error
-
-			meta, err := sharedConfig()
-			if err != nil {
-				return err
-			}
-			apiClient := meta.(*apiClient)
-
-			params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion)
-
-			var operationCredentialsList []*models.OperationCredentialsListDto
-			for {
-				response, err := apiClient.client.OpsCredentials.OpsCredentialsList(params, apiClient)
-				if err != nil {
-					return err
-				}
-				operationCredentialsList = append(operationCredentialsList, response.GetPayload().Data...)
-				if len(operationCredentialsList) == int(response.GetPayload().TotalCount) {
-					break
-				}
-				offset := int32(len(operationCredentialsList))
-				params = params.WithOffset(&offset)
-			}
-
-			for _, e := range operationCredentialsList {
-				if shouldSweep(e.Name) {
-					params := ops_credentials.NewOpsCredentialsDeleteParams().WithV(ApiVersion).WithID(e.ID)
-					_, _, err = apiClient.client.OpsCredentials.OpsCredentialsDelete(params, apiClient)
-					if err != nil {
-						result = multierror.Append(result, err)
-					}
-				}
-			}
-
-			return result.ErrorOrNil()
-		},
-	})
-}
 
 const testAccResourceTaikunBillingCredentialConfig = `
 resource "taikun_billing_credential" "foo" {
@@ -135,7 +89,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 }
 
 func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_credential" {
@@ -143,10 +97,8 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id)
-
-		response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		resource, err := resourceTaikunBillingCredentialFind(id, client)
+		if err != nil || resource == nil {
 			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -155,7 +107,7 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*apiClient)
+	client := testAccProvider.Meta().(*taikungoclient.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_credential" {
@@ -164,13 +116,12 @@ func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := ops_credentials.NewOpsCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.client.OpsCredentials.OpsCredentialsList(params, client)
+			billingCredential, err := resourceTaikunBillingCredentialFind(id, client)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if billingCredential != nil {
 				return resource.RetryableError(errors.New("billing credential still exists"))
 			}
 			return nil

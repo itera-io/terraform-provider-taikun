@@ -30,19 +30,19 @@ resource "taikun_slack_configuration" "foo" {
 
 ### Required
 
-- **channel** (String) Slack channel for notifications.
-- **name** (String) The Slack configuration's name.
-- **type** (String) The type of notifications to receive: `Alert` (only alert-type notifications) or `General` (all notifications).
-- **url** (String) Webhook URL from Slack app.
+- `channel` (String) Slack channel for notifications.
+- `name` (String) The Slack configuration's name.
+- `type` (String) The type of notifications to receive: `Alert` (only alert-type notifications) or `General` (all notifications).
+- `url` (String) Webhook URL from Slack app.
 
 ### Optional
 
-- **organization_id** (String) The ID of the organization which owns the Slack configuration.
+- `organization_id` (String) The ID of the organization which owns the Slack configuration.
 
 ### Read-Only
 
-- **id** (String) The Slack configuration's ID.
-- **organization_name** (String) The name of the organization which owns the Slack configuration.
+- `id` (String) The Slack configuration's ID.
+- `organization_name` (String) The name of the organization which owns the Slack configuration.
 
 ## Import
 

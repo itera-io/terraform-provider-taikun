@@ -3,6 +3,7 @@ package taikun
 import (
 	"context"
 
+	"github.com/itera-io/taikungoclient"
 	"github.com/itera-io/taikungoclient/client/s3_credentials"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,7 +35,7 @@ func dataSourceTaikunBackupCredentials() *schema.Resource {
 }
 
 func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*apiClient)
+	apiClient := meta.(*taikungoclient.Client)
 	dataSourceID := "all"
 
 	params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion)
@@ -51,7 +52,7 @@ func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.Resource
 
 	var backupCredentialsList []*models.BackupCredentialsListDto
 	for {
-		response, err := apiClient.client.S3Credentials.S3CredentialsList(params, apiClient)
+		response, err := apiClient.Client.S3Credentials.S3CredentialsList(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
