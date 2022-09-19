@@ -86,10 +86,26 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
+	apiClient := meta.(*taikungoclient.Client)
+	cloudType, err := resourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	startCPU := int32(d.Get("min_cpu").(int))
 	endCPU := int32(d.Get("max_cpu").(int))
-	startRAM := float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
-	endRAM := float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
+
+	var startRAM float64
+	var endRAM float64
+
+	if cloudType != cloudTypeGCP {
+		startRAM = float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
+		endRAM = float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
+	} else {
+		startRAM = float64(gibiByteToByte(d.Get("min_ram").(int)))
+		endRAM = float64(gibiByteToByte(d.Get("max_ram").(int)))
+	}
+
 	sortBy := "name"
 	sortDir := "asc"
 
@@ -97,15 +113,12 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	params = params.WithStartCPU(&startCPU).WithEndCPU(&endCPU).WithStartRAM(&startRAM).WithEndRAM(&endRAM)
 	params = params.WithSortBy(&sortBy).WithSortDirection(&sortDir)
 
-	apiClient := meta.(*taikungoclient.Client)
-	var cloudType string
 	var flavorDTOs []*models.FlavorsListDto
 	for {
 		response, err := apiClient.Client.CloudCredentials.CloudCredentialsAllFlavors(params, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		cloudType = response.Payload.CloudType
 		flavorDTOs = append(flavorDTOs, response.Payload.Data...)
 		if len(flavorDTOs) == int(response.Payload.TotalCount) {
 			break
@@ -136,11 +149,11 @@ type flattenDataSourceTaikunFlavorsItemFunc func(flavorDTO *models.FlavorsListDt
 
 func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSourceTaikunFlavorsItemFunc {
 	switch strings.ToLower(cloudType) {
-	case "aws":
+	case cloudTypeAWS:
 		return flattenDataSourceTaikunFlavorsAWSItem
-	case "azure":
+	case cloudTypeAzure:
 		return flattenDataSourceTaikunFlavorsAzureItem
-	case "openstack":
+	case cloudTypeOpenStack:
 		return flattenDataSourceTaikunFlavorsOpenStackItem
 	default: // GCP
 		return flattenDataSourceTaikunFlavorsGCPItem
@@ -175,6 +188,6 @@ func flattenDataSourceTaikunFlavorsGCPItem(flavorDTO *models.FlavorsListDto) map
 	return map[string]interface{}{
 		"cpu":  flavorDTO.CPU,
 		"name": flavorDTO.Name,
-		"ram":  flavorDTO.RAM, // TODO: check conversion isn't needed
+		"ram":  byteToGibiByte(flavorDTO.RAM),
 	}
 }

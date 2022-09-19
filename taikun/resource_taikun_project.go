@@ -1226,6 +1226,9 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *taiku
 	if len(response.Payload.Openstack) == 1 {
 		return cloudTypeOpenStack, nil
 	}
+	if len(response.Payload.Google) == 1 {
+		return cloudTypeGCP, nil
+	}
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
 

@@ -325,6 +325,7 @@ const (
 	cloudTypeAWS       = "AWS"
 	cloudTypeAzure     = "Azure"
 	cloudTypeOpenStack = "OpenStack"
+	cloudTypeGCP       = "GCP"
 )
 
 func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
