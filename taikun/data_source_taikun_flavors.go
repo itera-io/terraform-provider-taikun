@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -148,7 +147,7 @@ func flattenDataSourceTaikunFlavors(cloudType string, flavorDTOs []*models.Flavo
 type flattenDataSourceTaikunFlavorsItemFunc func(flavorDTO *models.FlavorsListDto) map[string]interface{}
 
 func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSourceTaikunFlavorsItemFunc {
-	switch strings.ToLower(cloudType) {
+	switch cloudType {
 	case cloudTypeAWS:
 		return flattenDataSourceTaikunFlavorsAWSItem
 	case cloudTypeAzure:
