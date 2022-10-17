@@ -98,7 +98,7 @@ PROMETHEUS_USERNAME
 ```
 
 This list of environment variables can also be found in the
-[provider_test.go](./taikun/provider_test.go] file, which defines the pre-check
+[provider_test.go](./taikun/provider_test.go) file, which defines the pre-check
 functions for the acceptance tests.
 
 ### Running the full suite of tests
@@ -144,4 +144,4 @@ end of line. Thus, `TestAccDataSourceTaikunShowbackRulesWithFilter` will be
 ignored.
 
 To know more about the `-run <regexp>` test flag and other go test flags, see the
-[go-testflag(7) man page](https://manpages.debian.org/testing/golang-go/go-testflag.7.en.html#run)
+[go-testflag (7) man page](https://manpages.debian.org/testing/golang-go/go-testflag.7.en.html#run)
