@@ -36,14 +36,6 @@ make dockerinstall
 
 To generate or update documentation, run `go generate`.
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
-
-*Note:* Acceptance tests create real resources, and often cost money to run.
-
-```sh
-$ make testacc
-```
-
 ### Running the locally built provider
 To tell Terraform to retrieve the provider locally instead of fetching it from the registry, use the following terraform configuration block.
 ```tf
@@ -55,3 +47,101 @@ terraform {
   }
 }
 ```
+
+## Running acceptance tests
+
+### Prerequisites
+
+Running the Taikun Terraform Provider's acceptance tests requires setting some
+environment variables prior to launching the test suite.
+
+The following environment variables are required to authenticate
+the provider.
+```
+TAIKUN_EMAIL
+TAIKUN_PASSWORD
+```
+
+In order to run tests that create resources linked to external services such as
+AWS, Azure, GCP, OpenStack or Prometheus, set the following variables.
+```sh
+# AWS
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+
+# Azure
+ARM_CLIENT_ID
+ARM_CLIENT_SECRET
+ARM_SUBSCRIPTION_ID
+ARM_TENANT_ID
+
+# GCP
+GCP_BILLING_ACCOUNT
+GCP_CONFIG_FILE
+GCP_FOLDER_ID
+GCP_REGION
+GCP_ZONE
+
+# OpenStack
+OS_AUTH_URL
+OS_INTERFACE
+OS_PASSWORD
+OS_PROJECT_NAME
+OS_REGION_NAME
+OS_USERNAME
+OS_USER_DOMAIN_NAME
+
+# Prometheus
+PROMETHEUS_PASSWORD
+PROMETHEUS_URL
+PROMETHEUS_USERNAME
+```
+
+This list of environment variables can also be found in the
+[provider_test.go](./taikun/provider_test.go] file, which defines the pre-check
+functions for the acceptance tests.
+
+### Running the full suite of tests
+
+In order to run the full suite of Acceptance tests, run `make testacc`.
+
+```sh
+$ make testacc
+```
+
+*Note:* Acceptance tests create real resources, and often cost money to run.
+
+*Note:* At the time of writing, running the full suite of Acceptance tests
+takes on average two to three hours.
+
+### Running specific tests
+
+In order to run only some specific tests, set the `TESTARGS` environment
+variable when calling `make testacc`.
+
+The value of `TESTARGS` must be set to `-run <regexp>` where `regexp` is a
+regular expression matching the identifiers of tests you wish to run.
+
+For example, to run all tests related to the `taikun_showback_rules` data
+source, run the following command.
+```sh
+TESTARGS='-run TestAccDataSourceTaikunShowbackRules' make testacc
+```
+
+At the moment of writing, this will run both of the following tests.
+```
+TestAccDataSourceTaikunShowbackRules
+TestAccDataSourceTaikunShowbackRulesWithFilter
+```
+
+If you want to run only `TestAccDataSourceTaikunShowbackRules`, run the
+following command.
+```sh
+TESTARGS='-run TestAccDataSourceTaikunShowbackRules$' make testacc
+```
+Notice we added a `$` sign at the end of the regular expression to match the
+end of line. Thus, `TestAccDataSourceTaikunShowbackRulesWithFilter` will be
+ignored.
+
+To know more about the `-run <regexp>` test flag and other go test flags, see the
+[go-testflag(7) man page](https://manpages.debian.org/testing/golang-go/go-testflag.7.en.html#run)
