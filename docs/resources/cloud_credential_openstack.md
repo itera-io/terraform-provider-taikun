@@ -58,6 +58,7 @@ resource "taikun_cloud_credential_openstack" "foo" {
 ### Optional
 
 - `availability_zone` (String) The OpenStack availability zone.
+- `continent` (String) The OpenStack continent. Can be 'as' for Asia, 'eu'for Europe or 'us' for America.
 - `imported_network_subnet_id` (String) The OpenStack network subnet ID to import a network.
 - `lock` (Boolean) Indicates whether to lock the OpenStack cloud credential. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the OpenStack cloud credential.

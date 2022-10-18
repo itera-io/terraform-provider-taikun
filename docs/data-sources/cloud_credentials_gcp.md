@@ -29,6 +29,7 @@ Retrieve all Google Cloud Platform credentials.
 
 Read-Only:
 
+- `az_count` (String)
 - `billing_account_id` (String)
 - `billing_account_name` (String)
 - `folder_id` (String)
@@ -39,6 +40,6 @@ Read-Only:
 - `organization_id` (String)
 - `organization_name` (String)
 - `region` (String)
-- `zone` (String)
+- `zones` (Set of String)
 
 

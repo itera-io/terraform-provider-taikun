@@ -16,7 +16,7 @@ import (
 const testAccResourceTaikunCloudCredentialAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
+  az_count = "%d"
 
   lock       = %t
 }
@@ -24,6 +24,10 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	azCount, err := atoi32(os.Getenv("AWS_AZ_COUNT"))
+	if err != nil {
+		os.ErrInvalid.Error()
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -33,7 +37,7 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					azCount,
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -41,7 +45,7 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "az_count", os.Getenv("AWS_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
@@ -55,6 +59,10 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 
 func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	azCount, err := atoi32(os.Getenv("AWS_AZ_COUNT"))
+	if err != nil {
+		os.ErrInvalid.Error()
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -64,7 +72,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					azCount,
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -72,7 +80,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "az_count", os.Getenv("AWS_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
@@ -83,7 +91,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					azCount,
 					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -91,7 +99,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "az_count", os.Getenv("AWS_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
@@ -106,6 +114,10 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	newCloudCredentialName := randomTestName()
+	azCount, err := atoi32(os.Getenv("AWS_AZ_COUNT"))
+	if err != nil {
+		os.ErrInvalid.Error()
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -115,7 +127,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					azCount,
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -123,7 +135,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "az_count", os.Getenv("AWS_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
@@ -134,7 +146,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAWSConfig,
 					newCloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
+					azCount,
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -142,7 +154,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "availability_zone", os.Getenv("AWS_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "az_count", os.Getenv("AWS_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),

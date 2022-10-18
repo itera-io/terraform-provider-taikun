@@ -98,6 +98,8 @@ github.com/go-openapi/loads v0.21.1 h1:Wb3nVZpdEzDTcly8S4HMkey6fjARRzb7iEaySimlD
 github.com/go-openapi/loads v0.21.1/go.mod h1:/DtAMXXneXFjbQMGEtbamCZb+4x7eGwkvZCvBmwUG+g=
 github.com/go-openapi/runtime v0.24.1 h1:Sml5cgQKGYQHF+M7yYSHaH1eOjvTykrddTE/KtQVjqo=
 github.com/go-openapi/runtime v0.24.1/go.mod h1:AKurw9fNre+h3ELZfk6ILsfvPN+bvvlaU/M9q/r9hpk=
+github.com/go-openapi/runtime v0.24.2 h1:yX9HMGQbz32M87ECaAhGpJjBmErO3QLcgdZj9BzGx7c=
+github.com/go-openapi/runtime v0.24.2/go.mod h1:AKurw9fNre+h3ELZfk6ILsfvPN+bvvlaU/M9q/r9hpk=
 github.com/go-openapi/spec v0.20.4 h1:O8hJrt0UMnhHcluhIdUgCLRWyM2x7QkBXRvOs7m+O1M=
 github.com/go-openapi/spec v0.20.4/go.mod h1:faYFR1CvsJZ0mNsmsphTMSoRrNV3TEDoAM7FOEWeq8I=
 github.com/go-openapi/strfmt v0.21.0/go.mod h1:ZRQ409bWMj+SOgXofQAGTIo2Ebu72Gs+WaRADcS5iNg=
@@ -239,6 +241,12 @@ github.com/imdario/mergo v0.3.13/go.mod h1:4lJ1jqUDcsbIECGy0RUJAXNIhg+6ocWgb1ALK
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/itera-io/taikungoclient v0.0.0-20220914132837-e209d0ce73b7 h1:ql8ks4ZP9rusr9r0obB+oTtd9g+G0mKlKUXO4PJqibY=
 github.com/itera-io/taikungoclient v0.0.0-20220914132837-e209d0ce73b7/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
+github.com/itera-io/taikungoclient v0.0.0-20220916123218-9a76a72b785a h1:r5pammWC0zVyFGt4Xuz3RnN29fAv5jg9EXDBAHEIyJU=
+github.com/itera-io/taikungoclient v0.0.0-20220916123218-9a76a72b785a/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
+github.com/itera-io/taikungoclient v0.0.0-20220921001213-80a4b3e81e9a h1:Y0vadnO4sP+pqB0g+BGT97HomjRajWnB6Q07T8NTknY=
+github.com/itera-io/taikungoclient v0.0.0-20220921001213-80a4b3e81e9a/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
+github.com/itera-io/taikungoclient v0.0.0-20221020002514-08fc8501b3a7 h1:KmUDGV08TaKWIkyFHfmePN9ArLtd5DnnpRqORF1LfLM=
+github.com/itera-io/taikungoclient v0.0.0-20221020002514-08fc8501b3a7/go.mod h1:rLnkE3bbDMoQOS6idLQyrCgwowC8lWsnlwvIJuuqN40=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
