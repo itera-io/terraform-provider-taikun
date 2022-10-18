@@ -26,6 +26,18 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"continent": {
+			Description: "The OpenStack continent. Can be 'as' for Asia, 'eu'for Europe or 'us' for America.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			DefaultFunc: schema.EnvDefaultFunc("OS_CONTINENT", nil),
+			ValidateFunc: validation.StringInSlice([]string{
+				"as",
+				"eu",
+				"us",
+			}, false),
+		},
 		"domain": {
 			Description:  "The OpenStack domain.",
 			Type:         schema.TypeString,
@@ -202,6 +214,11 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 		body.OpenStackAvailabilityZone = availabilityZoneData.(string)
 	}
 
+	continentData, continentIsSet := d.GetOk("continent")
+	if continentIsSet {
+		body.OpenStackContinent = continentData.(string)
+	}
+
 	params := openstack.NewOpenstackCreateParams().WithV(ApiVersion).WithBody(body)
 	createResult, err := apiClient.Client.Openstack.OpenstackCreate(params, apiClient)
 	if err != nil {
@@ -317,6 +334,7 @@ func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.Openst
 		"availability_zone":          rawOpenStackCredential.AvailabilityZone,
 		"domain":                     rawOpenStackCredential.Domain,
 		"region":                     rawOpenStackCredential.Region,
+		"continent":                  rawOpenStackCredential.ContinentName,
 		"volume_type_name":           rawOpenStackCredential.VolumeType,
 		"imported_network_subnet_id": rawOpenStackCredential.InternalSubnetID,
 	}

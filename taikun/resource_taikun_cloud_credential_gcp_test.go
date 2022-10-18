@@ -20,12 +20,16 @@ resource "taikun_cloud_credential_gcp" "foo" {
   billing_account_id = "%s"
   folder_id = "%s"
   region = "%s"
-  zone = "%s"
+  az_count = "%d"
 }
 `
 
 func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
+	if err != nil {
+		os.ErrInvalid.Error()
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckGCP(t) },
@@ -38,7 +42,7 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 					os.Getenv("GCP_BILLING_ACCOUNT"),
 					os.Getenv("GCP_FOLDER_ID"),
 					os.Getenv("GCP_REGION"),
-					os.Getenv("GCP_ZONE"),
+					azCount,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialGCPExists,
@@ -49,7 +53,7 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "region", os.Getenv("GCP_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "zone", os.Getenv("GCP_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "az_count", os.Getenv("GCP_AZ_COUNT")),
 				),
 			},
 		},
@@ -62,13 +66,17 @@ resource "taikun_cloud_credential_gcp" "foo" {
   config_file = "./gcp.json"
   import_project = true
   region = "%s"
-  zone = "%s"
+  az_count = "%d"
   lock = true
 }
 `
 
 func TestAccResourceTaikunCloudCredentialGCPImportProject(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
+	if err != nil {
+		os.ErrInvalid.Error()
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckGCP(t) },
@@ -79,7 +87,7 @@ func TestAccResourceTaikunCloudCredentialGCPImportProject(t *testing.T) {
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialGCPImportProjectConfig,
 					cloudCredentialName,
 					os.Getenv("GCP_REGION"),
-					os.Getenv("GCP_ZONE"),
+					azCount,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialGCPExists,
@@ -88,7 +96,7 @@ func TestAccResourceTaikunCloudCredentialGCPImportProject(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "region", os.Getenv("GCP_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "zone", os.Getenv("GCP_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "az_count", os.Getenv("GCP_AZ_COUNT")),
 				),
 			},
 		},

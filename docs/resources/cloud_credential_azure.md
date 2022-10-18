@@ -35,7 +35,7 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 ### Required
 
-- `availability_zone` (String) The Azure availability zone for the location.
+- `az_count` (String) The number of Azure availability zone expected for the region.
 - `client_id` (String, Sensitive) The Azure client ID.
 - `client_secret` (String, Sensitive) The Azure client secret.
 - `location` (String) The Azure location.
@@ -50,6 +50,7 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 ### Read-Only
 
+- `availability_zones` (List of String) The given Azure availability zones for the location.
 - `created_by` (String) The creator of the Azure cloud credential.
 - `id` (String) The ID of the Azure cloud credential.
 - `is_default` (Boolean) Indicates whether the Azure cloud credential is the default one.
