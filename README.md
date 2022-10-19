@@ -33,8 +33,22 @@ Otherwise, you can build the provider in a docker container.
 ```sh
 make dockerinstall
 ```
+### Documenting the provider
 
-To generate or update documentation, run `go generate`.
+We use [tfplugindocs](https://github.com/hashicorp/terraform-plugin-docs) to generate documentation for the provider.
+
+To generate or update documentation, run `go generate` locally or run the [generate documentation](https://github.com/itera-io/terraform-provider-taikun/actions/workflows/generate_documentation.yml) workflow with your target branch as an input.
+
+This reads the templates in the [templates](./templates) directory, the Terraform configuration examples in the [examples](./examples) directory and finally the resource (or data source) schemas themselves to generate the documentation in the [docs](./docs) directory.
+
+In other words, suppose you are creating a new resource `taikun_project`, you would need to add the following files before running `go generate`.
+- A Terraform configuration example in `./examples/resources/taikun_project/resource.tf`
+- A terraform import script in `./examples/resources/taikun_project/import.sh` (this is usually just `terraform import <resource type>.<name> <id>`)
+- A template in `templates/resources/project.md.tmpl`
+
+As mentioned previously, the documentation of provider releases is available on the [Terraform registry](https://registry.terraform.io/providers/itera-io/taikun/latest/docs).
+
+The [Doc Preview Tool](https://registry.terraform.io/tools/doc-preview) by Hashicorp is also a useful way to preview the final look of the documentation.
 
 ### Running the locally built provider
 To tell Terraform to retrieve the provider locally instead of fetching it from the registry, use the following terraform configuration block.
