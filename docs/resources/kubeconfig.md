@@ -20,7 +20,7 @@ resource "taikun_kubeconfig" "foo" {
   role         = "view"
   access_scope = "all"
 
-  validity_period = "1440" # 24 hours
+  validity_period = 1440 # 24 hours
   namespace       = "helm"
 }
 
@@ -45,7 +45,7 @@ resource "local_file" "kubeconfig-foo" {
 
 - `namespace` (String) The kubeconfig's namespace.
 - `user_id` (String) ID of the kubeconfig's user, if the kubeconfig is personal.
-- `validity_period` (String) The kubeconfig's validity period in minutes. Unlimited (-1) by default. Defaults to `-1`.
+- `validity_period` (Number) The kubeconfig's validity period in minutes. Unlimited (-1) by default. Defaults to `-1`.
 
 ### Read-Only
 

@@ -5,7 +5,7 @@ resource "taikun_kubeconfig" "foo" {
   role         = "view"
   access_scope = "all"
 
-  validity_period = "1440" # 24 hours
+  validity_period = 1440 # 24 hours
   namespace       = "helm"
 }
 
