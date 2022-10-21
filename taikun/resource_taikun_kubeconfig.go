@@ -82,7 +82,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 		},
 		"validity_period": {
 			Description:  "The kubeconfig's validity period in minutes. Unlimited (-1) by default.",
-			Type:         schema.TypeString,
+			Type:         schema.TypeInt,
 			Optional:     true,
                         Default:      -1,
 			ValidateFunc: validation.IntAtLeast(-1),
