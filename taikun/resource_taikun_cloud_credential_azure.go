@@ -24,11 +24,11 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			},
 		},
 		"az_count": {
-			Description:      "The number of Azure availability zone expected for the region.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
+			Description:  "The number of Azure availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
 		},
 		"client_id": {
 			Description:  "The Azure client ID.",
@@ -151,12 +151,14 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 		AzureLocation:       d.Get("location").(string),
 	}
 
-	azCount, err := atoi32(d.Get("az_count").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	} else if azCount < 1 || azCount > 3 {
-		return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
-	}
+	azCount := int32(d.Get("az_count").(int))
+	/*
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
 	body.AzCount = azCount
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")

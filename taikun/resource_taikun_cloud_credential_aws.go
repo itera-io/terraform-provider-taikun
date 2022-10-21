@@ -32,11 +32,11 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			},
 		},
 		"az_count": {
-			Description:      "The number of AWS availability zone expected for the region.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
+			Description:  "The number of AWS availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
 		},
 		"created_by": {
 			Description: "The creator of the AWS cloud credential.",
@@ -166,13 +166,15 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 		AwsRegion:          d.Get("region").(string),
 	}
 
-	azCount, err := atoi32(d.Get("az_count").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	} else if azCount < 1 || azCount > 3 {
-		return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
-	}
-	body.AzCount = azCount
+	/*
+		azCount, err := atoi32(d.Get("az_count").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
+	body.AzCount = int32(d.Get("az_count").(int))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {

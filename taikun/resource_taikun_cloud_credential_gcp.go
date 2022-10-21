@@ -17,11 +17,11 @@ import (
 func resourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"az_count": {
-			Description:      "The number of GCP availability zone expected for the region.",
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
+			Description:  "The number of GCP availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
 		},
 		"billing_account_id": {
 			Description:   "The ID of the GCP credential's billing account.",
@@ -144,12 +144,14 @@ func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.Resou
 	region := d.Get("region").(string)
 	params = params.WithRegion(&region)
 
-	azCount, err := atoi32(d.Get("az_count").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	} else if azCount < 1 || azCount > 3 {
-		return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
-	}
+	azCount := int32(d.Get("az_count").(int))
+	/*
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
 	params = params.WithAzCount(&azCount)
 
 	importProject := d.Get("import_project").(bool)
