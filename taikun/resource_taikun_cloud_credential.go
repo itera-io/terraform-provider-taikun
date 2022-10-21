@@ -15,11 +15,11 @@ import (
 func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"az_count": {
-			Description:      "The number of availability zone expected for the region/location. Required for AWS, Azure and GCP.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: stringIsInt,
+			Description:  "The number of availability zone expected for the region/location. Required for AWS, Azure and GCP.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
 		},
 		"access_key_id": {
 			Description:  "The AWS access key ID. Required for AWS.",
@@ -315,30 +315,11 @@ func resourceTaikunCloudCredentialCreate(ctx context.Context, d *schema.Resource
 	}
 }
 
-/*
-func generateResourceTaikunCloudCredentialReadWithRetries() schema.ReadContextFunc {
-	return generateResourceTaikunCloudCredentialRead(true)
-}
-*/
-
 func generateResourceTaikunCloudCredentialReadWithoutRetries() schema.ReadContextFunc {
 	return generateResourceTaikunCloudCredentialRead(false)
 }
 
 func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadContextFunc {
-
-	/*
-		if generateResourceTaikunCloudCredentialAWSRead(withRetries) == nil {
-			return nil
-		} else if generateResourceTaikunCloudCredentialAzureRead(withRetries) == nil {
-			return nil
-		} else if generateResourceTaikunCloudCredentialGCPRead(withRetries) == nil {
-			return nil
-		} else {
-			return generateResourceTaikunCloudCredentialOpenStackRead(withRetries)
-		}
-	*/
-
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 		apiClient := meta.(*taikungoclient.Client)
@@ -435,16 +416,3 @@ func resourceTaikunCloudCredentialUpdate(ctx context.Context, d *schema.Resource
 		return diag.Errorf("Invalid kind of cloud credential")
 	}
 }
-
-/*
-func resourceTaikunCloudCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.CloudLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
-
-	return err
-}
-*/
