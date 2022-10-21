@@ -25,7 +25,7 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
+	azCount, err := atoi32(os.Getenv("ARM_AZ_COUNT"))
 	if err != nil {
 		os.ErrInvalid.Error()
 	}
@@ -63,7 +63,7 @@ func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 
 func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
+	azCount, err := atoi32(os.Getenv("ARM_AZ_COUNT"))
 	if err != nil {
 		os.ErrInvalid.Error()
 	}
@@ -124,7 +124,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	newCloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
+	azCount, err := atoi32(os.Getenv("ARM_AZ_COUNT"))
 	if err != nil {
 		os.ErrInvalid.Error()
 	}

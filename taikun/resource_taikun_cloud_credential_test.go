@@ -16,7 +16,7 @@ import (
 const testAccResourceTaikunCloudCredentialConfig = `
 resource "taikun_cloud_credential" "foo" {
   type = "%s"
-
+  name = "%s"
 
   lock       = %t
 }
@@ -32,6 +32,42 @@ func TestAccResourceTaikunCloudCredentials(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
+					cloudCredentialName,
+					false,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialOpenStackExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", cloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccResourceTaikunCloudCredentialsLock(t *testing.T) {
+	cloudCredentialName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunCloudCredentialsDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
+					cloudCredentialName,
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -45,149 +81,103 @@ func TestAccResourceTaikunCloudCredentials(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "access_key_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "availability_zone"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "billing_account_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "client_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "client_secret"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "config_file"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "folder_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "import_project"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "imported_network_subnet_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "location"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "secret_access_key"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "subscription_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "tenant_id"),
-					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "zone"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
+					cloudCredentialName,
+					true,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialsExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", cloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "true"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
 				),
 			},
 		},
 	})
 }
 
-/*
-	func TestAccResourceTaikunCloudCredentialsLock(t *testing.T) {
-		cloudCredentialName := randomTestName()
+func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	newCloudCredentialName := randomTestName()
 
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
-			ProviderFactories: testAccProviderFactories,
-			CheckDestroy:      testAccCheckTaikunCloudCredentialsDestroy,
-			Steps: []resource.TestStep{
-				{
-					Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
-						cloudCredentialName,
-						false,
-					),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccCheckTaikunCloudCredentialsExists,
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", cloudCredentialName),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
-					),
-				},
-				{
-					Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
-						cloudCredentialName,
-						true,
-					),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccCheckTaikunCloudCredentialsExists,
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", cloudCredentialName),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "true"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
-					),
-				},
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunCloudCredentialsDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
+					cloudCredentialName,
+					false,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialsExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", cloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
+				),
 			},
-		})
-	}
-
-	func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
-		cloudCredentialName := randomTestName()
-		newCloudCredentialName := randomTestName()
-
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
-			ProviderFactories: testAccProviderFactories,
-			CheckDestroy:      testAccCheckTaikunCloudCredentialsDestroy,
-			Steps: []resource.TestStep{
-				{
-					Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
-						cloudCredentialName,
-						false,
-					),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccCheckTaikunCloudCredentialsExists,
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", cloudCredentialName),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
-					),
-				},
-				{
-					Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
-						newCloudCredentialName,
-						false,
-					),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccCheckTaikunCloudCredentialsExists,
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", newCloudCredentialName),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
-						resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
-						resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
-					),
-				},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
+					newCloudCredentialName,
+					false,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialsExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "type", "openstack"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "name", newCloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "user", os.Getenv("OS_USERNAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "password", os.Getenv("OS_PASSWORD")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "url", os.Getenv("OS_AUTH_URL")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "domain", os.Getenv("OS_USER_DOMAIN_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "project_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "is_default"),
+				),
 			},
-		})
-	}
-*/
+		},
+	})
+}
+
 func testAccCheckTaikunCloudCredentialsExists(state *terraform.State) error {
 	client := testAccProvider.Meta().(*taikungoclient.Client)
 
