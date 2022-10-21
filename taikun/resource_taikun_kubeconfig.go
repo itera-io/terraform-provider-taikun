@@ -82,9 +82,9 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 		},
 		"validity_period": {
 			Description:  "The kubeconfig's validity period in minutes. Unlimited (-1) by default.",
-			Type:         schema.TypeInt,
+			Type:         schema.TypeString,
 			Optional:     true,
-			Default:      -1,
+                        Default:      -1,
 			ValidateFunc: validation.IntAtLeast(-1),
 			ForceNew:     true,
 		},
@@ -112,7 +112,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 		IsAccessibleForManager: d.Get("access_scope").(string) == "managers",
 		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
 		Name:                   d.Get("name").(string),
-		TTL:                    d.Get("validity_period").(int32),
+		TTL:                    int32(d.Get("validity_period").(int)),
 	}
 
 	if userId, userIdIsSet := d.GetOk("user_id"); userIdIsSet {

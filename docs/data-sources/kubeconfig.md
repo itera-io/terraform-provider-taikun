@@ -34,6 +34,6 @@ data "taikun_kubeconfig" "foo" {
 - `project_id` (String) ID of the kubeconfig's project.
 - `project_name` (String) Name of the kubeconfig's project.
 - `user_id` (String) ID of the kubeconfig's user, if the kubeconfig is personal.
-- `validity_period` (Number) The kubeconfig's validity period in minutes. Unlimited (-1) by default.
+- `validity_period` (String) The kubeconfig's validity period in minutes. Unlimited (-1) by default.
 
 
