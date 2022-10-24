@@ -24,10 +24,7 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("AWS_AZ_COUNT"))
-	if err != nil {
-		os.ErrInvalid.Error()
-	}
+	azCount, _ := atoi32(os.Getenv("AWS_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -59,10 +56,7 @@ func TestAccResourceTaikunCloudCredentialAWS(t *testing.T) {
 
 func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("AWS_AZ_COUNT"))
-	if err != nil {
-		os.ErrInvalid.Error()
-	}
+	azCount, _ := atoi32(os.Getenv("AWS_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -114,10 +108,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	newCloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("AWS_AZ_COUNT"))
-	if err != nil {
-		os.ErrInvalid.Error()
-	}
+	azCount, _ := atoi32(os.Getenv("AWS_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
