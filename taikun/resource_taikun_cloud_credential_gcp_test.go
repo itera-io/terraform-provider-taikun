@@ -26,10 +26,7 @@ resource "taikun_cloud_credential_gcp" "foo" {
 
 func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
-	if err != nil {
-		os.ErrInvalid.Error()
-	}
+	azCount, _ := atoi32(os.Getenv("GCP_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckGCP(t) },
@@ -73,10 +70,7 @@ resource "taikun_cloud_credential_gcp" "foo" {
 
 func TestAccResourceTaikunCloudCredentialGCPImportProject(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, err := atoi32(os.Getenv("GCP_AZ_COUNT"))
-	if err != nil {
-		os.ErrInvalid.Error()
-	}
+	azCount, _ := atoi32(os.Getenv("GCP_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckGCP(t) },
