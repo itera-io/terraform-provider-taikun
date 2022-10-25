@@ -34,7 +34,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 		"az_count": {
 			Description:  "The number of AWS availability zone expected for the region.",
 			Type:         schema.TypeInt,
-			Required:     true,
+			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 3),
 			Default:      1,

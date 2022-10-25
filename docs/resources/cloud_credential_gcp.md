@@ -17,13 +17,13 @@ Taikun Google Cloud Platform Credential
 
 ### Required
 
-- `az_count` (String) The number of GCP availability zone expected for the region.
 - `config_file` (String) The path of the GCP credential's configuration file.
 - `name` (String) The name of the GCP credential.
 - `region` (String) The region of the GCP credential.
 
 ### Optional
 
+- `az_count` (Number) The number of GCP availability zone expected for the region. Defaults to `1`.
 - `billing_account_id` (String) The ID of the GCP credential's billing account. Conflicts with: `import_project`.
 - `folder_id` (String) The folder ID of the GCP credential. Conflicts with: `import_project`.
 - `import_project` (Boolean) Whether to import a project or not Defaults to `false`. Conflicts with: `billing_account_id`, `folder_id`.

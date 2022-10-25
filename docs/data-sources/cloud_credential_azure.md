@@ -28,7 +28,7 @@ data "taikun_cloud_credential_azure" "foo" {
 ### Read-Only
 
 - `availability_zones` (List of String) The given Azure availability zones for the location.
-- `az_count` (String) The number of Azure availability zone expected for the region.
+- `az_count` (Number) The number of Azure availability zone expected for the region.
 - `created_by` (String) The creator of the Azure cloud credential.
 - `is_default` (Boolean) Indicates whether the Azure cloud credential is the default one.
 - `last_modified` (String) Time and date of last modification.

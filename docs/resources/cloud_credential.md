@@ -54,7 +54,7 @@ resource "taikun_cloud_credential" "foo" {
 
 - `access_key_id` (String, Sensitive) The AWS access key ID. Required for AWS.
 - `availability_zone` (String) The availability zone of the cloud credential. Optional for Openstack.
-- `az_count` (String) The number of availability zone expected for the region/location. Required for AWS, Azure and GCP.
+- `az_count` (Number) The number of availability zone expected for the region/location. Required for AWS, Azure and GCP. Defaults to `1`.
 - `billing_account_id` (String) The ID of the GCP credential's billing account. Conflicts with: `import_project`.
 - `client_id` (String, Sensitive) The Azure client ID. Required for Azure.
 - `client_secret` (String, Sensitive) The Azure client secret. Required for Azure.

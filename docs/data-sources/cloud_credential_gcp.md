@@ -21,7 +21,7 @@ Get a GCP credential by its ID.
 
 ### Read-Only
 
-- `az_count` (String) The number of GCP availability zone expected for the region.
+- `az_count` (Number) The number of GCP availability zone expected for the region.
 - `billing_account_id` (String) The ID of the GCP credential's billing account.
 - `billing_account_name` (String) The name of the GCP credential's billing account.
 - `folder_id` (String) The folder ID of the GCP credential.

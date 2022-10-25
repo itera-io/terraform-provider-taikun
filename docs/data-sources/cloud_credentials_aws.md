@@ -38,7 +38,7 @@ data "taikun_cloud_credentials_aws" "foo" {
 Read-Only:
 
 - `availability_zones` (List of String)
-- `az_count` (String)
+- `az_count` (Number)
 - `created_by` (String)
 - `id` (String)
 - `is_default` (Boolean)
