@@ -96,8 +96,6 @@ github.com/go-openapi/jsonreference v0.19.6 h1:UBIxjkht+AWIgYzCDSv2GN+E/togfwXUJ
 github.com/go-openapi/jsonreference v0.19.6/go.mod h1:diGHMEHg2IqXZGKxqyvWdfWU/aim5Dprw5bqpKkTvns=
 github.com/go-openapi/loads v0.21.1 h1:Wb3nVZpdEzDTcly8S4HMkey6fjARRzb7iEaySimlDW0=
 github.com/go-openapi/loads v0.21.1/go.mod h1:/DtAMXXneXFjbQMGEtbamCZb+4x7eGwkvZCvBmwUG+g=
-github.com/go-openapi/runtime v0.24.1 h1:Sml5cgQKGYQHF+M7yYSHaH1eOjvTykrddTE/KtQVjqo=
-github.com/go-openapi/runtime v0.24.1/go.mod h1:AKurw9fNre+h3ELZfk6ILsfvPN+bvvlaU/M9q/r9hpk=
 github.com/go-openapi/runtime v0.24.2 h1:yX9HMGQbz32M87ECaAhGpJjBmErO3QLcgdZj9BzGx7c=
 github.com/go-openapi/runtime v0.24.2/go.mod h1:AKurw9fNre+h3ELZfk6ILsfvPN+bvvlaU/M9q/r9hpk=
 github.com/go-openapi/spec v0.20.4 h1:O8hJrt0UMnhHcluhIdUgCLRWyM2x7QkBXRvOs7m+O1M=
@@ -239,14 +237,8 @@ github.com/imdario/mergo v0.3.12/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH
 github.com/imdario/mergo v0.3.13 h1:lFzP57bqS/wsqKssCGmtLAb8A0wKjLGrve2q3PPVcBk=
 github.com/imdario/mergo v0.3.13/go.mod h1:4lJ1jqUDcsbIECGy0RUJAXNIhg+6ocWgb1ALK2O4oXg=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/itera-io/taikungoclient v0.0.0-20220914132837-e209d0ce73b7 h1:ql8ks4ZP9rusr9r0obB+oTtd9g+G0mKlKUXO4PJqibY=
-github.com/itera-io/taikungoclient v0.0.0-20220914132837-e209d0ce73b7/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
-github.com/itera-io/taikungoclient v0.0.0-20220916123218-9a76a72b785a h1:r5pammWC0zVyFGt4Xuz3RnN29fAv5jg9EXDBAHEIyJU=
-github.com/itera-io/taikungoclient v0.0.0-20220916123218-9a76a72b785a/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
-github.com/itera-io/taikungoclient v0.0.0-20220921001213-80a4b3e81e9a h1:Y0vadnO4sP+pqB0g+BGT97HomjRajWnB6Q07T8NTknY=
-github.com/itera-io/taikungoclient v0.0.0-20220921001213-80a4b3e81e9a/go.mod h1:NxIBnCnp2fhkQRKpXqR4HrOSJBno+FQDpmjFu4AkcbI=
-github.com/itera-io/taikungoclient v0.0.0-20221020002514-08fc8501b3a7 h1:KmUDGV08TaKWIkyFHfmePN9ArLtd5DnnpRqORF1LfLM=
-github.com/itera-io/taikungoclient v0.0.0-20221020002514-08fc8501b3a7/go.mod h1:rLnkE3bbDMoQOS6idLQyrCgwowC8lWsnlwvIJuuqN40=
+github.com/itera-io/taikungoclient v0.0.0-20221023185208-c1f81752430a h1:3w9tyHZZ6oCQ4YOCfuKOKrnrdlbwj0e9pnKqttZfzd0=
+github.com/itera-io/taikungoclient v0.0.0-20221023185208-c1f81752430a/go.mod h1:rLnkE3bbDMoQOS6idLQyrCgwowC8lWsnlwvIJuuqN40=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=
