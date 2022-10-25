@@ -10,8 +10,7 @@ import (
 const testAccDataSourceTaikunCloudCredentialOpenStackConfig = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
-
-  lock       = %t
+  lock = %t
 }
 
 data "taikun_cloud_credential_openstack" "foo" {

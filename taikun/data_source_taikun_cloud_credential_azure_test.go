@@ -11,7 +11,6 @@ import (
 const testAccDataSourceTaikunCloudCredentialAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
   location = "%s"
 
   lock       = %t
@@ -32,7 +31,6 @@ func TestAccDataSourceTaikunCloudCredentialAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
