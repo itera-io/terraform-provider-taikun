@@ -103,7 +103,7 @@ func testAccPreCheckGCP(t *testing.T) {
 		t.Fatal("GCP_REGION must be set for acceptance tests")
 	}
 	if err := os.Getenv("GCP_AZ_COUNT"); err == "" {
-		t.Fatal("GCP_ZONE must be set for acceptance tests")
+		t.Fatal("GCP_AZ_COUNT must be set for acceptance tests")
 	}
 }
 
