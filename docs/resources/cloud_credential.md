@@ -59,7 +59,7 @@ resource "taikun_cloud_credential" "foo" {
 - `client_id` (String, Sensitive) The Azure client ID. Required for Azure.
 - `client_secret` (String, Sensitive) The Azure client secret. Required for Azure.
 - `config_file` (String) The path of the GCP credential's configuration file. Required for GCP.
-- `continent` (String) The OpenStack continent. Can be 'as' for Asia, 'eu' for Europe or 'us' for America.
+- `continent` (String) The OpenStack continent (`Asia`, `Europe` or `America`).
 - `domain` (String) The OpenStack domain. Required for Openstack.
 - `folder_id` (String) The folder ID of the GCP credential. Conflicts with: `import_project`.
 - `import_project` (Boolean) Whether to import a project or not Defaults to `false`. Conflicts with: `billing_account_id`, `folder_id`.

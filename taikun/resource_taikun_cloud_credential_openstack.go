@@ -27,15 +27,15 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"continent": {
-			Description: "The OpenStack continent. Can be 'as' for Asia, 'eu'for Europe or 'us' for America.",
+			Description: "The OpenStack continent (`Asia`, `Europe` or `America`).",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
 			DefaultFunc: schema.EnvDefaultFunc("OS_CONTINENT", nil),
 			ValidateFunc: validation.StringInSlice([]string{
-				"as",
-				"eu",
-				"us",
+				"Asia",
+				"Europe",
+				"America",
 			}, false),
 		},
 		"domain": {
@@ -216,7 +216,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 
 	continentData, continentIsSet := d.GetOk("continent")
 	if continentIsSet {
-		body.OpenStackContinent = continentData.(string)
+		body.OpenStackContinent = continentShorthand(continentData.(string))
 	}
 
 	params := openstack.NewOpenstackCreateParams().WithV(ApiVersion).WithBody(body)
