@@ -98,6 +98,7 @@ jobs:
           OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
           OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
           OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
+          OS_CONTINENT: ${{ secrets.OS_CONTINENT }}
 
           GCP_FOLDER_ID: ${{ secrets.GCP_FOLDER_ID }}
           GCP_BILLING_ACCOUNT: ${{ secrets.GCP_BILLING_ACCOUNT }}
