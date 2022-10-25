@@ -88,7 +88,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 const testAccResourceTaikunProjectToggleBackupConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_backup_credential" "foo" {
@@ -127,7 +126,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectToggleBackupConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
@@ -152,7 +150,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectToggleBackupConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
@@ -177,7 +174,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectToggleBackupConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
@@ -202,7 +198,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectToggleBackupConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
@@ -231,7 +226,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 const testAccResourceTaikunProjectConfigWithFlavors = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
@@ -271,7 +265,6 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					cpuCount, cpuCount,
 					projectName),
 				Check: checkFunc,
@@ -279,7 +272,6 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					newCpuCount, newCpuCount,
 					projectName),
 				Check: checkFunc,
