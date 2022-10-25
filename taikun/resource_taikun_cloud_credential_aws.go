@@ -37,6 +37,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"created_by": {
 			Description: "The creator of the AWS cloud credential.",

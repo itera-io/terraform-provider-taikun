@@ -20,6 +20,7 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"access_key_id": {
 			Description:  "The AWS access key ID. Required for AWS.",

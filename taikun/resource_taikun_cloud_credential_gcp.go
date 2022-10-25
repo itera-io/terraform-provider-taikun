@@ -22,6 +22,7 @@ func resourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"billing_account_id": {
 			Description:   "The ID of the GCP credential's billing account.",

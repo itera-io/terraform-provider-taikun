@@ -29,6 +29,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Required:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"client_id": {
 			Description:  "The Azure client ID.",
