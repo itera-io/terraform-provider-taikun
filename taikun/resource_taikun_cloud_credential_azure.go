@@ -15,12 +15,21 @@ import (
 
 func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"availability_zone": {
-			Description:  "The Azure availability zone for the location.",
-			Type:         schema.TypeString,
-			Required:     true,
+		"availability_zones": {
+			Description: "The given Azure availability zones for the location.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"az_count": {
+			Description:  "The number of Azure availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Optional:     true,
 			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
+			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"client_id": {
 			Description:  "The Azure client ID.",
@@ -135,14 +144,23 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAzureCloudCommand{
-		Name:                  d.Get("name").(string),
-		AzureTenantID:         d.Get("tenant_id").(string),
-		AzureClientID:         d.Get("client_id").(string),
-		AzureClientSecret:     d.Get("client_secret").(string),
-		AzureSubscriptionID:   d.Get("subscription_id").(string),
-		AzureLocation:         d.Get("location").(string),
-		AzureAvailabilityZone: d.Get("availability_zone").(string),
+		Name:                d.Get("name").(string),
+		AzureTenantID:       d.Get("tenant_id").(string),
+		AzureClientID:       d.Get("client_id").(string),
+		AzureClientSecret:   d.Get("client_secret").(string),
+		AzureSubscriptionID: d.Get("subscription_id").(string),
+		AzureLocation:       d.Get("location").(string),
 	}
+
+	azCount := int32(d.Get("az_count").(int))
+	/*
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
+	body.AzCount = azCount
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -252,18 +270,18 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":        rawAzureCredential.CreatedBy,
-		"id":                i32toa(rawAzureCredential.ID),
-		"lock":              rawAzureCredential.IsLocked,
-		"is_default":        rawAzureCredential.IsDefault,
-		"last_modified":     rawAzureCredential.LastModified,
-		"last_modified_by":  rawAzureCredential.LastModifiedBy,
-		"name":              rawAzureCredential.Name,
-		"organization_id":   i32toa(rawAzureCredential.OrganizationID),
-		"organization_name": rawAzureCredential.OrganizationName,
-		"availability_zone": rawAzureCredential.AvailabilityZone,
-		"location":          rawAzureCredential.Location,
-		"tenant_id":         rawAzureCredential.TenantID,
+		"created_by":         rawAzureCredential.CreatedBy,
+		"id":                 i32toa(rawAzureCredential.ID),
+		"lock":               rawAzureCredential.IsLocked,
+		"is_default":         rawAzureCredential.IsDefault,
+		"last_modified":      rawAzureCredential.LastModified,
+		"last_modified_by":   rawAzureCredential.LastModifiedBy,
+		"name":               rawAzureCredential.Name,
+		"organization_id":    i32toa(rawAzureCredential.OrganizationID),
+		"organization_name":  rawAzureCredential.OrganizationName,
+		"availability_zones": rawAzureCredential.AvailabilityZones,
+		"location":           rawAzureCredential.Location,
+		"tenant_id":          rawAzureCredential.TenantID,
 	}
 }
 

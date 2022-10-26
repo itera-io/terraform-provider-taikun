@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/itera-io/taikungoclient"
@@ -23,7 +22,6 @@ resource "taikun_user" "foo" {
 
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_project" "foo" {
@@ -53,7 +51,6 @@ func TestAccResourceTaikunProjectUserAttachment(t *testing.T) {
 					userName,
 					userEmail,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(

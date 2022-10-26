@@ -27,7 +27,8 @@ data "taikun_cloud_credential_aws" "foo" {
 
 ### Read-Only
 
-- `availability_zone` (String) The AWS availability zone for the region.
+- `availability_zones` (List of String) The given AWS availability zones for the region.
+- `az_count` (Number) The number of AWS availability zone expected for the region.
 - `created_by` (String) The creator of the AWS cloud credential.
 - `is_default` (Boolean) Indicates whether the AWS cloud credential is the default one.
 - `last_modified` (String) Time and date of last modification.

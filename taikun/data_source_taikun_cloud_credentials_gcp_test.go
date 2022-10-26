@@ -21,7 +21,6 @@ resource "taikun_cloud_credential_gcp" "foo" {
   config_file = "./gcp.json"
   import_project = true
   region = "%s"
-  zone = "%s"
   lock = true
 }
 
@@ -48,14 +47,12 @@ func TestAccDataSourceTaikunCloudCredentialsGCP(t *testing.T) {
 					organizationFullName,
 					cloudCredentialName,
 					os.Getenv("GCP_REGION"),
-					os.Getenv("GCP_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.0.organization_name", organizationName),
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.0.name", cloudCredentialName),
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.0.lock", "true"),
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.0.region", os.Getenv("GCP_REGION")),
-					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.0.zone", os.Getenv("GCP_ZONE")),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_gcp.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_gcp.all", "cloud_credentials.0.id"),

@@ -16,6 +16,14 @@ import (
 
 func resourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"az_count": {
+			Description:  "The number of GCP availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
+		},
 		"billing_account_id": {
 			Description:   "The ID of the GCP credential's billing account.",
 			Type:          schema.TypeString,
@@ -99,12 +107,13 @@ func resourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"zone": {
-			Description:  "The zone of the GCP credential.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
+		"zones": {
+			Description: "The given zones of the GCP credential.",
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 	}
 }
@@ -135,8 +144,16 @@ func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.Resou
 	params = params.WithName(&name)
 	region := d.Get("region").(string)
 	params = params.WithRegion(&region)
-	zone := d.Get("zone").(string)
-	params = params.WithZone(&zone)
+
+	azCount := int32(d.Get("az_count").(int))
+	/*
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
+	params = params.WithAzCount(&azCount)
 
 	importProject := d.Get("import_project").(bool)
 	params = params.WithImportProject(&importProject)
@@ -244,7 +261,7 @@ func flattenTaikunCloudCredentialGCP(rawGCPCredential *models.GoogleCredentialsL
 		"organization_id":      i32toa(rawGCPCredential.OrganizationID),
 		"organization_name":    rawGCPCredential.OrganizationName,
 		"region":               rawGCPCredential.Region,
-		"zone":                 rawGCPCredential.Zone,
+		"zones":                rawGCPCredential.Zones,
 	}
 }
 

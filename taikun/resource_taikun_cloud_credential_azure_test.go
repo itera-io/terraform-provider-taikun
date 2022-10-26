@@ -16,7 +16,7 @@ import (
 const testAccResourceTaikunCloudCredentialAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
+  az_count = "%d"
   location = "%s"
 
   lock       = %t
@@ -25,6 +25,7 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	azCount, _ := atoi32(os.Getenv("ARM_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
@@ -34,7 +35,7 @@ func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					azCount,
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
@@ -45,7 +46,7 @@ func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_secret", os.Getenv("ARM_CLIENT_SECRET")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "tenant_id", os.Getenv("ARM_TENANT_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "subscription_id", os.Getenv("ARM_SUBSCRIPTION_ID")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "availability_zone", os.Getenv("ARM_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "az_count", os.Getenv("ARM_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "location", os.Getenv("ARM_LOCATION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_id"),
@@ -59,6 +60,7 @@ func TestAccResourceTaikunCloudCredentialAzure(t *testing.T) {
 
 func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
+	azCount, _ := atoi32(os.Getenv("ARM_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
@@ -68,7 +70,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					azCount,
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
@@ -79,7 +81,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_secret", os.Getenv("ARM_CLIENT_SECRET")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "tenant_id", os.Getenv("ARM_TENANT_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "subscription_id", os.Getenv("ARM_SUBSCRIPTION_ID")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "availability_zone", os.Getenv("ARM_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "az_count", os.Getenv("ARM_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "location", os.Getenv("ARM_LOCATION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_id"),
@@ -90,7 +92,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					azCount,
 					os.Getenv("ARM_LOCATION"),
 					true,
 				),
@@ -101,7 +103,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_secret", os.Getenv("ARM_CLIENT_SECRET")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "tenant_id", os.Getenv("ARM_TENANT_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "subscription_id", os.Getenv("ARM_SUBSCRIPTION_ID")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "availability_zone", os.Getenv("ARM_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "az_count", os.Getenv("ARM_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "location", os.Getenv("ARM_LOCATION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_id"),
@@ -116,6 +118,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	newCloudCredentialName := randomTestName()
+	azCount, _ := atoi32(os.Getenv("ARM_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
@@ -125,7 +128,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					azCount,
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
@@ -136,7 +139,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_secret", os.Getenv("ARM_CLIENT_SECRET")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "tenant_id", os.Getenv("ARM_TENANT_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "subscription_id", os.Getenv("ARM_SUBSCRIPTION_ID")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "availability_zone", os.Getenv("ARM_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "az_count", os.Getenv("ARM_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "location", os.Getenv("ARM_LOCATION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_id"),
@@ -147,7 +150,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAzureConfig,
 					newCloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
+					azCount,
 					os.Getenv("ARM_LOCATION"),
 					false,
 				),
@@ -158,7 +161,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_secret", os.Getenv("ARM_CLIENT_SECRET")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "tenant_id", os.Getenv("ARM_TENANT_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "subscription_id", os.Getenv("ARM_SUBSCRIPTION_ID")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "availability_zone", os.Getenv("ARM_AVAILABILITY_ZONE")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "az_count", os.Getenv("ARM_AZ_COUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "location", os.Getenv("ARM_LOCATION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_id"),
