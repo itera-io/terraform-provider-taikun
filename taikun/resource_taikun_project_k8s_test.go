@@ -24,7 +24,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					enableMonitoring,
@@ -44,7 +43,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					disableMonitoring,
@@ -64,7 +62,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					enableMonitoring,
