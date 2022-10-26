@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,7 +15,6 @@ import (
 const testAccResourceTaikunProjectConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_project" "foo" {
@@ -44,7 +42,6 @@ func TestAccResourceTaikunProject(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					enableMonitoring,
@@ -86,7 +83,6 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					enableMonitoring,
@@ -106,7 +102,6 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					enableMonitoring,
@@ -130,7 +125,6 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 const testAccResourceTaikunProjectConfigWithAlertingProfile = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_alerting_profile" "foo" {
@@ -153,7 +147,6 @@ resource "taikun_project" "foo" {
 const testAccResourceTaikunProjectConfigWithAlertingProfileDetach = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_alerting_profile" "foo" {
@@ -174,7 +167,6 @@ resource "taikun_project" "foo" {
 const testAccResourceTaikunProjectConfigWithAlertingProfiles = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_alerting_profile" "%s" {
@@ -218,7 +210,6 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithAlertingProfiles,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					alertingProfileResourceName,
 					alertingProfileName,
 					newAlertingProfileResourceName,
@@ -245,7 +236,6 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithAlertingProfiles,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					alertingProfileResourceName,
 					alertingProfileName,
 					newAlertingProfileResourceName,
@@ -288,7 +278,6 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithAlertingProfile,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					alertingProfileName,
 					projectName,
 					enableAutoUpgrade,
@@ -310,7 +299,6 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithAlertingProfileDetach,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					alertingProfileName,
 					projectName,
 					enableAutoUpgrade,
@@ -336,7 +324,6 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 const testAccResourceTaikunProjectKubernetesVersionConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 resource "taikun_project" "foo" {
   name = "%s"
@@ -359,7 +346,6 @@ func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectKubernetesVersionConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					kubernetesVersion,
 				),
@@ -375,7 +361,6 @@ func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
 const testAccResourceTaikunProjectLockConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_project" "foo" {
@@ -399,7 +384,6 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					locked,
 				),
@@ -418,7 +402,6 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					unlocked,
 				),
@@ -437,7 +420,6 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					locked,
 				),

@@ -87,8 +87,8 @@ func testAccPreCheckAWS(t *testing.T) {
 	if err := os.Getenv("AWS_DEFAULT_REGION"); err == "" {
 		t.Fatal("AWS_DEFAULT_REGION must be set for acceptance tests")
 	}
-	if err := os.Getenv("AWS_AVAILABILITY_ZONE"); err == "" {
-		t.Fatal("AWS_AVAILABILITY_ZONE must be set for acceptance tests")
+	if err := os.Getenv("AWS_AZ_COUNT"); err == "" {
+		t.Fatal("AWS_AZ_COUNT must be set for acceptance tests")
 	}
 }
 
@@ -102,8 +102,8 @@ func testAccPreCheckGCP(t *testing.T) {
 	if err := os.Getenv("GCP_REGION"); err == "" {
 		t.Fatal("GCP_REGION must be set for acceptance tests")
 	}
-	if err := os.Getenv("GCP_ZONE"); err == "" {
-		t.Fatal("GCP_ZONE must be set for acceptance tests")
+	if err := os.Getenv("GCP_AZ_COUNT"); err == "" {
+		t.Fatal("GCP_AZ_COUNT must be set for acceptance tests")
 	}
 }
 
@@ -135,8 +135,8 @@ func testAccPreCheckAzure(t *testing.T) {
 	if err := os.Getenv("ARM_CLIENT_SECRET"); err == "" {
 		t.Fatal("ARM_CLIENT_SECRET must be set for acceptance tests")
 	}
-	if err := os.Getenv("ARM_AVAILABILITY_ZONE"); err == "" {
-		t.Fatal("ARM_AVAILABILITY_ZONE must be set for acceptance tests")
+	if err := os.Getenv("ARM_AZ_COUNT"); err == "" {
+		t.Fatal("ARM_AZ_COUNT must be set for acceptance tests")
 	}
 	if err := os.Getenv("ARM_LOCATION"); err == "" {
 		t.Fatal("ARM_LOCATION must be set for acceptance tests")

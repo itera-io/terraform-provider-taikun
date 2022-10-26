@@ -23,11 +23,21 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"availability_zone": {
-			Description: "The AWS availability zone for the region.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+		"availability_zones": {
+			Description: "The given AWS availability zones for the region.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"az_count": {
+			Description:  "The number of AWS availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"created_by": {
 			Description: "The creator of the AWS cloud credential.",
@@ -151,12 +161,21 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAwsCloudCommand{
-		Name:                d.Get("name").(string),
-		AwsAccessKeyID:      d.Get("access_key_id").(string),
-		AwsSecretAccessKey:  d.Get("secret_access_key").(string),
-		AwsAvailabilityZone: d.Get("availability_zone").(string),
-		AwsRegion:           d.Get("region").(string),
+		Name:               d.Get("name").(string),
+		AwsAccessKeyID:     d.Get("access_key_id").(string),
+		AwsSecretAccessKey: d.Get("secret_access_key").(string),
+		AwsRegion:          d.Get("region").(string),
 	}
+
+	/*
+		azCount, err := atoi32(d.Get("az_count").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
+	body.AzCount = int32(d.Get("az_count").(int))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -265,17 +284,17 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 
 func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {
 	return map[string]interface{}{
-		"created_by":        rawAWSCredential.CreatedBy,
-		"id":                i32toa(rawAWSCredential.ID),
-		"lock":              rawAWSCredential.IsLocked,
-		"is_default":        rawAWSCredential.IsDefault,
-		"last_modified":     rawAWSCredential.LastModified,
-		"last_modified_by":  rawAWSCredential.LastModifiedBy,
-		"name":              rawAWSCredential.Name,
-		"organization_id":   i32toa(rawAWSCredential.OrganizationID),
-		"organization_name": rawAWSCredential.OrganizationName,
-		"availability_zone": rawAWSCredential.AvailabilityZone,
-		"region":            rawAWSCredential.Region,
+		"created_by":         rawAWSCredential.CreatedBy,
+		"id":                 i32toa(rawAWSCredential.ID),
+		"lock":               rawAWSCredential.IsLocked,
+		"is_default":         rawAWSCredential.IsDefault,
+		"last_modified":      rawAWSCredential.LastModified,
+		"last_modified_by":   rawAWSCredential.LastModifiedBy,
+		"name":               rawAWSCredential.Name,
+		"organization_id":    i32toa(rawAWSCredential.OrganizationID),
+		"organization_name":  rawAWSCredential.OrganizationName,
+		"availability_zones": rawAWSCredential.AvailabilityZones,
+		"region":             rawAWSCredential.Region,
 	}
 }
 

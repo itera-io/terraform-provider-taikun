@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,7 +10,6 @@ import (
 const testAccDataSourceTaikunCloudCredentialsAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 data "taikun_cloud_credentials_aws" "all" {
@@ -30,7 +28,6 @@ func TestAccDataSourceTaikunCloudCredentialsAWS(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialsAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_aws.all", "id", "all"),
@@ -42,7 +39,6 @@ func TestAccDataSourceTaikunCloudCredentialsAWS(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.availability_zone"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.region"),
 				),
 			},
@@ -59,7 +55,6 @@ resource "taikun_organization" "foo" {
 
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
   organization_id = resource.taikun_organization.foo.id
 }
 
@@ -85,7 +80,6 @@ func TestAccDataSourceTaikunCloudCredentialsAWSWithFilter(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.organization_name", organizationName),
@@ -97,7 +91,6 @@ func TestAccDataSourceTaikunCloudCredentialsAWSWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.is_default"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.availability_zone"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_aws.all", "cloud_credentials.0.region"),
 				),
 			},

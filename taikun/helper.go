@@ -343,3 +343,17 @@ func setResourceDataId(d *schema.ResourceData, id int32) {
 	idAsString := strconv.FormatInt(int64(id), 10)
 	d.SetId(idAsString)
 }
+
+func continentShorthand(continent string) string {
+	continent = strings.ToLower(continent)
+	if continent == "europe" {
+		return "eu"
+	}
+	if continent == "asia" {
+		return "as"
+	}
+	if continent == "america" {
+		return "us"
+	}
+	return ""
+}

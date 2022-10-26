@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,7 +10,6 @@ import (
 const testAccDataSourceTaikunProjectConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_project" "foo" {
@@ -42,7 +40,6 @@ func TestAccDataSourceTaikunProject(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunProjectConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 					enableAutoUpgrade,
 					enableMonitoring,
