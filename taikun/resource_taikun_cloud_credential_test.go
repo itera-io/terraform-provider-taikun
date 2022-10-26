@@ -17,6 +17,7 @@ const testAccResourceTaikunCloudCredentialConfig = `
 resource "taikun_cloud_credential" "foo" {
   type = "%s"
   name = "%s"
+  region = "%s"
 
   lock       = %t
 }
@@ -33,6 +34,7 @@ func TestAccResourceTaikunCloudCredentials(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
 					cloudCredentialName,
+					os.Getenv("OS_REGION_NAME"),
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -68,6 +70,7 @@ func TestAccResourceTaikunCloudCredentialsLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
 					cloudCredentialName,
+					os.Getenv("OS_REGION_NAME"),
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -92,6 +95,7 @@ func TestAccResourceTaikunCloudCredentialsLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
 					cloudCredentialName,
+					os.Getenv("OS_REGION_NAME"),
 					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -129,6 +133,7 @@ func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
 					cloudCredentialName,
+					os.Getenv("OS_REGION_NAME"),
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -153,6 +158,7 @@ func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialConfig, "openstack",
 					newCloudCredentialName,
+					os.Getenv("OS_REGION_NAME"),
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
