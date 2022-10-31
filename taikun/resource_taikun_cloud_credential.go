@@ -250,7 +250,7 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"zone": {
-			Description:  "The zone of the GCP credential.",
+			Description:  "The zone of the GCP credential. Required for GCP.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
