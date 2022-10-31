@@ -14,14 +14,6 @@ import (
 
 func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"az_count": {
-			Description:  "The number of availability zone expected for the region/location. Required for AWS, Azure and GCP.",
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntBetween(1, 3),
-			Default:      1,
-		},
 		"access_key_id": {
 			Description:  "The AWS access key ID. Required for AWS.",
 			Type:         schema.TypeString,
@@ -31,18 +23,10 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"availability_zone": {
-			Description: "The availability zone of the cloud credential. Optional for Openstack.",
+			Description: "The availability zone of the cloud credential. Optional for Openstack. Required for AWS and Azure. See `zone` for GCP.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-		},
-		"availability_zones": {
-			Description: "The given AWS/Azure/GCP availability zones for the region/location.",
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
 		},
 		"billing_account_id": {
 			Description:   "The ID of the GCP credential's billing account.",
@@ -79,18 +63,6 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Sensitive:    true,
 			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
-		},
-		"continent": {
-			Description: "The OpenStack continent (`Asia`, `Europe` or `America`).",
-			Type:        schema.TypeString,
-			Optional:    true,
-			ForceNew:    true,
-			DefaultFunc: schema.EnvDefaultFunc("OS_CONTINENT", nil),
-			ValidateFunc: validation.StringInSlice([]string{
-				"Asia",
-				"Europe",
-				"America",
-			}, false),
 		},
 		"created_by": {
 			Description: "The creator of the cloud credential.",
@@ -277,13 +249,12 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Optional:    true,
 			ForceNew:    true,
 		},
-		"zones": {
-			Description: "The given zones of the GCP credential.",
-			Type:        schema.TypeSet,
-			Computed:    true,
-			Elem: &schema.Schema{
-				Type: schema.TypeString,
-			},
+		"zone": {
+			Description:  "The zone of the GCP credential.",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
 }
