@@ -49,7 +49,6 @@ resource "taikun_cloud_credential" "foo" {
 
 - `name` (String) The name of the cloud credential.
 - `type` (String) The type of the cloud credential.
-- `zone` (String) The zone of the GCP credential.
 
 ### Optional
 
@@ -76,6 +75,7 @@ resource "taikun_cloud_credential" "foo" {
 - `url` (String) The OpenStack authentication URL. Required for Openstack.
 - `user` (String) The OpenStack user. Required for Openstack.
 - `volume_type_name` (String) The OpenStack type of volume.
+- `zone` (String) The zone of the GCP credential.
 
 ### Read-Only
 
