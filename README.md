@@ -20,7 +20,7 @@ See the section titled *USE PROVIDER* to start using it.
 ### Requirements
 
 -	[Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
--	[Go](https://golang.org/doc/install) >= 1.17
+-	[Go](https://golang.org/doc/install) >= 1.19
 
 ## <a name="build"></a> Building and installing the provider
 
