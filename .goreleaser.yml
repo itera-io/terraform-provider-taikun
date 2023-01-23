@@ -48,8 +48,7 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
-  draft: true
-  replace_existing_draft: true
-  prerelease: true
+# If you want to manually examine the release before its live, uncomment this line:
+# draft: true
 changelog:
   use: github-native
