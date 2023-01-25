@@ -296,22 +296,14 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
 	if d.HasChange("backup_credential_id") {
 		projectID, _ := atoi32(d.Id())
-		oldCredential, _ := d.GetChange("backup_credential_id")
 
-		if oldCredential != "" {
-
-			oldCredentialID, _ := atoi32(oldCredential.(string))
-
-			disableBody := &models.DisableBackupCommand{
-				ProjectID:      projectID,
-				S3CredentialID: oldCredentialID,
-			}
-			disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
-			_, err := apiClient.Client.Backup.BackupDisableBackup(disableParams, apiClient)
-			if err != nil {
-				return err
-			}
-
+		disableBody := &models.DisableBackupCommand{
+			ProjectID: projectID,
+		}
+		disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
+		_, err := apiClient.Client.Backup.BackupDisableBackup(disableParams, apiClient)
+		if err != nil {
+			return err
 		}
 
 		newCredential, newCredentialIsSet := d.GetOk("backup_credential_id")
