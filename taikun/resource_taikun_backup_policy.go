@@ -101,12 +101,11 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	projectId, _ := atoi32(d.Get("project_id").(string))
 
 	body := &models.CreateBackupPolicyCommand{
-		CronPeriod:        d.Get("cron_period").(string),
-		ExcludeNamespaces: resourceGetStringList(d.Get("excluded_namespaces")),
+		CronPeriod:        stringAddress(d.Get("cron_period")),
 		IncludeNamespaces: resourceGetStringList(d.Get("included_namespaces")),
-		Name:              d.Get("name").(string),
-		ProjectID:         projectId,
-		RetentionPeriod:   d.Get("retention_period").(string),
+		Name:              stringAddress(d.Get("name")),
+		ProjectID:         int32Address(projectId),
+		RetentionPeriod:   stringAddress(d.Get("retention_period")),
 	}
 
 	params := backup.NewBackupCreateParams().WithV(ApiVersion).WithBody(body)

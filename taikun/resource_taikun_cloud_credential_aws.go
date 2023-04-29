@@ -161,10 +161,10 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAwsCloudCommand{
-		Name:               d.Get("name").(string),
-		AwsAccessKeyID:     d.Get("access_key_id").(string),
-		AwsSecretAccessKey: d.Get("secret_access_key").(string),
-		AwsRegion:          d.Get("region").(string),
+		Name:               stringAddress(d.Get("name")),
+		AwsAccessKeyID:     stringAddress(d.Get("access_key_id")),
+		AwsSecretAccessKey: stringAddress(d.Get("secret_access_key")),
+		AwsRegion:          stringAddress(d.Get("region")),
 	}
 
 	/*
@@ -261,10 +261,10 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 
 	if d.HasChanges("access_key_id", "secret_access_key", "name") {
 		updateBody := &models.UpdateAwsCommand{
-			ID:                 id,
-			Name:               d.Get("name").(string),
-			AwsAccessKeyID:     d.Get("access_key_id").(string),
-			AwsSecretAccessKey: d.Get("secret_access_key").(string),
+			ID:                 int32Address(id),
+			Name:               stringAddress(d.Get("name")),
+			AwsAccessKeyID:     stringAddress(d.Get("access_key_id")),
+			AwsSecretAccessKey: stringAddress(d.Get("secret_access_key")),
 		}
 		updateParams := aws.NewAwsUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.Client.Aws.AwsUpdate(updateParams, apiClient)

@@ -115,7 +115,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 
 	octaviaEnabled, taikunLBEnabled := parseLoadBalancingSolution(d.Get("load_balancing_solution").(string))
 	body := &models.CreateKubernetesProfileCommand{
-		Name:                    d.Get("name").(string),
+		Name:                    stringAddress(d.Get("name")),
 		AllowSchedulingOnMaster: d.Get("schedule_on_master").(bool),
 		TaikunLBEnabled:         taikunLBEnabled,
 		OctaviaEnabled:          octaviaEnabled,

@@ -195,7 +195,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAccessProfileCommand{
-		Name: d.Get("name").(string),
+		Name: stringAddress(d.Get("name")),
 	}
 
 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
@@ -235,8 +235,8 @@ func resourceTaikunAccessProfileCreateAllowedHosts(d *schema.ResourceData, body 
 			allowedHost := rawAllowedHost.(map[string]interface{})
 			body.AllowedHosts[i] = &models.AllowedHostCreateDto{
 				Description: allowedHost["description"].(string),
-				IPAddress:   allowedHost["address"].(string),
-				MaskBits:    int32(allowedHost["mask_bits"].(int)),
+				IPAddress:   stringAddress(allowedHost["address"]),
+				MaskBits:    int32Address(allowedHost["mask_bits"].(int)),
 			}
 		}
 	}
@@ -250,7 +250,7 @@ func resourceTaikunAccessProfileCreateDnsServers(d *schema.ResourceData, body *m
 		for i, rawDnsServer := range dnsServers {
 			dnsServer := rawDnsServer.(map[string]interface{})
 			body.DNSServers[i] = &models.DNSServerCreateDto{
-				Address: dnsServer["address"].(string),
+				Address: stringAddress(dnsServer["address"]),
 			}
 		}
 	}
@@ -264,7 +264,7 @@ func resourceTaikunAccessProfileCreateNtpServers(d *schema.ResourceData, body *m
 		for i, rawNtpServer := range ntpServers {
 			ntpServer := rawNtpServer.(map[string]interface{})
 			body.NtpServers[i] = &models.NtpServerCreateDto{
-				Address: ntpServer["address"].(string),
+				Address: stringAddress(ntpServer["address"]),
 			}
 		}
 	}
@@ -278,8 +278,8 @@ func resourceTaikunAccessProfileCreateSshUsers(d *schema.ResourceData, body *mod
 		for i, rawSshUser := range sshUsers {
 			sshUser := rawSshUser.(map[string]interface{})
 			body.SSHUsers[i] = &models.SSHUserCreateDto{
-				Name:         sshUser["name"].(string),
-				SSHPublicKey: sshUser["public_key"].(string),
+				Name:         stringAddress(sshUser["name"]),
+				SSHPublicKey: stringAddress(sshUser["public_key"]),
 			}
 		}
 	}
@@ -441,10 +441,10 @@ func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, acces
 	for _, rawNewAllowedHost := range newAllowedHosts {
 		newAllowedHost := rawNewAllowedHost.(map[string]interface{})
 		body := models.CreateAllowedHostCommand{
-			AccessProfileID: accessProfileId,
+			AccessProfileID: int32Address(accessProfileId),
 			Description:     newAllowedHost["description"].(string),
-			IPAddress:       newAllowedHost["address"].(string),
-			MaskBits:        int32(newAllowedHost["mask_bits"].(int)),
+			IPAddress:       stringAddress(newAllowedHost["address"]),
+			MaskBits:        int32Address(newAllowedHost["mask_bits"]),
 		}
 		params := allowed_host.NewAllowedHostCreateParams().WithV(ApiVersion).WithBody(&body)
 		if _, err = apiClient.Client.AllowedHost.AllowedHostCreate(params, apiClient); err != nil {
@@ -478,8 +478,8 @@ func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessP
 	for _, rawNewDnsServer := range newDnsServers {
 		newDnsServer := rawNewDnsServer.(map[string]interface{})
 		body := models.CreateDNSServerCommand{
-			AccessProfileID: accessProfileId,
-			Address:         newDnsServer["address"].(string),
+			AccessProfileID: int32Address(accessProfileId),
+			Address:         stringAddress(newDnsServer["address"]),
 		}
 		params := dns_servers.NewDNSServersCreateParams().WithV(ApiVersion).WithBody(&body)
 		if _, err = apiClient.Client.DNSServers.DNSServersCreate(params, apiClient); err != nil {
@@ -513,8 +513,8 @@ func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, accessP
 	for _, rawNewNtpServer := range newNtpServers {
 		newNtpServer := rawNewNtpServer.(map[string]interface{})
 		body := models.CreateNtpServerCommand{
-			AccessProfileID: accessProfileId,
-			Address:         newNtpServer["address"].(string),
+			AccessProfileID: int32Address(accessProfileId),
+			Address:         stringAddress(newNtpServer["address"]),
 		}
 		params := ntp_servers.NewNtpServersCreateParams().WithV(ApiVersion).WithBody(&body)
 		if _, err = apiClient.Client.NtpServers.NtpServersCreate(params, apiClient); err != nil {
@@ -548,9 +548,9 @@ func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessPro
 	for _, rawNewSshUser := range newSshUsers {
 		newSshUser := rawNewSshUser.(map[string]interface{})
 		body := models.CreateSSHUserCommand{
-			AccessProfileID: accessProfileId,
-			Name:            newSshUser["name"].(string),
-			SSHPublicKey:    newSshUser["public_key"].(string),
+			AccessProfileID: int32Address(accessProfileId),
+			Name:            stringAddress(newSshUser["name"]),
+			SSHPublicKey:    stringAddress(newSshUser["public_key"]),
 		}
 		params := ssh_users.NewSSHUsersCreateParams().WithV(ApiVersion).WithBody(&body)
 		if _, err = apiClient.Client.SSHUsers.SSHUsersCreate(params, apiClient); err != nil {
@@ -634,8 +634,8 @@ func flattenTaikunAccessProfile(rawAccessProfile *models.AccessProfilesListDto, 
 
 func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
 	body := models.AccessProfilesLockManagementCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
+		ID:   int32Address(id),
+		Mode: stringAddress(getLockMode(lock)),
 	}
 	params := access_profiles.NewAccessProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
 	_, err := apiClient.Client.AccessProfiles.AccessProfilesLockManager(params, apiClient)

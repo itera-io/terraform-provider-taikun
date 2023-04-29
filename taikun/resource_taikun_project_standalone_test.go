@@ -110,7 +110,7 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk2"
       size = 30
-      volume_type = "ssd-2000iops"
+      volume_type = "ssd"
     }
     tag {
       key = "key"
@@ -340,7 +340,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 					standaloneProfileName,
 					projectName,
 					0,
-					"volume_type = \"ssd-2000iops\"",
+					"volume_type = \"ssd\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,

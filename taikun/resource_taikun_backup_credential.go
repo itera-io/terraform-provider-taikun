@@ -109,11 +109,11 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.Resourc
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.BackupCredentialsCreateCommand{
-		S3Name:        d.Get("name").(string),
-		S3AccessKeyID: d.Get("s3_access_key_id").(string),
-		S3SecretKey:   d.Get("s3_secret_access_key").(string),
+		S3Name:        stringAddress(d.Get("name")),
+		S3AccessKeyID: stringAddress(d.Get("s3_access_key_id")),
+		S3SecretKey:   stringAddress(d.Get("s3_secret_access_key")),
 		S3Region:      d.Get("s3_region").(string),
-		S3Endpoint:    d.Get("s3_endpoint").(string),
+		S3Endpoint:    stringAddress(d.Get("s3_endpoint")),
 	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
@@ -200,10 +200,10 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 
 	if d.HasChanges("name", "s3_access_key_id", "s3_secret_access_key") {
 		updateBody := models.BackupCredentialsUpdateCommand{
-			ID:            id,
-			S3AccessKeyID: d.Get("s3_access_key_id").(string),
-			S3SecretKey:   d.Get("s3_secret_access_key").(string),
-			S3Name:        d.Get("name").(string),
+			ID:            int32Address(id),
+			S3AccessKeyID: stringAddress(d.Get("s3_access_key_id")),
+			S3SecretKey:   stringAddress(d.Get("s3_secret_access_key")),
+			S3Name:        stringAddress(d.Get("name")),
 		}
 		updateParams := s3_credentials.NewS3CredentialsUpdateParams().WithV(ApiVersion).WithBody(&updateBody)
 		_, err = apiClient.Client.S3Credentials.S3CredentialsUpdate(updateParams, apiClient)

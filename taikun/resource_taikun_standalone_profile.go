@@ -130,8 +130,8 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.StandAloneProfileCreateCommand{
-		Name:      d.Get("name").(string),
-		PublicKey: d.Get("public_key").(string),
+		Name:      stringAddress(d.Get("name")),
+		PublicKey: stringAddress(d.Get("public_key")),
 	}
 
 	if securityGroups, isSecurityGroupsSet := d.GetOk("security_group"); isSecurityGroupsSet {
@@ -140,11 +140,11 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 		for i, e := range rawSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
 			securityGroupList[i] = &models.StandAloneProfileSecurityGroupDto{
-				Name:           rawSecurityGroup["name"].(string),
+				Name:           stringAddress(rawSecurityGroup["name"]),
 				PortMaxRange:   int32(rawSecurityGroup["to_port"].(int)),
 				PortMinRange:   int32(rawSecurityGroup["from_port"].(int)),
 				Protocol:       getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)),
-				RemoteIPPrefix: rawSecurityGroup["cidr"].(string),
+				RemoteIPPrefix: stringAddress(rawSecurityGroup["cidr"]),
 			}
 		}
 		body.SecurityGroups = securityGroupList
@@ -238,8 +238,8 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 
 	if d.HasChange("name") {
 		body := models.StandAloneProfileUpdateCommand{
-			ID:   id,
-			Name: d.Get("name").(string),
+			ID:   int32Address(id),
+			Name: stringAddress(d.Get("name")),
 		}
 		params := stand_alone_profile.NewStandAloneProfileEditParams().WithV(ApiVersion).WithBody(&body)
 		_, err := apiClient.Client.StandAloneProfile.StandAloneProfileEdit(params, apiClient)
@@ -278,12 +278,12 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		for _, e := range newSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
 			body := &models.CreateSecurityGroupCommand{
-				Name:                rawSecurityGroup["name"].(string),
+				Name:                stringAddress(rawSecurityGroup["name"]),
 				PortMaxRange:        int32(rawSecurityGroup["to_port"].(int)),
 				PortMinRange:        int32(rawSecurityGroup["from_port"].(int)),
 				Protocol:            getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)),
-				RemoteIPPrefix:      rawSecurityGroup["cidr"].(string),
-				StandAloneProfileID: id,
+				RemoteIPPrefix:      stringAddress(rawSecurityGroup["cidr"]),
+				StandAloneProfileID: int32Address(id),
 			}
 			params := security_group.NewSecurityGroupCreateParams().WithV(ApiVersion).WithBody(body)
 			_, err = apiClient.Client.SecurityGroup.SecurityGroupCreate(params, apiClient)

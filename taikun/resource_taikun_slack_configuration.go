@@ -81,9 +81,9 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.Resou
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := models.CreateSlackConfigurationCommand{
-		Name:      d.Get("name").(string),
-		URL:       d.Get("url").(string),
-		Channel:   d.Get("channel").(string),
+		Name:      stringAddress(d.Get("name")),
+		URL:       stringAddress(d.Get("url")),
+		Channel:   stringAddress(d.Get("channel")),
 		SlackType: getSlackConfigurationType(d.Get("type").(string)),
 	}
 

@@ -144,12 +144,12 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateAzureCloudCommand{
-		Name:                d.Get("name").(string),
-		AzureTenantID:       d.Get("tenant_id").(string),
-		AzureClientID:       d.Get("client_id").(string),
-		AzureClientSecret:   d.Get("client_secret").(string),
-		AzureSubscriptionID: d.Get("subscription_id").(string),
-		AzureLocation:       d.Get("location").(string),
+		Name:                stringAddress(d.Get("name")),
+		AzureTenantID:       stringAddress(d.Get("tenant_id")),
+		AzureClientID:       stringAddress(d.Get("client_id")),
+		AzureClientSecret:   stringAddress(d.Get("client_secret")),
+		AzureSubscriptionID: stringAddress(d.Get("subscription_id")),
+		AzureLocation:       stringAddress(d.Get("location")),
 	}
 
 	azCount := int32(d.Get("az_count").(int))
@@ -246,10 +246,10 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 
 	if d.HasChanges("client_id", "client_secret", "name") {
 		updateBody := &models.UpdateAzureCommand{
-			ID:                id,
-			Name:              d.Get("name").(string),
-			AzureClientID:     d.Get("client_id").(string),
-			AzureClientSecret: d.Get("client_secret").(string),
+			ID:                int32Address(id),
+			Name:              stringAddress(d.Get("name")),
+			AzureClientID:     stringAddress(d.Get("client_id")),
+			AzureClientSecret: stringAddress(d.Get("client_secret")),
 		}
 		updateParams := azure.NewAzureUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.Client.Azure.AzureUpdate(updateParams, apiClient)

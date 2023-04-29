@@ -179,7 +179,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := models.CreateAlertingProfileCommand{
-		Name: d.Get("name").(string),
+		Name: stringAddress(d.Get("name")),
 	}
 
 	if _, emailsIsSet := d.GetOk("emails"); emailsIsSet {
@@ -301,7 +301,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChanges("name", "organization_id", "reminder", "slack_configuration_id") {
 		body := models.UpdateAlertingProfileCommand{
-			ID:   id,
+			ID:   int32Address(id),
 			Name: d.Get("name").(string),
 		}
 		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
@@ -385,7 +385,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 				AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
 				Token:                   alertingIntegration.Token,
 				URL:                     alertingIntegration.URL,
-				AlertingProfileID:       id,
+				AlertingProfileID:       int32Address(id),
 			}
 			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
 			_, err = apiClient.Client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
@@ -418,7 +418,7 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceDa
 func getAlertingProfileEmailsResourceFromEmailDTOs(emailDTOs []*models.AlertingEmailDto) []string {
 	emails := make([]string, len(emailDTOs))
 	for i, emailDTO := range emailDTOs {
-		emails[i] = emailDTO.Email
+		emails[i] = string(*emailDTO.Email)
 	}
 	return emails
 }
@@ -459,7 +459,7 @@ func getEmailDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*mode
 	emailDTOs := make([]*models.AlertingEmailDto, len(emails))
 	for i, email := range emails {
 		emailDTOs[i] = &models.AlertingEmailDto{
-			Email: email.(string),
+			Email: strfmtEmailAddress(email),
 		}
 	}
 	return emailDTOs
@@ -492,10 +492,11 @@ func getIntegrationDTOsFromAlertingProfileResourceData(d *schema.ResourceData) [
 	alertingIntegrationDTOs := make([]*models.AlertingIntegrationDto, len(integrations))
 	for i, integrationData := range integrations {
 		integration := integrationData.(map[string]interface{})
+		alertType := getAlertingIntegrationType(integration["type"].(string))
 		alertingIntegrationDTOs[i] = &models.AlertingIntegrationDto{
-			AlertingIntegrationType: getAlertingIntegrationType(integration["type"].(string)),
+			AlertingIntegrationType: &alertType,
 			Token:                   integration["token"].(string),
-			URL:                     integration["url"].(string),
+			URL:                     stringAddress(integration["url"]),
 		}
 	}
 	return alertingIntegrationDTOs

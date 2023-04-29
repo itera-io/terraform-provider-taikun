@@ -64,10 +64,10 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 		Users: []*models.UpdateProjectUserDto{
 			{
 				IsBound: true,
-				UserID:  userId,
+				ID:      userId,
 			},
 		},
-		ProjectID: projectId,
+		ProjectID: int32Address(projectId),
 	}
 	params := user_projects.NewUserProjectsBindUsersParams().WithV(ApiVersion).WithBody(body)
 	_, err = client.Client.UserProjects.UserProjectsBindUsers(params, client)
@@ -168,10 +168,10 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		Users: []*models.UpdateProjectUserDto{
 			{
 				IsBound: false,
-				UserID:  userId,
+				ID:      userId,
 			},
 		},
-		ProjectID: projectId,
+		ProjectID: int32Address(projectId),
 	}
 	params := user_projects.NewUserProjectsBindUsersParams().WithV(ApiVersion).WithBody(body)
 	_, err = apiClient.Client.UserProjects.UserProjectsBindUsers(params, apiClient)

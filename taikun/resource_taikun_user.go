@@ -115,9 +115,9 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateUserCommand{
-		Username:    d.Get("user_name").(string),
+		Username:    stringAddress(d.Get("user_name")),
 		DisplayName: d.Get("display_name").(string),
-		Email:       d.Get("email").(string),
+		Email:       strfmtEmailAddress(d.Get("email")),
 		Role:        getUserRole(d.Get("role").(string)),
 	}
 
@@ -181,10 +181,10 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.UpdateUserCommand{
-		ID:                  d.Id(),
+		ID:                  stringAddress(d.Id()),
 		DisplayName:         d.Get("display_name").(string),
-		Username:            d.Get("user_name").(string),
-		Email:               d.Get("email").(string),
+		Username:            stringAddress(d.Get("user_name")),
+		Email:               strfmtEmailAddress(d.Get("email")),
 		Role:                getUserRole(d.Get("role").(string)),
 		IsApprovedByPartner: true,
 	}

@@ -402,8 +402,8 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 					mode = "disable"
 				}
 				body := &models.StandAloneVMIPManagementCommand{
-					ID:   vmId,
-					Mode: mode,
+					ID:   int32Address(vmId),
+					Mode: stringAddress(mode),
 				}
 				params := stand_alone.NewStandAloneIPManagementParams().WithV(ApiVersion).WithBody(body)
 				_, err := apiClient.Client.StandAlone.StandAloneIPManagement(params, apiClient)
@@ -414,8 +414,8 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 			if hasChanges(old, new, "flavor") {
 				repairNeeded = true
 				body := &models.UpdateStandAloneVMFlavorCommand{
-					ID:     vmId,
-					Flavor: new["flavor"].(string),
+					ID:     int32Address(vmId),
+					Flavor: stringAddress(new["flavor"]),
 				}
 				params := stand_alone.NewStandAloneUpdateFlavorParams().WithV(ApiVersion).WithBody(body)
 				_, err := apiClient.Client.StandAlone.StandAloneUpdateFlavor(params, apiClient)
@@ -525,13 +525,13 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *taikung
 	vmCreateBody := &models.CreateStandAloneVMCommand{
 		CloudInit:           vmMap["cloud_init"].(string),
 		Count:               1,
-		FlavorName:          vmMap["flavor"].(string),
-		Image:               vmMap["image_id"].(string),
-		Name:                vmMap["name"].(string),
-		ProjectID:           projectID,
+		FlavorName:          stringAddress(vmMap["flavor"]),
+		Image:               stringAddress(vmMap["image_id"]),
+		Name:                stringAddress(vmMap["name"]),
+		ProjectID:           int32Address(projectID),
 		PublicIPEnabled:     vmMap["public_ip"].(bool),
 		StandAloneMetaDatas: make([]*models.StandAloneMetaDataDto, 0),
-		StandAloneProfileID: standaloneProfileId,
+		StandAloneProfileID: int32Address(standaloneProfileId),
 		StandAloneVMDisks:   make([]*models.StandAloneVMDiskDto, 0),
 		VolumeSize:          int64(vmMap["volume_size"].(int)),
 	}
@@ -551,8 +551,8 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *taikung
 		for i, e := range rawTags {
 			rawTag := e.(map[string]interface{})
 			tagsList[i] = &models.StandAloneMetaDataDto{
-				Key:   rawTag["key"].(string),
-				Value: rawTag["value"].(string),
+				Key:   stringAddress(rawTag["key"]),
+				Value: stringAddress(rawTag["value"]),
 			}
 		}
 		vmCreateBody.StandAloneMetaDatas = tagsList
@@ -566,7 +566,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *taikung
 			disksList[i] = &models.StandAloneVMDiskDto{
 				DeviceName: rawDisk["device_name"].(string),
 				LunID:      int32(rawDisk["lun_id"].(int)),
-				Name:       rawDisk["name"].(string),
+				Name:       stringAddress(rawDisk["name"]),
 				Size:       int64(rawDisk["size"].(int)),
 				VolumeType: rawDisk["volume_type"].(string),
 			}
@@ -588,10 +588,10 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tai
 	diskCreateBody := &models.CreateStandAloneDiskCommand{
 		DeviceName:     diskMap["device_name"].(string),
 		LunID:          int32(diskMap["lun_id"].(int)),
-		Name:           diskMap["name"].(string),
+		Name:           stringAddress(diskMap["name"]),
 		Size:           int64(diskMap["size"].(int)),
 		VolumeType:     diskMap["volume_type"].(string),
-		StandaloneVMID: vmId,
+		StandaloneVMID: int32Address(vmId),
 	}
 
 	diskCreateParams := stand_alone_vm_disks.NewStandAloneVMDisksCreateParams().WithV(ApiVersion).WithBody(diskCreateBody)

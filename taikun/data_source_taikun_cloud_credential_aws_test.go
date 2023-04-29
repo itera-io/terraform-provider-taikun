@@ -11,6 +11,7 @@ const testAccDataSourceTaikunCloudCredentialAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
   lock = %t
+  az_count = 1"
 }
 
 data "taikun_cloud_credential_aws" "foo" {

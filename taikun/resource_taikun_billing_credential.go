@@ -107,10 +107,10 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, d *schema.Resour
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.OperationCredentialsCreateCommand{
-		Name:               d.Get("name").(string),
-		PrometheusPassword: d.Get("prometheus_password").(string),
-		PrometheusURL:      d.Get("prometheus_url").(string),
-		PrometheusUsername: d.Get("prometheus_username").(string),
+		Name:               stringAddress(d.Get("name")),
+		PrometheusPassword: stringAddress(d.Get("prometheus_password")),
+		PrometheusURL:      stringAddress(d.Get("prometheus_url")),
+		PrometheusUsername: stringAddress(d.Get("prometheus_username")),
 	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")

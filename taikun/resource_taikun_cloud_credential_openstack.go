@@ -31,7 +31,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
-			DefaultFunc: schema.EnvDefaultFunc("OS_CONTINENT", nil),
+			DefaultFunc: schema.EnvDefaultFunc("OS_CONTINENT", "Europe"),
 			ValidateFunc: validation.StringInSlice([]string{
 				"Asia",
 				"Europe",
@@ -179,14 +179,14 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 	apiClient := meta.(*taikungoclient.Client)
 
 	body := &models.CreateOpenstackCloudCommand{
-		Name:                   d.Get("name").(string),
-		OpenStackUser:          d.Get("user").(string),
-		OpenStackPassword:      d.Get("password").(string),
-		OpenStackURL:           d.Get("url").(string),
+		Name:                   stringAddress(d.Get("name")),
+		OpenStackUser:          stringAddress(d.Get("user")),
+		OpenStackPassword:      stringAddress(d.Get("password")),
+		OpenStackURL:           stringAddress(d.Get("url")),
 		OpenStackProject:       d.Get("project_name").(string),
-		OpenStackPublicNetwork: d.Get("public_network_name").(string),
+		OpenStackPublicNetwork: stringAddress(d.Get("public_network_name")),
 		OpenStackDomain:        d.Get("domain").(string),
-		OpenStackRegion:        d.Get("region").(string),
+		OpenStackRegion:        stringAddress(d.Get("region")),
 	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
@@ -294,10 +294,10 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 
 	if d.HasChanges("user", "password", "name") {
 		updateBody := &models.UpdateOpenStackCommand{
-			ID:                id,
-			Name:              d.Get("name").(string),
-			OpenStackPassword: d.Get("password").(string),
-			OpenStackUser:     d.Get("user").(string),
+			ID:                int32Address(id),
+			Name:              stringAddress(d.Get("name")),
+			OpenStackPassword: stringAddress(d.Get("password")),
+			OpenStackUser:     stringAddress(d.Get("user")),
 		}
 		updateParams := openstack.NewOpenstackUpdateParams().WithV(ApiVersion).WithBody(updateBody)
 		_, err := apiClient.Client.Openstack.OpenstackUpdate(updateParams, apiClient)

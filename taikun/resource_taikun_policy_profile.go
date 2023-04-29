@@ -152,7 +152,7 @@ func resourceTaikunPolicyProfileCreate(ctx context.Context, d *schema.ResourceDa
 		ForbidNodePort:        d.Get("forbid_node_port").(bool),
 		ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()),
 		IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()),
-		Name:                  d.Get("name").(string),
+		Name:                  stringAddress(d.Get("name")),
 		RequireProbe:          d.Get("require_probe").(bool),
 		UniqueIngresses:       d.Get("unique_ingress").(bool),
 		UniqueServiceSelector: d.Get("unique_service_selector").(bool),
@@ -251,11 +251,11 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceDa
 			ForbidNodePort:        d.Get("forbid_node_port").(bool),
 			ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()),
 			IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()),
-			Name:                  d.Get("name").(string),
+			Name:                  stringAddress(d.Get("name")),
 			RequireProbe:          d.Get("require_probe").(bool),
 			UniqueIngresses:       d.Get("unique_ingress").(bool),
 			UniqueServiceSelector: d.Get("unique_service_selector").(bool),
-			ID:                    id,
+			ID:                    int32Address(id),
 		}
 		params := opa_profiles.NewOpaProfilesUpdateParams().WithV(ApiVersion).WithBody(body)
 		_, err = apiClient.Client.OpaProfiles.OpaProfilesUpdate(params, apiClient)

@@ -343,10 +343,11 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	defer cancel()
 
 	body := models.CreateProjectCommand{
-		Name:         d.Get("name").(string),
+		Name:         stringAddress(d.Get("name")),
 		IsKubernetes: true,
 	}
-	body.CloudCredentialID, _ = atoi32(d.Get("cloud_credential_id").(string))
+	cloudID, _ := atoi32(d.Get("cloud_credential_id").(string))
+	body.CloudCredentialID = &cloudID
 	flavorsData := d.Get("flavors").(*schema.Set).List()
 	flavors := make([]string, len(flavorsData))
 	for i, flavorData := range flavorsData {
@@ -686,7 +687,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 	if d.HasChange("expiration_date") {
 		body := models.ProjectExtendLifeTimeCommand{
-			ProjectID: id,
+			ProjectID: int32Address(id),
 		}
 		if expirationDate, expirationDateIsSet := d.GetOk("expiration_date"); expirationDateIsSet {
 			dateTime := dateToDateTime(expirationDate.(string))
@@ -914,7 +915,7 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungocli
 func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) (err error) {
 
 	body := &models.UpdateQuotaCommand{
-		QuotaID: projectID,
+		QuotaID: int32Address(projectID),
 	}
 
 	if cpu, ok := d.GetOk("quota_cpu_units"); ok {

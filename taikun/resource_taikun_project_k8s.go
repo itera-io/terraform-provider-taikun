@@ -256,7 +256,7 @@ func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []
 	for i, labelData := range labelsList {
 		label := labelData.(map[string]interface{})
 		labelsToAdd[i] = &models.KubernetesNodeLabelsDto{
-			Key:   label["key"].(string),
+			Key:   stringAddress(label["key"]),
 			Value: label["value"].(string),
 		}
 	}

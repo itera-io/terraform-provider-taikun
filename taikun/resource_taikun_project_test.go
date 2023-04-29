@@ -336,7 +336,7 @@ resource "taikun_project" "foo" {
 func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	projectName := shortRandomTestName()
-	kubernetesVersion := "v1.21.6"
+	kubernetesVersion := "v1.24.4"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },

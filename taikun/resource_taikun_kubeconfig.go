@@ -84,7 +84,7 @@ func resourceTaikunKubeconfigSchema() map[string]*schema.Schema {
 			Description:  "The kubeconfig's validity period in minutes. Unlimited (-1) by default.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-                        Default:      -1,
+			Default:      -1,
 			ValidateFunc: validation.IntAtLeast(-1),
 			ForceNew:     true,
 		},
@@ -111,7 +111,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 		IsAccessibleForAll:     d.Get("access_scope").(string) == "all",
 		IsAccessibleForManager: d.Get("access_scope").(string) == "managers",
 		KubeConfigRoleID:       getKubeconfigRoleID(d.Get("role").(string)),
-		Name:                   d.Get("name").(string),
+		Name:                   stringAddress(d.Get("name")),
 		TTL:                    int32(d.Get("validity_period").(int)),
 	}
 
@@ -127,7 +127,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	body.ProjectID = projectID
+	body.ProjectID = &projectID
 
 	params := kube_config.NewKubeConfigCreateParams().WithV(ApiVersion).WithBody(&body)
 	response, err := apiClient.Client.KubeConfig.KubeConfigCreate(params, apiClient)
@@ -239,5 +239,5 @@ func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, api
 		return "Failed to retrieve content of kubeconfig"
 	}
 
-	return response.Payload.(string)
+	return response.Payload
 }

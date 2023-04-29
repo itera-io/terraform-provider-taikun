@@ -114,13 +114,15 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("billing_credential_id isn't valid: %s", d.Get("billing_credential_id").(string))
 	}
 
+	promType := getPrometheusType(d.Get("type").(string))
+
 	body := &models.RuleCreateCommand{
 		Labels:                resourceTaikunBillingRuleLabelsToAdd(d),
-		Name:                  d.Get("name").(string),
-		MetricName:            d.Get("metric_name").(string),
+		Name:                  stringAddress(d.Get("name")),
+		MetricName:            stringAddress(d.Get("metric_name")),
 		Price:                 d.Get("price").(float64),
 		OperationCredentialID: billingCredentialId,
-		Type:                  getPrometheusType(d.Get("type").(string)),
+		Type:                  &promType,
 	}
 
 	params := prometheus.NewPrometheusCreateParams().WithV(ApiVersion).WithBody(body)
@@ -232,7 +234,7 @@ func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []*models.Prom
 		label := labelData.(map[string]interface{})
 		labelsToAdd[i] = &models.PrometheusLabelListDto{
 			Label: label["key"].(string),
-			Value: label["value"].(string),
+			Value: stringAddress(label["value"]),
 		}
 	}
 	return labelsToAdd
