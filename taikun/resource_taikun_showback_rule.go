@@ -147,6 +147,8 @@ func resourceTaikunShowbackRule() *schema.Resource {
 
 func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*taikungoclient.Client)
+	// temporary hack to fix
+	apiClient.Refresh()
 
 	body := &models.CreateShowbackRuleCommand{
 		Name:              d.Get("name").(string),
