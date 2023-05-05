@@ -112,7 +112,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 		rawBillingRule := response.GetPayload().Data[0]
 
 		for _, e := range rawBillingRule.BoundOrganizations {
-			if e.OrganizationID == organizationId {
+			if e.ID == organizationId {
 				return nil
 			}
 		}
@@ -149,7 +149,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 			rawBillingRule := response.GetPayload().Data[0]
 
 			for _, e := range rawBillingRule.BoundOrganizations {
-				if e.OrganizationID == organizationId {
+				if e.ID == organizationId {
 					return resource.RetryableError(errors.New("organization_billing_rule_attachment still exists"))
 				}
 			}

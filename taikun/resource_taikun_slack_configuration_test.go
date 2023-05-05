@@ -25,7 +25,7 @@ resource "taikun_slack_configuration" "foo" {
 func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 	name := randomTestName()
 	url := "https://www.example.org"
-	channel := randomString()
+	channel := randomTestName()
 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
 	resource.ParallelTest(t, resource.TestCase{
