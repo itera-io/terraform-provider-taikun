@@ -101,7 +101,10 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 func resourceTaikunShowbackCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*taikungoclient.Client)
 	// temporary hack to fix
-	apiClient.Refresh()
+	err := apiClient.Refresh()
+	if err != nil {
+		return diag.Errorf("showback_credential_id isn't valid: %s", d.Get("showback_credential_id").(string))
+	}
 
 	body := &models.CreateShowbackCredentialCommand{
 		Name:     d.Get("name").(string),

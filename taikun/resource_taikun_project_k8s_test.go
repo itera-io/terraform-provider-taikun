@@ -284,8 +284,8 @@ resource "taikun_cloud_credential_openstack" "foo" {
 
 data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
-  min_cpu = 2
-  max_cpu = 2
+  min_cpu = 4
+  max_cpu = 8
   min_ram = 4
   max_ram = 8
 }

@@ -1073,10 +1073,8 @@ func flattenTaikunProject(
 
 		disks := make([]map[string]interface{}, len(vm.Disks))
 		for i, rawDisk := range vm.Disks {
-			lunId, _ := atoi32(rawDisk.LunID)
 			disks[i] = map[string]interface{}{
 				"device_name": rawDisk.DeviceName,
-				"lun_id":      lunId,
 				"id":          i32toa(rawDisk.ID),
 				"name":        rawDisk.Name,
 				"size":        rawDisk.CurrentSize,
