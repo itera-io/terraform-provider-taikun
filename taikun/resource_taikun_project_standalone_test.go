@@ -536,15 +536,16 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_azure" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
-  azure_publisher = "Canonical"
-  azure_offer = "0001-com-ubuntu-server-hirsute"
-  azure_sku = "21_04"
+  latest              = false
+  publisher           = "Canonical"
+  offer               = "UbuntuServer"
+  sku                 = "19.04"
 }
 
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  images = [for image in data.taikun_images_azure.foo.images: image.id]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
@@ -570,13 +571,11 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk"
       size = 30
-      lun_id = 9
     }
     disk {
       name = "mydisk2"
       size = 30
       volume_type = "Premium_LRS"
-      lun_id = 10
     }
     tag {
       key = "key"

@@ -206,11 +206,12 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.Azure.AzureList(azure.NewAzureListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		//response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Azure) != 1 {
+		if len(response.Payload.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -218,7 +219,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 			return nil
 		}
 
-		rawCloudCredentialAzure := response.GetPayload().Azure[0]
+		rawCloudCredentialAzure := response.GetPayload().Data[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(rawCloudCredentialAzure))
 		if err != nil {
@@ -282,6 +283,7 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *models.AzureCredentia
 		"availability_zones": rawAzureCredential.AvailabilityZones,
 		"location":           rawAzureCredential.Location,
 		"tenant_id":          rawAzureCredential.TenantID,
+		"az_count":           rawAzureCredential.AvailabilityZonesCount,
 	}
 }
 

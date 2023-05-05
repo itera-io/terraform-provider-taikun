@@ -218,6 +218,10 @@ github.com/itera-io/taikungoclient v0.0.0-20230427111600-b4ccd7cfb51e h1:B3c34MT
 github.com/itera-io/taikungoclient v0.0.0-20230427111600-b4ccd7cfb51e/go.mod h1:jiX7aGqjKn9Q+9VurEl4MqJOdhl/o8zHf3nnFIsckcs=
 github.com/itera-io/taikungoclient v0.0.0-20230503194544-f81be4af72bc h1:LjgfoevFA7gnTPBPwjR72NOfRgibIiYUafNPR0O7nyI=
 github.com/itera-io/taikungoclient v0.0.0-20230503194544-f81be4af72bc/go.mod h1:jiX7aGqjKn9Q+9VurEl4MqJOdhl/o8zHf3nnFIsckcs=
+github.com/itera-io/taikungoclient v0.0.0-20230505103402-4d3fdfc3acac h1:IxQ6yoYIydLfGnG5ngEOjS5T/OMCT25tTclD00nzIuI=
+github.com/itera-io/taikungoclient v0.0.0-20230505103402-4d3fdfc3acac/go.mod h1:jiX7aGqjKn9Q+9VurEl4MqJOdhl/o8zHf3nnFIsckcs=
+github.com/itera-io/taikungoclient v0.0.0-20230505121940-b918bac76a17 h1:drOkuP6esPuYFQh2On2cu0xmEsW8oS1jOe/4vOaQIwA=
+github.com/itera-io/taikungoclient v0.0.0-20230505121940-b918bac76a17/go.mod h1:jiX7aGqjKn9Q+9VurEl4MqJOdhl/o8zHf3nnFIsckcs=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.5.0/go.mod h1:Fw0T6WPc1dYxT4mKEZRfG5kJhaTDP9pj1c2EWnYs/m4=

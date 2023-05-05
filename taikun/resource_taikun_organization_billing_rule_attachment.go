@@ -123,17 +123,17 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 		rawBillingRule := response.GetPayload().Data[0]
 
 		for _, e := range rawBillingRule.BoundOrganizations {
-			if e.OrganizationID == organizationId {
-				if err := d.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
+			if e.ID == organizationId {
+				if err := d.Set("organization_id", i32toa(e.ID)); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("organization_name", e.OrganizationName); err != nil {
+				if err := d.Set("organization_name", e.Name); err != nil {
 					return diag.FromErr(err)
 				}
 				if err := d.Set("billing_rule_id", i32toa(rawBillingRule.ID)); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("discount_rate", e.RuleDiscountRate); err != nil {
+				if err := d.Set("discount_rate", e.DiscountRate); err != nil {
 					return diag.FromErr(err)
 				}
 				d.SetId(id)

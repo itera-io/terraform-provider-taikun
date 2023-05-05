@@ -40,19 +40,13 @@ resource "taikun_access_profile" "foo" {
 
   allowed_host {
     description = "Host A"
-    address = "10.0.0.1"
+    address = "10.0.0.0"
     mask_bits = 8
   }
 
   allowed_host {
     description = "Host B"
-    address = "10.0.0.2"
-    mask_bits = 8
-  }
-
-  allowed_host {
-    description = "Host C"
-    address = "172.19.42.2"
+    address = "172.19.42.0"
     mask_bits = 24
   }
 }
@@ -82,16 +76,13 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.0"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "172.19.42.0"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
@@ -129,16 +120,13 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.0"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "172.19.42.0"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
@@ -157,16 +145,13 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.0"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "172.19.42.0"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},
@@ -200,7 +185,7 @@ resource "taikun_access_profile" "foo" {
 
   allowed_host {
     description = "Host A"
-    address = "192.168.1.2"
+    address = "192.168.1.0"
     mask_bits = 24
   }
 }
@@ -230,16 +215,13 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.#", "1"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.name", "oui_oui"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "ssh_user.0.public_key", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF :oui_oui:"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "3"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.#", "2"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.description", "Host A"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.1"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.address", "10.0.0.0"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.0.mask_bits", "8"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.description", "Host B"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "10.0.0.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "8"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.description", "Host C"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.address", "172.19.42.2"),
-					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.2.mask_bits", "24"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.address", "172.19.42.0"),
+					resource.TestCheckResourceAttr("taikun_access_profile.foo", "allowed_host.1.mask_bits", "24"),
 					resource.TestCheckResourceAttrSet("taikun_access_profile.foo", "organization_id"),
 				),
 			},

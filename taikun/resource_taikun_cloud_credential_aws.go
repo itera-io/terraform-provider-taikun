@@ -221,11 +221,11 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.Aws.AwsList(aws.NewAwsListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Amazon) != 1 {
+		if len(response.Payload.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -233,8 +233,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawCloudCredentialAWS := response.GetPayload().Amazon[0]
-
+		rawCloudCredentialAWS := response.GetPayload().Data[0]
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
 		if err != nil {
 			return diag.FromErr(err)
@@ -295,6 +294,7 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsL
 		"organization_name":  rawAWSCredential.OrganizationName,
 		"availability_zones": rawAWSCredential.AvailabilityZones,
 		"region":             rawAWSCredential.Region,
+		"az_count":           rawAWSCredential.AvailabilityZonesCount,
 	}
 }
 

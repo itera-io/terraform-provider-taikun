@@ -53,13 +53,6 @@ func taikunVMSchema() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
-					"lun_id": {
-						Description:  "LUN ID (required with Azure).",
-						Type:         schema.TypeInt,
-						Optional:     true,
-						Computed:     true,
-						ValidateFunc: validation.IntBetween(0, 999),
-					},
 					"name": {
 						Description: "Name of the disk.",
 						Type:        schema.TypeString,
@@ -273,7 +266,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 }
 
 func shouldRecreateDisk(old map[string]interface{}, new map[string]interface{}) bool {
-	return hasChanges(old, new, "device_name", "lun_id", "name", "volume_type")
+	return hasChanges(old, new, "device_name", "name", "volume_type")
 }
 
 func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{}, recreateFunc func(old map[string]interface{}, new map[string]interface{}) bool) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
@@ -565,7 +558,6 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *taikung
 			rawDisk := e.(map[string]interface{})
 			disksList[i] = &models.StandAloneVMDiskDto{
 				DeviceName: rawDisk["device_name"].(string),
-				LunID:      int32(rawDisk["lun_id"].(int)),
 				Name:       stringAddress(rawDisk["name"]),
 				Size:       int64(rawDisk["size"].(int)),
 				VolumeType: rawDisk["volume_type"].(string),
@@ -587,7 +579,6 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tai
 
 	diskCreateBody := &models.CreateStandAloneDiskCommand{
 		DeviceName:     diskMap["device_name"].(string),
-		LunID:          int32(diskMap["lun_id"].(int)),
 		Name:           stringAddress(diskMap["name"]),
 		Size:           int64(diskMap["size"].(int)),
 		VolumeType:     diskMap["volume_type"].(string),

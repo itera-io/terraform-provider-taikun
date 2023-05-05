@@ -207,11 +207,11 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, err := apiClient.Client.GoogleCloud.GoogleCloudList(google_cloud.NewGoogleCloudListParams().WithV(ApiVersion).WithID(&id), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Google) != 1 {
+		if len(response.Payload.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -219,7 +219,7 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawCloudCredentialGCP := response.GetPayload().Google[0]
+		rawCloudCredentialGCP := response.GetPayload().Data[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(rawCloudCredentialGCP))
 		if err != nil {
@@ -262,6 +262,7 @@ func flattenTaikunCloudCredentialGCP(rawGCPCredential *models.GoogleCredentialsL
 		"organization_name":    rawGCPCredential.OrganizationName,
 		"region":               rawGCPCredential.Region,
 		"zones":                rawGCPCredential.Zones,
+		"az_count":             rawGCPCredential.AvailabilityZonesCount,
 	}
 }
 
