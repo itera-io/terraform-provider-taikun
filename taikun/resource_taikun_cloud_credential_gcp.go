@@ -2,16 +2,14 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"os"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/client/google_cloud"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunCloudCredentialGCPSchema() map[string]*schema.Schema {
@@ -130,20 +128,20 @@ func resourceTaikunCloudCredentialGCP() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	params := google_cloud.NewGoogleCloudCreateParams().WithV(ApiVersion)
+	params := apiClient.Client.GoogleApi.GooglecloudCreate(context.TODO())
 
 	configFile, err := os.Open(d.Get("config_file").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	params = params.WithConfig(configFile)
+	params = params.Config(configFile)
 
 	name := d.Get("name").(string)
-	params = params.WithName(&name)
+	params = params.Name(name)
 	region := d.Get("region").(string)
-	params = params.WithRegion(&region)
+	params = params.Region(region)
 
 	azCount := int32(d.Get("az_count").(int))
 	/*
@@ -153,34 +151,37 @@ func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.Resou
 			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
 		}
 	*/
-	params = params.WithAzCount(&azCount)
+	params = params.AzCount(azCount)
 
 	importProject := d.Get("import_project").(bool)
-	params = params.WithImportProject(&importProject)
+	params = params.ImportProject(importProject)
 	if !importProject {
 		billingAccountID := d.Get("billing_account_id").(string)
-		params = params.WithBillingAccountID(&billingAccountID)
+		params = params.BillingAccountId(billingAccountID)
 		folderID := d.Get("folder_id").(string)
-		params = params.WithFolderID(&folderID)
+		params = params.FolderId(folderID)
 	}
 
-	organizationID, err := getOrganizationFromDataOrElseDefault(d, apiClient)
+	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
+	if organizationIDIsSet {
+		organizationId, newErr := atoi32(organizationIDData.(string))
+		if newErr != nil {
+			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
+		}
+		params = params.OrganizationId(organizationId)
+	}
+
+	createResult, res, err := params.Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
+	}
+
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	params = params.WithOrganizationID(&organizationID)
 
-	createResult, err := apiClient.Client.GoogleCloud.GoogleCloudCreate(params, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	id, err := atoi32(createResult.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialGCPLock(id, true, apiClient); err != nil {
@@ -200,18 +201,18 @@ func generateResourceTaikunCloudCredentialGCPReadWithoutRetries() schema.ReadCon
 
 func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, _, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Google) != 1 {
+		if len(response.GetGoogle()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -219,9 +220,9 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawCloudCredentialGCP := response.GetPayload().Google[0]
+		rawCloudCredentialGCP := response.GetGoogle()[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(rawCloudCredentialGCP))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(&rawCloudCredentialGCP))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -233,7 +234,7 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunCloudCredentialGCPUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,30 +249,28 @@ func resourceTaikunCloudCredentialGCPUpdate(ctx context.Context, d *schema.Resou
 	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialGCPReadWithRetries(), ctx, d, meta)
 }
 
-func flattenTaikunCloudCredentialGCP(rawGCPCredential *models.GoogleCredentialsListDto) map[string]interface{} {
+func flattenTaikunCloudCredentialGCP(rawGCPCredential *tkcore.GoogleCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"billing_account_id":   rawGCPCredential.BillingAccountID,
-		"billing_account_name": rawGCPCredential.BillingAccountName,
-		"folder_id":            rawGCPCredential.FolderID,
-		"id":                   i32toa(rawGCPCredential.ID),
-		"is_default":           rawGCPCredential.IsDefault,
-		"lock":                 rawGCPCredential.IsLocked,
-		"name":                 rawGCPCredential.Name,
-		"organization_id":      i32toa(rawGCPCredential.OrganizationID),
-		"organization_name":    rawGCPCredential.OrganizationName,
-		"region":               rawGCPCredential.Region,
-		"zones":                rawGCPCredential.Zones,
+		"billing_account_id":   rawGCPCredential.GetBillingAccountId(),
+		"billing_account_name": rawGCPCredential.GetBillingAccountName(),
+		"folder_id":            rawGCPCredential.GetFolderId(),
+		"id":                   i32toa(rawGCPCredential.GetId()),
+		"is_default":           rawGCPCredential.GetIsDefault(),
+		"lock":                 rawGCPCredential.GetIsLocked(),
+		"name":                 rawGCPCredential.GetName(),
+		"organization_id":      i32toa(rawGCPCredential.GetOrganizationId()),
+		"organization_name":    rawGCPCredential.GetOrganizationName(),
+		"region":               rawGCPCredential.GetRegion(),
+		"zones":                rawGCPCredential.GetZones(),
 	}
 }
 
-func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.CloudLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
+func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.CloudLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
 
+	_, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return err
 }

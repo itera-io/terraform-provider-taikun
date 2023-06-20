@@ -3,17 +3,13 @@ package taikun
 import (
 	"context"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/projects"
-	"github.com/itera-io/taikungoclient/client/user_projects"
-	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceTaikunProjectUserAttachmentSchema() map[string]*schema.Schema {
@@ -51,7 +47,7 @@ func resourceTaikunProjectUserAttachment() *schema.Resource {
 }
 
 func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*taikungoclient.Client)
+	client := meta.(*tk.Client)
 
 	userId := d.Get("user_id").(string)
 
@@ -60,19 +56,18 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 		return diag.Errorf("project_id isn't valid: %s", d.Get("project_id").(string))
 	}
 
-	body := &models.BindUsersCommand{
-		Users: []*models.UpdateProjectUserDto{
+	body := tkcore.BindUsersCommand{
+		Users: []tkcore.UpdateProjectUserDto{
 			{
-				IsBound: true,
-				UserID:  userId,
+				IsBound: boolPtr(true),
+				Id:      *tkcore.NewNullableString(&userId),
 			},
 		},
-		ProjectID: projectId,
+		ProjectId: &projectId,
 	}
-	params := user_projects.NewUserProjectsBindUsersParams().WithV(ApiVersion).WithBody(body)
-	_, err = client.Client.UserProjects.UserProjectsBindUsers(params, client)
+	res, err := client.Client.UserProjectsApi.UserprojectsBindUsers(ctx).BindUsersCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	id := fmt.Sprintf("%d/%s", projectId, userId)
@@ -88,7 +83,7 @@ func generateResourceTaikunProjectUserAttachmentReadWithoutRetries() schema.Read
 }
 func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 
 		id := d.Id()
 		d.SetId("")
@@ -97,12 +92,11 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 			return diag.Errorf("Error while reading taikun_project_user_attachment : %s", err)
 		}
 
-		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-		response, err := apiClient.Client.Users.UsersList(params, apiClient)
+		response, _, err := apiClient.Client.UsersApi.UsersList(ctx).Id(userId).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -110,17 +104,17 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 			return nil
 		}
 
-		rawUser := response.GetPayload().Data[0]
+		rawUser := response.GetData()[0]
 
 		for _, e := range rawUser.BoundProjects {
-			if e.ProjectID == projectId {
-				if err := d.Set("project_id", i32toa(e.ProjectID)); err != nil {
+			if e.GetProjectId() == projectId {
+				if err := d.Set("project_id", i32toa(e.GetProjectId())); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("project_name", e.ProjectName); err != nil {
+				if err := d.Set("project_name", e.GetProjectName()); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("user_id", rawUser.ID); err != nil {
+				if err := d.Set("user_id", rawUser.GetId()); err != nil {
 					return diag.FromErr(err)
 				}
 				d.SetId(id)
@@ -137,46 +131,43 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 }
 
 func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	projectId, userId, err := parseProjectUserAttachmentId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_project_user_attachment : %s", err)
 	}
 
-	usersListParams := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-	usersListResponse, err := apiClient.Client.Users.UsersList(usersListParams, apiClient)
+	usersListResponse, res, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
-	if len(usersListResponse.Payload.Data) != 1 {
+	if len(usersListResponse.GetData()) != 1 {
 		d.SetId("")
 		return nil
 	}
 
-	projectsListParams := projects.NewProjectsListParams().WithV(ApiVersion).WithID(&projectId)
-	projectsListResponse, err := apiClient.Client.Projects.ProjectsList(projectsListParams, apiClient)
+	projectsListResponse, res, err := apiClient.Client.ProjectsApi.ProjectsList(context.TODO()).Id(projectId).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
-	if len(projectsListResponse.Payload.Data) != 1 {
+	if len(projectsListResponse.GetData()) != 1 {
 		d.SetId("")
 		return nil
 	}
 
-	body := &models.BindUsersCommand{
-		Users: []*models.UpdateProjectUserDto{
+	body := tkcore.BindUsersCommand{
+		Users: []tkcore.UpdateProjectUserDto{
 			{
-				IsBound: false,
-				UserID:  userId,
+				IsBound: boolPtr(false),
+				Id:      *tkcore.NewNullableString(&userId),
 			},
 		},
-		ProjectID: projectId,
+		ProjectId: &projectId,
 	}
-	params := user_projects.NewUserProjectsBindUsersParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.Client.UserProjects.UserProjectsBindUsers(params, apiClient)
+	res, err = apiClient.Client.UserProjectsApi.UserprojectsBindUsers(context.TODO()).BindUsersCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")

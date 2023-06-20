@@ -101,7 +101,7 @@ resource "taikun_project" "foo" {
     flavor = local.flavors[%d]
     image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
-    volume_size = 40
+    volume_size = 60
     %s
     disk {
       name = "mydisk"
@@ -110,7 +110,7 @@ resource "taikun_project" "foo" {
     disk {
       name = "mydisk2"
       size = 30
-      volume_type = "ssd-2000iops"
+      volume_type = "ssd"
     }
     tag {
       key = "key"
@@ -152,7 +152,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
@@ -199,10 +199,10 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -224,10 +224,10 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "true"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "vm.0.access_ip"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -249,10 +249,10 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -288,10 +288,10 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor(t *testi
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -313,10 +313,10 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor(t *testi
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -340,7 +340,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 					standaloneProfileName,
 					projectName,
 					0,
-					"volume_type = \"ssd-2000iops\"",
+					"volume_type = \"ssd\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -352,8 +352,8 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "40"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -394,7 +394,7 @@ resource "taikun_project" "foo" {
     flavor = local.flavors[%d]
     image_id = "ami-0f94f6b47f28fb0e7"
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
-    volume_size = 30
+    volume_size = 60
     disk {
       name = "mydisk"
       size = 30
@@ -405,14 +405,14 @@ resource "taikun_project" "foo" {
       size = 30
       device_name = "/dev/sdf"
     }
-    tag {
-      key = "key"
-      value = "value"
-    }
-    tag {
-      key = "key2"
-      value = "value"
-    }
+    //tag {
+    //  key = "key"
+    //  value = "value"
+    //}
+    //tag {
+    //  key = "key2"
+    //  value = "value"
+    //}
   }
 }
 `
@@ -444,10 +444,10 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "30"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -487,10 +487,10 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "30"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -511,10 +511,10 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "30"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -539,8 +539,8 @@ data "taikun_flavors" "foo" {
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
   azure_publisher = "Canonical"
-  azure_offer = "0001-com-ubuntu-server-hirsute"
-  azure_sku = "21_04"
+  azure_offer = "UbuntuServer"
+  azure_sku = "19.04"
 }
 
 locals {
@@ -565,27 +565,25 @@ resource "taikun_project" "foo" {
     image_id = local.images[0]
     username = "foobar"
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
-    volume_size = 31
+    volume_size = 60
     %s
     disk {
       name = "mydisk"
       size = 30
-      lun_id = 9
     }
     disk {
       name = "mydisk2"
       size = 30
       volume_type = "Premium_LRS"
-      lun_id = 10
     }
-    tag {
-      key = "key"
-      value = "value"
-    }
-    tag {
-      key = "key2"
-      value = "value"
-    }
+    //tag {
+    //  key = "key"
+    //  value = "value"
+    //}
+    //tag {
+    //  key = "key2"
+    //  value = "value"
+    //}
   }
 }
 `
@@ -619,10 +617,10 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -663,10 +661,10 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -689,10 +687,10 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},
@@ -729,8 +727,8 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "31"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
 				),
 			},

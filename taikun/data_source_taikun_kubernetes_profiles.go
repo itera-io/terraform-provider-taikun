@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunKubernetesProfiles() *schema.Resource {
@@ -34,10 +33,11 @@ func dataSourceTaikunKubernetesProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunKubernetesProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion)
+	params := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -46,26 +46,25 @@ func dataSourceTaikunKubernetesProfilesRead(_ context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var kubernetesProfilesListDtos []*models.KubernetesProfilesListDto
+	var kubernetesProfilesListDtos []tkcore.KubernetesProfilesListDto
 	for {
-		response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		kubernetesProfilesListDtos = append(kubernetesProfilesListDtos, response.GetPayload().Data...)
-		if len(kubernetesProfilesListDtos) == int(response.GetPayload().TotalCount) {
+		kubernetesProfilesListDtos = append(kubernetesProfilesListDtos, response.GetData()...)
+		if len(kubernetesProfilesListDtos) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(kubernetesProfilesListDtos))
-		params = params.WithOffset(&offset)
+		offset = int32(len(kubernetesProfilesListDtos))
 	}
 
 	kubernetesProfiles := make([]map[string]interface{}, len(kubernetesProfilesListDtos))
 	for i, rawKubernetesProfile := range kubernetesProfilesListDtos {
-		kubernetesProfiles[i] = flattenTaikunKubernetesProfile(rawKubernetesProfile)
+		kubernetesProfiles[i] = flattenTaikunKubernetesProfile(&rawKubernetesProfile)
 	}
 	if err := d.Set("kubernetes_profiles", kubernetesProfiles); err != nil {
 		return diag.FromErr(err)

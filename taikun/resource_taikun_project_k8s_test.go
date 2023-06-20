@@ -280,6 +280,7 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 const testAccResourceTaikunProjectMinimal = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
+  public_network_name = "public-demo"
 }
 
 data "taikun_flavors" "foo" {
@@ -382,8 +383,7 @@ resource "taikun_backup_policy" "foo" {
   project_id = resource.taikun_project.foo.id
   cron_period = "0 0 * * 0"
   retention_period = "2h"
-  included_namespaces = ["test"]
-  excluded_namespaces = ["aled"]
+  included_namespaces = ["default"]
 }
 
 resource "taikun_policy_profile" "foo" {

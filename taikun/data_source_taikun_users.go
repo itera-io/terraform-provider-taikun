@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/users"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunUsers() *schema.Resource {
@@ -35,10 +33,10 @@ func dataSourceTaikunUsers() *schema.Resource {
 }
 
 func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
-
-	params := users.NewUsersListParams().WithV(ApiVersion)
+	var offset int32 = 0
+	params := apiClient.Client.UsersApi.UsersList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -47,21 +45,20 @@ func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var rawUserList []*models.UserForListDto
+	var rawUserList []tkcore.UserForListDto
 	for {
-		response, err := apiClient.Client.Users.UsersList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		rawUserList = append(rawUserList, response.GetPayload().Data...)
-		if len(rawUserList) == int(response.GetPayload().TotalCount) {
+		rawUserList = append(rawUserList, response.Data...)
+		if len(rawUserList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(rawUserList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(rawUserList))
 	}
 
 	userList := make([]map[string]interface{}, len(rawUserList))

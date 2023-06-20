@@ -2,13 +2,12 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/s3_credentials"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
@@ -106,15 +105,14 @@ func resourceTaikunBackupCredential() *schema.Resource {
 }
 
 func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.BackupCredentialsCreateCommand{
-		S3Name:        d.Get("name").(string),
-		S3AccessKeyID: d.Get("s3_access_key_id").(string),
-		S3SecretKey:   d.Get("s3_secret_access_key").(string),
-		S3Region:      d.Get("s3_region").(string),
-		S3Endpoint:    d.Get("s3_endpoint").(string),
-	}
+	body := tkcore.BackupCredentialsCreateCommand{}
+	body.SetS3Name(d.Get("name").(string))
+	body.SetS3AccessKeyId(d.Get("s3_access_key_id").(string))
+	body.SetS3SecretKey(d.Get("s3_secret_access_key").(string))
+	body.SetS3Region(d.Get("s3_region").(string))
+	body.SetS3Endpoint(d.Get("s3_endpoint").(string))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -122,20 +120,19 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := s3_credentials.NewS3CredentialsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.S3Credentials.S3CredentialsCreate(params, apiClient)
+	createResult, res, err := apiClient.Client.S3CredentialsApi.S3credentialsCreate(context.TODO()).BackupCredentialsCreateCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
+	}
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
@@ -153,18 +150,18 @@ func generateResourceTaikunBackupCredentialReadWithoutRetries() schema.ReadConte
 }
 func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.S3Credentials.S3CredentialsList(s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.S3CredentialsApi.S3credentialsList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -172,9 +169,9 @@ func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadCon
 			return nil
 		}
 
-		rawBackupCredential := response.GetPayload().Data[0]
+		rawBackupCredential := response.Data[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunBackupCredential(rawBackupCredential))
+		err = setResourceDataFromMap(d, flattenTaikunBackupCredential(&rawBackupCredential))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -186,7 +183,7 @@ func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadCon
 }
 
 func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,16 +196,15 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChanges("name", "s3_access_key_id", "s3_secret_access_key") {
-		updateBody := models.BackupCredentialsUpdateCommand{
-			ID:            id,
-			S3AccessKeyID: d.Get("s3_access_key_id").(string),
-			S3SecretKey:   d.Get("s3_secret_access_key").(string),
-			S3Name:        d.Get("name").(string),
-		}
-		updateParams := s3_credentials.NewS3CredentialsUpdateParams().WithV(ApiVersion).WithBody(&updateBody)
-		_, err = apiClient.Client.S3Credentials.S3CredentialsUpdate(updateParams, apiClient)
+		body := tkcore.BackupCredentialsUpdateCommand{}
+		body.SetId(id)
+		body.SetS3SecretKey(d.Get("s3_secret_access_key").(string))
+		body.SetS3AccessKeyId(d.Get("s3_access_key_id").(string))
+		body.SetS3Name(d.Get("name").(string))
+
+		res, err := apiClient.Client.S3CredentialsApi.S3credentialsUpdate(ctx).BackupCredentialsUpdateCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
@@ -222,46 +218,43 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func resourceTaikunBackupCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := s3_credentials.NewS3CredentialsDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.Client.S3Credentials.S3CredentialsDelete(params, apiClient)
+	res, err := apiClient.Client.S3CredentialsApi.S3credentialsDelete(context.TODO(), id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunBackupCredential(rawBackupCredential *models.BackupCredentialsListDto) map[string]interface{} {
+func flattenTaikunBackupCredential(rawBackupCredential *tkcore.BackupCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":        rawBackupCredential.CreatedBy,
-		"id":                i32toa(rawBackupCredential.ID),
-		"lock":              rawBackupCredential.IsLocked,
-		"is_default":        rawBackupCredential.IsDefault,
-		"last_modified":     rawBackupCredential.LastModified,
-		"last_modified_by":  rawBackupCredential.LastModifiedBy,
-		"name":              rawBackupCredential.S3Name,
-		"organization_id":   i32toa(rawBackupCredential.OrganizationID),
-		"organization_name": rawBackupCredential.OrganizationName,
-		"s3_access_key_id":  rawBackupCredential.S3AccessKeyID,
-		"s3_region":         rawBackupCredential.S3Region,
-		"s3_endpoint":       rawBackupCredential.S3Endpoint,
+		"created_by":        rawBackupCredential.GetCreatedBy(),
+		"id":                i32toa(rawBackupCredential.GetId()),
+		"lock":              rawBackupCredential.GetIsLocked(),
+		"is_default":        rawBackupCredential.GetIsDefault(),
+		"last_modified":     rawBackupCredential.GetLastModified(),
+		"last_modified_by":  rawBackupCredential.GetLastModifiedBy(),
+		"name":              rawBackupCredential.GetS3Name(),
+		"organization_id":   i32toa(rawBackupCredential.GetOrganizationId()),
+		"organization_name": rawBackupCredential.GetOrganizationName(),
+		"s3_access_key_id":  rawBackupCredential.GetS3AccessKeyId(),
+		"s3_region":         rawBackupCredential.GetS3Region(),
+		"s3_endpoint":       rawBackupCredential.GetS3Endpoint(),
 	}
 }
 
-func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.BackupLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := s3_credentials.NewS3CredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.S3Credentials.S3CredentialsLockManager(params, apiClient)
-	return err
+func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.BackupLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+	res, err := apiClient.Client.S3CredentialsApi.S3credentialsLockManagement(context.TODO()).BackupLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

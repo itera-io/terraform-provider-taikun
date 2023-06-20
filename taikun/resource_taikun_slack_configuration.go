@@ -2,14 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/slack"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
@@ -18,6 +17,9 @@ func resourceTaikunSlackConfigurationSchema() map[string]*schema.Schema {
 			Description: "Slack channel for notifications.",
 			Type:        schema.TypeString,
 			Required:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(3, 40),
+			),
 		},
 		"id": {
 			Description: "The Slack configuration's ID.",
@@ -78,30 +80,28 @@ func resourceTaikunSlackConfiguration() *schema.Resource {
 }
 
 func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := models.CreateSlackConfigurationCommand{
-		Name:      d.Get("name").(string),
-		URL:       d.Get("url").(string),
-		Channel:   d.Get("channel").(string),
-		SlackType: getSlackConfigurationType(d.Get("type").(string)),
-	}
+	body := tkcore.CreateSlackConfigurationCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetUrl(d.Get("url").(string))
+	body.SetChannel(d.Get("channel").(string))
+	body.SetSlackType(tkcore.SlackType(d.Get("type").(string)))
 
 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		body.OrganizationID = organizationID
+		body.SetOrganizationId(organizationID)
 	}
 
-	params := slack.NewSlackCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.Client.Slack.SlackCreate(params, apiClient)
+	response, res, err := apiClient.Client.SlackApi.SlackCreate(context.TODO()).CreateSlackConfigurationCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
-	d.SetId(response.Payload.ID)
+	d.SetId(response.GetId())
 
 	return readAfterCreateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
@@ -113,7 +113,7 @@ func generateResourceTaikunSlackConfigurationReadWithoutRetries() schema.ReadCon
 }
 func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 
 		id, err := atoi32(d.Id())
 		d.SetId("")
@@ -121,12 +121,11 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		params := slack.NewSlackListParams().WithV(ApiVersion).WithID(&id)
-		response, err := apiClient.Client.Slack.SlackList(params, apiClient)
+		response, res, err := apiClient.Client.SlackApi.SlackList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -134,9 +133,9 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawSlackConfiguration := response.Payload.Data[0]
+		rawSlackConfiguration := response.Data[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunSlackConfiguration(rawSlackConfiguration))
+		err = setResourceDataFromMap(d, flattenTaikunSlackConfiguration(&rawSlackConfiguration))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -148,49 +147,47 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := models.UpdateSlackConfigurationDto{
-		Name:      d.Get("name").(string),
-		URL:       d.Get("url").(string),
-		Channel:   d.Get("channel").(string),
-		SlackType: getSlackConfigurationType(d.Get("type").(string)),
-	}
+	body := tkcore.UpdateSlackConfigurationDto{}
+	body.SetName(d.Get("name").(string))
+	body.SetUrl(d.Get("url").(string))
+	body.SetChannel(d.Get("channel").(string))
+	body.SetSlackType(tkcore.SlackType(d.Get("type").(string)))
 
 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationID, err := atoi32(organizationIDData.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		body.OrganizationID = organizationID
+		body.SetOrganizationId(organizationID)
 	}
 
-	params := slack.NewSlackUpdateParams().WithV(ApiVersion).WithID(id).WithBody(&body)
-	if _, err := apiClient.Client.Slack.SlackUpdate(params, apiClient); err != nil {
-		return diag.FromErr(err)
+	if res, err := apiClient.Client.SlackApi.SlackUpdate(context.TODO(), id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
 
 func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := models.DeleteSlackConfigCommand{Ids: []int32{id}}
-	params := slack.NewSlackDeleteMultipleParams().WithV(ApiVersion).WithBody(&body)
-	_, err = apiClient.Client.Slack.SlackDeleteMultiple(params, apiClient)
+	body := tkcore.DeleteSlackConfigCommand{Ids: []int32{id}}
+	res, err := apiClient.Client.SlackApi.SlackDeleteMultiple(context.TODO()).DeleteSlackConfigCommand(body).Execute()
+
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
@@ -198,14 +195,14 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.Resourc
 	return nil
 }
 
-func flattenTaikunSlackConfiguration(rawSlackConfiguration *models.SlackConfigurationDto) map[string]interface{} {
+func flattenTaikunSlackConfiguration(rawSlackConfiguration *tkcore.SlackConfigurationDto) map[string]interface{} {
 	return map[string]interface{}{
-		"channel":           rawSlackConfiguration.Channel,
-		"id":                i32toa(rawSlackConfiguration.ID),
-		"name":              rawSlackConfiguration.Name,
-		"organization_id":   i32toa(rawSlackConfiguration.OrganizationID),
-		"organization_name": rawSlackConfiguration.OrganizationName,
-		"type":              rawSlackConfiguration.SlackType,
-		"url":               rawSlackConfiguration.URL,
+		"channel":           rawSlackConfiguration.GetChannel(),
+		"id":                i32toa(rawSlackConfiguration.GetId()),
+		"name":              rawSlackConfiguration.GetName(),
+		"organization_id":   i32toa(rawSlackConfiguration.GetOrganizationId()),
+		"organization_name": rawSlackConfiguration.GetOrganizationName(),
+		"type":              rawSlackConfiguration.GetSlackType(),
+		"url":               rawSlackConfiguration.GetUrl(),
 	}
 }

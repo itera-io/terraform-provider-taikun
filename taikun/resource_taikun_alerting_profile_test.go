@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"math/rand"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/alerting_profiles"
 )
 
 func testAccResourceTaikunAlertingProfileRandomEmails(n int) string {
@@ -313,7 +312,7 @@ integration {
 }
 
 func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_alerting_profile" {
@@ -321,10 +320,9 @@ func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("alerting profile with ID %d doesn't exist", id)
 		}
 	}
@@ -333,7 +331,7 @@ func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_alerting_profile" {
@@ -342,13 +340,12 @@ func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+			response, _, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("alerting profile still exists"))
 			}
 			return nil

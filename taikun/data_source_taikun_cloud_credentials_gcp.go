@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunCloudCredentialsGCP() *schema.Resource {
@@ -34,10 +33,12 @@ func dataSourceTaikunCloudCredentialsGCP() *schema.Resource {
 }
 
 func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
+	var offset int32 = 0
+
+	params := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -46,26 +47,25 @@ func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var cloudCredentialsList []*models.GoogleCredentialsListDto
+	var cloudCredentialsList []tkcore.GoogleCredentialsListDto
 	for {
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		cloudCredentialsList = append(cloudCredentialsList, response.GetPayload().Google...)
-		if len(cloudCredentialsList) == int(response.GetPayload().TotalCountGoogle) {
+		cloudCredentialsList = append(cloudCredentialsList, response.GetGoogle()...)
+		if len(cloudCredentialsList) == int(response.GetTotalCountGoogle()) {
 			break
 		}
-		offset := int32(len(cloudCredentialsList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(cloudCredentialsList))
 	}
 
 	cloudCredentials := make([]map[string]interface{}, len(cloudCredentialsList))
 	for i, rawCloudCredential := range cloudCredentialsList {
-		cloudCredentials[i] = flattenTaikunCloudCredentialGCP(rawCloudCredential)
+		cloudCredentials[i] = flattenTaikunCloudCredentialGCP(&rawCloudCredential)
 	}
 	if err := d.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)

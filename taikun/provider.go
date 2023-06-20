@@ -7,9 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	tk "github.com/chnyda/taikungoclient"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
 )
 
 func init() {
@@ -107,13 +107,15 @@ func Provider() *schema.Provider {
 			"taikun_users":                       dataSourceTaikunUsers(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"taikun_access_profile":     resourceTaikunAccessProfile(),
-			"taikun_alerting_profile":   resourceTaikunAlertingProfile(),
-			"taikun_backup_credential":  resourceTaikunBackupCredential(),
-			"taikun_backup_policy":      resourceTaikunBackupPolicy(),
-			"taikun_billing_credential": resourceTaikunBillingCredential(),
-			"taikun_billing_rule":       resourceTaikunBillingRule(),
-			"taikun_cloud_credential":   resourceTaikunCloudCredential(),
+			"taikun_access_profile": resourceTaikunAccessProfile(),
+
+			"taikun_alerting_profile": resourceTaikunAlertingProfile(),
+
+			"taikun_backup_credential":                    resourceTaikunBackupCredential(),
+			"taikun_backup_policy":                        resourceTaikunBackupPolicy(),
+			"taikun_billing_credential":                   resourceTaikunBillingCredential(),
+			"taikun_billing_rule":                         resourceTaikunBillingRule(),
+			"taikun_cloud_credential":                     resourceTaikunCloudCredential(),
 			"taikun_cloud_credential_aws":                 resourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":               resourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":                 resourceTaikunCloudCredentialGCP(),
@@ -201,7 +203,6 @@ func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{
 
 	apiHost, _ := d.Get("api_host").(string)
 
-	client, err := taikungoclient.NewClientFromCredentials(email, password, keycloakEnabled, apiHost)
-
-	return client, diag.FromErr(err)
+	client := tk.NewClientFromCredentials(email, password, "", "", "", apiHost)
+	return client, diag.FromErr(nil)
 }

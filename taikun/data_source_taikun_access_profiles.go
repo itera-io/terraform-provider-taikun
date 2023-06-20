@@ -2,14 +2,10 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/ssh_users"
-
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client/access_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunAccessProfiles() *schema.Resource {
@@ -35,11 +31,12 @@ func dataSourceTaikunAccessProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+func dataSourceTaikunAccessProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := access_profiles.NewAccessProfilesListParams().WithV(ApiVersion)
+	params := apiClient.Client.AccessProfilesApi.AccessprofilesList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -48,33 +45,31 @@ func dataSourceTaikunAccessProfilesRead(_ context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var accessProfilesList []*models.AccessProfilesListDto
+	var accessProfilesList []tkcore.AccessProfilesListDto
 	for {
-		response, err := apiClient.Client.AccessProfiles.AccessProfilesList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		accessProfilesList = append(accessProfilesList, response.GetPayload().Data...)
-		if len(accessProfilesList) == int(response.GetPayload().TotalCount) {
+		accessProfilesList = append(accessProfilesList, response.Data...)
+		if len(accessProfilesList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(accessProfilesList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(accessProfilesList))
 	}
 
 	accessProfiles := make([]map[string]interface{}, len(accessProfilesList))
 	for i, rawAccessProfile := range accessProfilesList {
 
-		sshParams := ssh_users.NewSSHUsersListParams().WithV(ApiVersion).WithAccessProfileID(rawAccessProfile.ID)
-		sshResponse, err := apiClient.Client.SSHUsers.SSHUsersList(sshParams, apiClient)
+		sshResponse, res, err := apiClient.Client.SshUsersApi.SshusersList(context.TODO(), rawAccessProfile.GetId()).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
-		accessProfiles[i] = flattenTaikunAccessProfile(rawAccessProfile, sshResponse)
+		accessProfiles[i] = flattenTaikunAccessProfile(&rawAccessProfile, sshResponse)
 	}
 	if err := d.Set("access_profiles", accessProfiles); err != nil {
 		return diag.FromErr(err)

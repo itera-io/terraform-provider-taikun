@@ -3,15 +3,13 @@ package taikun
 import (
 	"context"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/organizations"
-	"github.com/itera-io/taikungoclient/client/prometheus"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunOrganizationBillingRuleAttachmentSchema() map[string]*schema.Schema {
@@ -57,7 +55,7 @@ func resourceTaikunOrganizationBillingRuleAttachment() *schema.Resource {
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*taikungoclient.Client)
+	client := meta.(*tk.Client)
 
 	billingRuleId, err := atoi32(d.Get("billing_rule_id").(string))
 	if err != nil {
@@ -69,20 +67,20 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 		return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 	}
 
-	body := &models.BindPrometheusOrganizationsCommand{
-		Organizations: []*models.BindOrganizationsToRuleDto{
+	body := tkcore.BindPrometheusOrganizationsCommand{
+		Organizations: []tkcore.BindOrganizationsToRuleDto{
 			{
-				IsBound:          true,
-				OrganizationID:   organizationId,
-				RuleDiscountRate: d.Get("discount_rate").(float64),
+				IsBound:          tkcore.PtrBool(true),
+				OrganizationId:   tkcore.PtrInt32(organizationId),
+				RuleDiscountRate: newNullableFloat64(d.Get("discount_rate").(float64)),
 			},
 		},
-		PrometheusRuleID: billingRuleId,
+		PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
 	}
-	params := prometheus.NewPrometheusBindOrganizationsParams().WithV(ApiVersion).WithBody(body)
-	_, err = client.Client.Prometheus.PrometheusBindOrganizations(params, client)
+
+	res, err := client.Client.PrometheusRulesApi.PrometheusrulesBindOrganizations(ctx).BindPrometheusOrganizationsCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	id := fmt.Sprintf("%d/%d", organizationId, billingRuleId)
@@ -98,7 +96,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentReadWithoutRetries()
 }
 func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 
 		id := d.Id()
 		d.SetId("")
@@ -107,12 +105,12 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 			return diag.Errorf("Error while reading taikun_organization_billing_rule_attachment : %s", err)
 		}
 
-		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(ctx).Id(billingRuleId).Execute()
+
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -120,20 +118,20 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 			return nil
 		}
 
-		rawBillingRule := response.GetPayload().Data[0]
+		rawBillingRule := response.Data[0]
 
-		for _, e := range rawBillingRule.BoundOrganizations {
-			if e.OrganizationID == organizationId {
-				if err := d.Set("organization_id", i32toa(e.OrganizationID)); err != nil {
+		for _, e := range rawBillingRule.GetBoundOrganizations() {
+			if e.GetId() == organizationId {
+				if err := d.Set("organization_id", i32toa(e.GetId())); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("organization_name", e.OrganizationName); err != nil {
+				if err := d.Set("organization_name", e.GetName()); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("billing_rule_id", i32toa(rawBillingRule.ID)); err != nil {
+				if err := d.Set("billing_rule_id", i32toa(rawBillingRule.GetId())); err != nil {
 					return diag.FromErr(err)
 				}
-				if err := d.Set("discount_rate", e.RuleDiscountRate); err != nil {
+				if err := d.Set("discount_rate", e.GetRuleDiscountRate()); err != nil {
 					return diag.FromErr(err)
 				}
 				d.SetId(id)
@@ -150,46 +148,45 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
 	}
 
-	organizationsListParams := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&organizationId)
-	organizationsListResponse, err := apiClient.Client.Organizations.OrganizationsList(organizationsListParams, apiClient)
+	organizationsListResponse, res, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(organizationId).Execute()
+
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
-	if len(organizationsListResponse.Payload.Data) != 1 {
+	if len(organizationsListResponse.Data) != 1 {
 		d.SetId("")
 		return nil
 	}
 
-	billingRulesListParams := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-	billingRulesListResponse, err := apiClient.Client.Prometheus.PrometheusListOfRules(billingRulesListParams, apiClient)
+	billingRulesListResponse, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
-	if len(billingRulesListResponse.Payload.Data) != 1 {
+	if len(billingRulesListResponse.Data) != 1 {
 		d.SetId("")
 		return nil
 	}
 
-	body := &models.BindPrometheusOrganizationsCommand{
-		Organizations: []*models.BindOrganizationsToRuleDto{
+	body := tkcore.BindPrometheusOrganizationsCommand{
+		Organizations: []tkcore.BindOrganizationsToRuleDto{
 			{
-				IsBound:        false,
-				OrganizationID: organizationId,
+				IsBound:        tkcore.PtrBool(false),
+				OrganizationId: tkcore.PtrInt32(organizationId),
 			},
 		},
-		PrometheusRuleID: billingRuleId,
+		PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
 	}
-	params := prometheus.NewPrometheusBindOrganizationsParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.Client.Prometheus.PrometheusBindOrganizations(params, apiClient)
+
+	res, err = apiClient.Client.PrometheusRulesApi.PrometheusrulesBindOrganizations(context.TODO()).BindPrometheusOrganizationsCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")

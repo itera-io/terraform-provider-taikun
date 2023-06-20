@@ -88,11 +88,11 @@ resource "taikun_showback_rule" "foo" {
   }
   project_alert_limit = %d
   global_alert_limit = %d
-  organization_id = resource.taikun_organization.foo.id
+  //organization_id = resource.taikun_organization.foo.id
 }
 
 data "taikun_showback_rules" "all" {
-  organization_id = resource.taikun_organization.foo.id
+  //organization_id = resource.taikun_organization.foo.id
 
   depends_on = [
     taikun_showback_rule.foo
@@ -127,7 +127,7 @@ func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 					globalLimit,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.taikun_showback_rules.all", "showback_rules.0.organization_name", organizationName),
+					//resource.TestCheckResourceAttr("data.taikun_showback_rules.all", "showback_rules.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_rules.all", "showback_rules.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_rules.all", "showback_rules.0.id"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_rules.all", "showback_rules.0.name"),

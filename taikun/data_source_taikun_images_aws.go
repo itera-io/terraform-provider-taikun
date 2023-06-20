@@ -3,14 +3,12 @@ package taikun
 import (
 	"context"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/aws"
-	"github.com/itera-io/taikungoclient/client/images"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunImagesAWS() *schema.Resource {
@@ -78,33 +76,30 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	owners, err := dataSourceTaikunImagesAWSGetOwnerID(apiClient, d.Get("owners").(*schema.Set).List())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := models.AwsImagesPostListCommand{
-		Latest:  d.Get("latest").(bool),
-		CloudID: cloudCredentialID,
-		Owners:  owners,
-	}
+	body := tkcore.AwsImagesPostListCommand{}
+	body.SetLatest(d.Get("latest").(bool))
+	body.SetCloudId(cloudCredentialID)
+	body.SetOwners(owners)
 
-	params := images.NewImagesAwsImagesAsPostParams().WithV(ApiVersion).WithBody(&body)
-
+	var offset int32 = 0
 	var imageList []map[string]interface{}
 	for {
-		response, err := apiClient.Client.Images.ImagesAwsImagesAsPost(params, apiClient)
+		body.SetOffset(offset)
+		response, res, err := apiClient.Client.ImagesApi.ImagesAwsImagesList(context.TODO()).AwsImagesPostListCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		imageList = append(imageList, flattenTaikunImagesAWS(response.Payload.Data...)...)
-		if len(imageList) == int(response.Payload.TotalCount) {
+		imageList = append(imageList, flattenTaikunImagesAWS(response.GetData()...)...)
+		if len(imageList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(imageList))
-		body.Offset = offset
-		params = params.WithBody(&body)
+		offset = int32(len(imageList))
 	}
 
 	if err := d.Set("images", imageList); err != nil {
@@ -116,19 +111,19 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 }
 
 // Converts a list of AWS owner names to a list of AWS owner IDs
-func dataSourceTaikunImagesAWSGetOwnerID(apiClient *taikungoclient.Client, ownerNames []interface{}) (ownerIds []string, err error) {
+func dataSourceTaikunImagesAWSGetOwnerID(apiClient *tk.Client, ownerNames []interface{}) (ownerIds []string, err error) {
 
 	// Get list of Owners with ID and Name from API
-	params := aws.NewAwsAwsOwnersParams().WithV(ApiVersion)
-	response, err := apiClient.Client.Aws.AwsAwsOwners(params, apiClient)
+	response, res, err := apiClient.Client.AWSCloudCredentialApi.AwsOwners(context.TODO()).Execute()
 	if err != nil {
+		err = tk.CreateError(res, err)
 		return
 	}
 
 	// Create owner name to owner ID map
 	awsOwnerIdNameMap := make(map[string]string)
-	for _, owner := range response.Payload {
-		awsOwnerIdNameMap[owner.Name] = owner.ID
+	for _, owner := range response {
+		awsOwnerIdNameMap[owner.GetName()] = owner.GetId()
 	}
 
 	// Make list of owner IDs from the list of owner names
@@ -136,7 +131,7 @@ func dataSourceTaikunImagesAWSGetOwnerID(apiClient *taikungoclient.Client, owner
 	for _, ownerName := range ownerNames {
 		ownerId, ok := awsOwnerIdNameMap[ownerName.(string)]
 		if !ok {
-			return nil, fmt.Errorf("%s AWS owner not found.", ownerName)
+			return nil, fmt.Errorf("%s AWS owner not found", ownerName)
 		}
 		ownerIds = append(ownerIds, ownerId)
 	}
@@ -144,13 +139,13 @@ func dataSourceTaikunImagesAWSGetOwnerID(apiClient *taikungoclient.Client, owner
 	return
 }
 
-func flattenTaikunImagesAWS(rawImages ...*models.AwsExtendedImagesListDto) []map[string]interface{} {
+func flattenTaikunImagesAWS(rawImages ...tkcore.AwsExtendedImagesListDto) []map[string]interface{} {
 
 	images := make([]map[string]interface{}, len(rawImages))
 	for i, rawImage := range rawImages {
 		images[i] = map[string]interface{}{
-			"id":   rawImage.ID,
-			"name": rawImage.Name,
+			"id":   rawImage.GetId(),
+			"name": rawImage.GetName(),
 		}
 	}
 	return images

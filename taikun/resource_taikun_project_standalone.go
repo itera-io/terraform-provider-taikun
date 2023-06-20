@@ -2,16 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"reflect"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/images"
-	"github.com/itera-io/taikungoclient/client/stand_alone"
-	"github.com/itera-io/taikungoclient/client/stand_alone_vm_disks"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func taikunVMSchema() map[string]*schema.Schema {
@@ -201,7 +198,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
+func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
 
 	vms := d.Get("vm")
 
@@ -273,7 +270,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 }
 
 func shouldRecreateDisk(old map[string]interface{}, new map[string]interface{}) bool {
-	return hasChanges(old, new, "device_name", "lun_id", "name", "volume_type")
+	return hasChanges(old, new, "device_name", "name", "volume_type")
 }
 
 func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{}, recreateFunc func(old map[string]interface{}, new map[string]interface{}) bool) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
@@ -313,7 +310,7 @@ func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{
 	return toDelete, toAdd, intersection
 }
 
-func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
+func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
 
 	oldVms, newVms := d.GetChange("vm")
 	oldVmsList := oldVms.([]interface{})
@@ -344,14 +341,13 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if len(vmIds) != 0 {
-		deleteServerBody := &models.DeleteStandAloneVMCommand{
-			ProjectID: projectID,
-			VMIds:     vmIds,
-		}
-		deleteVMParams := stand_alone.NewStandAloneDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-		_, err := apiClient.Client.StandAlone.StandAloneDelete(deleteVMParams, apiClient)
+		deleteServerBody := tkcore.DeleteStandAloneVmCommand{}
+		deleteServerBody.SetProjectId(projectID)
+		deleteServerBody.SetVmIds(vmIds)
+
+		res, err := apiClient.Client.StandaloneApi.StandaloneDelete(ctx).DeleteStandAloneVmCommand(deleteServerBody).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging", "Deleting", "PendingDelete"}, apiClient, projectID); err != nil {
@@ -401,26 +397,24 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				if !new["public_ip"].(bool) {
 					mode = "disable"
 				}
-				body := &models.StandAloneVMIPManagementCommand{
-					ID:   vmId,
-					Mode: mode,
-				}
-				params := stand_alone.NewStandAloneIPManagementParams().WithV(ApiVersion).WithBody(body)
-				_, err := apiClient.Client.StandAlone.StandAloneIPManagement(params, apiClient)
+				body := tkcore.StandAloneVmIpManagementCommand{}
+				body.SetId(vmId)
+				body.SetMode(mode)
+
+				res, err := apiClient.Client.StandaloneApi.StandaloneIpManagement(ctx).StandAloneVmIpManagementCommand(body).Execute()
 				if err != nil {
-					return err
+					return tk.CreateError(res, err)
 				}
 			}
 			if hasChanges(old, new, "flavor") {
 				repairNeeded = true
-				body := &models.UpdateStandAloneVMFlavorCommand{
-					ID:     vmId,
-					Flavor: new["flavor"].(string),
-				}
-				params := stand_alone.NewStandAloneUpdateFlavorParams().WithV(ApiVersion).WithBody(body)
-				_, err := apiClient.Client.StandAlone.StandAloneUpdateFlavor(params, apiClient)
+				body := tkcore.UpdateStandAloneVmFlavorCommand{}
+				body.SetId(vmId)
+				body.SetFlavor(new["flavor"].(string))
+
+				res, err := apiClient.Client.StandaloneApi.StandaloneUpdateFlavor(ctx).UpdateStandAloneVmFlavorCommand(body).Execute()
 				if err != nil {
-					return err
+					return tk.CreateError(res, err)
 				}
 			}
 
@@ -436,11 +430,11 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		// Shouldn't happen
 	}
 	if repairNeeded {
-		body := &models.RepairStandAloneVMCommand{ProjectID: projectID}
-		params := stand_alone.NewStandAloneRepairParams().WithV(ApiVersion).WithBody(body)
-		_, err := apiClient.Client.StandAlone.StandAloneRepair(params, apiClient)
+		body := tkcore.RepairStandAloneVmCommand{}
+		body.SetProjectId(projectID)
+		res, err := apiClient.Client.StandaloneApi.StandaloneRepair(ctx).RepairStandAloneVmCommand(body).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
 			return err
@@ -450,7 +444,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{}, newDisks interface{}, apiClient *taikungoclient.Client, vmID int32, projectID int32) error {
+func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{}, newDisks interface{}, apiClient *tk.Client, vmID int32, projectID int32) error {
 	oldDisksList := oldDisks.([]interface{})
 	newDisksList := newDisks.([]interface{})
 	oldMap, newMap := make([]map[string]interface{}, 0), make([]map[string]interface{}, 0)
@@ -473,14 +467,13 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	}
 
 	if len(diskIds) != 0 {
-		deleteDiskBody := &models.DeleteStandAloneVMDiskCommand{
-			StandaloneVMID: vmID,
-			VMDiskIds:      diskIds,
-		}
-		deleteDiskParams := stand_alone_vm_disks.NewStandAloneVMDisksDeleteParams().WithV(ApiVersion).WithBody(deleteDiskBody)
-		_, err := apiClient.Client.StandAloneVMDisks.StandAloneVMDisksDelete(deleteDiskParams, apiClient)
+		deleteDiskBody := tkcore.DeleteStandAloneVmDiskCommand{}
+		deleteDiskBody.SetVmDiskIds(diskIds)
+		deleteDiskBody.SetStandaloneVmId(vmID)
+
+		res, err := apiClient.Client.StandaloneVMDisksApi.StandalonevmdisksDelete(ctx).DeleteStandAloneVmDiskCommand(deleteDiskBody).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
@@ -500,14 +493,13 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 		diskId, _ := atoi32(id)
 		if old := findWithId(oldMap, id); old != nil {
 			if hasChanges(old, new, "size") {
-				body := &models.UpdateStandaloneVMDiskSizeCommand{
-					ID:   diskId,
-					Size: int64(new["size"].(int)),
-				}
-				params := stand_alone_vm_disks.NewStandAloneVMDisksUpdateDiskSizeParams().WithV(ApiVersion).WithBody(body)
-				_, err := apiClient.Client.StandAloneVMDisks.StandAloneVMDisksUpdateDiskSize(params, apiClient)
+				body := tkcore.UpdateStandaloneVmDiskSizeCommand{}
+				body.SetId(diskId)
+				body.SetSize(int64(new["size"].(int)))
+
+				res, err := apiClient.Client.StandaloneVMDisksApi.StandalonevmdisksUpdateSize(ctx).UpdateStandaloneVmDiskSizeCommand(body).Execute()
 				if err != nil {
-					return err
+					return tk.CreateError(res, err)
 				}
 			}
 		}
@@ -517,103 +509,99 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	return nil
 }
 
-func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *taikungoclient.Client, projectID int32) (string, map[string]interface{}, error) {
+func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Client, projectID int32) (string, map[string]interface{}, error) {
 
 	standaloneProfileId, _ := atoi32(vmMap["standalone_profile_id"].(string))
 	unreadableProperties := map[string]interface{}{}
 
-	vmCreateBody := &models.CreateStandAloneVMCommand{
-		CloudInit:           vmMap["cloud_init"].(string),
-		Count:               1,
-		FlavorName:          vmMap["flavor"].(string),
-		Image:               vmMap["image_id"].(string),
-		Name:                vmMap["name"].(string),
-		ProjectID:           projectID,
-		PublicIPEnabled:     vmMap["public_ip"].(bool),
-		StandAloneMetaDatas: make([]*models.StandAloneMetaDataDto, 0),
-		StandAloneProfileID: standaloneProfileId,
-		StandAloneVMDisks:   make([]*models.StandAloneVMDiskDto, 0),
-		VolumeSize:          int64(vmMap["volume_size"].(int)),
-	}
+	vmCreateBody := tkcore.CreateStandAloneVmCommand{}
+	vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
+	vmCreateBody.SetCount(1)
+	vmCreateBody.SetFlavorName(vmMap["flavor"].(string))
+	vmCreateBody.SetImage(vmMap["image_id"].(string))
+	vmCreateBody.SetName(vmMap["name"].(string))
+	vmCreateBody.SetProjectId(projectID)
+	vmCreateBody.SetPublicIpEnabled(vmMap["public_ip"].(bool))
+	vmCreateBody.SetStandAloneMetaDatas(make([]tkcore.StandAloneMetaDataDto, 0))
+	vmCreateBody.SetStandAloneProfileId(standaloneProfileId)
+	vmCreateBody.SetStandAloneVmDisks(make([]tkcore.StandAloneVmDiskDto, 0))
+	vmCreateBody.SetVolumeSize(int64(vmMap["volume_size"].(int)))
 
 	if vmMap["username"] != nil {
-		vmCreateBody.Username = vmMap["username"].(string)
-		unreadableProperties["username"] = vmCreateBody.Username
+		vmCreateBody.SetUsername(vmMap["username"].(string))
 	}
 
 	if vmMap["volume_type"] != nil {
-		vmCreateBody.VolumeType = vmMap["volume_type"].(string)
+		vmCreateBody.SetVolumeType(vmMap["volume_type"].(string))
 	}
 
 	if vmMap["tag"] != nil {
 		rawTags := vmMap["tag"].(*schema.Set).List()
-		tagsList := make([]*models.StandAloneMetaDataDto, len(rawTags))
+		tagsList := make([]tkcore.StandAloneMetaDataDto, len(rawTags))
 		for i, e := range rawTags {
 			rawTag := e.(map[string]interface{})
-			tagsList[i] = &models.StandAloneMetaDataDto{
-				Key:   rawTag["key"].(string),
-				Value: rawTag["value"].(string),
-			}
+			tagsList[i] = tkcore.StandAloneMetaDataDto{}
+			tagsList[i].SetKey(rawTag["key"].(string))
+			tagsList[i].SetValue(rawTag["value"].(string))
 		}
-		vmCreateBody.StandAloneMetaDatas = tagsList
+		vmCreateBody.SetStandAloneMetaDatas(tagsList)
 	}
 
 	if vmMap["disk"] != nil {
 		rawDisks := vmMap["disk"].([]interface{})
-		disksList := make([]*models.StandAloneVMDiskDto, len(rawDisks))
+		disksList := make([]tkcore.StandAloneVmDiskDto, len(rawDisks))
 		for i, e := range rawDisks {
 			rawDisk := e.(map[string]interface{})
-			disksList[i] = &models.StandAloneVMDiskDto{
-				DeviceName: rawDisk["device_name"].(string),
-				LunID:      int32(rawDisk["lun_id"].(int)),
-				Name:       rawDisk["name"].(string),
-				Size:       int64(rawDisk["size"].(int)),
-				VolumeType: rawDisk["volume_type"].(string),
+			disksList[i] = tkcore.StandAloneVmDiskDto{}
+			deviceName := rawDisk["device_name"].(string)
+			if deviceName != "" {
+				disksList[i].SetDeviceName(deviceName)
+			} else {
+				disksList[i].SetDeviceNameNil()
 			}
+			disksList[i].SetName(rawDisk["name"].(string))
+			disksList[i].SetSize(int64(rawDisk["size"].(int)))
+			disksList[i].SetVolumeType(rawDisk["volume_type"].(string))
 		}
-		vmCreateBody.StandAloneVMDisks = disksList
+		vmCreateBody.SetStandAloneVmDisks(disksList)
 	}
 
-	vmCreateParams := stand_alone.NewStandAloneCreateParams().WithV(ApiVersion).WithBody(vmCreateBody)
-	vmCreateResponse, err := apiClient.Client.StandAlone.StandAloneCreate(vmCreateParams, apiClient)
+	vmCreateResponse, res, err := apiClient.Client.StandaloneApi.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()
 	if err != nil {
-		return "", nil, err
+		return "", nil, tk.CreateError(res, err)
 	}
 
-	return vmCreateResponse.Payload.ID, unreadableProperties, nil
+	return vmCreateResponse.GetId(), unreadableProperties, nil
 }
 
-func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *taikungoclient.Client, vmId int32) error {
+func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.Client, vmId int32) error {
 
-	diskCreateBody := &models.CreateStandAloneDiskCommand{
-		DeviceName:     diskMap["device_name"].(string),
-		LunID:          int32(diskMap["lun_id"].(int)),
-		Name:           diskMap["name"].(string),
-		Size:           int64(diskMap["size"].(int)),
-		VolumeType:     diskMap["volume_type"].(string),
-		StandaloneVMID: vmId,
-	}
+	diskCreateBody := tkcore.CreateStandAloneDiskCommand{}
+	diskCreateBody.SetDeviceName(diskMap["device_name"].(string))
+	diskCreateBody.SetName(diskMap["name"].(string))
+	diskCreateBody.SetSize(int64(diskMap["size"].(int)))
+	diskCreateBody.SetVolumeType(diskMap["volume_type"].(string))
+	diskCreateBody.SetStandaloneVmId(vmId)
 
-	diskCreateParams := stand_alone_vm_disks.NewStandAloneVMDisksCreateParams().WithV(ApiVersion).WithBody(diskCreateBody)
-	_, err := apiClient.Client.StandAloneVMDisks.StandAloneVMDisksCreate(diskCreateParams, apiClient)
+	_, res, err := apiClient.Client.StandaloneVMDisksApi.StandalonevmdisksCreate(context.TODO()).CreateStandAloneDiskCommand(diskCreateBody).Execute()
 	if err != nil {
-		return err
+		return tk.CreateError(res, err)
 	}
 
 	return nil
 }
 
-func resourceTaikunProjectStandaloneCommit(apiClient *taikungoclient.Client, projectID int32) error {
-	body := &models.CommitStandAloneVMCommand{ProjectID: projectID}
-	params := stand_alone.NewStandAloneCommitParams().WithV(ApiVersion).WithBody(body)
-	_, err := apiClient.Client.StandAlone.StandAloneCommit(params, apiClient)
+func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
+	body := tkcore.CommitStandAloneVmCommand{}
+	body.SetProjectId(projectID)
+	res, err := apiClient.Client.StandaloneApi.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
 	if err != nil {
-		return err
+		return tk.CreateError(res, err)
 	}
 	return nil
 }
 
-func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *taikungoclient.Client, id int32) error {
+func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Client, id int32) error {
 	oldImageData, newImageData := d.GetChange("images")
 	oldImages := oldImageData.(*schema.Set)
 	newImages := newImageData.(*schema.Set)
@@ -626,14 +614,15 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *taikungo
 	if imagesToUnbind.Len() != 0 {
 		var imageBindingsToUndo []int32
 		for _, boundImageDTO := range boundImageDTOs {
-			if imagesToUnbind.Contains(boundImageDTO.ImageID) {
-				imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.ID)
+			if imagesToUnbind.Contains(boundImageDTO.GetImageId()) {
+				imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
 			}
 		}
-		unbindBody := models.DeleteImageFromProjectCommand{Ids: imageBindingsToUndo}
-		unbindParams := images.NewImagesUnbindImagesFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
-		if _, err := apiClient.Client.Images.ImagesUnbindImagesFromProject(unbindParams, apiClient); err != nil {
-			return err
+		unbindBody := tkcore.DeleteImageFromProjectCommand{}
+		unbindBody.SetIds(imageBindingsToUndo)
+		res, err := apiClient.Client.ImagesApi.ImagesUnbindImagesFromProject(context.TODO()).DeleteImageFromProjectCommand(unbindBody).Execute()
+		if err != nil {
+			return tk.CreateError(res, err)
 		}
 	}
 	if len(imagesToBind) != 0 {
@@ -641,16 +630,18 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *taikungo
 		for i, imageToBind := range imagesToBind {
 			imagesToBindNames[i] = imageToBind.(string)
 		}
-		bindBody := models.BindImageToProjectCommand{ProjectID: id, Images: imagesToBindNames}
-		bindParams := images.NewImagesBindImagesToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
-		if _, err := apiClient.Client.Images.ImagesBindImagesToProject(bindParams, apiClient); err != nil {
-			return err
+		bindBody := tkcore.BindImageToProjectCommand{}
+		bindBody.SetProjectId(id)
+		bindBody.SetImages(imagesToBindNames)
+		res, err := apiClient.Client.ImagesApi.ImagesBindImagesToProject(context.TODO()).BindImageToProjectCommand(bindBody).Execute()
+		if err != nil {
+			return tk.CreateError(res, err)
 		}
 	}
 	return nil
 }
 
-func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *taikungoclient.Client, projectID int32) error {
+func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Client, projectID int32) error {
 	vmIds := make([]int32, 0)
 
 	for _, vm := range vmsToPurge {
@@ -664,14 +655,13 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *taikungo
 	}
 
 	if len(vmIds) != 0 {
-		deleteServerBody := &models.DeleteStandAloneVMCommand{
-			ProjectID: projectID,
-			VMIds:     vmIds,
-		}
-		deleteVMParams := stand_alone.NewStandAloneDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-		_, err := apiClient.Client.StandAlone.StandAloneDelete(deleteVMParams, apiClient)
+		deleteServerBody := tkcore.DeleteStandAloneVmCommand{}
+		deleteServerBody.SetProjectId(projectID)
+		deleteServerBody.SetVmIds(vmIds)
+
+		res, err := apiClient.Client.StandaloneApi.StandaloneDelete(context.TODO()).DeleteStandAloneVmCommand(deleteServerBody).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 	}
 	return nil

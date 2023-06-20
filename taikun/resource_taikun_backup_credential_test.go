@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/s3_credentials"
 )
 
 const testAccResourceTaikunBackupCredentialConfig = `
@@ -161,7 +160,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 }
 
 func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_backup_credential" {
@@ -169,10 +168,9 @@ func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.Client.S3Credentials.S3CredentialsList(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := client.Client.S3CredentialsApi.S3credentialsList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("backup credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -181,7 +179,7 @@ func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBackupCredentialDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_backup_credential" {
@@ -190,13 +188,12 @@ func testAccCheckTaikunBackupCredentialDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.Client.S3Credentials.S3CredentialsList(params, client)
+			response, _, err := client.Client.S3CredentialsApi.S3credentialsList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("backup credential still exists ()"))
 			}
 			return nil

@@ -2,6 +2,8 @@ package taikun
 
 import (
 	"fmt"
+	tkcore "github.com/chnyda/taikungoclient/client"
+	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
 	"math/rand"
 	"net/mail"
 	"os"
@@ -19,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 const testNamePrefix = "tf-acc-test-"
@@ -221,34 +222,29 @@ func getLockMode(locked bool) string {
 	return "unlock"
 }
 
-func getEPrometheusType(prometheusType string) models.EPrometheusType {
-	return models.EPrometheusType(getPrometheusTypeInt(prometheusType))
+func getEPrometheusType(prometheusType string) tkshowback.EPrometheusType {
+	return getPrometheusTypeInt(prometheusType)
 }
 
-func getPrometheusType(prometheusType string) models.PrometheusType {
-	return models.PrometheusType(getPrometheusTypeInt(prometheusType))
-}
-
-func getPrometheusTypeInt(prometheusType string) int32 {
+func getPrometheusType(prometheusType string) tkcore.PrometheusType {
 	if prometheusType == "Count" {
-		return 100
+		return tkcore.PROMETHEUSTYPE_COUNT
 	}
-	return 200 // Sum
+	return tkcore.PROMETHEUSTYPE_SUM
 }
 
-func getShowbackType(showbackType string) models.EShowbackType {
+func getPrometheusTypeInt(prometheusType string) tkshowback.EPrometheusType {
+	if prometheusType == "Count" {
+		return tkshowback.EPROMETHEUSTYPE__100
+	}
+	return tkshowback.EPROMETHEUSTYPE__200 // Sum
+}
+
+func getShowbackType(showbackType string) tkshowback.EShowbackType {
 	if showbackType == "General" {
-		return 100
+		return tkshowback.ESHOWBACKTYPE__100
 	}
-	return 200 // External
-}
-
-func getUserRole(role string) models.UserRole {
-	if role == "User" {
-		return 400
-	}
-	// Manager
-	return 200
+	return tkshowback.ESHOWBACKTYPE__200 // External
 }
 
 const (
@@ -275,36 +271,16 @@ func parseLoadBalancingSolution(loadBalancingSolution string) (octaviaEnabled bo
 	return false, false
 }
 
-func getSlackConfigurationType(configType string) models.SlackType {
-	if configType == "Alert" {
-		return 100
-	}
-	return 200 // General
-}
-
-func getAlertingProfileReminder(reminder string) models.AlertingReminder {
-	switch reminder {
-	case "HalfHour":
-		return 100
-	case "Hourly":
-		return 200
-	case "Daily":
-		return 300
-	default: // "None"
-		return -1
-	}
-}
-
-func getAlertingIntegrationType(integrationType string) models.AlertingIntegrationType {
+func getAlertingIntegrationType(integrationType string) tkcore.AlertingIntegrationType {
 	switch integrationType {
 	case "Opsgenie":
-		return 100
+		return tkcore.ALERTINGINTEGRATIONTYPE_OPSGENIE
 	case "Pagerduty":
-		return 200
+		return tkcore.ALERTINGINTEGRATIONTYPE_PAGERDUTY
 	case "Splunk":
-		return 300
+		return tkcore.ALERTINGINTEGRATIONTYPE_SPLUNK
 	default: // "MicrosoftTeams"
-		return 400
+		return tkcore.ALERTINGINTEGRATIONTYPE_MICROSOFT_TEAMS
 	}
 }
 
@@ -328,14 +304,14 @@ const (
 	cloudTypeGCP       = "GCP"
 )
 
-func getSecurityGroupProtocol(protocol string) models.SecurityGroupProtocol {
+func getSecurityGroupProtocol(protocol string) tkcore.SecurityGroupProtocol {
 	switch strings.ToUpper(protocol) {
 	case "ICMP":
-		return 100
+		return tkcore.SECURITYGROUPPROTOCOL_ICMP
 	case "TCP":
-		return 200
+		return tkcore.SECURITYGROUPPROTOCOL_TCP
 	default: // UDP
-		return 300
+		return tkcore.SECURITYGROUPPROTOCOL_UDP
 	}
 }
 
