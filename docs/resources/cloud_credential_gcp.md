@@ -37,5 +37,3 @@ Taikun Google Cloud Platform Credential
 - `is_default` (Boolean) Indicates whether the GCP cloud credential is the default one.
 - `organization_name` (String) The name of the organization which owns the GCP credential.
 - `zones` (Set of String) The given zones of the GCP credential.
-
-

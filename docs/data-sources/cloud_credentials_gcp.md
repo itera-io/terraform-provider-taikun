@@ -41,5 +41,3 @@ Read-Only:
 - `organization_name` (String)
 - `region` (String)
 - `zones` (Set of String)
-
-

@@ -32,5 +32,3 @@ Get a GCP credential by its ID.
 - `organization_name` (String) The name of the organization which owns the GCP credential.
 - `region` (String) The region of the GCP credential.
 - `zones` (Set of String) The given zones of the GCP credential.
-
-
