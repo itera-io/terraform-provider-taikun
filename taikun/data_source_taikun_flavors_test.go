@@ -67,8 +67,8 @@ data "taikun_flavors" "foo" {
 
 func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	cpu := 16
-	ram := 64
+	cpu := 12
+	ram := 48
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },

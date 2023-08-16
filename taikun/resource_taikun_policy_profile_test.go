@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"testing"
-
-	"github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -197,7 +196,7 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_policy_profile" {
@@ -215,7 +214,7 @@ func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_policy_profile" {

@@ -2,15 +2,10 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/project_quotas"
-	"github.com/itera-io/taikungoclient/client/stand_alone"
+	tk "github.com/chnyda/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client/projects"
-	"github.com/itera-io/taikungoclient/client/servers"
 )
 
 func dataSourceTaikunProjects() *schema.Resource {
@@ -37,10 +32,10 @@ func dataSourceTaikunProjects() *schema.Resource {
 }
 
 func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := projects.NewProjectsListParams().WithV(ApiVersion)
+	params := apiClient.Client.ProjectsApi.ProjectsList(context.TODO())
 
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
@@ -48,48 +43,47 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	response, err := apiClient.Client.Projects.ProjectsList(params, apiClient)
+	response, _, err := params.Execute()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projects := make([]map[string]interface{}, len(response.Payload.Data))
-	for i, projectEntityDTO := range response.Payload.Data {
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectEntityDTO.ID)
-		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
+	projects := make([]map[string]interface{}, len(response.GetData()))
+	for i, projectEntityDTO := range response.GetData() {
+		response, res, err := apiClient.Client.ServersApi.ServersDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(res, err))
+		}
+
+		responseVM, res, err := apiClient.Client.StandaloneApi.StandaloneDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(res, err))
+		}
+
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectEntityDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(projectEntityDTO.ID)
-		responseVM, err := apiClient.Client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(projectEntityDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectEntityDTO.ID, apiClient)
+		project := response.GetProject()
+		quotaResponse, res, err := apiClient.Client.ProjectQuotasApi.ProjectquotasList(context.TODO()).Id(project.GetProjectId()).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-
-		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(projectEntityDTO.ID, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&response.Payload.Project.QuotaID)
-		quotaResponse, err := apiClient.Client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if len(quotaResponse.Payload.Data) != 1 {
+		if len(quotaResponse.GetData()) != 1 {
 			return nil
 		}
 
-		projects[i] = flattenTaikunProject(response.Payload.Project, response.Payload.Data, responseVM.Payload.Data, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
+		responseProject := response.GetProject()
+		projects[i] = flattenTaikunProject(&responseProject, response.GetData(), responseVM.GetData(), boundFlavorDTOs, boundImageDTOs, &quotaResponse.GetData()[0])
 	}
 	if err := d.Set("projects", projects); err != nil {
 		return diag.FromErr(err)

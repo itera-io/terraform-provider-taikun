@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
 )
 
 const testAccResourceTaikunKubernetesProfileConfig = `
@@ -123,7 +122,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 }
 
 func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_kubernetes_profile" {
@@ -131,10 +130,9 @@ func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.Client.KubernetesProfiles.KubernetesProfilesList(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := client.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("kubernetes profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -143,7 +141,7 @@ func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_kubernetes_profile" {
@@ -152,13 +150,12 @@ func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.Client.KubernetesProfiles.KubernetesProfilesList(params, client)
+			response, _, err := client.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("kubernetes profile still exists"))
 			}
 			return nil

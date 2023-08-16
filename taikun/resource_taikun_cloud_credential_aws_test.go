@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 )
 
 const testAccResourceTaikunCloudCredentialAWSConfig = `
@@ -158,7 +157,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 }
 
 func testAccCheckTaikunCloudCredentialAWSExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential_aws" {
@@ -166,10 +165,9 @@ func testAccCheckTaikunCloudCredentialAWSExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
-		if err != nil || response.Payload.TotalCountAws != 1 {
+		response, _, err := client.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCountAws() != 1 {
 			return fmt.Errorf("aws cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -178,7 +176,7 @@ func testAccCheckTaikunCloudCredentialAWSExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunCloudCredentialAWSDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential_aws" {
@@ -187,13 +185,12 @@ func testAccCheckTaikunCloudCredentialAWSDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+			response, _, err := client.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCountAws != 0 {
+			if response.GetTotalCountAws() != 0 {
 				return resource.RetryableError(errors.New("aws cloud credential still exists"))
 			}
 			return nil

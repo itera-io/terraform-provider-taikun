@@ -2,14 +2,12 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/client/images"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 // DEPRECATED: this data source is deprecated in favour of `taikun_images_aws`, `taikun_images_azure`, `taikun_images_gcp` and `taikun_images_openstack`.
@@ -66,80 +64,86 @@ func dataSourceTaikunImages() *schema.Resource {
 					},
 				},
 			},
+			"personal": {
+				Description: "If the image is personal",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
 
-func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	apiClient := meta.(*taikungoclient.Client)
-	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
-	list, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+	apiClient := meta.(*tk.Client)
+	list, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(ctx).Id(cloudCredentialID).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
-	if len(list.GetPayload().Azure) == 0 && len(list.GetPayload().Amazon) == 0 && len(list.GetPayload().Openstack) == 0 {
+	if len(list.GetAzure()) == 0 && len(list.GetAmazon()) == 0 && len(list.GetOpenstack()) == 0 && len(list.GetGoogle()) == 0 {
 		return diag.Errorf("Cloud Credential not found")
 	}
 
 	var imageList []map[string]interface{}
 
 	switch {
-	case len(list.GetPayload().Azure) != 0:
+	case len(list.GetAzure()) != 0:
 		offer, offerIsSet := d.GetOk("azure_offer")
 		publisher, publisherIsSet := d.GetOk("azure_publisher")
 		SKU, SKUIsSet := d.GetOk("azure_sku")
 		if !SKUIsSet || !publisherIsSet || !offerIsSet {
 			return diag.Errorf("All of the following attributes must be set: azure_offer, azure_publisher, azure_sku")
 		}
-		params := images.NewImagesAzureImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-		params.WithPublisherName(publisher.(string)).WithOffer(offer.(string)).WithSku(SKU.(string))
+		params := apiClient.Client.ImagesApi.ImagesAzureImages(ctx, cloudCredentialID, publisher.(string), offer.(string), SKU.(string)).Latest(false)
+		var offset int32 = 0
 
 		for {
-			response, err := apiClient.Client.Images.ImagesAzureImages(params, apiClient)
+			response, res, err := params.Offset(offset).Execute()
 			if err != nil {
-				return diag.FromErr(err)
+				return diag.FromErr(tk.CreateError(res, err))
 			}
-			imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-			if len(imageList) == int(response.Payload.TotalCount) {
+			imageList = append(imageList, flattenTaikunImages(response.GetData()...)...)
+			if len(imageList) == int(response.GetTotalCount()) {
 				break
 			}
-			offset := int32(len(imageList))
-			params = params.WithOffset(&offset)
+			offset = int32(len(imageList))
 		}
-	case len(list.GetPayload().Amazon) != 0:
-		params := images.NewImagesCommonAwsImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
+	case len(list.GetAmazon()) != 0:
 		var limit int32 = 0
 		if limitData, limitIsSet := d.GetOk("aws_limit"); limitIsSet {
 			limit = int32(limitData.(int))
 		}
-		response, err := apiClient.Client.Images.ImagesCommonAwsImages(params, apiClient)
+
+		params := apiClient.Client.ImagesApi.ImagesAwsCommonImages(ctx, cloudCredentialID)
+
+		response, res, err := params.Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		imageList = flattenTaikunImagesAwsOwnerDetails(response.Payload)
+		imageList = flattenTaikunImagesAwsOwnerDetails(response)
 		if limit != 0 && int32(len(imageList)) > limit {
 			imageList = imageList[:limit]
 		}
 	default: // OpenStack
-		params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
+		var offset int32 = 0
+		params := apiClient.Client.ImagesApi.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(d.Get("personal").(bool)).Personal(false)
 
 		for {
-			response, err := apiClient.Client.Images.ImagesOpenstackImages(params, apiClient)
+			response, res, err := params.Offset(offset).Execute()
 			if err != nil {
-				return diag.FromErr(err)
+				return diag.FromErr(tk.CreateError(res, err))
 			}
-			imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-			if len(imageList) == int(response.Payload.TotalCount) {
+			imageList = append(imageList, flattenTaikunImages(response.GetData()...)...)
+			if len(imageList) == int(response.GetTotalCount()) {
 				break
 			}
-			offset := int32(len(imageList))
-			params = params.WithOffset(&offset)
+			offset = int32(len(imageList))
 		}
 	}
 
@@ -151,25 +155,25 @@ func dataSourceTaikunImagesRead(_ context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func flattenTaikunImages(rawImages ...*models.CommonStringBasedDropdownDto) []map[string]interface{} {
+func flattenTaikunImages(rawImages ...tkcore.CommonStringBasedDropdownDto) []map[string]interface{} {
 
 	images := make([]map[string]interface{}, len(rawImages))
 	for i, rawImage := range rawImages {
 		images[i] = map[string]interface{}{
-			"id":   rawImage.ID,
-			"name": rawImage.Name,
+			"id":   rawImage.GetId(),
+			"name": rawImage.GetName(),
 		}
 	}
 	return images
 }
 
-func flattenTaikunImagesAwsOwnerDetails(rawImages []*models.AwsOwnerDetails) []map[string]interface{} {
+func flattenTaikunImagesAwsOwnerDetails(rawImages []tkcore.AwsOwnerDetails) []map[string]interface{} {
 
 	images := make([]map[string]interface{}, len(rawImages))
 	for i, rawImage := range rawImages {
 		images[i] = map[string]interface{}{
-			"id":   rawImage.Image.ID,
-			"name": rawImage.Image.Name,
+			"id":   rawImage.Image.GetId(),
+			"name": rawImage.Image.GetName(),
 		}
 	}
 	return images

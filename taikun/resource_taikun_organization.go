@@ -2,14 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/organizations"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
@@ -129,54 +128,51 @@ func resourceTaikunOrganization() *schema.Resource {
 }
 
 func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.OrganizationCreateCommand{
-		Address:                      d.Get("address").(string),
-		BillingEmail:                 d.Get("billing_email").(string),
-		City:                         d.Get("city").(string),
-		Country:                      d.Get("country").(string),
-		DiscountRate:                 d.Get("discount_rate").(float64),
-		Email:                        d.Get("email").(string),
-		FullName:                     d.Get("full_name").(string),
-		IsEligibleUpdateSubscription: d.Get("managers_can_change_subscription").(bool),
-		Name:                         d.Get("name").(string),
-		Phone:                        d.Get("phone").(string),
-		VatNumber:                    d.Get("vat_number").(string),
+	body := tkcore.OrganizationCreateCommand{}
+	body.SetAddress(d.Get("address").(string))
+	body.SetBillingEmail(d.Get("billing_email").(string))
+	body.SetCity(d.Get("city").(string))
+	body.SetCountry(d.Get("country").(string))
+	body.SetDiscountRate(d.Get("discount_rate").(float64))
+	body.SetEmail(d.Get("email").(string))
+	body.SetFullName(d.Get("full_name").(string))
+	body.SetIsEligibleUpdateSubscription(d.Get("managers_can_change_subscription").(bool))
+	body.SetName(d.Get("name").(string))
+	body.SetPhone(d.Get("phone").(string))
+	body.SetVatNumber(d.Get("vat_number").(string))
+
+	createResult, res, err := apiClient.Client.OrganizationsApi.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
 	}
-
-	params := organizations.NewOrganizationsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.Organizations.OrganizationsCreate(params, apiClient)
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.GetPayload().ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(createResult.GetPayload().ID)
+	d.SetId(createResult.GetId())
 
 	if isLocked, isLockedIsSet := d.GetOk("lock"); isLockedIsSet {
-		updateLockBody := &models.UpdateOrganizationCommand{
-			Address:                      body.Address,
-			BillingEmail:                 body.BillingEmail,
-			City:                         body.City,
-			Country:                      body.Country,
-			DiscountRate:                 body.DiscountRate,
-			Email:                        body.Email,
-			FullName:                     body.FullName,
-			ID:                           id,
-			IsEligibleUpdateSubscription: body.IsEligibleUpdateSubscription,
-			IsLocked:                     isLocked.(bool),
-			Name:                         body.Name,
-			Phone:                        body.Phone,
-			VatNumber:                    body.VatNumber,
-		}
-		updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(updateLockBody)
-		_, err := apiClient.Client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
+		updateLockBody := tkcore.UpdateOrganizationCommand{}
+		updateLockBody.SetAddress(body.GetAddress())
+		updateLockBody.SetBillingEmail(body.GetBillingEmail())
+		updateLockBody.SetCity(body.GetCity())
+		updateLockBody.SetCountry(body.GetCountry())
+		updateLockBody.SetDiscountRate(body.GetDiscountRate())
+		updateLockBody.SetEmail(body.GetEmail())
+		updateLockBody.SetFullName(body.GetFullName())
+		updateLockBody.SetId(id)
+		updateLockBody.SetIsEligibleUpdateSubscription(body.GetIsEligibleUpdateSubscription())
+		updateLockBody.SetIsLocked(isLocked.(bool))
+		updateLockBody.SetName(body.GetName())
+		updateLockBody.SetPhone(body.GetPhone())
+		updateLockBody.SetVatNumber(body.GetVatNumber())
+
+		res, err := apiClient.Client.OrganizationsApi.OrganizationsUpdate(ctx).UpdateOrganizationCommand(updateLockBody).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
@@ -190,16 +186,17 @@ func generateResourceTaikunOrganizationReadWithoutRetries() schema.ReadContextFu
 }
 func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id := d.Id()
 		id32, _ := atoi32(d.Id())
 		d.SetId("")
 
-		response, err := apiClient.Client.Organizations.OrganizationsList(organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id32), apiClient)
+		response, res, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(id32).Execute()
+
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -207,9 +204,9 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 			return nil
 		}
 
-		rawOrganization := response.GetPayload().Data[0]
+		rawOrganization := response.Data[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunOrganization(rawOrganization))
+		err = setResourceDataFromMap(d, flattenTaikunOrganization(&rawOrganization))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -221,73 +218,70 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 }
 
 func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := &models.UpdateOrganizationCommand{
-		Address:                      d.Get("address").(string),
-		BillingEmail:                 d.Get("billing_email").(string),
-		City:                         d.Get("city").(string),
-		Country:                      d.Get("country").(string),
-		DiscountRate:                 d.Get("discount_rate").(float64),
-		Email:                        d.Get("email").(string),
-		FullName:                     d.Get("full_name").(string),
-		ID:                           id,
-		IsEligibleUpdateSubscription: d.Get("managers_can_change_subscription").(bool),
-		IsLocked:                     d.Get("lock").(bool),
-		Name:                         d.Get("name").(string),
-		Phone:                        d.Get("phone").(string),
-		VatNumber:                    d.Get("vat_number").(string),
-	}
+	body := tkcore.UpdateOrganizationCommand{}
+	body.SetAddress(d.Get("address").(string))
+	body.SetBillingEmail(d.Get("billing_email").(string))
+	body.SetCity(d.Get("city").(string))
+	body.SetCountry(d.Get("country").(string))
+	body.SetDiscountRate(d.Get("discount_rate").(float64))
+	body.SetEmail(d.Get("email").(string))
+	body.SetFullName(d.Get("full_name").(string))
+	body.SetId(id)
+	body.SetIsEligibleUpdateSubscription(d.Get("managers_can_change_subscription").(bool))
+	body.SetIsLocked(d.Get("lock").(bool))
+	body.SetName(d.Get("name").(string))
+	body.SetPhone(d.Get("phone").(string))
+	body.SetVatNumber(d.Get("vat_number").(string))
 
-	updateLockParams := organizations.NewOrganizationsUpdateParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.Client.Organizations.OrganizationsUpdate(updateLockParams, apiClient)
+	res, err := apiClient.Client.OrganizationsApi.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunOrganizationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+func resourceTaikunOrganizationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := organizations.NewOrganizationsDeleteParams().WithV(ApiVersion).WithOrganizationID(id)
-	_, _, err = apiClient.Client.Organizations.OrganizationsDelete(params, apiClient)
+	res, err := apiClient.Client.OrganizationsApi.OrganizationsDelete(ctx, id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunOrganization(rawOrganization *models.OrganizationDetailsDto) map[string]interface{} {
+func flattenTaikunOrganization(rawOrganization *tkcore.OrganizationDetailsDto) map[string]interface{} {
 	return map[string]interface{}{
-		"address":                          rawOrganization.Address,
-		"billing_email":                    rawOrganization.BillingEmail,
-		"city":                             rawOrganization.City,
-		"country":                          rawOrganization.Country,
-		"created_at":                       rawOrganization.CreatedAt,
-		"discount_rate":                    rawOrganization.DiscountRate,
-		"email":                            rawOrganization.Email,
-		"full_name":                        rawOrganization.FullName,
-		"id":                               i32toa(rawOrganization.ID),
-		"managers_can_change_subscription": rawOrganization.IsEligibleUpdateSubscription,
-		"lock":                             rawOrganization.IsLocked,
-		"is_read_only":                     rawOrganization.IsReadOnly,
-		"name":                             rawOrganization.Name,
-		"partner_id":                       i32toa(rawOrganization.PartnerID),
-		"partner_name":                     rawOrganization.PartnerName,
-		"phone":                            rawOrganization.Phone,
-		"vat_number":                       rawOrganization.VatNumber,
+		"address":                          rawOrganization.GetAddress(),
+		"billing_email":                    rawOrganization.GetBillingEmail(),
+		"city":                             rawOrganization.GetCity(),
+		"country":                          rawOrganization.GetCountry(),
+		"created_at":                       rawOrganization.GetCreatedAt(),
+		"discount_rate":                    rawOrganization.GetDiscountRate(),
+		"email":                            rawOrganization.GetEmail(),
+		"full_name":                        rawOrganization.GetFullName(),
+		"id":                               i32toa(rawOrganization.GetId()),
+		"managers_can_change_subscription": rawOrganization.GetIsEligibleUpdateSubscription(),
+		"lock":                             rawOrganization.GetIsLocked(),
+		"is_read_only":                     rawOrganization.GetIsReadOnly(),
+		"name":                             rawOrganization.GetName(),
+		"partner_id":                       i32toa(rawOrganization.GetPartnerId()),
+		"partner_name":                     rawOrganization.GetPartnerName(),
+		"phone":                            rawOrganization.GetPhone(),
+		"vat_number":                       rawOrganization.GetVatNumber(),
 	}
 }

@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"math"
 	"math/rand"
 	"os"
 	"testing"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/prometheus"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -88,7 +86,7 @@ func TestAccResourceTaikunOrganizationBillingRuleAttachment(t *testing.T) {
 }
 
 func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization_billing_rule_attachment" {
@@ -100,19 +98,18 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 			return err
 		}
 
-		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, _, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 		if err != nil {
 			return err
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			return fmt.Errorf("billing rule with ID %d not found", billingRuleId)
 		}
 
-		rawBillingRule := response.GetPayload().Data[0]
+		rawBillingRule := response.GetData()[0]
 
 		for _, e := range rawBillingRule.BoundOrganizations {
-			if e.OrganizationID == organizationId {
+			if e.GetId() == organizationId {
 				return nil
 			}
 		}
@@ -124,7 +121,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 }
 
 func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization_billing_rule_attachment" {
@@ -137,19 +134,18 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 		}
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&billingRuleId)
-			response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
+			response, _, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if len(response.Payload.Data) != 1 {
+			if len(response.GetData()) != 1 {
 				return nil
 			}
 
-			rawBillingRule := response.GetPayload().Data[0]
+			rawBillingRule := response.GetData()[0]
 
 			for _, e := range rawBillingRule.BoundOrganizations {
-				if e.OrganizationID == organizationId {
+				if e.GetId() == organizationId {
 					return resource.RetryableError(errors.New("organization_billing_rule_attachment still exists"))
 				}
 			}

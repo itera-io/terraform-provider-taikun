@@ -2,14 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
 	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 )
 
 func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
@@ -323,7 +322,7 @@ func generateResourceTaikunCloudCredentialReadWithoutRetries() schema.ReadContex
 func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		type_cc := d.Get("type").(string)
 		d.SetId("")
@@ -331,63 +330,63 @@ func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		if strings.Compare(type_cc, "aws") == 0 {
-			if len(response.Payload.Amazon) != 1 {
+			if len(response.GetAmazon()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Amazon[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(res))
+			res := response.GetAmazon()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else if strings.Compare(type_cc, "azure") == 0 {
-			if len(response.Payload.Azure) != 1 {
+			if len(response.GetAzure()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Azure[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(res))
+			res := response.GetAzure()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else if strings.Compare(type_cc, "gcp") == 0 {
-			if len(response.Payload.Google) != 1 {
+			if len(response.GetGoogle()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Google[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(res))
+			res := response.GetGoogle()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else {
-			if len(response.Payload.Openstack) != 1 {
+			if len(response.GetOpenstack()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Openstack[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(res))
+			res := response.GetOpenstack()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}

@@ -2,13 +2,12 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/models"
-	"github.com/itera-io/taikungoclient/showbackclient/showback_credentials"
 )
 
 func resourceTaikunShowbackCredentialSchema() map[string]*schema.Schema {
@@ -99,14 +98,13 @@ func resourceTaikunShowbackCredential() *schema.Resource {
 }
 
 func resourceTaikunShowbackCredentialCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.CreateShowbackCredentialCommand{
-		Name:     d.Get("name").(string),
-		Password: d.Get("password").(string),
-		URL:      d.Get("url").(string),
-		Username: d.Get("username").(string),
-	}
+	body := tkshowback.CreateShowbackCredentialCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetPassword(d.Get("password").(string))
+	body.SetUrl(d.Get("url").(string))
+	body.SetUsername(d.Get("username").(string))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -114,20 +112,19 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, d *schema.Resou
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := showback_credentials.NewShowbackCredentialsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsCreate(params, apiClient)
+	createResult, resp, err := apiClient.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsCreate(ctx).CreateShowbackCredentialCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(resp, err))
+	}
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunShowbackCredentialLock(id, true, apiClient); err != nil {
@@ -145,18 +142,18 @@ func generateResourceTaikunShowbackCredentialReadWithoutRetries() schema.ReadCon
 }
 func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, resp, err := apiClient.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(resp, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -164,9 +161,9 @@ func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawShowbackCredential := response.GetPayload().Data[0]
+		rawShowbackCredential := response.GetData()[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunShowbackCredential(rawShowbackCredential))
+		err = setResourceDataFromMap(d, flattenTaikunShowbackCredential(&rawShowbackCredential))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -178,7 +175,7 @@ func generateResourceTaikunShowbackCredentialRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunShowbackCredentialUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -194,45 +191,43 @@ func resourceTaikunShowbackCredentialUpdate(ctx context.Context, d *schema.Resou
 }
 
 func resourceTaikunShowbackCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := showback_credentials.NewShowbackCredentialsDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsDelete(params, apiClient)
+	resp, err := apiClient.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsDelete(context.TODO(), id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(resp, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunShowbackCredential(rawShowbackCredential *models.ShowbackCredentialsListDto) map[string]interface{} {
+func flattenTaikunShowbackCredential(rawShowbackCredential *tkshowback.ShowbackCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":        rawShowbackCredential.CreatedBy,
-		"id":                i32toa(rawShowbackCredential.ID),
-		"lock":              rawShowbackCredential.IsLocked,
-		"last_modified":     rawShowbackCredential.LastModified,
-		"last_modified_by":  rawShowbackCredential.LastModifiedBy,
-		"name":              rawShowbackCredential.Name,
-		"organization_id":   i32toa(rawShowbackCredential.OrganizationID),
-		"organization_name": rawShowbackCredential.OrganizationName,
-		"password":          rawShowbackCredential.Password,
-		"url":               rawShowbackCredential.URL,
-		"username":          rawShowbackCredential.Username,
+		"created_by":        rawShowbackCredential.GetCreatedBy(),
+		"id":                i32toa(rawShowbackCredential.GetId()),
+		"lock":              rawShowbackCredential.GetIsLocked(),
+		"last_modified":     rawShowbackCredential.GetLastModified(),
+		"last_modified_by":  rawShowbackCredential.GetLastModifiedBy(),
+		"name":              rawShowbackCredential.GetName(),
+		"organization_id":   i32toa(rawShowbackCredential.GetOrganizationId()),
+		"organization_name": rawShowbackCredential.GetOrganizationName(),
+		"password":          rawShowbackCredential.GetPassword(),
+		"url":               rawShowbackCredential.GetUrl(),
+		"username":          rawShowbackCredential.GetUsername(),
 	}
 }
 
-func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.ShowbackCredentialLockCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := showback_credentials.NewShowbackCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsLockManager(params, apiClient)
-	return err
+func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkshowback.ShowbackCredentialLockCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+
+	resp, err := apiClient.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsLockManagement(context.TODO()).Execute()
+	return tk.CreateError(resp, err)
 }

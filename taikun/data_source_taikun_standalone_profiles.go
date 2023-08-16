@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/security_group"
-	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunStandaloneProfiles() *schema.Resource {
@@ -34,11 +32,12 @@ func dataSourceTaikunStandaloneProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunStandaloneProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+func dataSourceTaikunStandaloneProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion)
+	params := apiClient.Client.StandaloneProfileApi.StandaloneprofileList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -47,33 +46,31 @@ func dataSourceTaikunStandaloneProfilesRead(_ context.Context, d *schema.Resourc
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var standaloneProfilesListDtos []*models.StandAloneProfilesListDto
+	var standaloneProfilesListDtos []tkcore.StandAloneProfilesListDto
 	for {
-		response, err := apiClient.Client.StandAloneProfile.StandAloneProfileList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		standaloneProfilesListDtos = append(standaloneProfilesListDtos, response.GetPayload().Data...)
-		if len(standaloneProfilesListDtos) == int(response.GetPayload().TotalCount) {
+		standaloneProfilesListDtos = append(standaloneProfilesListDtos, response.GetData()...)
+		if len(standaloneProfilesListDtos) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(standaloneProfilesListDtos))
-		params = params.WithOffset(&offset)
+		offset = int32(len(standaloneProfilesListDtos))
 	}
 
 	standaloneProfiles := make([]map[string]interface{}, len(standaloneProfilesListDtos))
 	for i, rawStandaloneProfile := range standaloneProfilesListDtos {
 
-		params := security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(rawStandaloneProfile.ID)
-		securityGroupResponse, err := apiClient.Client.SecurityGroup.SecurityGroupList(params, apiClient)
+		securityGroupResponse, res, err := apiClient.Client.SecurityGroupApi.SecuritygroupList(ctx, rawStandaloneProfile.GetId()).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
-		standaloneProfiles[i] = flattenTaikunStandaloneProfile(rawStandaloneProfile, securityGroupResponse.GetPayload())
+		standaloneProfiles[i] = flattenTaikunStandaloneProfile(&rawStandaloneProfile, securityGroupResponse)
 	}
 	if err := d.Set("standalone_profiles", standaloneProfiles); err != nil {
 		return diag.FromErr(err)

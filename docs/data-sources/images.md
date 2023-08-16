@@ -39,6 +39,7 @@ data "taikun_images" "foo" {
 - `azure_offer` (String) Azure offer (only valid with Azure Cloud Credential ID).
 - `azure_publisher` (String) Azure publisher (only valid with Azure Cloud Credential ID).
 - `azure_sku` (String) Azure sku (only valid with Azure Cloud Credential ID).
+- `personal` (Boolean) If the image is personal Defaults to `false`.
 
 ### Read-Only
 

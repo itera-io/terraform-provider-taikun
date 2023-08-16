@@ -2,15 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunUserSchema() map[string]*schema.Schema {
@@ -112,14 +110,13 @@ func resourceTaikunUser() *schema.Resource {
 }
 
 func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.CreateUserCommand{
-		Username:    d.Get("user_name").(string),
-		DisplayName: d.Get("display_name").(string),
-		Email:       d.Get("email").(string),
-		Role:        getUserRole(d.Get("role").(string)),
-	}
+	body := tkcore.CreateUserCommand{}
+	body.SetUsername(d.Get("user_name").(string))
+	body.SetDisplayName(d.Get("display_name").(string))
+	body.SetEmail(d.Get("email").(string))
+	body.SetRole(tkcore.UserRole(d.Get("role").(string)))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -127,16 +124,15 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := users.NewUsersCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.Users.UsersCreate(params, apiClient)
+	result, res, err := apiClient.Client.UsersApi.UsersCreate(context.TODO()).CreateUserCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
-	d.SetId(createResult.GetPayload().ID)
+	d.SetId(result.GetId())
 
 	return readAfterCreateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, d, meta)
 }
@@ -148,15 +144,15 @@ func generateResourceTaikunUserReadWithoutRetries() schema.ReadContextFunc {
 }
 func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id := d.Id()
 		d.SetId("")
 
-		response, err := apiClient.Client.Users.UsersList(users.NewUsersListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -164,7 +160,7 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 			return nil
 		}
 
-		rawUser := response.GetPayload().Data[0]
+		rawUser := response.Data[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunUser(rawUser))
 		if err != nil {
@@ -178,54 +174,53 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 }
 
 func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.UpdateUserCommand{
-		ID:                  d.Id(),
-		DisplayName:         d.Get("display_name").(string),
-		Username:            d.Get("user_name").(string),
-		Email:               d.Get("email").(string),
-		Role:                getUserRole(d.Get("role").(string)),
-		IsApprovedByPartner: true,
-	}
+	body := tkcore.UpdateUserCommand{}
+	body.SetId(d.Id())
+	body.SetDisplayName(d.Get("display_name").(string))
+	body.SetUsername(d.Get("user_name").(string))
+	body.SetEmail(d.Get("email").(string))
+	body.SetRole(tkcore.UserRole(d.Get("role").(string)))
+	body.SetIsApprovedByPartner(true)
 
-	updateUserParams := users.NewUsersUpdateUserParams().WithV(ApiVersion).WithBody(body)
-	_, err := apiClient.Client.Users.UsersUpdateUser(updateUserParams, apiClient)
+	res, err := apiClient.Client.UsersApi.UsersUpdateUser(context.TODO()).UpdateUserCommand(body).Execute()
+
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunUserReadWithRetries(), ctx, d, meta)
 }
 
 func resourceTaikunUserDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	params := users.NewUsersDeleteParams().WithV(ApiVersion).WithID(d.Id())
-	_, _, err := apiClient.Client.Users.UsersDelete(params, apiClient)
+	res, err := apiClient.Client.UsersApi.UsersDelete(context.TODO(), d.Id()).Execute()
+
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunUser(rawUser *models.UserForListDto) map[string]interface{} {
+func flattenTaikunUser(rawUser tkcore.UserForListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"id":                         rawUser.ID,
-		"user_name":                  rawUser.Username,
-		"organization_id":            i32toa(rawUser.OrganizationID),
-		"organization_name":          rawUser.OrganizationName,
-		"role":                       rawUser.Role,
-		"email":                      rawUser.Email,
-		"display_name":               rawUser.DisplayName,
-		"email_confirmed":            rawUser.IsEmailConfirmed,
-		"email_notification_enabled": rawUser.IsEmailNotificationEnabled,
-		"is_csm":                     rawUser.IsCsm,
-		"is_disabled":                rawUser.IsLocked,
-		"is_approved_by_partner":     rawUser.IsApprovedByPartner,
-		"is_owner":                   rawUser.Owner,
+		"id":                         rawUser.GetId(),
+		"user_name":                  rawUser.GetUsername(),
+		"organization_id":            i32toa(rawUser.GetOrganizationId()),
+		"organization_name":          rawUser.GetOrganizationName(),
+		"role":                       rawUser.GetRole(),
+		"email":                      rawUser.GetEmail(),
+		"display_name":               rawUser.GetDisplayName(),
+		"email_confirmed":            rawUser.GetIsEmailConfirmed(),
+		"email_notification_enabled": rawUser.GetIsEmailNotificationEnabled(),
+		"is_csm":                     rawUser.GetIsCsm(),
+		"is_disabled":                rawUser.GetIsLocked(),
+		"is_approved_by_partner":     rawUser.GetIsApprovedByPartner(),
+		"is_owner":                   rawUser.GetOwner(),
 	}
 }

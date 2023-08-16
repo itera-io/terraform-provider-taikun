@@ -3,16 +3,14 @@ package taikun
 import (
 	"context"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/backup"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
@@ -23,16 +21,6 @@ func resourceTaikunBackupPolicySchema() map[string]*schema.Schema {
 			Required:         true,
 			ForceNew:         true,
 			ValidateDiagFunc: stringIsCron,
-		},
-		"excluded_namespaces": {
-			Description: "Namespaces excluded from the backups.",
-			Type:        schema.TypeList,
-			Optional:    true,
-			Computed:    true,
-			DefaultFunc: func() (interface{}, error) {
-				return []string{}, nil
-			},
-			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		"included_namespaces": {
 			Description: "Namespaces included in the backups.",
@@ -96,23 +84,19 @@ func resourceTaikunBackupPolicy() *schema.Resource {
 }
 
 func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	projectId, _ := atoi32(d.Get("project_id").(string))
+	body := tkcore.CreateBackupPolicyCommand{}
+	body.SetCronPeriod(d.Get("cron_period").(string))
+	body.SetIncludeNamespaces(resourceGetStringList(d.Get("included_namespaces")))
+	body.SetName(d.Get("name").(string))
+	body.SetProjectId(projectId)
+	body.SetRetentionPeriod(d.Get("retention_period").(string))
 
-	body := &models.CreateBackupPolicyCommand{
-		CronPeriod:        d.Get("cron_period").(string),
-		ExcludeNamespaces: resourceGetStringList(d.Get("excluded_namespaces")),
-		IncludeNamespaces: resourceGetStringList(d.Get("included_namespaces")),
-		Name:              d.Get("name").(string),
-		ProjectID:         projectId,
-		RetentionPeriod:   d.Get("retention_period").(string),
-	}
-
-	params := backup.NewBackupCreateParams().WithV(ApiVersion).WithBody(body)
-	_, err := apiClient.Client.Backup.BackupCreate(params, apiClient)
+	res, err := apiClient.Client.BackupPolicyApi.BackupCreate(ctx).CreateBackupPolicyCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId(fmt.Sprintf("%d/%s", projectId, d.Get("name").(string)))
@@ -127,7 +111,7 @@ func generateResourceTaikunBackupPolicyReadWithoutRetries() schema.ReadContextFu
 }
 func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_backup_policy : %s", err)
@@ -137,14 +121,15 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.Backup.BackupListAllSchedules(backup.NewBackupListAllSchedulesParams().WithV(ApiVersion).WithProjectID(projectId), apiClient)
+		// maybe add search?
+		response, res, err := apiClient.Client.BackupPolicyApi.BackupListAllSchedules(context.TODO(), projectId).Limit(4000).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		for _, policy := range response.Payload.Data {
-			if policy.MetadataName == backupPolicyName {
+		for _, policy := range response.Data {
+			if policy.GetMetadataName() == backupPolicyName {
 
-				err = setResourceDataFromMap(d, flattenTaikunBackupPolicy(policy))
+				err = setResourceDataFromMap(d, flattenTaikunBackupPolicy(&policy))
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -164,35 +149,33 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 }
 
 func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_backup_policy : %s", err)
 	}
 
-	deleteBody := &models.DeleteScheduleCommand{
-		Name:      backupPolicyName,
-		ProjectID: projectId,
-	}
-	params := backup.NewBackupDeleteScheduleParams().WithV(ApiVersion).WithBody(deleteBody)
-	_, err = apiClient.Client.Backup.BackupDeleteSchedule(params, apiClient)
+	deleteBody := tkcore.DeleteScheduleCommand{}
+	deleteBody.SetName(backupPolicyName)
+	deleteBody.SetProjectId(projectId)
+
+	res, err := apiClient.Client.BackupPolicyApi.BackupDeleteSchedule(context.TODO()).DeleteScheduleCommand(deleteBody).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunBackupPolicy(rawBackupPolicy *models.CScheduleDto) map[string]interface{} {
+func flattenTaikunBackupPolicy(rawBackupPolicy *tkcore.CScheduleDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"cron_period":         rawBackupPolicy.Schedule,
-		"excluded_namespaces": rawBackupPolicy.ExcludedNamespaces,
-		"included_namespaces": rawBackupPolicy.IncludedNamespaces,
-		"name":                rawBackupPolicy.MetadataName,
-		"phase":               rawBackupPolicy.Phase,
-		"retention_period":    rawBackupPolicy.TTL,
+		"cron_period":         rawBackupPolicy.GetSchedule(),
+		"included_namespaces": rawBackupPolicy.GetIncludedNamespaces(),
+		"name":                rawBackupPolicy.GetMetadataName(),
+		"phase":               rawBackupPolicy.GetPhase(),
+		"retention_period":    rawBackupPolicy.GetTtl(),
 	}
 }
 

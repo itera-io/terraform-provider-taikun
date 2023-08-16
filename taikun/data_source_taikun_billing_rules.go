@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/prometheus"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunBillingRules() *schema.Resource {
@@ -28,27 +27,27 @@ func dataSourceTaikunBillingRules() *schema.Resource {
 }
 
 func dataSourceTaikunBillingRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
+	var offset int32 = 0
 
-	params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion)
+	params := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO())
 
-	var billingRulesList []*models.PrometheusRuleListDto
+	var billingRulesList []tkcore.PrometheusRuleListDto
 	for {
-		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		billingRulesList = append(billingRulesList, response.GetPayload().Data...)
-		if len(billingRulesList) == int(response.GetPayload().TotalCount) {
+		billingRulesList = append(billingRulesList, response.Data...)
+		if len(billingRulesList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(billingRulesList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(billingRulesList))
 	}
 
 	billingRules := make([]map[string]interface{}, len(billingRulesList))
 	for i, rawBillingRule := range billingRulesList {
-		billingRules[i] = flattenTaikunBillingRule(rawBillingRule)
+		billingRules[i] = flattenTaikunBillingRule(&rawBillingRule)
 	}
 	if err := d.Set("billing_rules", billingRules); err != nil {
 		return diag.FromErr(err)
