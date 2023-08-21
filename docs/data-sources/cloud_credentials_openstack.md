@@ -38,6 +38,7 @@ data "taikun_cloud_credentials_openstack" "foo" {
 Read-Only:
 
 - `availability_zone` (String)
+- `continent` (String)
 - `created_by` (String)
 - `domain` (String)
 - `id` (String)

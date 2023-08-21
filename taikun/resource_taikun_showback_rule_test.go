@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"math"
 	"math/rand"
 	"os"
@@ -11,8 +12,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/showbackclient/showback_rules"
 )
 
 const testAccResourceTaikunShowbackRuleConfig = `
@@ -228,7 +227,7 @@ func TestAccResourceTaikunShowbackRuleWithCredentials(t *testing.T) {
 }
 
 func testAccCheckTaikunShowbackRuleExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_showback_rule" {
@@ -236,10 +235,9 @@ func testAccCheckTaikunShowbackRuleExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(params, apiClient)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("showback rule doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -248,7 +246,7 @@ func testAccCheckTaikunShowbackRuleExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunShowbackRuleDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_showback_rule" {
@@ -257,13 +255,12 @@ func testAccCheckTaikunShowbackRuleDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(params, apiClient)
+			response, _, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("showback rule still exists"))
 			}
 			return nil

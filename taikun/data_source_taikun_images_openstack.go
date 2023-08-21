@@ -2,11 +2,10 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/images"
 )
 
 func dataSourceTaikunImagesOpenStack() *schema.Resource {
@@ -43,27 +42,29 @@ func dataSourceTaikunImagesOpenStack() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunImagesOpenStackRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunImagesOpenStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	apiClient := meta.(*taikungoclient.Client)
-	params := images.NewImagesOpenstackImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
+	var offset int32 = 0
+
+	apiClient := meta.(*tk.Client)
+	params := apiClient.Client.ImagesApi.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(false)
 
 	var imageList []map[string]interface{}
 	for {
-		response, err := apiClient.Client.Images.ImagesOpenstackImages(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-		if len(imageList) == int(response.Payload.TotalCount) {
+		data := response.GetData()
+		imageList = append(imageList, flattenTaikunImages(data...)...)
+		if len(imageList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(imageList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(imageList))
 	}
 
 	if err := d.Set("images", imageList); err != nil {

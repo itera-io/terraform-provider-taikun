@@ -2,15 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/aws"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
@@ -23,11 +21,21 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
-		"availability_zone": {
-			Description: "The AWS availability zone for the region.",
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
+		"availability_zones": {
+			Description: "The given AWS availability zones for the region.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"az_count": {
+			Description:  "The number of AWS availability zone expected for the region.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
 		},
 		"created_by": {
 			Description: "The creator of the AWS cloud credential.",
@@ -148,15 +156,23 @@ func resourceTaikunCloudCredentialAWS() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.CreateAwsCloudCommand{
-		Name:                d.Get("name").(string),
-		AwsAccessKeyID:      d.Get("access_key_id").(string),
-		AwsSecretAccessKey:  d.Get("secret_access_key").(string),
-		AwsAvailabilityZone: d.Get("availability_zone").(string),
-		AwsRegion:           d.Get("region").(string),
-	}
+	body := tkcore.CreateAwsCloudCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetAwsAccessKeyId(d.Get("access_key_id").(string))
+	body.SetAwsSecretAccessKey(d.Get("secret_access_key").(string))
+	body.SetAwsRegion(d.Get("region").(string))
+
+	/*
+		azCount, err := atoi32(d.Get("az_count").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		} else if azCount < 1 || azCount > 3 {
+			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
+		}
+	*/
+	body.SetAzCount(int32(d.Get("az_count").(int)))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -164,20 +180,19 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := aws.NewAwsCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.Aws.AwsCreate(params, apiClient)
+	createResult, res, err := apiClient.Client.AWSCloudCredentialApi.AwsCreate(context.TODO()).CreateAwsCloudCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
+	}
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
@@ -195,18 +210,18 @@ func generateResourceTaikunCloudCredentialAWSReadWithoutRetries() schema.ReadCon
 }
 func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Amazon) != 1 {
+		if len(response.GetAmazon()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -214,9 +229,9 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawCloudCredentialAWS := response.GetPayload().Amazon[0]
+		rawCloudCredentialAWS := response.GetAmazon()[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(rawCloudCredentialAWS))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(&rawCloudCredentialAWS))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -228,7 +243,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 }
 
 func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -241,16 +256,15 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChanges("access_key_id", "secret_access_key", "name") {
-		updateBody := &models.UpdateAwsCommand{
-			ID:                 id,
-			Name:               d.Get("name").(string),
-			AwsAccessKeyID:     d.Get("access_key_id").(string),
-			AwsSecretAccessKey: d.Get("secret_access_key").(string),
-		}
-		updateParams := aws.NewAwsUpdateParams().WithV(ApiVersion).WithBody(updateBody)
-		_, err := apiClient.Client.Aws.AwsUpdate(updateParams, apiClient)
+		updateBody := tkcore.UpdateAwsCommand{}
+		updateBody.SetId(id)
+		updateBody.SetName(d.Get("name").(string))
+		updateBody.SetAwsAccessKeyId(d.Get("access_key_id").(string))
+		updateBody.SetAwsSecretAccessKey(d.Get("secret_access_key").(string))
+
+		res, err := apiClient.Client.AWSCloudCredentialApi.AwsUpdate(context.TODO()).UpdateAwsCommand(updateBody).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
@@ -263,28 +277,27 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialAWSReadWithRetries(), ctx, d, meta)
 }
 
-func flattenTaikunCloudCredentialAWS(rawAWSCredential *models.AmazonCredentialsListDto) map[string]interface{} {
+func flattenTaikunCloudCredentialAWS(rawAWSCredential *tkcore.AmazonCredentialsListDto) map[string]interface{} {
 	return map[string]interface{}{
-		"created_by":        rawAWSCredential.CreatedBy,
-		"id":                i32toa(rawAWSCredential.ID),
-		"lock":              rawAWSCredential.IsLocked,
-		"is_default":        rawAWSCredential.IsDefault,
-		"last_modified":     rawAWSCredential.LastModified,
-		"last_modified_by":  rawAWSCredential.LastModifiedBy,
-		"name":              rawAWSCredential.Name,
-		"organization_id":   i32toa(rawAWSCredential.OrganizationID),
-		"organization_name": rawAWSCredential.OrganizationName,
-		"availability_zone": rawAWSCredential.AvailabilityZone,
-		"region":            rawAWSCredential.Region,
+		"created_by":         rawAWSCredential.GetCreatedBy(),
+		"id":                 i32toa(rawAWSCredential.GetId()),
+		"lock":               rawAWSCredential.GetIsLocked(),
+		"is_default":         rawAWSCredential.GetIsDefault(),
+		"last_modified":      rawAWSCredential.GetLastModified(),
+		"last_modified_by":   rawAWSCredential.GetLastModifiedBy(),
+		"name":               rawAWSCredential.GetName(),
+		"organization_id":    i32toa(rawAWSCredential.GetOrganizationId()),
+		"organization_name":  rawAWSCredential.GetOrganizationName(),
+		"availability_zones": rawAWSCredential.GetAvailabilityZones(),
+		"region":             rawAWSCredential.GetRegion(),
 	}
 }
 
-func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.CloudLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
-	return err
+func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.CloudLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+
+	res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

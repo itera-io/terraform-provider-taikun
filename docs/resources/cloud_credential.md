@@ -53,11 +53,13 @@ resource "taikun_cloud_credential" "foo" {
 ### Optional
 
 - `access_key_id` (String, Sensitive) The AWS access key ID. Required for AWS.
-- `availability_zone` (String) The availability zone of the cloud credential. Optional for Openstack. Required for AWS and Azure. See `zone` for GCP.
+- `availability_zone` (String) The availability zone of the cloud credential. Optional for Openstack.
+- `az_count` (Number) The number of availability zone expected for the region/location. Required for AWS, Azure and GCP. Defaults to `1`.
 - `billing_account_id` (String) The ID of the GCP credential's billing account. Conflicts with: `import_project`.
 - `client_id` (String, Sensitive) The Azure client ID. Required for Azure.
 - `client_secret` (String, Sensitive) The Azure client secret. Required for Azure.
 - `config_file` (String) The path of the GCP credential's configuration file. Required for GCP.
+- `continent` (String) The OpenStack continent (`Asia`, `Europe` or `America`).
 - `domain` (String) The OpenStack domain. Required for Openstack.
 - `folder_id` (String) The folder ID of the GCP credential. Conflicts with: `import_project`.
 - `import_project` (Boolean) Whether to import a project or not Defaults to `false`. Conflicts with: `billing_account_id`, `folder_id`.
@@ -75,10 +77,10 @@ resource "taikun_cloud_credential" "foo" {
 - `url` (String) The OpenStack authentication URL. Required for Openstack.
 - `user` (String) The OpenStack user. Required for Openstack.
 - `volume_type_name` (String) The OpenStack type of volume.
-- `zone` (String) The zone of the GCP credential. Required for GCP.
 
 ### Read-Only
 
+- `availability_zones` (Set of String) The given AWS/Azure/GCP availability zones for the region/location.
 - `billing_account_name` (String) The name of the GCP credential's billing account.
 - `created_by` (String) The creator of the cloud credential.
 - `id` (String) The ID of the cloud credential.
@@ -87,3 +89,4 @@ resource "taikun_cloud_credential" "foo" {
 - `last_modified_by` (String) The last user to have modified the cloud credential.
 - `organization_name` (String) The name of the organization which owns the cloud credential.
 - `project_id` (String) The OpenStack project ID. Required for Openstack.
+- `zones` (Set of String) The given zones of the GCP credential.

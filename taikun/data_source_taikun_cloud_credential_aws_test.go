@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,9 +10,7 @@ import (
 const testAccDataSourceTaikunCloudCredentialAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
-
-  lock       = %t
+  lock = %t
 }
 
 data "taikun_cloud_credential_aws" "foo" {
@@ -31,7 +28,6 @@ func TestAccDataSourceTaikunCloudCredentialAWS(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					false,
 				),
 				Check: checkDataSourceStateMatchesResourceStateWithIgnores(

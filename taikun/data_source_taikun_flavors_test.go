@@ -11,7 +11,6 @@ import (
 const testAccDataSourceTaikunFlavorsAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 data "taikun_flavors" "foo" {
@@ -36,7 +35,6 @@ func TestAccDataSourceTaikunFlavorsAWS(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunFlavorsAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					cpu, cpu,
 					ram, ram,
 				),
@@ -54,7 +52,6 @@ func TestAccDataSourceTaikunFlavorsAWS(t *testing.T) {
 const testAccDataSourceTaikunFlavorsAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
   location = "%s"
 }
 
@@ -70,8 +67,8 @@ data "taikun_flavors" "foo" {
 
 func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	cpu := 16
-	ram := 64
+	cpu := 12
+	ram := 48
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
@@ -80,7 +77,6 @@ func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunFlavorsAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
 					cpu, cpu,
 					ram, ram,

@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/kube_config"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunKubeconfigs() *schema.Resource {
@@ -34,42 +33,43 @@ func dataSourceTaikunKubeconfigs() *schema.Resource {
 }
 
 func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
+	var offset int32 = 0
 
 	projectID, err := atoi32(d.Get("project_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	params := kube_config.NewKubeConfigListParams().WithV(ApiVersion).WithProjectID(&projectID)
 
-	var kubeconfigDTOs []*models.KubeConfigForUserDto
+	params := apiClient.Client.KubeConfigApi.KubeconfigList(context.TODO()).ProjectId(projectID)
+
+	var kubeconfigDTOs []tkcore.KubeConfigForUserDto
 	retrievedKubeconfigCount := 0
 	for {
-		response, err := apiClient.Client.KubeConfig.KubeConfigList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		retrievedKubeconfigCount += len(response.Payload.Data)
-		for _, kubeconfigDTO := range response.Payload.Data {
-			if kubeconfigDTO.ProjectID == projectID {
+		retrievedKubeconfigCount += len(response.Data)
+		for _, kubeconfigDTO := range response.Data {
+			if kubeconfigDTO.GetProjectId() == projectID {
 				kubeconfigDTOs = append(kubeconfigDTOs, kubeconfigDTO)
 			}
 		}
-		if retrievedKubeconfigCount == int(response.Payload.TotalCount) {
+		if retrievedKubeconfigCount == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(retrievedKubeconfigCount)
-		params = params.WithOffset(&offset)
+		offset = int32(retrievedKubeconfigCount)
 	}
 
 	kubeconfigs := make([]map[string]interface{}, len(kubeconfigDTOs))
 	for i, kubeconfigDTO := range kubeconfigDTOs {
 		kubeconfigContent := resourceTaikunKubeconfigGetContent(
-			kubeconfigDTO.ProjectID,
-			kubeconfigDTO.ID,
+			kubeconfigDTO.GetProjectId(),
+			kubeconfigDTO.GetId(),
 			apiClient,
 		)
-		kubeconfigs[i] = flattenTaikunKubeconfig(kubeconfigDTO, kubeconfigContent)
+		kubeconfigs[i] = flattenTaikunKubeconfig(&kubeconfigDTO, kubeconfigContent)
 	}
 
 	if err := d.Set("kubeconfigs", kubeconfigs); err != nil {

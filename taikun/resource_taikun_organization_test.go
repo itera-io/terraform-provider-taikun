@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"math"
 	"math/rand"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/organizations"
 )
 
 const testAccResourceTaikunOrganizationConfig = `
@@ -188,7 +187,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 }
 
 func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization" {
@@ -196,10 +195,8 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id)
-
-		response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
-		if err != nil || len(response.Payload.Data) != 1 {
+		response, _, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(id).Execute()
+		if err != nil || len(response.GetData()) != 1 {
 			return fmt.Errorf("organization doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -208,7 +205,7 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_organization" {
@@ -217,13 +214,12 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := organizations.NewOrganizationsListParams().WithV(ApiVersion).WithID(&id)
+			response, _, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(id).Execute()
 
-			response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("organization still exists"))
 			}
 			return nil

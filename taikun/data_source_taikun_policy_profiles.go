@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/opa_profiles"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunPolicyProfiles() *schema.Resource {
@@ -35,10 +33,11 @@ func dataSourceTaikunPolicyProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunPolicyProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion)
+	var offset int32 = 0
+	params := apiClient.Client.OpaProfilesApi.OpaprofilesList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -47,26 +46,25 @@ func dataSourceTaikunPolicyProfilesRead(_ context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var opaProfilesListDtos []*models.OpaProfileListDto
+	var opaProfilesListDtos []tkcore.OpaProfileListDto
 	for {
-		response, err := apiClient.Client.OpaProfiles.OpaProfilesList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		opaProfilesListDtos = append(opaProfilesListDtos, response.GetPayload().Data...)
-		if len(opaProfilesListDtos) == int(response.GetPayload().TotalCount) {
+		opaProfilesListDtos = append(opaProfilesListDtos, response.GetData()...)
+		if len(opaProfilesListDtos) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(opaProfilesListDtos))
-		params = params.WithOffset(&offset)
+		offset = int32(len(opaProfilesListDtos))
 	}
 
 	opaProfiles := make([]map[string]interface{}, len(opaProfilesListDtos))
 	for i, rawOPAProfile := range opaProfilesListDtos {
-		opaProfiles[i] = flattenTaikunPolicyProfile(rawOPAProfile)
+		opaProfiles[i] = flattenTaikunPolicyProfile(&rawOPAProfile)
 	}
 	if err := d.Set("policy_profiles", opaProfiles); err != nil {
 		return diag.FromErr(err)

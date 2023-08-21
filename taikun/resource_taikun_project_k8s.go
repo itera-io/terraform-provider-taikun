@@ -3,6 +3,8 @@ package taikun
 import (
 	"context"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 	"strconv"
 	"time"
@@ -10,13 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/backup"
-	"github.com/itera-io/taikungoclient/client/flavors"
-	"github.com/itera-io/taikungoclient/client/opa_profiles"
-	"github.com/itera-io/taikungoclient/client/projects"
-	"github.com/itera-io/taikungoclient/client/servers"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func taikunServerKubeworkerSchema() map[string]*schema.Schema {
@@ -127,7 +122,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) error {
+func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
 
 	bastions := d.Get("server_bastion")
 	kubeMasters := d.Get("server_kubemaster")
@@ -135,22 +130,19 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungo
 
 	// Bastion
 	bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
-	serverCreateBody := &models.ServerForCreateDto{
-		Count:                1,
-		DiskSize:             gibiByteToByte(bastion["disk_size"].(int)),
-		Flavor:               bastion["flavor"].(string),
-		KubernetesNodeLabels: nil,
-		Name:                 bastion["name"].(string),
-		ProjectID:            projectID,
-		Role:                 100,
-	}
+	serverCreateBody := tkcore.ServerForCreateDto{}
+	serverCreateBody.SetCount(1)
+	serverCreateBody.SetDiskSize(gibiByteToByte(bastion["disk_size"].(int)))
+	serverCreateBody.SetFlavor(bastion["flavor"].(string))
+	serverCreateBody.SetName(bastion["name"].(string))
+	serverCreateBody.SetProjectId(projectID)
+	serverCreateBody.SetRole(tkcore.CLOUDROLE_BASTION)
 
-	serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-	serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
+	serverCreateResponse, res, err := apiClient.Client.ServersApi.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 	if err != nil {
-		return err
+		return tk.CreateError(res, err)
 	}
-	bastion["id"] = serverCreateResponse.Payload.ID
+	bastion["id"] = serverCreateResponse.GetId()
 	err = d.Set("server_bastion", []map[string]interface{}{bastion})
 	if err != nil {
 		return err
@@ -160,22 +152,20 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungo
 	for _, kubeMaster := range kubeMastersList {
 		kubeMasterMap := kubeMaster.(map[string]interface{})
 
-		serverCreateBody := &models.ServerForCreateDto{
-			Count:                1,
-			DiskSize:             gibiByteToByte(kubeMasterMap["disk_size"].(int)),
-			Flavor:               kubeMasterMap["flavor"].(string),
-			KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeMasterMap),
-			Name:                 kubeMasterMap["name"].(string),
-			ProjectID:            projectID,
-			Role:                 200,
-		}
+		serverCreateBody = tkcore.ServerForCreateDto{}
+		serverCreateBody.SetCount(1)
+		serverCreateBody.SetDiskSize(gibiByteToByte(kubeMasterMap["disk_size"].(int)))
+		serverCreateBody.SetFlavor(kubeMasterMap["flavor"].(string))
+		serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeMasterMap))
+		serverCreateBody.SetName(kubeMasterMap["name"].(string))
+		serverCreateBody.SetProjectId(projectID)
+		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
 
-		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-		serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
-		if err != nil {
-			return err
+		serverCreateResponse, res, newErr := apiClient.Client.ServersApi.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+		if newErr != nil {
+			return tk.CreateError(res, newErr)
 		}
-		kubeMasterMap["id"] = serverCreateResponse.Payload.ID
+		kubeMasterMap["id"] = serverCreateResponse.GetId()
 	}
 	err = d.Set("server_kubemaster", kubeMastersList)
 	if err != nil {
@@ -185,22 +175,19 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungo
 	kubeWorkersList := kubeWorkers.(*schema.Set).List()
 	for _, kubeWorker := range kubeWorkersList {
 		kubeWorkerMap := kubeWorker.(map[string]interface{})
+		serverCreateBody.SetCount(1)
+		serverCreateBody.SetDiskSize(gibiByteToByte(kubeWorkerMap["disk_size"].(int)))
+		serverCreateBody.SetFlavor(kubeWorkerMap["flavor"].(string))
+		//serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
+		serverCreateBody.SetName(kubeWorkerMap["name"].(string))
+		serverCreateBody.SetProjectId(projectID)
+		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 
-		serverCreateBody := &models.ServerForCreateDto{
-			Count:                1,
-			DiskSize:             gibiByteToByte(kubeWorkerMap["disk_size"].(int)),
-			Flavor:               kubeWorkerMap["flavor"].(string),
-			KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap),
-			Name:                 kubeWorkerMap["name"].(string),
-			ProjectID:            projectID,
-			Role:                 300,
+		serverCreateResponse, res, newErr := apiClient.Client.ServersApi.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+		if newErr != nil {
+			return tk.CreateError(res, newErr)
 		}
-		serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-		serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
-		if err != nil {
-			return err
-		}
-		kubeWorkerMap["id"] = serverCreateResponse.Payload.ID
+		kubeWorkerMap["id"] = serverCreateResponse.GetId()
 	}
 	err = d.Set("server_kubeworker", kubeWorkersList)
 	if err != nil {
@@ -210,16 +197,15 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *taikungo
 	return nil
 }
 
-func resourceTaikunProjectCommit(apiClient *taikungoclient.Client, projectID int32) error {
-	params := projects.NewProjectsCommitParams().WithV(ApiVersion).WithProjectID(projectID)
-	_, err := apiClient.Client.Projects.ProjectsCommit(params, apiClient)
+func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
+	res, err := apiClient.Client.ProjectsApi.ProjectsCommit(context.TODO(), projectID).Execute()
 	if err != nil {
-		return err
+		return tk.CreateError(res, err)
 	}
 	return nil
 }
 
-func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *taikungoclient.Client, projectID int32) error {
+func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *tk.Client, projectID int32) error {
 	serverIds := make([]int32, 0)
 
 	for _, server := range serversToPurge {
@@ -233,37 +219,36 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 	}
 
 	if len(serverIds) != 0 {
-		deleteServerBody := &models.DeleteServerCommand{
-			ProjectID: projectID,
-			ServerIds: serverIds,
-		}
-		deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-		_, _, err := apiClient.Client.Servers.ServersDelete(deleteServerParams, apiClient)
+		deleteServerBody := tkcore.DeleteServerCommand{}
+		deleteServerBody.SetProjectId(projectID)
+		deleteServerBody.SetServerIds(serverIds)
+
+		res, err := apiClient.Client.ServersApi.ServersDelete(context.TODO()).DeleteServerCommand(deleteServerBody).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 	}
 	return nil
 }
 
-func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []*models.KubernetesNodeLabelsDto {
+func resourceTaikunProjectServerKubernetesLabels(data map[string]interface{}) []tkcore.KubernetesNodeLabelsDto {
 	labels, labelsAreSet := data["kubernetes_node_label"]
 	if !labelsAreSet {
-		return []*models.KubernetesNodeLabelsDto{}
+		return []tkcore.KubernetesNodeLabelsDto{}
 	}
 	labelsList := labels.(*schema.Set).List()
-	labelsToAdd := make([]*models.KubernetesNodeLabelsDto, len(labelsList))
+	labelsToAdd := make([]tkcore.KubernetesNodeLabelsDto, len(labelsList))
 	for i, labelData := range labelsList {
 		label := labelData.(map[string]interface{})
-		labelsToAdd[i] = &models.KubernetesNodeLabelsDto{
-			Key:   label["key"].(string),
-			Value: label["value"].(string),
-		}
+		labelsToAdd[i] = tkcore.KubernetesNodeLabelsDto{}
+		fmt.Println(label)
+		labelsToAdd[i].SetKey(*label["key"].(tkcore.NullableString).Get())
+		labelsToAdd[i].SetValue(*label["value"].(tkcore.NullableString).Get())
 	}
 	return labelsToAdd
 }
 
-func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
 	if err := resourceTaikunProjectUpdateToggleMonitoring(ctx, d, apiClient); err != nil {
 		return err
 	}
@@ -276,14 +261,14 @@ func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.Re
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
 	if d.HasChange("monitoring") {
 		projectID, _ := atoi32(d.Id())
-		body := models.MonitoringOperationsCommand{ProjectID: projectID}
-		params := projects.NewProjectsMonitoringOperationsParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.Client.Projects.ProjectsMonitoringOperations(params, apiClient)
+		body := tkcore.MonitoringOperationsCommand{}
+		body.SetProjectId(projectID)
+		res, err := apiClient.Client.ProjectsApi.ProjectsMonitoring(ctx).MonitoringOperationsCommand(body).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableMonitoring", "DisableMonitoring"}, apiClient, projectID); err != nil {
@@ -293,25 +278,15 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
 	if d.HasChange("backup_credential_id") {
 		projectID, _ := atoi32(d.Id())
-		oldCredential, _ := d.GetChange("backup_credential_id")
 
-		if oldCredential != "" {
-
-			oldCredentialID, _ := atoi32(oldCredential.(string))
-
-			disableBody := &models.DisableBackupCommand{
-				ProjectID:      projectID,
-				S3CredentialID: oldCredentialID,
-			}
-			disableParams := backup.NewBackupDisableBackupParams().WithV(ApiVersion).WithBody(disableBody)
-			_, err := apiClient.Client.Backup.BackupDisableBackup(disableParams, apiClient)
-			if err != nil {
-				return err
-			}
-
+		disableBody := tkcore.DisableBackupCommand{}
+		disableBody.SetProjectId(projectID)
+		res, err := apiClient.Client.BackupPolicyApi.BackupDisableBackup(ctx).DisableBackupCommand(disableBody).Execute()
+		if err != nil {
+			return tk.CreateError(res, err)
 		}
 
 		newCredential, newCredentialIsSet := d.GetOk("backup_credential_id")
@@ -329,13 +304,13 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-					response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
+					response, _, err := apiClient.Client.ServersApi.ServersDetails(ctx, projectID).Execute()
 					if err != nil {
 						return 0, "", err
 					}
+					project := response.GetProject()
 
-					return response, strconv.FormatBool(response.Payload.Project.IsBackupEnabled), nil
+					return response, strconv.FormatBool(project.GetIsBackupEnabled()), nil
 				},
 				Timeout:                   5 * time.Minute,
 				Delay:                     2 * time.Second,
@@ -347,14 +322,13 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 				return fmt.Errorf("error waiting for project (%s) to disable backup: %s", d.Id(), err)
 			}
 
-			enableBody := &models.EnableBackupCommand{
-				ProjectID:      projectID,
-				S3CredentialID: newCredentialID,
-			}
-			enableParams := backup.NewBackupEnableBackupParams().WithV(ApiVersion).WithBody(enableBody)
-			_, err = apiClient.Client.Backup.BackupEnableBackup(enableParams, apiClient)
+			enableBody := tkcore.EnableBackupCommand{}
+			enableBody.SetProjectId(projectID)
+			enableBody.SetS3CredentialId(newCredentialID)
+
+			res, err := apiClient.Client.BackupPolicyApi.BackupEnableBackup(ctx).EnableBackupCommand(enableBody).Execute()
 			if err != nil {
-				return err
+				return tk.CreateError(res, err)
 			}
 		}
 
@@ -365,20 +339,19 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
 	if d.HasChange("policy_profile_id") {
 		projectID, _ := atoi32(d.Id())
 		oldOPAProfile, _ := d.GetChange("policy_profile_id")
 
 		if oldOPAProfile != "" {
 
-			disableBody := &models.DisableGatekeeperCommand{
-				ProjectID: projectID,
-			}
-			disableParams := opa_profiles.NewOpaProfilesDisableGatekeeperParams().WithV(ApiVersion).WithBody(disableBody)
-			_, err := apiClient.Client.OpaProfiles.OpaProfilesDisableGatekeeper(disableParams, apiClient)
+			disableBody := tkcore.DisableGatekeeperCommand{}
+			disableBody.SetProjectId(projectID)
+
+			res, err := apiClient.Client.OpaProfilesApi.OpaprofilesDisableGatekeeper(ctx).DisableGatekeeperCommand(disableBody).Execute()
 			if err != nil {
-				return err
+				return tk.CreateError(res, err)
 			}
 
 		}
@@ -398,13 +371,13 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-					response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
+					response, res, err := apiClient.Client.ServersApi.ServersDetails(ctx, projectID).Execute()
 					if err != nil {
-						return 0, "", err
+						return 0, "", tk.CreateError(res, err)
 					}
 
-					return response, strconv.FormatBool(response.Payload.Project.IsOpaEnabled), nil
+					project := response.GetProject()
+					return response, strconv.FormatBool(project.GetIsOpaEnabled()), nil
 				},
 				Timeout:                   5 * time.Minute,
 				Delay:                     2 * time.Second,
@@ -416,14 +389,13 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 				return fmt.Errorf("error waiting for project (%s) to disable OPA: %s", d.Id(), err)
 			}
 
-			enableBody := &models.EnableGatekeeperCommand{
-				ProjectID:    projectID,
-				OpaProfileID: newOPAProfilelID,
-			}
-			enableParams := opa_profiles.NewOpaProfilesEnableGatekeeperParams().WithV(ApiVersion).WithBody(enableBody)
-			_, err = apiClient.Client.OpaProfiles.OpaProfilesEnableGatekeeper(enableParams, apiClient)
+			enableBody := tkcore.EnableGatekeeperCommand{}
+			enableBody.SetProjectId(projectID)
+			enableBody.SetOpaProfileId(newOPAProfilelID)
+
+			res, err := apiClient.Client.OpaProfilesApi.OpaprofilesEnableGatekeeper(ctx).EnableGatekeeperCommand(enableBody).Execute()
 			if err != nil {
-				return err
+				return tk.CreateError(res, err)
 			}
 		}
 
@@ -434,7 +406,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *taikungoclient.Client, id int32) error {
+func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Client, id int32) error {
 	oldFlavorData, newFlavorData := d.GetChange("flavors")
 	oldFlavors := oldFlavorData.(*schema.Set)
 	newFlavors := newFlavorData.(*schema.Set)
@@ -447,14 +419,15 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *taikung
 	if flavorsToUnbind.Len() != 0 {
 		var flavorBindingsToUndo []int32
 		for _, boundFlavorDTO := range boundFlavorDTOs {
-			if flavorsToUnbind.Contains(boundFlavorDTO.Name) {
-				flavorBindingsToUndo = append(flavorBindingsToUndo, boundFlavorDTO.ID)
+			if flavorsToUnbind.Contains(boundFlavorDTO.GetName()) {
+				flavorBindingsToUndo = append(flavorBindingsToUndo, boundFlavorDTO.GetId())
 			}
 		}
-		unbindBody := models.UnbindFlavorFromProjectCommand{Ids: flavorBindingsToUndo}
-		unbindParams := flavors.NewFlavorsUnbindFromProjectParams().WithV(ApiVersion).WithBody(&unbindBody)
-		if _, err := apiClient.Client.Flavors.FlavorsUnbindFromProject(unbindParams, apiClient); err != nil {
-			return err
+		unbindBody := tkcore.UnbindFlavorFromProjectCommand{}
+		unbindBody.SetIds(flavorBindingsToUndo)
+		res, err := apiClient.Client.FlavorsApi.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
+		if err != nil {
+			return tk.CreateError(res, err)
 		}
 	}
 	if len(flavorsToBind) != 0 {
@@ -462,10 +435,12 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *taikung
 		for i, flavorToBind := range flavorsToBind {
 			flavorsToBindNames[i] = flavorToBind.(string)
 		}
-		bindBody := models.BindFlavorToProjectCommand{ProjectID: id, Flavors: flavorsToBindNames}
-		bindParams := flavors.NewFlavorsBindToProjectParams().WithV(ApiVersion).WithBody(&bindBody)
-		if _, err := apiClient.Client.Flavors.FlavorsBindToProject(bindParams, apiClient); err != nil {
-			return err
+		bindBody := tkcore.BindFlavorToProjectCommand{}
+		bindBody.SetProjectId(id)
+		bindBody.SetFlavors(flavorsToBindNames)
+		res, err := apiClient.Client.FlavorsApi.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
+		if err != nil {
+			return tk.CreateError(res, err)
 		}
 	}
 	return nil

@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/images"
 )
 
 func dataSourceTaikunImagesGCP() *schema.Resource {
@@ -56,27 +55,27 @@ func dataSourceTaikunImagesGCP() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunImagesGCPRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunImagesGCPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	apiClient := meta.(*taikungoclient.Client)
-	params := images.NewImagesGoogleImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID).WithType(d.Get("type").(string))
+	var offset int32 = 0
+	apiClient := meta.(*tk.Client)
+	params := apiClient.Client.ImagesApi.ImagesGoogleImages(ctx, cloudCredentialID, d.Get("type").(string))
 
 	var imageList []map[string]interface{}
 	for {
-		response, err := apiClient.Client.Images.ImagesGoogleImages(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-		if len(imageList) == int(response.Payload.TotalCount) {
+		imageList = append(imageList, flattenTaikunImages(response.GetData()...)...)
+		if len(imageList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(imageList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(imageList))
 	}
 
 	if err := d.Set("images", imageList); err != nil {

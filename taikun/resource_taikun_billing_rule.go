@@ -2,13 +2,12 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/prometheus"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
@@ -107,29 +106,27 @@ func resourceTaikunBillingRule() *schema.Resource {
 }
 
 func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	billingCredentialId, err := atoi32(d.Get("billing_credential_id").(string))
 	if err != nil {
 		return diag.Errorf("billing_credential_id isn't valid: %s", d.Get("billing_credential_id").(string))
 	}
 
-	body := &models.RuleCreateCommand{
-		Labels:                resourceTaikunBillingRuleLabelsToAdd(d),
-		Name:                  d.Get("name").(string),
-		MetricName:            d.Get("metric_name").(string),
-		Price:                 d.Get("price").(float64),
-		OperationCredentialID: billingCredentialId,
-		Type:                  getPrometheusType(d.Get("type").(string)),
-	}
+	body := tkcore.RuleCreateCommand{}
+	body.SetLabels(resourceTaikunBillingRuleLabelsToAdd(d))
+	body.SetName(d.Get("name").(string))
+	body.SetMetricName(d.Get("metric_name").(string))
+	body.SetPrice(d.Get("price").(float64))
+	body.SetOperationCredentialId(billingCredentialId)
+	body.SetType(getPrometheusType(d.Get("type").(string)))
 
-	params := prometheus.NewPrometheusCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.Prometheus.PrometheusCreate(params, apiClient)
+	createResult, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesCreate(ctx).RuleCreateCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	return readAfterCreateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, d, meta)
 }
@@ -141,19 +138,18 @@ func generateResourceTaikunBillingRuleReadWithoutRetries() schema.ReadContextFun
 }
 func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
-		response, err := apiClient.Client.Prometheus.PrometheusListOfRules(params, apiClient)
+		response, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -161,9 +157,9 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 			return nil
 		}
 
-		rawBillingRule := response.GetPayload().Data[0]
+		rawBillingRule := response.Data[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunBillingRule(rawBillingRule))
+		err = setResourceDataFromMap(d, flattenTaikunBillingRule(&rawBillingRule))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -175,7 +171,7 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 }
 
 func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -186,95 +182,90 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("billing_credential_id isn't valid: %s", d.Get("billing_credential_id").(string))
 	}
 
-	body := &models.RuleForUpdateDto{
-		LabelsToAdd:           resourceTaikunBillingRuleLabelsToAdd(d),
-		LabelsToDelete:        resourceTaikunBillingRuleLabelsToDelete(d),
-		Name:                  d.Get("name").(string),
-		MetricName:            d.Get("metric_name").(string),
-		Price:                 d.Get("price").(float64),
-		OperationCredentialID: billingCredentialId,
-		Type:                  getPrometheusType(d.Get("type").(string)),
-	}
+	body := tkcore.RuleForUpdateDto{}
+	body.SetLabelsToAdd(resourceTaikunBillingRuleLabelsToAdd(d))
+	body.SetLabelsToDelete(resourceTaikunBillingRuleLabelsToDelete(d))
+	body.SetName(d.Get("name").(string))
+	body.SetMetricName(d.Get("metric_name").(string))
+	body.SetPrice(d.Get("price").(float64))
+	body.SetOperationCredentialId(billingCredentialId)
+	body.SetType(getPrometheusType(d.Get("type").(string)))
 
-	params := prometheus.NewPrometheusUpdateParams().WithV(ApiVersion).WithID(id).WithBody(body)
-	_, err = apiClient.Client.Prometheus.PrometheusUpdate(params, apiClient)
+	res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesUpdate(context.TODO(), id).RuleForUpdateDto(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunBillingRuleReadWithRetries(), ctx, d, meta)
 }
 
 func resourceTaikunBillingRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := prometheus.NewPrometheusDeleteParams().WithV(ApiVersion).WithID(id)
-	_, err = apiClient.Client.Prometheus.PrometheusDelete(params, apiClient)
+	res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesDelete(context.TODO(), id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []*models.PrometheusLabelListDto {
+func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []tkcore.PrometheusLabelListDto {
 	oldLabelsData, newLabelsData := d.GetChange("label")
 	oldLabels := oldLabelsData.(*schema.Set)
 	newLabels := newLabelsData.(*schema.Set)
 	toAdd := newLabels.Difference(oldLabels).List()
-	labelsToAdd := make([]*models.PrometheusLabelListDto, len(toAdd))
+	labelsToAdd := make([]tkcore.PrometheusLabelListDto, len(toAdd))
 	for i, labelData := range toAdd {
 		label := labelData.(map[string]interface{})
-		labelsToAdd[i] = &models.PrometheusLabelListDto{
-			Label: label["key"].(string),
-			Value: label["value"].(string),
-		}
+		labelsToAdd[i] = tkcore.PrometheusLabelListDto{}
+		labelsToAdd[i].SetLabel(label["key"].(string))
+		labelsToAdd[i].SetValue(label["value"].(string))
 	}
 	return labelsToAdd
 }
 
-func resourceTaikunBillingRuleLabelsToDelete(d *schema.ResourceData) []*models.PrometheusLabelDeleteDto {
+func resourceTaikunBillingRuleLabelsToDelete(d *schema.ResourceData) []tkcore.PrometheusLabelDeleteDto {
 	oldLabelsData, newLabelsData := d.GetChange("label")
 	oldLabels := oldLabelsData.(*schema.Set)
 	newLabels := newLabelsData.(*schema.Set)
 	toDelete := oldLabels.Difference(newLabels).List()
-	labelsToDelete := make([]*models.PrometheusLabelDeleteDto, len(toDelete))
+	labelsToDelete := make([]tkcore.PrometheusLabelDeleteDto, len(toDelete))
 	for i, oldLabelData := range toDelete {
 		oldLabel := oldLabelData.(map[string]interface{})
 		oldLabelID, _ := atoi32(oldLabel["id"].(string))
-		labelsToDelete[i] = &models.PrometheusLabelDeleteDto{
-			ID: oldLabelID,
-		}
+		labelsToDelete[i] = tkcore.PrometheusLabelDeleteDto{}
+		labelsToDelete[i].SetId(oldLabelID)
 	}
 	return labelsToDelete
 }
 
-func flattenTaikunBillingRule(rawBillingRule *models.PrometheusRuleListDto) map[string]interface{} {
+func flattenTaikunBillingRule(rawBillingRule *tkcore.PrometheusRuleListDto) map[string]interface{} {
 
-	labels := make([]map[string]interface{}, len(rawBillingRule.Labels))
-	for i, rawLabel := range rawBillingRule.Labels {
+	labels := make([]map[string]interface{}, len(rawBillingRule.GetLabels()))
+	for i, rawLabel := range rawBillingRule.GetLabels() {
 		labels[i] = map[string]interface{}{
-			"key":   rawLabel.Label,
-			"value": rawLabel.Value,
-			"id":    i32toa(rawLabel.ID),
+			"key":   rawLabel.GetLabel(),
+			"value": rawLabel.GetValue(),
+			"id":    i32toa(rawLabel.GetId()),
 		}
 	}
 
 	return map[string]interface{}{
-		"billing_credential_id": i32toa(rawBillingRule.OperationCredential.OperationCredentialID),
-		"created_by":            rawBillingRule.CreatedBy,
-		"id":                    i32toa(rawBillingRule.ID),
+		"billing_credential_id": i32toa(rawBillingRule.OperationCredential.GetOperationCredentialId()),
+		"created_by":            rawBillingRule.GetCreatedBy(),
+		"id":                    i32toa(rawBillingRule.GetId()),
 		"label":                 labels,
-		"last_modified":         rawBillingRule.LastModified,
-		"last_modified_by":      rawBillingRule.LastModifiedBy,
-		"name":                  rawBillingRule.Name,
-		"metric_name":           rawBillingRule.MetricName,
-		"price":                 rawBillingRule.Price,
-		"type":                  rawBillingRule.Type,
+		"last_modified":         rawBillingRule.GetLastModified(),
+		"last_modified_by":      rawBillingRule.GetLastModifiedBy(),
+		"name":                  rawBillingRule.GetName(),
+		"metric_name":           rawBillingRule.GetMetricName(),
+		"price":                 rawBillingRule.GetPrice(),
+		"type":                  rawBillingRule.GetType(),
 	}
 }

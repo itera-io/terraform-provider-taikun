@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/showbackclient/showback_credentials"
 )
 
 const testAccResourceTaikunShowbackCredentialConfig = `
@@ -108,7 +107,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 }
 
 func testAccCheckTaikunShowbackCredentialExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_showback_credential" {
@@ -116,10 +115,9 @@ func testAccCheckTaikunShowbackCredentialExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := client.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("showback credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -128,7 +126,7 @@ func testAccCheckTaikunShowbackCredentialExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunShowbackCredentialDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_showback_credential" {
@@ -137,13 +135,12 @@ func testAccCheckTaikunShowbackCredentialDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(params, client)
+			response, _, err := client.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("showback credential still exists"))
 			}
 			return nil

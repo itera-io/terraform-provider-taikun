@@ -2,14 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/alerting_integrations"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/client/alerting_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunAlertingProfiles() *schema.Resource {
@@ -36,43 +33,43 @@ func dataSourceTaikunAlertingProfiles() *schema.Resource {
 }
 
 func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion)
+	params := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO())
+
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
 		organizationID, err := atoi32(dataSourceID)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var alertingProfileDTOs []*models.AlertingProfilesListDto
+	var alertingProfileDTOs []tkcore.AlertingProfilesListDto
 	for {
-		response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		alertingProfileDTOs = append(alertingProfileDTOs, response.Payload.Data...)
-		if len(alertingProfileDTOs) == int(response.Payload.TotalCount) {
+		alertingProfileDTOs = append(alertingProfileDTOs, response.Data...)
+		if len(alertingProfileDTOs) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(alertingProfileDTOs))
-		params = params.WithOffset(&offset)
+		offset = int32(len(alertingProfileDTOs))
 	}
 
 	alertingProfiles := make([]map[string]interface{}, len(alertingProfileDTOs))
 	for i, alertingProfileDTO := range alertingProfileDTOs {
 
-		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
-		alertingIntegrationsResponse, err := apiClient.Client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
+		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
-		alertingProfiles[i] = flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload)
+		alertingProfiles[i] = flattenTaikunAlertingProfile(&alertingProfileDTO, alertingIntegrationsResponse)
 	}
 
 	if err := d.Set("alerting_profiles", alertingProfiles); err != nil {

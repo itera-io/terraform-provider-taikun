@@ -2,14 +2,12 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/alerting_integrations"
-	"github.com/itera-io/taikungoclient/client/alerting_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
@@ -176,14 +174,16 @@ func resourceTaikunAlertingProfile() *schema.Resource {
 }
 
 func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := models.CreateAlertingProfileCommand{
-		Name: d.Get("name").(string),
+	body := tkcore.CreateAlertingProfileCommand{
+		Name: *tkcore.NewNullableString(stringPtr(d.Get("name").(string))),
 	}
 
+	apiClient.Client.AlertingProfilesApi.AlertingprofilesCreate(ctx).CreateAlertingProfileCommand(body)
+
 	if _, emailsIsSet := d.GetOk("emails"); emailsIsSet {
-		body.Emails = getEmailDTOsFromAlertingProfileResourceData(d)
+		body.SetEmails(getEmailDTOsFromAlertingProfileResourceData(d))
 	}
 
 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
@@ -191,11 +191,11 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		body.OrganizationID = organizationID
+		body.SetOrganizationId(organizationID)
 	}
 
 	if reminderData, reminderIsSet := d.GetOk("reminder"); reminderIsSet {
-		body.Reminder = getAlertingProfileReminder(reminderData.(string))
+		body.SetReminder(tkcore.AlertingReminder(reminderData.(string)))
 	}
 
 	if slackConfigIDData, slackConfigIDIsSet := d.GetOk("slack_configuration_id"); slackConfigIDIsSet {
@@ -203,28 +203,29 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		body.SlackConfigurationID = slackConfigID
+		if slackConfigID != 0 {
+			body.SetSlackConfigurationId(slackConfigID)
+		}
 	}
 
 	if _, webhookIsSet := d.GetOk("webhook"); webhookIsSet {
-		body.Webhooks = getWebhookDTOsFromAlertingProfileResourceData(d)
+		body.SetWebhooks(getWebhookDTOsFromAlertingProfileResourceData(d))
 	}
 
 	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
-		body.AlertingIntegrations = getIntegrationDTOsFromAlertingProfileResourceData(d)
+		body.SetAlertingIntegrations(getIntegrationDTOsFromAlertingProfileResourceData(d))
 	}
 
-	params := alerting_profiles.NewAlertingProfilesCreateParams().WithV(ApiVersion).WithBody(&body)
-	response, err := apiClient.Client.AlertingProfiles.AlertingProfilesCreate(params, apiClient)
+	response, bodyResponse, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesCreate(context.TODO()).CreateAlertingProfileCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(bodyResponse, err))
+	}
+	id, err := atoi32(response.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(response.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(response.Payload.ID)
+	d.SetId(response.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
@@ -243,50 +244,44 @@ func generateResourceTaikunAlertingProfileReadWithoutRetries() schema.ReadContex
 }
 func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		params := alerting_profiles.NewAlertingProfilesListParams().WithV(ApiVersion).WithID(&id)
-		response, err := apiClient.Client.AlertingProfiles.AlertingProfilesList(params, apiClient)
+		response, _, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.Data) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
 			}
 			return nil
 		}
-		alertingProfileDTO := response.Payload.Data[0]
+		alertingProfileDTO := response.Data[0]
 
-		alertingIntegrationsParams := alerting_integrations.NewAlertingIntegrationsListParams().WithV(ApiVersion).WithAlertingProfileID(alertingProfileDTO.ID)
-		alertingIntegrationsResponse, err := apiClient.Client.AlertingIntegrations.AlertingIntegrationsList(alertingIntegrationsParams, apiClient)
-		if err != nil {
-			if _, ok := err.(*alerting_integrations.AlertingIntegrationsListNotFound); ok && withRetries {
-				d.SetId(i32toa(id))
-				return diag.Errorf(notFoundAfterCreateOrUpdateError)
-			}
-			return diag.FromErr(err)
-		}
-
-		err = setResourceDataFromMap(d, flattenTaikunAlertingProfile(alertingProfileDTO, alertingIntegrationsResponse.Payload))
+		alertingIntegrationsResponse, _, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		d.SetId(i32toa(alertingProfileDTO.ID))
+		err = setResourceDataFromMap(d, flattenTaikunAlertingProfile(&alertingProfileDTO, alertingIntegrationsResponse))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.SetId(i32toa(alertingProfileDTO.GetId()))
 
 		return nil
 	}
 }
 
 func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -300,49 +295,47 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if d.HasChanges("name", "organization_id", "reminder", "slack_configuration_id") {
-		body := models.UpdateAlertingProfileCommand{
-			ID:   id,
-			Name: d.Get("name").(string),
-		}
+		body := tkcore.UpdateAlertingProfileCommand{}
+		body.SetId(id)
+		body.SetName(d.Get("name").(string))
+
 		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 			organizationID, err := atoi32(organizationIDData.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			body.OrganizationID = organizationID
+			body.SetOrganizationId(organizationID)
 		}
 		if reminderData, reminderIsSet := d.GetOk("reminder"); reminderIsSet {
-			body.Reminder = getAlertingProfileReminder(reminderData.(string))
+			body.SetReminder(tkcore.AlertingReminder(reminderData.(string)))
 		}
 		if slackConfigIDData, slackConfigIDIsSet := d.GetOk("slack_configuration_id"); slackConfigIDIsSet {
 			slackConfigID, err := atoi32(slackConfigIDData.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			body.SlackConfigurationID = slackConfigID
+			body.SetSlackConfigurationId(slackConfigID)
 		}
-		params := alerting_profiles.NewAlertingProfilesEditParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.Client.AlertingProfiles.AlertingProfilesEdit(params, apiClient)
+
+		_, res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesEdit(ctx).UpdateAlertingProfileCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.HasChange("emails") {
-		body := getEmailDTOsFromAlertingProfileResourceData(d)
-		params := alerting_profiles.NewAlertingProfilesAssignEmailsParams().WithV(ApiVersion).WithID(id).WithBody(body)
-		_, err := apiClient.Client.AlertingProfiles.AlertingProfilesAssignEmails(params, apiClient)
+		alertEmails := getEmailDTOsFromAlertingProfileResourceData(d)
+		res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesAssignEmail(ctx, id).AlertingEmailDto(alertEmails).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.HasChange("webhook") {
-		body := getWebhookDTOsFromAlertingProfileResourceData(d)
-		params := alerting_profiles.NewAlertingProfilesAssignWebhooksParams().WithV(ApiVersion).WithID(id).WithBody(body)
-		_, err := apiClient.Client.AlertingProfiles.AlertingProfilesAssignWebhooks(params, apiClient)
+		webhooks := getWebhookDTOsFromAlertingProfileResourceData(d)
+		res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesAssignWebhooks(ctx, id).AlertingWebhookDto(webhooks).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
@@ -359,7 +352,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 	return readAfterUpdateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id int32, apiClient *taikungoclient.Client) (err error) {
+func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("integration") {
 		return
 	}
@@ -370,10 +363,10 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 	for _, oldIntegrationData := range oldIntegrations {
 		oldIntegration := oldIntegrationData.(map[string]interface{})
 		oldIntegrationID, _ := atoi32(oldIntegration["id"].(string))
-		params := alerting_integrations.NewAlertingIntegrationsDeleteParams().WithV(ApiVersion).WithID(oldIntegrationID)
-		_, _, err = apiClient.Client.AlertingIntegrations.AlertingIntegrationsDelete(params, apiClient)
+		res, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsDelete(context.TODO(), oldIntegrationID).Execute()
 		if err != nil {
-			return
+			err = tk.CreateError(res, err)
+			return err
 		}
 	}
 
@@ -381,16 +374,16 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 	if _, integrationIsSet := d.GetOk("integration"); integrationIsSet {
 		alertingIntegrationDTOs := getIntegrationDTOsFromAlertingProfileResourceData(d)
 		for _, alertingIntegration := range alertingIntegrationDTOs {
-			alertingIntegrationCreateBody := models.CreateAlertingIntegrationCommand{
-				AlertingIntegrationType: alertingIntegration.AlertingIntegrationType,
-				Token:                   alertingIntegration.Token,
-				URL:                     alertingIntegration.URL,
-				AlertingProfileID:       id,
-			}
-			alertingIntegrationParams := alerting_integrations.NewAlertingIntegrationsCreateParams().WithV(ApiVersion).WithBody(&alertingIntegrationCreateBody)
-			_, err = apiClient.Client.AlertingIntegrations.AlertingIntegrationsCreate(alertingIntegrationParams, apiClient)
+			alertingIntegrationCreateBody := tkcore.CreateAlertingIntegrationCommand{}
+			alertingIntegrationCreateBody.SetAlertingIntegrationType(alertingIntegration.GetAlertingIntegrationType())
+			alertingIntegrationCreateBody.SetToken(alertingIntegration.GetToken())
+			alertingIntegrationCreateBody.SetUrl(alertingIntegration.GetUrl())
+			alertingIntegrationCreateBody.SetAlertingProfileId(id)
+
+			_, res, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsCreate(context.TODO()).CreateAlertingIntegrationCommand(alertingIntegrationCreateBody).Execute()
 			if err != nil {
-				return
+				err = tk.CreateError(res, err)
+				return err
 			}
 		}
 	}
@@ -398,134 +391,127 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 }
 
 func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := models.DeleteAlertingProfilesCommand{ID: id}
-	params := alerting_profiles.NewAlertingProfilesDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, _, err := apiClient.Client.AlertingProfiles.AlertingProfilesDelete(params, apiClient); err != nil {
-		return diag.FromErr(err)
+	if res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesDelete(context.TODO(), id).Execute(); err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func getAlertingProfileEmailsResourceFromEmailDTOs(emailDTOs []*models.AlertingEmailDto) []string {
+func getAlertingProfileEmailsResourceFromEmailDTOs(emailDTOs []tkcore.AlertingEmailDto) []string {
 	emails := make([]string, len(emailDTOs))
 	for i, emailDTO := range emailDTOs {
-		emails[i] = emailDTO.Email
+		emails[i] = emailDTO.GetEmail()
 	}
 	return emails
 }
 
-func getAlertingProfileWebhookResourceFromWebhookDTOs(webhookDTOs []*models.AlertingWebhookDto) []map[string]interface{} {
+func getAlertingProfileWebhookResourceFromWebhookDTOs(webhookDTOs []tkcore.AlertingWebhookDto) []map[string]interface{} {
 	webhooks := make([]map[string]interface{}, len(webhookDTOs))
 	for i, webhookDTO := range webhookDTOs {
 		headers := make([]map[string]interface{}, len(webhookDTO.Headers))
 		for i, rawHeader := range webhookDTO.Headers {
 			headers[i] = map[string]interface{}{
-				"key":   rawHeader.Key,
-				"value": rawHeader.Value,
+				"key":   rawHeader.GetKey(),
+				"value": rawHeader.GetValue(),
 			}
 		}
 		webhooks[i] = map[string]interface{}{
 			"header": headers,
-			"url":    webhookDTO.URL,
+			"url":    webhookDTO.GetUrl(),
 		}
 	}
 	return webhooks
 }
 
-func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs []*models.AlertingIntegrationsListDto) []map[string]interface{} {
+func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs []tkcore.AlertingIntegrationsListDto) []map[string]interface{} {
 	integrations := make([]map[string]interface{}, len(integrationDTOs))
 	for i, integrationDTO := range integrationDTOs {
 		integrations[i] = map[string]interface{}{
-			"id":    i32toa(integrationDTO.ID),
-			"token": integrationDTO.Token,
-			"type":  integrationDTO.AlertingIntegrationType,
-			"url":   integrationDTO.URL,
+			"id":    i32toa(integrationDTO.GetId()),
+			"token": integrationDTO.GetToken(),
+			"type":  integrationDTO.GetAlertingIntegrationType(),
+			"url":   integrationDTO.GetUrl(),
 		}
 	}
 	return integrations
 }
 
-func getEmailDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*models.AlertingEmailDto {
+func getEmailDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []tkcore.AlertingEmailDto {
 	emails := d.Get("emails").([]interface{})
-	emailDTOs := make([]*models.AlertingEmailDto, len(emails))
+	emailDTOs := make([]tkcore.AlertingEmailDto, len(emails))
 	for i, email := range emails {
-		emailDTOs[i] = &models.AlertingEmailDto{
-			Email: email.(string),
-		}
+		emailDTOs[i] = tkcore.AlertingEmailDto{}
+		emailDTOs[i].SetEmail(email.(string))
 	}
 	return emailDTOs
 }
 
-func getWebhookDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*models.AlertingWebhookDto {
+func getWebhookDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []tkcore.AlertingWebhookDto {
 	webhooks := d.Get("webhook").(*schema.Set).List()
-	alertingWebhookDTOs := make([]*models.AlertingWebhookDto, len(webhooks))
+	alertingWebhookDTOs := make([]tkcore.AlertingWebhookDto, len(webhooks))
 	for i, webhookData := range webhooks {
 		webhook := webhookData.(map[string]interface{})
 		headers := webhook["header"].(*schema.Set).List()
-		headerDTOs := make([]*models.WebhookHeaderDto, len(headers))
+		headerDTOs := make([]tkcore.WebhookHeaderDto, len(headers))
 		for i, headerData := range headers {
 			header := headerData.(map[string]interface{})
-			headerDTOs[i] = &models.WebhookHeaderDto{
-				Key:   header["key"].(string),
-				Value: header["value"].(string),
-			}
+			headerDTOs[i] = tkcore.WebhookHeaderDto{}
+			headerDTOs[i].SetKey(header["key"].(string))
+			headerDTOs[i].SetValue(header["value"].(string))
 		}
-		alertingWebhookDTOs[i] = &models.AlertingWebhookDto{
-			Headers: headerDTOs,
-			URL:     webhook["url"].(string),
-		}
+		alertingWebhookDTOs[i] = tkcore.AlertingWebhookDto{}
+		alertingWebhookDTOs[i].SetHeaders(headerDTOs)
+		alertingWebhookDTOs[i].SetUrl(webhook["url"].(string))
 	}
 	return alertingWebhookDTOs
 }
 
-func getIntegrationDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []*models.AlertingIntegrationDto {
+func getIntegrationDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []tkcore.AlertingIntegrationDto {
 	integrations := d.Get("integration").([]interface{})
-	alertingIntegrationDTOs := make([]*models.AlertingIntegrationDto, len(integrations))
+	alertingIntegrationDTOs := make([]tkcore.AlertingIntegrationDto, len(integrations))
 	for i, integrationData := range integrations {
 		integration := integrationData.(map[string]interface{})
-		alertingIntegrationDTOs[i] = &models.AlertingIntegrationDto{
-			AlertingIntegrationType: getAlertingIntegrationType(integration["type"].(string)),
-			Token:                   integration["token"].(string),
-			URL:                     integration["url"].(string),
-		}
+		alertingIntegrationDTOs[i] = tkcore.AlertingIntegrationDto{}
+		alertingIntegrationDTOs[i].SetAlertingIntegrationType(getAlertingIntegrationType(integration["type"].(string)))
+		alertingIntegrationDTOs[i].SetToken(integration["token"].(string))
+		alertingIntegrationDTOs[i].SetUrl(integration["url"].(string))
 	}
 	return alertingIntegrationDTOs
 }
 
-func flattenTaikunAlertingProfile(alertingProfileDTO *models.AlertingProfilesListDto, alertingIntegrationDto []*models.AlertingIntegrationsListDto) map[string]interface{} {
+func flattenTaikunAlertingProfile(alertingProfileDTO *tkcore.AlertingProfilesListDto, alertingIntegrationDto []tkcore.AlertingIntegrationsListDto) map[string]interface{} {
 	return map[string]interface{}{
-		"created_by":               alertingProfileDTO.CreatedBy,
-		"emails":                   getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.Emails),
-		"id":                       i32toa(alertingProfileDTO.ID),
+		"created_by":               alertingProfileDTO.GetCreatedBy(),
+		"emails":                   getAlertingProfileEmailsResourceFromEmailDTOs(alertingProfileDTO.GetEmails()),
+		"id":                       i32toa(alertingProfileDTO.GetId()),
 		"integration":              getAlertingProfileIntegrationsResourceFromIntegrationDTOs(alertingIntegrationDto),
-		"lock":                     alertingProfileDTO.IsLocked,
-		"last_modified":            alertingProfileDTO.LastModified,
-		"last_modified_by":         alertingProfileDTO.LastModifiedBy,
-		"name":                     alertingProfileDTO.Name,
-		"organization_id":          i32toa(alertingProfileDTO.OrganizationID),
-		"organization_name":        alertingProfileDTO.OrganizationName,
-		"reminder":                 alertingProfileDTO.Reminder,
-		"slack_configuration_id":   i32toa(alertingProfileDTO.SlackConfigurationID),
-		"slack_configuration_name": alertingProfileDTO.SlackConfigurationName,
-		"webhook":                  getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.Webhooks),
+		"lock":                     alertingProfileDTO.GetIsLocked(),
+		"last_modified":            alertingProfileDTO.GetLastModified(),
+		"last_modified_by":         alertingProfileDTO.GetLastModifiedBy(),
+		"name":                     alertingProfileDTO.GetName(),
+		"organization_id":          i32toa(alertingProfileDTO.GetOrganizationId()),
+		"organization_name":        alertingProfileDTO.GetOrganizationName(),
+		"reminder":                 alertingProfileDTO.GetReminder(),
+		"slack_configuration_id":   i32toa(alertingProfileDTO.GetSlackConfigurationId()),
+		"slack_configuration_name": alertingProfileDTO.GetSlackConfigurationName(),
+		"webhook":                  getAlertingProfileWebhookResourceFromWebhookDTOs(alertingProfileDTO.GetWebhooks()),
 	}
 }
 
-func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.AlertingProfilesLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := alerting_profiles.NewAlertingProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.AlertingProfiles.AlertingProfilesLockManager(params, apiClient)
-	return err
+func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.AlertingProfilesLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+
+	res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesLockManager(context.TODO()).AlertingProfilesLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

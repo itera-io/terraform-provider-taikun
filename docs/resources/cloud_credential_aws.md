@@ -21,7 +21,6 @@ resource "taikun_cloud_credential_aws" "foo" {
   access_key_id     = "access_key_id"
   secret_access_key = "secret_access_key"
   region            = "region"
-  availability_zone = "availability_zone"
 
   organization_id = "42"
   lock            = false
@@ -33,19 +32,20 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 ### Required
 
-- `access_key_id` (String, Sensitive) The AWS access key ID.
-- `availability_zone` (String) The AWS availability zone for the region.
 - `name` (String) The name of the AWS cloud credential.
-- `region` (String) The AWS region.
-- `secret_access_key` (String, Sensitive) The AWS secret access key.
 
 ### Optional
 
+- `access_key_id` (String, Sensitive) The AWS access key ID.
+- `az_count` (Number) The number of AWS availability zone expected for the region. Defaults to `1`.
 - `lock` (Boolean) Indicates whether to lock the AWS cloud credential. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the AWS cloud credential.
+- `region` (String) The AWS region.
+- `secret_access_key` (String, Sensitive) The AWS secret access key.
 
 ### Read-Only
 
+- `availability_zones` (List of String) The given AWS availability zones for the region.
 - `created_by` (String) The creator of the AWS cloud credential.
 - `id` (String) The ID of the AWS cloud credential.
 - `is_default` (Boolean) Indicates whether the AWS cloud credential is the default one.

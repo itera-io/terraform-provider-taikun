@@ -3,29 +3,16 @@ package taikun
 import (
 	"context"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
-	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/access_profiles"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/client/images"
-	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
-	"github.com/itera-io/taikungoclient/client/project_quotas"
-	"github.com/itera-io/taikungoclient/client/stand_alone"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/itera-io/taikungoclient/client/flavors"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/client/alerting_profiles"
-	"github.com/itera-io/taikungoclient/client/projects"
-	"github.com/itera-io/taikungoclient/client/servers"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunProjectSchema() map[string]*schema.Schema {
@@ -47,6 +34,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:      "ID of the project's alerting profile.",
 			Type:             schema.TypeString,
 			Optional:         true,
+			Computed:         false,
 			ValidateDiagFunc: stringIsInt,
 		},
 		"alerting_profile_name": {
@@ -338,110 +326,88 @@ func resourceTaikunProject() *schema.Resource {
 }
 
 func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	ctx, cancel := context.WithTimeout(ctx, 80*time.Minute)
 	defer cancel()
 
-	body := models.CreateProjectCommand{
-		Name:         d.Get("name").(string),
-		IsKubernetes: true,
-	}
-	body.CloudCredentialID, _ = atoi32(d.Get("cloud_credential_id").(string))
+	body := tkcore.CreateProjectCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetIsKubernetes(true)
+
+	cloudCredentialID, _ := atoi32(d.Get("cloud_credential_id").(string))
+	body.SetCloudCredentialId(cloudCredentialID)
 	flavorsData := d.Get("flavors").(*schema.Set).List()
 	flavors := make([]string, len(flavorsData))
 	for i, flavorData := range flavorsData {
 		flavors[i] = flavorData.(string)
 	}
-	body.Flavors = flavors
-
-	var projectOrganizationID int32 = -1
+	body.SetFlavors(flavors)
 
 	if alertingProfileID, alertingProfileIDIsSet := d.GetOk("alerting_profile_id"); alertingProfileIDIsSet {
-		body.AlertingProfileID, _ = atoi32(alertingProfileID.(string))
+		alertingId, _ := atoi32(alertingProfileID.(string))
+		body.SetAlertingProfileId(alertingId)
 	}
 	if backupCredentialID, backupCredentialIDIsSet := d.GetOk("backup_credential_id"); backupCredentialIDIsSet {
-		body.IsBackupEnabled = true
-		body.S3CredentialID, _ = atoi32(backupCredentialID.(string))
+		body.SetIsBackupEnabled(true)
+		backupCredential, _ := atoi32(backupCredentialID.(string))
+		body.SetS3CredentialId(backupCredential)
 	}
 	if enableAutoUpgrade, enableAutoUpgradeIsSet := d.GetOk("auto_upgrade"); enableAutoUpgradeIsSet {
-		body.IsAutoUpgrade = enableAutoUpgrade.(bool)
+		body.SetIsAutoUpgrade(enableAutoUpgrade.(bool))
 	}
 	if enableMonitoring, enableMonitoringIsSet := d.GetOk("monitoring"); enableMonitoringIsSet {
-		body.IsMonitoringEnabled = enableMonitoring.(bool)
+		body.SetIsMonitoringEnabled(enableMonitoring.(bool))
 	}
 	if deleteOnExpiration, deleteOnExpirationIsSet := d.GetOk("delete_on_expiration"); deleteOnExpirationIsSet {
-		body.DeleteOnExpiration = deleteOnExpiration.(bool)
+		body.SetDeleteOnExpiration(deleteOnExpiration.(bool))
 	}
 	if expirationDate, expirationDateIsSet := d.GetOk("expiration_date"); expirationDateIsSet {
 		dateTime := dateToDateTime(expirationDate.(string))
-		body.ExpiredAt = &dateTime
+		body.SetExpiredAt(time.Time(dateTime))
 	} else {
-		body.ExpiredAt = nil
+		body.SetExpiredAtNil()
 	}
 	if PolicyProfileID, PolicyProfileIDIsSet := d.GetOk("policy_profile_id"); PolicyProfileIDIsSet {
-		body.OpaProfileID, _ = atoi32(PolicyProfileID.(string))
+		opaProfileID, _ := atoi32(PolicyProfileID.(string))
+		body.SetOpaProfileId(opaProfileID)
 	}
 
 	if organizationID, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-		projectOrganizationID, _ = atoi32(organizationID.(string))
-		body.OrganizationID = projectOrganizationID
+		projectOrganizationID, _ := atoi32(organizationID.(string))
+		body.SetOrganizationId(projectOrganizationID)
 	}
 
 	if taikunLBFlavor, taikunLBFlavorIsSet := d.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
-		body.TaikunLBFlavor = taikunLBFlavor.(string)
-		body.RouterIDStartRange = int32(d.Get("router_id_start_range").(int))
-		body.RouterIDEndRange = int32(d.Get("router_id_end_range").(int))
+		body.SetTaikunLBFlavor(taikunLBFlavor.(string))
+		body.SetRouterIdStartRange(int32(d.Get("router_id_start_range").(int)))
+		body.SetRouterIdEndRange(int32(d.Get("router_id_end_range").(int)))
 	}
 	if err := resourceTaikunProjectValidateKubernetesProfileLB(d, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
 	if accessProfileID, accessProfileIDIsSet := d.GetOk("access_profile_id"); accessProfileIDIsSet {
-		body.AccessProfileID, _ = atoi32(accessProfileID.(string))
-	} else {
-		if projectOrganizationID == -1 {
-			if err := getDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-		defaultAccessProfileID, found, err := resourceTaikunProjectGetDefaultAccessProfile(projectOrganizationID, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if found {
-			body.AccessProfileID = defaultAccessProfileID
-		}
+		accessProfile, _ := atoi32(accessProfileID.(string))
+		body.SetAccessProfileId(accessProfile)
 	}
+
 	if kubernetesProfileID, kubernetesProfileIDIsSet := d.GetOk("kubernetes_profile_id"); kubernetesProfileIDIsSet {
-		body.KubernetesProfileID, _ = atoi32(kubernetesProfileID.(string))
-	} else {
-		if projectOrganizationID == -1 {
-			if err := getDefaultOrganization(&projectOrganizationID, apiClient); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-		defaultKubernetesProfileID, found, err := resourceTaikunProjectGetDefaultKubernetesProfile(projectOrganizationID, apiClient)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if found {
-			body.KubernetesProfileID = defaultKubernetesProfileID
-		}
+		kubeId, _ := atoi32(kubernetesProfileID.(string))
+		body.SetKubernetesProfileId(kubeId)
 	}
 
 	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
-		body.KubernetesVersion = kubernetesVersion.(string)
+		body.SetKubernetesVersion(kubernetesVersion.(string))
 	}
 
 	// Send project creation request
-	params := projects.NewProjectsCreateParams().WithV(ApiVersion).WithBody(&body).WithContext(ctx)
-	response, err := apiClient.Client.Projects.ProjectsCreate(params, apiClient)
+	response, responseBody, err := apiClient.Client.ProjectsApi.ProjectsCreate(context.TODO()).CreateProjectCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(responseBody, err))
 	}
 
-	d.SetId(response.Payload.ID)
-	projectID, _ := atoi32(response.Payload.ID)
+	d.SetId(response.GetId())
+	projectID, _ := atoi32(response.GetId())
 
 	if resourceTaikunProjectQuotaIsSet(d) {
 		if err = resourceTaikunProjectEditQuotas(d, apiClient, projectID); err != nil {
@@ -503,7 +469,7 @@ func generateResourceTaikunProjectReadWithoutRetries() schema.ReadContextFunc {
 }
 func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id := d.Id()
 		id32, err := atoi32(id)
 		d.SetId("")
@@ -511,8 +477,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
-		params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(id32)
-		response, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
+		response, _, err := apiClient.Client.ServersApi.ServersDetails(ctx, id32).Execute()
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -521,8 +486,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		paramsVM := stand_alone.NewStandAloneDetailsParams().WithV(ApiVersion).WithProjectID(id32)
-		responseVM, err := apiClient.Client.StandAlone.StandAloneDetails(paramsVM, apiClient)
+		responseVM, _, err := apiClient.Client.StandaloneApi.StandaloneDetails(ctx, id32).Execute()
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -531,26 +495,27 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		projectDetailsDTO := response.Payload.Project
-		serverList := response.Payload.Data
-		vmList := responseVM.Payload.Data
+		projectDetailsDTO := response.GetProject()
+		serverList := response.Data
+		vmList := responseVM.Data
 
-		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.ProjectID, apiClient)
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.GetProjectId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.ProjectID, apiClient)
+		var boundImageDTOs []tkcore.BoundImagesForProjectsListDto
+
+		boundImageDTOs, err = resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.GetProjectId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		quotaParams := project_quotas.NewProjectQuotasListParams().WithV(ApiVersion).WithID(&id32)
-		quotaResponse, err := apiClient.Client.ProjectQuotas.ProjectQuotasList(quotaParams, apiClient)
+		quotaResponse, bodyResponse, err := apiClient.Client.ProjectQuotasApi.ProjectquotasList(context.TODO()).Id(id32).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(bodyResponse, err))
 		}
-		if len(quotaResponse.Payload.Data) != 1 {
+		if len(quotaResponse.Data) != 1 {
 			if withRetries {
 				d.SetId(id)
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -558,7 +523,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		projectMap := flattenTaikunProject(projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, quotaResponse.Payload.Data[0])
+		projectMap := flattenTaikunProject(&projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, &quotaResponse.Data[0])
 		usernames := resourceTaikunProjectGetResourceDataVmUsernames(d)
 		if err := setResourceDataFromMap(d, projectMap); err != nil {
 			return diag.FromErr(err)
@@ -657,61 +622,59 @@ func resourceTaikunProjectRestoreResourceDataVmUsernames(d *schema.ResourceData,
 }
 
 func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunProjectUnlockIfLocked(id, apiClient); err != nil {
+	if err = resourceTaikunProjectUnlockIfLocked(id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.HasChange("alerting_profile_id") {
-		body := models.AttachDetachAlertingProfileCommand{
-			ProjectID: id,
-		}
-		detachParams := alerting_profiles.NewAlertingProfilesDetachParams().WithV(ApiVersion).WithBody(&body)
-		if _, err := apiClient.Client.AlertingProfiles.AlertingProfilesDetach(detachParams, apiClient); err != nil {
-			return diag.FromErr(err)
+		body := tkcore.AttachDetachAlertingProfileCommand{}
+		body.SetProjectId(id)
+		bodyResponse, newErr := apiClient.Client.AlertingProfilesApi.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+		if newErr != nil {
+			return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 		}
 		if newAlertingProfileIDData, newAlertingProfileIDProvided := d.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
 			newAlertingProfileID, _ := atoi32(newAlertingProfileIDData.(string))
-			body.AlertingProfileID = newAlertingProfileID
-			attachParams := alerting_profiles.NewAlertingProfilesAttachParams().WithV(ApiVersion).WithBody(&body)
-			if _, err := apiClient.Client.AlertingProfiles.AlertingProfilesAttach(attachParams, apiClient); err != nil {
-				return diag.FromErr(err)
+			body.SetAlertingProfileId(newAlertingProfileID)
+			bodyResponse, newErr := apiClient.Client.AlertingProfilesApi.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+			if newErr != nil {
+				return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 			}
 		}
 	}
 	if d.HasChange("expiration_date") {
-		body := models.ProjectExtendLifeTimeCommand{
-			ProjectID: id,
-		}
+		body := tkcore.ProjectExtendLifeTimeCommand{}
+		body.SetProjectId(id)
+
 		if expirationDate, expirationDateIsSet := d.GetOk("expiration_date"); expirationDateIsSet {
 			dateTime := dateToDateTime(expirationDate.(string))
-			body.ExpireAt = &dateTime
+			body.SetExpireAt(time.Time(dateTime))
 		} else {
-			body.ExpireAt = nil
+			body.SetExpireAtNil()
 		}
-		params := projects.NewProjectsExtendLifeTimeParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.Client.Projects.ProjectsExtendLifeTime(params, apiClient)
+		_, err = apiClient.Client.ProjectsApi.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("flavors") {
-		if err := resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
+		if err = resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("images") {
-		if err := resourceTaikunProjectEditImages(d, apiClient, id); err != nil {
+		if err = resourceTaikunProjectEditImages(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	if d.HasChanges("quota_cpu_units", "quota_disk_size", "quota_ram_size", "quota_vm_cpu_units", "quota_vm_ram_size", "quota_vm_volume_size") {
-		if err := resourceTaikunProjectEditQuotas(d, apiClient, id); err != nil {
+		if err = resourceTaikunProjectEditQuotas(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -723,18 +686,18 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 		if oldSet.Len() == 0 {
 			// The project was empty before
-			if err := resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
+			if err = resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
-			if err := resourceTaikunProjectSetServers(d, apiClient, id); err != nil {
-				return diag.FromErr(err)
-			}
-
-			if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
+			if err = resourceTaikunProjectSetServers(d, apiClient, id); err != nil {
 				return diag.FromErr(err)
 			}
 
-			if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
+			if err = resourceTaikunProjectCommit(apiClient, id); err != nil {
+				return diag.FromErr(err)
+			}
+
+			if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
 				return diag.FromErr(err)
 			}
 
@@ -747,15 +710,15 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
+			if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
 				return diag.FromErr(err)
 			}
-			if err := resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
+			if err = resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	} else {
-		if err := resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
+		if err = resourceTaikunProjectUpdateToggleServices(ctx, d, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 		if d.HasChange("server_kubeworker") {
@@ -775,17 +738,16 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverIds = append(serverIds, kubeWorkerId)
 				}
 
-				deleteServerBody := &models.DeleteServerCommand{
-					ProjectID: id,
-					ServerIds: serverIds,
-				}
-				deleteServerParams := servers.NewServersDeleteParams().WithV(ApiVersion).WithBody(deleteServerBody)
-				_, _, err := apiClient.Client.Servers.ServersDelete(deleteServerParams, apiClient)
+				deleteServerBody := tkcore.DeleteServerCommand{}
+				deleteServerBody.SetProjectId(id)
+				deleteServerBody.SetServerIds(serverIds)
+
+				_, err = apiClient.Client.ServersApi.ServersDelete(ctx).DeleteServerCommand(deleteServerBody).Execute()
 				if err != nil {
 					return diag.FromErr(err)
 				}
 
-				if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting", "PendingDelete"}, apiClient, id); err != nil {
+				if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting", "PendingDelete"}, apiClient, id); err != nil {
 					return diag.FromErr(err)
 				}
 			}
@@ -797,21 +759,20 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				for _, kubeWorker := range toAdd.List() {
 					kubeWorkerMap := kubeWorker.(map[string]interface{})
 
-					serverCreateBody := &models.ServerForCreateDto{
-						Count:                1,
-						DiskSize:             gibiByteToByte(kubeWorkerMap["disk_size"].(int)),
-						Flavor:               kubeWorkerMap["flavor"].(string),
-						KubernetesNodeLabels: resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap),
-						Name:                 kubeWorkerMap["name"].(string),
-						ProjectID:            id,
-						Role:                 300,
+					serverCreateBody := tkcore.ServerForCreateDto{}
+					serverCreateBody.SetCount(1)
+					serverCreateBody.SetDiskSize(gibiByteToByte(kubeWorkerMap["disk_size"].(int)))
+					serverCreateBody.SetFlavor(kubeWorkerMap["flavor"].(string))
+					serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
+					serverCreateBody.SetName(kubeWorkerMap["name"].(string))
+					serverCreateBody.SetProjectId(id)
+					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
+
+					serverCreateResponse, _, newErr := apiClient.Client.ServersApi.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
+					if newErr != nil {
+						return diag.FromErr(newErr)
 					}
-					serverCreateParams := servers.NewServersCreateParams().WithV(ApiVersion).WithBody(serverCreateBody)
-					serverCreateResponse, err := apiClient.Client.Servers.ServersCreate(serverCreateParams, apiClient)
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					kubeWorkerMap["id"] = serverCreateResponse.Payload.ID
+					kubeWorkerMap["id"] = serverCreateResponse.GetId()
 
 					kubeWorkersList.Add(kubeWorkerMap)
 				}
@@ -821,11 +782,11 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					return diag.FromErr(err)
 				}
 
-				if err := resourceTaikunProjectCommit(apiClient, id); err != nil {
+				if err = resourceTaikunProjectCommit(apiClient, id); err != nil {
 					return diag.FromErr(err)
 				}
 
-				if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
+				if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, id); err != nil {
 					return diag.FromErr(err)
 				}
 			}
@@ -849,14 +810,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunProjectUnlockIfLocked(id, apiClient); err != nil {
+	if err = resourceTaikunProjectUnlockIfLocked(id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -870,7 +831,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
+		if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -879,15 +840,17 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
+		if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"PendingPurge", "Purging"}, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	// Delete the project
-	body := models.DeleteProjectCommand{ProjectID: id, IsForceDelete: false}
-	params := projects.NewProjectsDeleteParams().WithV(ApiVersion).WithBody(&body)
-	if _, _, err := apiClient.Client.Projects.ProjectsDelete(params, apiClient); err != nil {
+	body := tkcore.DeleteProjectCommand{}
+	body.SetProjectId(id)
+	body.SetIsForceDelete(false)
+	_, err = apiClient.Client.ProjectsApi.ProjectsDelete(ctx).DeleteProjectCommand(body).Execute()
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -895,14 +858,14 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungoclient.Client) error {
-	readParams := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-	response, err := apiClient.Client.Servers.ServersDetails(readParams, apiClient)
+func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *tk.Client) error {
+	response, _, err := apiClient.Client.ServersApi.ServersDetails(context.TODO(), projectID).Execute()
 	if err != nil {
 		return err
 	}
 
-	if response.Payload.Project.IsLocked {
+	project := response.GetProject()
+	if project.GetIsLocked() {
 		if err := resourceTaikunProjectLock(projectID, false, apiClient); err != nil {
 			return err
 		}
@@ -911,83 +874,81 @@ func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *taikungocli
 	return nil
 }
 
-func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *taikungoclient.Client, projectID int32) (err error) {
+func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *tk.Client, projectID int32) (err error) {
 
-	body := &models.UpdateQuotaCommand{
-		QuotaID: projectID,
-	}
+	body := tkcore.UpdateQuotaCommand{}
+	body.SetQuotaId(projectID)
 
 	if cpu, ok := d.GetOk("quota_cpu_units"); ok {
-		body.ServerCPU = int64(cpu.(int))
+		body.SetServerCpu(int64(cpu.(int)))
 	}
 
 	if ram, ok := d.GetOk("quota_ram_size"); ok {
-		body.ServerRAM = gibiByteToByte(ram.(int))
+		body.SetServerRam(gibiByteToByte(ram.(int)))
 	}
 
 	if disk, ok := d.GetOk("quota_disk_size"); ok {
-		body.ServerDiskSize = gibiByteToByte(disk.(int))
+		body.SetServerDiskSize(gibiByteToByte(disk.(int)))
 	}
 
 	if vmCpu, ok := d.GetOk("quota_vm_cpu_units"); ok {
-		body.VMCPU = int64(vmCpu.(int))
+		body.SetVmCpu(int64(vmCpu.(int)))
 	}
 
 	if vmRam, ok := d.GetOk("quota_vm_ram_size"); ok {
-		body.VMRAM = gibiByteToByte(vmRam.(int))
+		body.SetVmRam(gibiByteToByte(vmRam.(int)))
 	}
 
 	if vmVolume, ok := d.GetOk("quota_vm_volume_size"); ok {
-		body.VMVolumeSize = int64(vmVolume.(int)) // No conversion needed, API takes GBs
+		body.SetVmVolumeSize(int64(vmVolume.(int))) // No conversion needed, API takes GBs
 	}
 
-	params := project_quotas.NewProjectQuotasEditParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.Client.ProjectQuotas.ProjectQuotasEdit(params, apiClient)
+	_, err = apiClient.Client.ProjectQuotasApi.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
 	return
 }
 
 func flattenTaikunProject(
-	projectDetailsDTO *models.ProjectDetailsForServersDto,
-	serverListDTO []*models.ServerListDto,
-	vmListDTO []*models.StandaloneVmsListForDetailsDto,
-	boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto,
-	boundImageDTOs []*models.BoundImagesForProjectsListDto,
-	projectQuotaDTO *models.ProjectQuotaListDto,
+	projectDetailsDTO *tkcore.ProjectDetailsForServersDto,
+	serverListDTO []tkcore.ServerListDto,
+	vmListDTO []tkcore.StandaloneVmsListForDetailsDto,
+	boundFlavorDTOs []tkcore.BoundFlavorsForProjectsListDto,
+	boundImageDTOs []tkcore.BoundImagesForProjectsListDto,
+	projectQuotaDTO *tkcore.ProjectQuotaListDto,
 ) map[string]interface{} {
 
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
-		flavors[i] = boundFlavorDTO.Name
+		flavors[i] = boundFlavorDTO.GetName()
 	}
 
 	images := make([]string, len(boundImageDTOs))
 	for i, boundImageDTO := range boundImageDTOs {
-		images[i] = boundImageDTO.ImageID
+		images[i] = boundImageDTO.GetImageId()
 	}
 
 	projectMap := map[string]interface{}{
-		"access_ip":             projectDetailsDTO.AccessIP,
-		"access_profile_id":     i32toa(projectDetailsDTO.AccessProfileID),
-		"alerting_profile_name": projectDetailsDTO.AlertingProfileName,
-		"cloud_credential_id":   i32toa(projectDetailsDTO.CloudID),
-		"auto_upgrade":          projectDetailsDTO.IsAutoUpgrade,
-		"monitoring":            projectDetailsDTO.IsMonitoringEnabled,
-		"delete_on_expiration":  projectDetailsDTO.DeleteOnExpiration,
-		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.ExpiredAt),
+		"access_ip":             projectDetailsDTO.GetAccessIp(),
+		"access_profile_id":     i32toa(projectDetailsDTO.GetAccessProfileId()),
+		"alerting_profile_name": projectDetailsDTO.GetAlertingProfileName(),
+		"cloud_credential_id":   i32toa(projectDetailsDTO.GetCloudId()),
+		"auto_upgrade":          projectDetailsDTO.GetIsAutoUpgrade(),
+		"monitoring":            projectDetailsDTO.GetIsMonitoringEnabled(),
+		"delete_on_expiration":  projectDetailsDTO.GetDeleteOnExpiration(),
+		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
 		"flavors":               flavors,
 		"images":                images,
-		"id":                    i32toa(projectDetailsDTO.ProjectID),
-		"kubernetes_profile_id": i32toa(projectDetailsDTO.KubernetesProfileID),
-		"kubernetes_version":    projectDetailsDTO.KubernetesCurrentVersion,
-		"lock":                  projectDetailsDTO.IsLocked,
-		"name":                  projectDetailsDTO.ProjectName,
-		"organization_id":       i32toa(projectDetailsDTO.OrganizationID),
-		"quota_cpu_units":       projectQuotaDTO.ServerCPU,
-		"quota_ram_size":        byteToGibiByte(projectQuotaDTO.ServerRAM),
-		"quota_disk_size":       byteToGibiByte(projectQuotaDTO.ServerDiskSize),
-		"quota_vm_cpu_units":    projectQuotaDTO.VMCPU,
-		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.VMRAM),
-		"quota_vm_volume_size":  projectQuotaDTO.VMVolumeSize,
+		"id":                    i32toa(projectDetailsDTO.GetProjectId()),
+		"kubernetes_profile_id": i32toa(projectDetailsDTO.GetKubernetesProfileId()),
+		"kubernetes_version":    projectDetailsDTO.GetKubernetesCurrentVersion(),
+		"lock":                  projectDetailsDTO.GetIsLocked(),
+		"name":                  projectDetailsDTO.GetProjectName(),
+		"organization_id":       i32toa(projectDetailsDTO.GetOrganizationId()),
+		"quota_cpu_units":       projectQuotaDTO.GetServerCpu(),
+		"quota_ram_size":        byteToGibiByte(projectQuotaDTO.GetServerRam()),
+		"quota_disk_size":       byteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
+		"quota_vm_cpu_units":    projectQuotaDTO.GetVmCpu(),
+		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.GetVmRam()),
+		"quota_vm_volume_size":  projectQuotaDTO.GetVmVolumeSize(),
 	}
 
 	bastions := make([]map[string]interface{}, 0)
@@ -995,41 +956,42 @@ func flattenTaikunProject(
 	kubeWorkers := make([]map[string]interface{}, 0)
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
-			"created_by":       server.CreatedBy,
-			"disk_size":        byteToGibiByte(server.DiskSize),
-			"id":               i32toa(server.ID),
-			"ip":               server.IPAddress,
-			"last_modified":    server.LastModified,
-			"last_modified_by": server.LastModifiedBy,
-			"name":             server.Name,
-			"status":           server.Status,
+			"created_by":       server.GetCreatedBy(),
+			"disk_size":        byteToGibiByte(server.GetDiskSize()),
+			"id":               i32toa(server.GetId()),
+			"ip":               server.GetIpAddress(),
+			"last_modified":    server.GetLastModified(),
+			"last_modified_by": server.GetLastModifiedBy(),
+			"name":             server.GetName(),
+			"status":           server.GetStatus(),
 		}
 
-		switch strings.ToLower(server.CloudType) {
-		case "aws":
-			serverMap["flavor"] = server.AwsInstanceType
-		case "azure":
-			serverMap["flavor"] = server.AzureVMSize
-		case "openstack":
-			serverMap["flavor"] = server.OpenstackFlavor
-		case "gcp", "google":
-			serverMap["flavor"] = server.GoogleMachineType
+		switch server.GetCloudType() {
+		case tkcore.CLOUDTYPE_AWS:
+			serverMap["flavor"] = server.GetAwsInstanceType()
+		case tkcore.CLOUDTYPE_AZURE:
+			serverMap["flavor"] = server.GetAzureVmSize()
+		case tkcore.CLOUDTYPE_OPENSTACK:
+			serverMap["flavor"] = server.GetOpenstackFlavor()
+		case tkcore.CLOUDTYPE_GOOGLE, "google":
+			serverMap["flavor"] = server.GetGoogleMachineType()
 		}
 
 		// Bastion
-		if server.Role == "Bastion" {
+		if server.GetRole() == tkcore.CLOUDROLE_BASTION {
 			bastions = append(bastions, serverMap)
 		} else {
-			labels := make([]map[string]interface{}, len(server.KubernetesNodeLabels))
-			for i, rawLabel := range server.KubernetesNodeLabels {
+
+			labels := make([]map[string]interface{}, len(server.GetKubernetesNodeLabels()))
+			for i, rawLabel := range server.GetKubernetesNodeLabels() {
 				labels[i] = map[string]interface{}{
-					"key":   rawLabel.Key,
-					"value": rawLabel.Value,
+					"key":   *rawLabel.Key.Get(),
+					"value": *rawLabel.Value.Get(),
 				}
 			}
 			serverMap["kubernetes_node_label"] = labels
 
-			if server.Role == "Kubemaster" {
+			if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
 				kubeMasters = append(kubeMasters, serverMap)
 			} else {
 				kubeWorkers = append(kubeWorkers, serverMap)
@@ -1043,43 +1005,41 @@ func flattenTaikunProject(
 	vms := make([]map[string]interface{}, 0)
 	for _, vm := range vmListDTO {
 		vmMap := map[string]interface{}{
-			"access_ip":             vm.PublicIP,
-			"cloud_init":            vm.CloudInit,
-			"created_by":            vm.CreatedBy,
-			"flavor":                vm.TargetFlavor,
-			"id":                    i32toa(vm.ID),
-			"image_id":              vm.ImageID,
-			"image_name":            vm.ImageName,
-			"ip":                    vm.IPAddress,
-			"last_modified":         vm.LastModified,
-			"last_modified_by":      vm.LastModifiedBy,
-			"name":                  vm.Name,
-			"public_ip":             vm.PublicIPEnabled,
-			"standalone_profile_id": i32toa(vm.Profile.ID),
-			"status":                vm.Status,
-			"volume_size":           vm.VolumeSize,
-			"volume_type":           vm.VolumeType,
+			"access_ip":             vm.GetPublicIp(),
+			"cloud_init":            vm.GetCloudInit(),
+			"created_by":            vm.GetCreatedBy(),
+			"flavor":                vm.GetTargetFlavor(),
+			"id":                    i32toa(vm.GetId()),
+			"image_id":              vm.GetImageId(),
+			"image_name":            vm.GetImageName(),
+			"ip":                    vm.GetIpAddress(),
+			"last_modified":         vm.GetLastModified(),
+			"last_modified_by":      vm.GetLastModifiedBy(),
+			"name":                  vm.GetName(),
+			"public_ip":             vm.GetPublicIpEnabled(),
+			"standalone_profile_id": i32toa(vm.Profile.GetId()),
+			"status":                vm.GetStatus(),
+			"volume_size":           vm.GetVolumeSize(),
+			"volume_type":           vm.GetVolumeType(),
 		}
 
-		tags := make([]map[string]interface{}, len(vm.StandAloneMetaDatas))
-		for i, rawTag := range vm.StandAloneMetaDatas {
+		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))
+		for i, rawTag := range vm.GetStandAloneMetaDatas() {
 			tags[i] = map[string]interface{}{
-				"key":   rawTag.Key,
-				"value": rawTag.Value,
+				"key":   rawTag.GetKey(),
+				"value": rawTag.GetValue(),
 			}
 		}
 		vmMap["tag"] = tags
 
-		disks := make([]map[string]interface{}, len(vm.Disks))
-		for i, rawDisk := range vm.Disks {
-			lunId, _ := atoi32(rawDisk.LunID)
+		disks := make([]map[string]interface{}, len(vm.GetDisks()))
+		for i, rawDisk := range vm.GetDisks() {
 			disks[i] = map[string]interface{}{
-				"device_name": rawDisk.DeviceName,
-				"lun_id":      lunId,
-				"id":          i32toa(rawDisk.ID),
-				"name":        rawDisk.Name,
-				"size":        rawDisk.CurrentSize,
-				"volume_type": rawDisk.VolumeType,
+				"device_name": rawDisk.GetDeviceName(),
+				"id":          i32toa(rawDisk.GetId()),
+				"name":        rawDisk.GetName(),
+				"size":        rawDisk.GetCurrentSize(),
+				"volume_type": rawDisk.GetVolumeType(),
 			}
 		}
 		vmMap["disk"] = disks
@@ -1089,53 +1049,54 @@ func flattenTaikunProject(
 	projectMap["vm"] = vms
 
 	var nullID int32
-	if projectDetailsDTO.AlertingProfileID != nullID {
-		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.AlertingProfileID)
+	if projectDetailsDTO.GetAlertingProfileId() != nullID {
+		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.GetAlertingProfileId())
 	}
 
-	if projectDetailsDTO.IsBackupEnabled {
-		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.S3CredentialID)
+	if projectDetailsDTO.GetIsBackupEnabled() {
+		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.GetS3CredentialId())
 	}
 
-	if projectDetailsDTO.IsOpaEnabled {
-		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.OpaProfileID)
+	if projectDetailsDTO.GetIsOpaEnabled() {
+		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.GetOpaProfileId())
 	}
 
 	return projectMap
 }
 
-func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *taikungoclient.Client) ([]*models.BoundFlavorsForProjectsListDto, error) {
-	var boundFlavorDTOs []*models.BoundFlavorsForProjectsListDto
-	boundFlavorsParams := flavors.NewFlavorsGetSelectedFlavorsForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
+func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *tk.Client) ([]tkcore.BoundFlavorsForProjectsListDto, error) {
+	var boundFlavorDTOs []tkcore.BoundFlavorsForProjectsListDto
+	var offset int32 = 0
+	params := apiClient.Client.FlavorsApi.FlavorsSelectedFlavorsForProject(context.TODO()).ProjectId(projectID)
 	for {
-		response, err := apiClient.Client.Flavors.FlavorsGetSelectedFlavorsForProject(boundFlavorsParams, apiClient)
+		response, _, err := params.Offset(offset).Execute()
 		if err != nil {
 			return nil, err
 		}
-		boundFlavorDTOs = append(boundFlavorDTOs, response.Payload.Data...)
+		boundFlavorDTOs = append(boundFlavorDTOs, response.Data...)
 		boundFlavorDTOsCount := int32(len(boundFlavorDTOs))
-		if boundFlavorDTOsCount == response.Payload.TotalCount {
+		if boundFlavorDTOsCount == response.GetTotalCount() {
 			break
 		}
-		boundFlavorsParams = boundFlavorsParams.WithOffset(&boundFlavorDTOsCount)
+		offset = boundFlavorDTOsCount
 	}
 	return boundFlavorDTOs, nil
 }
 
-func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *taikungoclient.Client) ([]*models.BoundImagesForProjectsListDto, error) {
-	var boundImageDTOs []*models.BoundImagesForProjectsListDto
-	boundImageParams := images.NewImagesGetSelectedImagesForProjectParams().WithV(ApiVersion).WithProjectID(&projectID)
+func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *tk.Client) ([]tkcore.BoundImagesForProjectsListDto, error) {
+	var boundImageDTOs []tkcore.BoundImagesForProjectsListDto
+	var offset int32 = 0
 	for {
-		response, err := apiClient.Client.Images.ImagesGetSelectedImagesForProject(boundImageParams, apiClient)
+		response, _, err := apiClient.Client.ImagesApi.ImagesSelectedImagesForProject(context.TODO()).ProjectId(projectID).Offset(offset).Execute()
 		if err != nil {
 			return nil, err
 		}
-		boundImageDTOs = append(boundImageDTOs, response.Payload.Data...)
+		boundImageDTOs = append(boundImageDTOs, response.GetData()...)
 		boundFlavorDTOsCount := int32(len(boundImageDTOs))
-		if boundFlavorDTOsCount == response.Payload.TotalCount {
+		if boundFlavorDTOsCount == response.GetTotalCount() {
 			break
 		}
-		boundImageParams = boundImageParams.WithOffset(&boundFlavorDTOsCount)
+		offset = boundFlavorDTOsCount
 	}
 	return boundImageDTOs, nil
 }
@@ -1148,18 +1109,20 @@ func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMaste
 	return servers
 }
 
-func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *taikungoclient.Client, projectID int32) error {
+func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *tk.Client, projectID int32) error {
 	createStateConf := &resource.StateChangeConf{
 		Pending: pendingList,
 		Target:  targetList,
 		Refresh: func() (interface{}, string, error) {
-			params := servers.NewServersDetailsParams().WithV(ApiVersion).WithProjectID(projectID)
-			resp, err := apiClient.Client.Servers.ServersDetails(params, apiClient)
+			resp, _, err := apiClient.Client.ServersApi.ServersDetails(context.TODO(), projectID).Execute()
 			if err != nil {
 				return nil, "", err
 			}
 
-			return resp, resp.Payload.Project.ProjectStatus, nil
+			project := resp.GetProject()
+			status := project.GetProjectStatus()
+
+			return resp, string(status), nil
 		},
 		Timeout:                   80 * time.Minute,
 		Delay:                     5 * time.Second,
@@ -1174,7 +1137,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 	return nil
 }
 
-func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, apiClient *taikungoclient.Client) error {
+func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, apiClient *tk.Client) error {
 	if kubernetesProfileIDData, kubernetesProfileIsSet := d.GetOk("kubernetes_profile_id"); kubernetesProfileIsSet {
 		kubernetesProfileID, _ := atoi32(kubernetesProfileIDData.(string))
 		lbSolution, err := resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID, apiClient)
@@ -1188,88 +1151,55 @@ func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, ap
 				return err
 			}
 			if _, taikunLBFlavorIsSet := d.GetOk("taikun_lb_flavor"); !taikunLBFlavorIsSet {
-				return fmt.Errorf("If Taikun load balancer is enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor must be set")
+				return fmt.Errorf("if Taikun load balancer is enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor must be set")
 			}
 			if cloudType != cloudTypeOpenStack {
-				return fmt.Errorf("If Taikun load balancer is enabled, cloud type should be OpenStack; is %s", cloudType)
+				return fmt.Errorf("if Taikun load balancer is enabled, cloud type should be OpenStack; is %s", cloudType)
 			}
 		} else if _, taikunLBFlavorIsSet := d.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
-			return fmt.Errorf("If Taikun load balancer is not enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor should not be set")
+			return fmt.Errorf("if Taikun load balancer is not enabled, router_id_start_range, router_id_end_range and taikun_lb_flavor should not be set")
 		}
 	}
 	return nil
 }
 
-func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *taikungoclient.Client) (string, error) {
-	params := kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&kubernetesProfileID)
-	response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesList(params, apiClient)
+func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *tk.Client) (string, error) {
+	response, _, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(kubernetesProfileID).Execute()
 	if err != nil {
 		return "", err
 	}
-	if len(response.Payload.Data) == 0 {
+	if len(response.GetData()) == 0 {
 		return "", fmt.Errorf("kubernetes profile with ID %d not found", kubernetesProfileID)
 	}
-	kubernetesProfile := response.Payload.Data[0]
-	return getLoadBalancingSolution(kubernetesProfile.OctaviaEnabled, kubernetesProfile.TaikunLBEnabled), nil
+	kubernetesProfile := response.GetData()[0]
+	return getLoadBalancingSolution(kubernetesProfile.GetOctaviaEnabled(), kubernetesProfile.GetTaikunLBEnabled()), nil
 }
 
-func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *taikungoclient.Client) (string, error) {
-	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&cloudCredentialID)
-	response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Client) (string, error) {
+	response, _, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(cloudCredentialID).Execute()
 	if err != nil {
 		return "", err
 	}
-	if len(response.Payload.Amazon) == 1 {
-		return cloudTypeAWS, nil
+	if len(response.GetAmazon()) == 1 {
+		return string(tkcore.CLOUDTYPE_AWS), nil
 	}
-	if len(response.Payload.Azure) == 1 {
-		return cloudTypeAzure, nil
+	if len(response.GetAzure()) == 1 {
+		return string(tkcore.CLOUDTYPE_AZURE), nil
 	}
-	if len(response.Payload.Openstack) == 1 {
-		return cloudTypeOpenStack, nil
+	if len(response.GetOpenstack()) == 1 {
+		return string(tkcore.CLOUDTYPE_OPENSTACK), nil
 	}
-	if len(response.Payload.Google) == 1 {
-		return cloudTypeGCP, nil
+	if len(response.GetGoogle()) == 1 {
+		return string(tkcore.CLOUDTYPE_GOOGLE), nil
 	}
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
 
-const defaultAccessProfileName = "default"
-
-func resourceTaikunProjectGetDefaultAccessProfile(organizationID int32, apiClient *taikungoclient.Client) (accessProfileID int32, found bool, err error) {
-	params := access_profiles.NewAccessProfilesAccessProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.Client.AccessProfiles.AccessProfilesAccessProfilesForOrganizationList(params, apiClient)
-	if err != nil {
-		return 0, false, err
-	}
-	for _, profile := range response.Payload {
-		if profile.Name == defaultAccessProfileName {
-			return profile.ID, true, nil
-		}
-	}
-	return 0, false, nil
-}
-
-const defaultKubernetesProfileName = "default"
-
-func resourceTaikunProjectGetDefaultKubernetesProfile(organizationID int32, apiClient *taikungoclient.Client) (kubernetesProfileID int32, found bool, err error) {
-	params := kubernetes_profiles.NewKubernetesProfilesKubernetesProfilesForOrganizationListParams().WithV(ApiVersion).WithOrganizationID(&organizationID)
-	response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesKubernetesProfilesForOrganizationList(params, apiClient)
-	if err != nil {
-		return 0, false, err
-	}
-	for _, profile := range response.Payload {
-		if profile.Name == defaultKubernetesProfileName {
-			return profile.ID, true, nil
-		}
-	}
-	return 0, false, nil
-}
-
-func resourceTaikunProjectLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	lockMode := getLockMode(lock)
-	params := projects.NewProjectsLockManagerParams().WithV(ApiVersion).WithID(&id).WithMode(&lockMode)
-	_, err := apiClient.Client.Projects.ProjectsLockManager(params, apiClient)
+func resourceTaikunProjectLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.ProjectLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+	_, err := apiClient.Client.ProjectsApi.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
 	return err
 }
 

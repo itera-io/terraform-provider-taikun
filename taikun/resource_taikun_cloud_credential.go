@@ -2,18 +2,25 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
 	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 )
 
 func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"az_count": {
+			Description:  "The number of availability zone expected for the region/location. Required for AWS, Azure and GCP.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntBetween(1, 3),
+			Default:      1,
+		},
 		"access_key_id": {
 			Description:  "The AWS access key ID. Required for AWS.",
 			Type:         schema.TypeString,
@@ -23,10 +30,18 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"availability_zone": {
-			Description: "The availability zone of the cloud credential. Optional for Openstack. Required for AWS and Azure. See `zone` for GCP.",
+			Description: "The availability zone of the cloud credential. Optional for Openstack.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
+		},
+		"availability_zones": {
+			Description: "The given AWS/Azure/GCP availability zones for the region/location.",
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 		"billing_account_id": {
 			Description:   "The ID of the GCP credential's billing account.",
@@ -63,6 +78,18 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Sensitive:    true,
 			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"continent": {
+			Description: "The OpenStack continent (`Asia`, `Europe` or `America`).",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			DefaultFunc: schema.EnvDefaultFunc("OS_CONTINENT", nil),
+			ValidateFunc: validation.StringInSlice([]string{
+				"Asia",
+				"Europe",
+				"America",
+			}, false),
 		},
 		"created_by": {
 			Description: "The creator of the cloud credential.",
@@ -249,12 +276,13 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Optional:    true,
 			ForceNew:    true,
 		},
-		"zone": {
-			Description:  "The zone of the GCP credential. Required for GCP.",
-			Type:         schema.TypeString,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringIsNotEmpty,
+		"zones": {
+			Description: "The given zones of the GCP credential.",
+			Type:        schema.TypeSet,
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 	}
 }
@@ -294,7 +322,7 @@ func generateResourceTaikunCloudCredentialReadWithoutRetries() schema.ReadContex
 func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		type_cc := d.Get("type").(string)
 		d.SetId("")
@@ -302,63 +330,63 @@ func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		if strings.Compare(type_cc, "aws") == 0 {
-			if len(response.Payload.Amazon) != 1 {
+			if len(response.GetAmazon()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Amazon[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(res))
+			res := response.GetAmazon()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else if strings.Compare(type_cc, "azure") == 0 {
-			if len(response.Payload.Azure) != 1 {
+			if len(response.GetAzure()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Azure[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(res))
+			res := response.GetAzure()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else if strings.Compare(type_cc, "gcp") == 0 {
-			if len(response.Payload.Google) != 1 {
+			if len(response.GetGoogle()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Google[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(res))
+			res := response.GetGoogle()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
 		} else {
-			if len(response.Payload.Openstack) != 1 {
+			if len(response.GetOpenstack()) != 1 {
 				if withRetries {
 					d.SetId(i32toa(id))
 					return diag.Errorf(notFoundAfterCreateOrUpdateError)
 				}
 				return nil
 			}
-			res := response.GetPayload().Openstack[0]
-			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(res))
+			res := response.GetOpenstack()[0]
+			err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(&res))
 			if err != nil {
 				return diag.FromErr(err)
 			}

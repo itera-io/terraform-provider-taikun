@@ -36,7 +36,6 @@ resource "taikun_backup_policy" "foo" {
 
 ### Optional
 
-- `excluded_namespaces` (List of String) Namespaces excluded from the backups.
 - `included_namespaces` (List of String) Namespaces included in the backups.
 - `retention_period` (String) How long to store the backups. Defaults to `720h`.
 

@@ -29,4 +29,7 @@ test:
 testacc: 
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
-.PHONY: build dockerbuild commoninstall install dockerinstall test testacc
+clean:
+	rm -f ${BINARY}
+
+.PHONY: build dockerbuild commoninstall install dockerinstall test testacc clean

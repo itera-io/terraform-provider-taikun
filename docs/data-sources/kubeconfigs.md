@@ -44,5 +44,3 @@ Read-Only:
 - `project_name` (String)
 - `user_id` (String)
 - `validity_period` (Number)
-
-
