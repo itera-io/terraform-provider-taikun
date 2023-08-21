@@ -6,7 +6,6 @@ resource "taikun_user" "foo" {
 
 resource "taikun_cloud_credential_aws" "foo" {
   name              = "foo"
-  availability_zone = "availability_zone"
 }
 
 resource "taikun_project" "foo" {

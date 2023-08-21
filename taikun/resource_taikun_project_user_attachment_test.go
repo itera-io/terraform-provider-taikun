@@ -4,11 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
+	tk "github.com/chnyda/taikungoclient"
 	"testing"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/users"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -23,7 +20,6 @@ resource "taikun_user" "foo" {
 
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_project" "foo" {
@@ -53,7 +49,6 @@ func TestAccResourceTaikunProjectUserAttachment(t *testing.T) {
 					userName,
 					userEmail,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -68,7 +63,7 @@ func TestAccResourceTaikunProjectUserAttachment(t *testing.T) {
 }
 
 func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project_user_attachment" {
@@ -80,19 +75,18 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 			return err
 		}
 
-		params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-		response, err := apiClient.Client.Users.UsersList(params, apiClient)
+		response, _, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
 		if err != nil {
 			return err
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			return fmt.Errorf("user with ID %s not found", userId)
 		}
 
-		rawUser := response.GetPayload().Data[0]
+		rawUser := response.GetData()[0]
 
 		for _, e := range rawUser.BoundProjects {
-			if e.ProjectID == projectId {
+			if e.GetProjectId() == projectId {
 				return nil
 			}
 		}
@@ -104,7 +98,7 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 }
 
 func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) error {
-	apiClient := testAccProvider.Meta().(*taikungoclient.Client)
+	apiClient := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_project_user_attachment" {
@@ -117,19 +111,18 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 		}
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			params := users.NewUsersListParams().WithV(ApiVersion).WithID(&userId)
-			response, err := apiClient.Client.Users.UsersList(params, apiClient)
+			response, _, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 1 {
+			if response.GetTotalCount() != 1 {
 				return nil
 			}
 
-			rawUser := response.GetPayload().Data[0]
+			rawUser := response.GetData()[0]
 
 			for _, e := range rawUser.BoundProjects {
-				if e.ProjectID == projectId {
+				if e.GetProjectId() == projectId {
 					return resource.RetryableError(errors.New("project_user_attachment still exists"))
 				}
 			}

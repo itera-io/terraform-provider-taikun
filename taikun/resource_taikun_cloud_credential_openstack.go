@@ -2,15 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
-	"github.com/itera-io/taikungoclient/client/openstack"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
@@ -25,6 +23,18 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Description: "The creator of the OpenStack cloud credential.",
 			Type:        schema.TypeString,
 			Computed:    true,
+		},
+		"continent": {
+			Description: "The OpenStack continent (`Asia`, `Europe` or `America`).",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "Europe",
+			ValidateFunc: validation.StringInSlice([]string{
+				"Asia",
+				"Europe",
+				"America",
+			}, false),
 		},
 		"domain": {
 			Description:  "The OpenStack domain.",
@@ -164,18 +174,17 @@ func resourceTaikunCloudCredentialOpenStack() *schema.Resource {
 }
 
 func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.CreateOpenstackCloudCommand{
-		Name:                   d.Get("name").(string),
-		OpenStackUser:          d.Get("user").(string),
-		OpenStackPassword:      d.Get("password").(string),
-		OpenStackURL:           d.Get("url").(string),
-		OpenStackProject:       d.Get("project_name").(string),
-		OpenStackPublicNetwork: d.Get("public_network_name").(string),
-		OpenStackDomain:        d.Get("domain").(string),
-		OpenStackRegion:        d.Get("region").(string),
-	}
+	body := tkcore.CreateOpenstackCloudCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetOpenStackUser(d.Get("user").(string))
+	body.SetOpenStackPassword(d.Get("password").(string))
+	body.SetOpenStackUrl(d.Get("url").(string))
+	body.SetOpenStackProject(d.Get("project_name").(string))
+	body.SetOpenStackPublicNetwork(d.Get("public_network_name").(string))
+	body.SetOpenStackDomain(d.Get("domain").(string))
+	body.SetOpenStackRegion(d.Get("region").(string))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -183,36 +192,40 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
 	importedNetworkSubnetIDData, importedNetworkSubnetIDDataIsSet := d.GetOk("imported_network_subnet_id")
 	if importedNetworkSubnetIDDataIsSet {
-		body.OpenStackImportNetwork = true
-		body.OpenStackInternalSubnetID = importedNetworkSubnetIDData.(string)
+		body.SetOpenStackImportNetwork(true)
+		body.SetOpenStackInternalSubnetId(importedNetworkSubnetIDData.(string))
 	}
 
 	volumeTypeNameData, volumeTypeNameIsSet := d.GetOk("volume_type_name")
 	if volumeTypeNameIsSet {
-		body.OpenStackVolumeType = volumeTypeNameData.(string)
+		body.SetOpenStackVolumeType(volumeTypeNameData.(string))
 	}
 
 	availabilityZoneData, availabilityZoneIsSet := d.GetOk("availability_zone")
 	if availabilityZoneIsSet {
-		body.OpenStackAvailabilityZone = availabilityZoneData.(string)
+		body.SetOpenStackAvailabilityZone(availabilityZoneData.(string))
 	}
 
-	params := openstack.NewOpenstackCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.Openstack.OpenstackCreate(params, apiClient)
+	continentData, continentIsSet := d.GetOk("continent")
+	if continentIsSet {
+		body.SetOpenStackContinent(continentShorthand(continentData.(string)))
+	}
+
+	createResult, res, err := apiClient.Client.OpenstackCloudCredentialApi.OpenstackCreate(context.TODO()).CreateOpenstackCloudCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
+	}
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
@@ -230,18 +243,18 @@ func generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries() schema.R
 }
 func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Openstack) != 1 {
+		if len(response.GetOpenstack()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -249,9 +262,9 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return nil
 		}
 
-		rawCloudCredentialOpenStack := response.GetPayload().Openstack[0]
+		rawCloudCredentialOpenStack := response.GetOpenstack()[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(rawCloudCredentialOpenStack))
+		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(&rawCloudCredentialOpenStack))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -263,7 +276,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 }
 
 func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -276,16 +289,15 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 	}
 
 	if d.HasChanges("user", "password", "name") {
-		updateBody := &models.UpdateOpenStackCommand{
-			ID:                id,
-			Name:              d.Get("name").(string),
-			OpenStackPassword: d.Get("password").(string),
-			OpenStackUser:     d.Get("user").(string),
-		}
-		updateParams := openstack.NewOpenstackUpdateParams().WithV(ApiVersion).WithBody(updateBody)
-		_, err := apiClient.Client.Openstack.OpenstackUpdate(updateParams, apiClient)
+		updateBody := tkcore.UpdateOpenStackCommand{}
+		updateBody.SetId(id)
+		updateBody.SetName(d.Get("name").(string))
+		updateBody.SetOpenStackPassword(d.Get("password").(string))
+		updateBody.SetOpenStackUser(d.Get("user").(string))
+
+		res, err := apiClient.Client.OpenstackCloudCredentialApi.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
@@ -298,36 +310,36 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 	return readAfterUpdateWithRetries(generateResourceTaikunCloudCredentialOpenStackReadWithRetries(), ctx, d, meta)
 }
 
-func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *models.OpenstackCredentialsListDto) map[string]interface{} {
+func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *tkcore.OpenstackCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":                 rawOpenStackCredential.CreatedBy,
-		"id":                         i32toa(rawOpenStackCredential.ID),
-		"lock":                       rawOpenStackCredential.IsLocked,
-		"is_default":                 rawOpenStackCredential.IsDefault,
-		"last_modified":              rawOpenStackCredential.LastModified,
-		"last_modified_by":           rawOpenStackCredential.LastModifiedBy,
-		"name":                       rawOpenStackCredential.Name,
-		"user":                       rawOpenStackCredential.User,
-		"project_name":               rawOpenStackCredential.Project,
-		"project_id":                 rawOpenStackCredential.TenantID,
-		"organization_id":            i32toa(rawOpenStackCredential.OrganizationID),
-		"organization_name":          rawOpenStackCredential.OrganizationName,
-		"public_network_name":        rawOpenStackCredential.PublicNetwork,
-		"availability_zone":          rawOpenStackCredential.AvailabilityZone,
-		"domain":                     rawOpenStackCredential.Domain,
-		"region":                     rawOpenStackCredential.Region,
-		"volume_type_name":           rawOpenStackCredential.VolumeType,
-		"imported_network_subnet_id": rawOpenStackCredential.InternalSubnetID,
+		"created_by":                 rawOpenStackCredential.GetCreatedBy(),
+		"id":                         i32toa(rawOpenStackCredential.GetId()),
+		"lock":                       rawOpenStackCredential.GetIsLocked(),
+		"is_default":                 rawOpenStackCredential.GetIsDefault(),
+		"last_modified":              rawOpenStackCredential.GetLastModified(),
+		"last_modified_by":           rawOpenStackCredential.GetLastModifiedBy(),
+		"name":                       rawOpenStackCredential.GetName(),
+		"user":                       rawOpenStackCredential.GetUser(),
+		"project_name":               rawOpenStackCredential.GetProject(),
+		"project_id":                 rawOpenStackCredential.GetTenantId(),
+		"organization_id":            i32toa(rawOpenStackCredential.GetOrganizationId()),
+		"organization_name":          rawOpenStackCredential.GetOrganizationName(),
+		"public_network_name":        rawOpenStackCredential.GetPublicNetwork(),
+		"availability_zone":          rawOpenStackCredential.GetAvailabilityZone(),
+		"domain":                     rawOpenStackCredential.GetDomain(),
+		"region":                     rawOpenStackCredential.GetRegion(),
+		"continent":                  rawOpenStackCredential.GetContinentName(),
+		"volume_type_name":           rawOpenStackCredential.GetVolumeType(),
+		"imported_network_subnet_id": rawOpenStackCredential.GetInternalSubnetId(),
 	}
 }
 
-func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.CloudLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := cloud_credentials.NewCloudCredentialsLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.CloudCredentials.CloudCredentialsLockManager(params, apiClient)
-	return err
+func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.CloudLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+
+	res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

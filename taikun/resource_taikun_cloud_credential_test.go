@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
 )
 
 const testAccResourceTaikunCloudCredentialConfig = `
@@ -47,6 +46,7 @@ func TestAccResourceTaikunCloudCredentials(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
@@ -83,6 +83,7 @@ func TestAccResourceTaikunCloudCredentialsLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
@@ -107,6 +108,7 @@ func TestAccResourceTaikunCloudCredentialsLock(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
@@ -144,6 +146,7 @@ func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
@@ -168,6 +171,7 @@ func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "project_name", os.Getenv("OS_PROJECT_NAME")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "public_network_name", os.Getenv("OS_INTERFACE")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "region", os.Getenv("OS_REGION_NAME")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "continent", os.Getenv("OS_CONTINENT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential.foo", "organization_name"),
@@ -180,7 +184,7 @@ func TestAccResourceTaikunCloudCredentialsRename(t *testing.T) {
 }
 
 func testAccCheckTaikunCloudCredentialsExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential" {
@@ -188,10 +192,9 @@ func testAccCheckTaikunCloudCredentialsExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
-		if err != nil || response.Payload.TotalCountOpenstack != 1 {
+		response, _, err := client.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCountOpenstack() != 1 {
 			return fmt.Errorf("openstack cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -199,7 +202,7 @@ func testAccCheckTaikunCloudCredentialsExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunCloudCredentialsDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_cloud_credential" {
@@ -208,13 +211,12 @@ func testAccCheckTaikunCloudCredentialsDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.Client.CloudCredentials.CloudCredentialsDashboardList(params, client)
+			response, _, err := client.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCountOpenstack != 0 {
+			if response.GetTotalCountOpenstack() != 0 {
 				return resource.RetryableError(errors.New("openstack cloud credential still exists"))
 			}
 			return nil

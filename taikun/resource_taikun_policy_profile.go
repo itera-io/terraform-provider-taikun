@@ -2,15 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/opa_profiles"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunPolicyProfileSchema() map[string]*schema.Schema {
@@ -144,19 +142,18 @@ func resourceTaikunPolicyProfile() *schema.Resource {
 }
 
 func resourceTaikunPolicyProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.CreateOpaProfileCommand{
-		AllowedRepo:           resourceGetStringList(d.Get("allowed_repos").(*schema.Set).List()),
-		ForbidHTTPIngress:     d.Get("forbid_http_ingress").(bool),
-		ForbidNodePort:        d.Get("forbid_node_port").(bool),
-		ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()),
-		IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()),
-		Name:                  d.Get("name").(string),
-		RequireProbe:          d.Get("require_probe").(bool),
-		UniqueIngresses:       d.Get("unique_ingress").(bool),
-		UniqueServiceSelector: d.Get("unique_service_selector").(bool),
-	}
+	body := tkcore.CreateOpaProfileCommand{}
+	body.SetAllowedRepo(resourceGetStringList(d.Get("allowed_repos").(*schema.Set).List()))
+	body.SetForbidHttpIngress(d.Get("forbid_http_ingress").(bool))
+	body.SetForbidNodePort(d.Get("forbid_node_port").(bool))
+	body.SetForbidSpecificTags(resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()))
+	body.SetIngressWhitelist(resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()))
+	body.SetName(d.Get("name").(string))
+	body.SetRequireProbe(d.Get("require_probe").(bool))
+	body.SetUniqueIngresses(d.Get("unique_ingress").(bool))
+	body.SetUniqueServiceSelector(d.Get("unique_service_selector").(bool))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -164,20 +161,19 @@ func resourceTaikunPolicyProfileCreate(ctx context.Context, d *schema.ResourceDa
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := opa_profiles.NewOpaProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.OpaProfiles.OpaProfilesCreate(params, apiClient)
+	createResult, res, err := apiClient.Client.OpaProfilesApi.OpaprofilesCreate(context.TODO()).CreateOpaProfileCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	locked := d.Get("lock").(bool)
 	if locked {
-		id, err := atoi32(createResult.Payload.ID)
+		id, err := atoi32(createResult.GetId())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -198,7 +194,7 @@ func generateResourceTaikunPolicyProfileReadWithoutRetries() schema.ReadContextF
 }
 func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
@@ -229,7 +225,7 @@ func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.
 }
 
 func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -245,22 +241,21 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChangeExcept("lock") {
 
-		body := &models.OpaProfileUpdateCommand{
-			AllowedRepo:           resourceGetStringList(d.Get("allowed_repos").(*schema.Set).List()),
-			ForbidHTTPIngress:     d.Get("forbid_http_ingress").(bool),
-			ForbidNodePort:        d.Get("forbid_node_port").(bool),
-			ForbidSpecificTags:    resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()),
-			IngressWhitelist:      resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()),
-			Name:                  d.Get("name").(string),
-			RequireProbe:          d.Get("require_probe").(bool),
-			UniqueIngresses:       d.Get("unique_ingress").(bool),
-			UniqueServiceSelector: d.Get("unique_service_selector").(bool),
-			ID:                    id,
-		}
-		params := opa_profiles.NewOpaProfilesUpdateParams().WithV(ApiVersion).WithBody(body)
-		_, err = apiClient.Client.OpaProfiles.OpaProfilesUpdate(params, apiClient)
+		body := tkcore.OpaProfileUpdateCommand{}
+		body.SetAllowedRepo(resourceGetStringList(d.Get("allowed_repos").(*schema.Set).List()))
+		body.SetForbidHttpIngress(d.Get("forbid_http_ingress").(bool))
+		body.SetForbidNodePort(d.Get("forbid_node_port").(bool))
+		body.SetForbidSpecificTags(resourceGetStringList(d.Get("forbidden_tags").(*schema.Set).List()))
+		body.SetIngressWhitelist(resourceGetStringList(d.Get("ingress_whitelist").(*schema.Set).List()))
+		body.SetName(d.Get("name").(string))
+		body.SetRequireProbe(d.Get("require_probe").(bool))
+		body.SetUniqueIngresses(d.Get("unique_ingress").(bool))
+		body.SetUniqueServiceSelector(d.Get("unique_service_selector").(bool))
+		body.SetId(id)
+
+		res, err := apiClient.Client.OpaProfilesApi.OpaprofilesUpdate(context.TODO()).OpaProfileUpdateCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 	}
@@ -276,75 +271,71 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceTaikunPolicyProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := opa_profiles.NewOpaProfilesDeleteParams().WithV(ApiVersion).WithBody(&models.DeleteOpaProfileCommand{ID: id})
-	_, err = apiClient.Client.OpaProfiles.OpaProfilesDelete(params, apiClient)
+	res, err := apiClient.Client.OpaProfilesApi.OpaprofilesDelete(context.TODO(), id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	lockBody := models.OpaProfileLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	lockParams := opa_profiles.NewOpaProfilesLockManagerParams().WithV(ApiVersion).WithBody(&lockBody)
-	_, err := apiClient.Client.OpaProfiles.OpaProfilesLockManager(lockParams, apiClient)
+func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+	lockBody := tkcore.OpaProfileLockManagerCommand{}
+	lockBody.SetId(id)
+	lockBody.SetMode(getLockMode(lock))
 
-	return err
+	res, err := apiClient.Client.OpaProfilesApi.OpaprofilesLockManager(context.TODO()).OpaProfileLockManagerCommand(lockBody).Execute()
+
+	return tk.CreateError(res, err)
 }
 
-func flattenTaikunPolicyProfile(rawPolicyProfile *models.OpaProfileListDto) map[string]interface{} {
+func flattenTaikunPolicyProfile(rawPolicyProfile *tkcore.OpaProfileListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"allowed_repos":           rawPolicyProfile.AllowedRepo,
-		"forbid_node_port":        rawPolicyProfile.ForbidNodePort,
-		"forbid_http_ingress":     rawPolicyProfile.ForbidHTTPIngress,
-		"forbidden_tags":          rawPolicyProfile.ForbidSpecificTags,
-		"id":                      i32toa(rawPolicyProfile.ID),
-		"ingress_whitelist":       rawPolicyProfile.IngressWhitelist,
-		"is_default":              rawPolicyProfile.IsDefault,
-		"lock":                    rawPolicyProfile.IsLocked,
-		"name":                    rawPolicyProfile.Name,
-		"organization_id":         i32toa(rawPolicyProfile.OrganizationID),
-		"organization_name":       rawPolicyProfile.OrganizationName,
-		"require_probe":           rawPolicyProfile.RequireProbe,
-		"unique_ingress":          rawPolicyProfile.UniqueIngresses,
-		"unique_service_selector": rawPolicyProfile.UniqueServiceSelector,
+		"allowed_repos":           rawPolicyProfile.GetAllowedRepo(),
+		"forbid_node_port":        rawPolicyProfile.GetForbidNodePort(),
+		"forbid_http_ingress":     rawPolicyProfile.GetForbidHttpIngress(),
+		"forbidden_tags":          rawPolicyProfile.GetForbidSpecificTags(),
+		"id":                      i32toa(rawPolicyProfile.GetId()),
+		"ingress_whitelist":       rawPolicyProfile.GetIngressWhitelist(),
+		"is_default":              rawPolicyProfile.GetIsDefault(),
+		"lock":                    rawPolicyProfile.GetIsLocked(),
+		"name":                    rawPolicyProfile.GetName(),
+		"organization_id":         i32toa(rawPolicyProfile.GetOrganizationId()),
+		"organization_name":       rawPolicyProfile.GetOrganizationName(),
+		"require_probe":           rawPolicyProfile.GetRequireProbe(),
+		"unique_ingress":          rawPolicyProfile.GetUniqueIngresses(),
+		"unique_service_selector": rawPolicyProfile.GetUniqueServiceSelector(),
 	}
 }
 
-func resourceTaikunPolicyProfileFind(id int32, apiClient *taikungoclient.Client) (*models.OpaProfileListDto, error) {
-	params := opa_profiles.NewOpaProfilesListParams().WithV(ApiVersion)
+func resourceTaikunPolicyProfileFind(id int32, apiClient *tk.Client) (*tkcore.OpaProfileListDto, error) {
+	params := apiClient.Client.OpaProfilesApi.OpaprofilesList(context.TODO())
 	var offset int32 = 0
 
 	for {
-		response, err := apiClient.Client.OpaProfiles.OpaProfilesList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return nil, err
+			return nil, tk.CreateError(res, err)
 		}
 
-		for _, policyProfile := range response.Payload.Data {
-			if policyProfile.ID == id {
-				return policyProfile, nil
+		for _, policyProfile := range response.GetData() {
+			if policyProfile.GetId() == id {
+				return &policyProfile, nil
 			}
 		}
 
-		offset += int32(len(response.Payload.Data))
-		if offset == response.Payload.TotalCount {
+		offset += int32(len(response.GetData()))
+		if offset == response.GetTotalCount() {
 			break
 		}
-
-		params = params.WithOffset(&offset)
 	}
 
 	return nil, nil

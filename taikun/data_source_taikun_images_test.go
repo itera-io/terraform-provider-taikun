@@ -11,7 +11,6 @@ import (
 const testAccDataSourceTaikunImagesDeprecatedAWSConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 data "taikun_images" "foo" {
@@ -30,7 +29,6 @@ func TestAccDataSourceTaikunImagesDeprecatedAWS(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunImagesDeprecatedAWSConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_images.foo", "images.#", "3"),
@@ -45,15 +43,14 @@ func TestAccDataSourceTaikunImagesDeprecatedAWS(t *testing.T) {
 const testAccDataSourceTaikunImagesDeprecatedAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
   location = "%s"
 }
 
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
   azure_publisher = "Canonical"
-  azure_offer = "0001-com-ubuntu-server-hirsute"
-  azure_sku = "21_04"
+  azure_offer = "UbuntuServer"
+  azure_sku = "19.04"
 }
 `
 
@@ -67,7 +64,6 @@ func TestAccDataSourceTaikunImagesDeprecatedAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunImagesDeprecatedAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(

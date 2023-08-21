@@ -2,11 +2,10 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/images"
 )
 
 func dataSourceTaikunImagesAzure() *schema.Resource {
@@ -64,33 +63,31 @@ func dataSourceTaikunImagesAzure() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunImagesAzureRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+func dataSourceTaikunImagesAzureRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*tk.Client)
 	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	var offset int32 = 0
+
 	latest := d.Get("latest").(bool)
 
-	params := images.NewImagesAzureImagesParams().WithV(ApiVersion).WithCloudID(cloudCredentialID)
-	params = params.WithPublisherName(d.Get("publisher").(string))
-	params = params.WithOffer(d.Get("offer").(string))
-	params = params.WithSku(d.Get("sku").(string))
-	params = params.WithLatest(&latest)
+	params := apiClient.Client.ImagesApi.ImagesAzureImages(ctx, cloudCredentialID, d.Get("publisher").(string),
+		d.Get("offer").(string), d.Get("sku").(string)).Latest(latest)
 
 	var imageList []map[string]interface{}
 	for {
-		response, err := apiClient.Client.Images.ImagesAzureImages(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		imageList = append(imageList, flattenTaikunImages(response.Payload.Data...)...)
-		if len(imageList) == int(response.Payload.TotalCount) {
+		imageList = append(imageList, flattenTaikunImages(response.GetData()...)...)
+		if len(imageList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(imageList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(imageList))
 	}
 
 	if err := d.Set("images", imageList); err != nil {

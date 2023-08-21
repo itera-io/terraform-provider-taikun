@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/cloud_credentials"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
@@ -35,10 +33,11 @@ func dataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
 }
 
 func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := cloud_credentials.NewCloudCredentialsDashboardListParams().WithV(ApiVersion)
+	params := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -47,26 +46,25 @@ func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, d *schema.
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var cloudCredentialsList []*models.OpenstackCredentialsListDto
+	var cloudCredentialsList []tkcore.OpenstackCredentialsListDto
 	for {
-		response, err := apiClient.Client.CloudCredentials.CloudCredentialsDashboardList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		cloudCredentialsList = append(cloudCredentialsList, response.GetPayload().Openstack...)
-		if len(cloudCredentialsList) == int(response.GetPayload().TotalCountOpenstack) {
+		cloudCredentialsList = append(cloudCredentialsList, response.GetOpenstack()...)
+		if len(cloudCredentialsList) == int(response.GetTotalCountOpenstack()) {
 			break
 		}
-		offset := int32(len(cloudCredentialsList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(cloudCredentialsList))
 	}
 
 	cloudCredentials := make([]map[string]interface{}, len(cloudCredentialsList))
 	for i, rawCloudCredential := range cloudCredentialsList {
-		cloudCredentials[i] = flattenTaikunCloudCredentialOpenStack(rawCloudCredential)
+		cloudCredentials[i] = flattenTaikunCloudCredentialOpenStack(&rawCloudCredential)
 	}
 	if err := d.Set("cloud_credentials", cloudCredentials); err != nil {
 		return diag.FromErr(err)

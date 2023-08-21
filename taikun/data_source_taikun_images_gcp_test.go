@@ -15,7 +15,6 @@ resource "taikun_cloud_credential_gcp" "foo" {
   billing_account_id = "%s"
   folder_id = "%s"
   region = "%s"
-  zone = "%s"
 }
 
 data "taikun_images_gcp" "foo" {
@@ -37,7 +36,6 @@ func TestAccDataSourceTaikunImagesGCP(t *testing.T) {
 					os.Getenv("GCP_BILLING_ACCOUNT"),
 					os.Getenv("GCP_FOLDER_ID"),
 					os.Getenv("GCP_REGION"),
-					os.Getenv("GCP_ZONE"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_images_gcp.foo", "images.#"),

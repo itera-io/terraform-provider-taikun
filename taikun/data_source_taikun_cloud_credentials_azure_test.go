@@ -11,7 +11,6 @@ import (
 const testAccDataSourceTaikunCloudCredentialsAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
   location = "%s"
 }
 
@@ -31,7 +30,6 @@ func TestAccDataSourceTaikunCloudCredentialsAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialsAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -46,7 +44,6 @@ func TestAccDataSourceTaikunCloudCredentialsAzure(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.organization_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.tenant_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.location"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.availability_zone"),
 				),
 			},
 		},
@@ -62,7 +59,6 @@ resource "taikun_organization" "foo" {
 
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
   location = "%s"
   organization_id = resource.taikun_organization.foo.id
 }
@@ -89,7 +85,6 @@ func TestAccDataSourceTaikunCloudCredentialsAzureWithFilter(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -102,7 +97,6 @@ func TestAccDataSourceTaikunCloudCredentialsAzureWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.is_default"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.availability_zone"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.location"),
 					resource.TestCheckResourceAttrSet("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.tenant_id"),
 				),

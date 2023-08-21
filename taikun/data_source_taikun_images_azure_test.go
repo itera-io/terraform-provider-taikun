@@ -11,7 +11,6 @@ import (
 const testAccDataSourceTaikunImagesAzureConfig = `
 resource "taikun_cloud_credential_azure" "foo" {
   name = "%s"
-  availability_zone = "%s"
   location = "%s"
 }
 
@@ -34,7 +33,6 @@ func TestAccDataSourceTaikunImagesAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunImagesAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_AVAILABILITY_ZONE"),
 					os.Getenv("ARM_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(

@@ -2,7 +2,6 @@ package taikun
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,7 +10,6 @@ import (
 const testAccDataSourceTaikunProjectsConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
 }
 
 resource "taikun_project" "foo" {
@@ -37,7 +35,6 @@ func TestAccDataSourceTaikunProjects(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunProjectsConfig,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_projects.all", "id", "all"),
@@ -62,7 +59,6 @@ resource "taikun_organization" "foo" {
 
 resource "taikun_cloud_credential_aws" "foo" {
   name = "%s"
-  availability_zone = "%s"
   organization_id = resource.taikun_organization.foo.id
 }
 
@@ -96,7 +92,6 @@ func TestAccDataSourceTaikunProjectsWithFilter(t *testing.T) {
 					organizationName,
 					organizationName,
 					cloudCredentialName,
-					os.Getenv("AWS_AVAILABILITY_ZONE"),
 					projectCount,
 					projectName),
 				Check: resource.ComposeAggregateTestCheckFunc(

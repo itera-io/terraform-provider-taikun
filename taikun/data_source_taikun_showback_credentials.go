@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/models"
-	"github.com/itera-io/taikungoclient/showbackclient/showback_credentials"
 )
 
 func dataSourceTaikunShowbackCredentials() *schema.Resource {
@@ -34,10 +33,11 @@ func dataSourceTaikunShowbackCredentials() *schema.Resource {
 }
 
 func dataSourceTaikunShowbackCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := showback_credentials.NewShowbackCredentialsListParams().WithV(ApiVersion)
+	params := apiClient.ShowbackClient.ShowbackCredentialsApi.ShowbackcredentialsList(context.TODO())
+	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -46,26 +46,25 @@ func dataSourceTaikunShowbackCredentialsRead(_ context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var showbackCredentialsList []*models.ShowbackCredentialsListDto
+	var showbackCredentialsList []tkshowback.ShowbackCredentialsListDto
 	for {
-		response, err := apiClient.ShowbackClient.ShowbackCredentials.ShowbackCredentialsList(params, apiClient)
+		response, resp, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(resp, err))
 		}
-		showbackCredentialsList = append(showbackCredentialsList, response.GetPayload().Data...)
-		if len(showbackCredentialsList) == int(response.GetPayload().TotalCount) {
+		showbackCredentialsList = append(showbackCredentialsList, response.GetData()...)
+		if len(showbackCredentialsList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(showbackCredentialsList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(showbackCredentialsList))
 	}
 
 	showbackCredentials := make([]map[string]interface{}, len(showbackCredentialsList))
 	for i, rawShowbackCredential := range showbackCredentialsList {
-		showbackCredentials[i] = flattenTaikunShowbackCredential(rawShowbackCredential)
+		showbackCredentials[i] = flattenTaikunShowbackCredential(&rawShowbackCredential)
 	}
 	if err := d.Set("showback_credentials", showbackCredentials); err != nil {
 		return diag.FromErr(err)

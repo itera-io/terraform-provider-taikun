@@ -2,16 +2,14 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/security_group"
-	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
@@ -127,25 +125,23 @@ func resourceTaikunStandaloneProfile() *schema.Resource {
 }
 
 func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.StandAloneProfileCreateCommand{
-		Name:      d.Get("name").(string),
-		PublicKey: d.Get("public_key").(string),
-	}
+	body := tkcore.StandAloneProfileCreateCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetPublicKey(d.Get("public_key").(string))
 
 	if securityGroups, isSecurityGroupsSet := d.GetOk("security_group"); isSecurityGroupsSet {
 		rawSecurityGroupList := securityGroups.([]interface{})
-		securityGroupList := make([]*models.StandAloneProfileSecurityGroupDto, len(rawSecurityGroupList))
+		securityGroupList := make([]tkcore.StandAloneProfileSecurityGroupDto, len(rawSecurityGroupList))
 		for i, e := range rawSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
-			securityGroupList[i] = &models.StandAloneProfileSecurityGroupDto{
-				Name:           rawSecurityGroup["name"].(string),
-				PortMaxRange:   int32(rawSecurityGroup["to_port"].(int)),
-				PortMinRange:   int32(rawSecurityGroup["from_port"].(int)),
-				Protocol:       getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)),
-				RemoteIPPrefix: rawSecurityGroup["cidr"].(string),
-			}
+			securityGroupList[i] = tkcore.StandAloneProfileSecurityGroupDto{}
+			securityGroupList[i].SetName(rawSecurityGroup["name"].(string))
+			securityGroupList[i].SetPortMaxRange(int32(rawSecurityGroup["to_port"].(int)))
+			securityGroupList[i].SetPortMinRange(int32(rawSecurityGroup["from_port"].(int)))
+			securityGroupList[i].SetProtocol(getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)))
+			securityGroupList[i].SetRemoteIpPrefix(rawSecurityGroup["cidr"].(string))
 		}
 		body.SecurityGroups = securityGroupList
 	}
@@ -156,20 +152,19 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := stand_alone_profile.NewStandAloneProfileCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.StandAloneProfile.StandAloneProfileCreate(params, apiClient)
+	createResult, _, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileCreate(ctx).StandAloneProfileCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.Payload.ID)
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunStandaloneProfileLock(id, true, apiClient); err != nil {
@@ -187,18 +182,18 @@ func generateResourceTaikunStandaloneProfileReadWithoutRetries() schema.ReadCont
 }
 func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.StandAloneProfile.StandAloneProfileList(stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, _, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -206,18 +201,22 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 			return nil
 		}
 
-		rawStandaloneProfile := response.GetPayload().Data[0]
+		rawStandaloneProfile := response.GetData()[0]
 
-		securityGroupResponse, err := apiClient.Client.SecurityGroup.SecurityGroupList(security_group.NewSecurityGroupListParams().WithV(ApiVersion).WithStandAloneProfileID(id), apiClient)
+		securityGroupResponse, _, err := apiClient.Client.SecurityGroupApi.SecuritygroupList(context.TODO(), id).Execute()
 		if err != nil {
-			if _, ok := err.(*security_group.SecurityGroupListNotFound); ok && withRetries {
-				d.SetId(i32toa(id))
-				return diag.Errorf(notFoundAfterCreateOrUpdateError)
-			}
+
+			/*
+					if _, ok := err.(*security_group.SecurityGroupListNotFound); ok && withRetries {
+					d.SetId(i32toa(id))
+					return diag.Errorf(notFoundAfterCreateOrUpdateError)
+				}
+
+			*/
 			return diag.FromErr(err)
 		}
 
-		err = setResourceDataFromMap(d, flattenTaikunStandaloneProfile(rawStandaloneProfile, securityGroupResponse.GetPayload()))
+		err = setResourceDataFromMap(d, flattenTaikunStandaloneProfile(&rawStandaloneProfile, securityGroupResponse))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -229,7 +228,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 }
 
 func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -237,12 +236,11 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("name") {
-		body := models.StandAloneProfileUpdateCommand{
-			ID:   id,
-			Name: d.Get("name").(string),
-		}
-		params := stand_alone_profile.NewStandAloneProfileEditParams().WithV(ApiVersion).WithBody(&body)
-		_, err := apiClient.Client.StandAloneProfile.StandAloneProfileEdit(params, apiClient)
+		body := tkcore.StandAloneProfileUpdateCommand{}
+		body.SetId(id)
+		body.SetName(d.Get("name").(string))
+
+		_, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -261,13 +259,11 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		oldSecurityGroupList := old.([]interface{})
 		for _, e := range oldSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
-			id, err := atoi32(rawSecurityGroup["id"].(string))
+			secId, err := atoi32(rawSecurityGroup["id"].(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			body := &models.DeleteSecurityGroupCommand{ID: id}
-			params := security_group.NewSecurityGroupDeleteParams().WithV(ApiVersion).WithBody(body)
-			_, err = apiClient.Client.SecurityGroup.SecurityGroupDelete(params, apiClient)
+			_, err = apiClient.Client.SecurityGroupApi.SecuritygroupDelete(ctx, secId).Execute()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -277,18 +273,17 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		newSecurityGroupList := new.([]interface{})
 		for _, e := range newSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
-			body := &models.CreateSecurityGroupCommand{
-				Name:                rawSecurityGroup["name"].(string),
-				PortMaxRange:        int32(rawSecurityGroup["to_port"].(int)),
-				PortMinRange:        int32(rawSecurityGroup["from_port"].(int)),
-				Protocol:            getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)),
-				RemoteIPPrefix:      rawSecurityGroup["cidr"].(string),
-				StandAloneProfileID: id,
-			}
-			params := security_group.NewSecurityGroupCreateParams().WithV(ApiVersion).WithBody(body)
-			_, err = apiClient.Client.SecurityGroup.SecurityGroupCreate(params, apiClient)
+			body := tkcore.CreateSecurityGroupCommand{}
+			body.SetName(rawSecurityGroup["name"].(string))
+			body.SetPortMaxRange(int32(rawSecurityGroup["to_port"].(int)))
+			body.SetPortMinRange(int32(rawSecurityGroup["from_port"].(int)))
+			body.SetProtocol(getSecurityGroupProtocol(rawSecurityGroup["ip_protocol"].(string)))
+			body.SetRemoteIpPrefix(rawSecurityGroup["cidr"].(string))
+			body.SetStandAloneProfileId(id)
+
+			_, res, err := apiClient.Client.SecurityGroupApi.SecuritygroupCreate(ctx).CreateSecurityGroupCommand(body).Execute()
 			if err != nil {
-				return diag.FromErr(err)
+				return diag.FromErr(tk.CreateError(res, err))
 			}
 		}
 	}
@@ -296,61 +291,59 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 	return readAfterUpdateWithRetries(generateResourceTaikunStandaloneProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunStandaloneProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+func resourceTaikunStandaloneProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := &models.DeleteStandAloneProfileCommand{
-		ID: id,
-	}
-	params := stand_alone_profile.NewStandAloneProfileDeleteParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.Client.StandAloneProfile.StandAloneProfileDelete(params, apiClient)
+	body := tkcore.DeleteStandAloneProfileCommand{}
+	body.SetId(id)
+
+	res, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunStandaloneProfile(rawStandaloneProfile *models.StandAloneProfilesListDto, sg []*models.SecurityGroupListDto) map[string]interface{} {
+func flattenTaikunStandaloneProfile(rawStandaloneProfile *tkcore.StandAloneProfilesListDto, sg []tkcore.SecurityGroupListDto) map[string]interface{} {
 
 	securityGroups := make([]map[string]interface{}, len(sg))
 	for i, rawSecurityGroup := range sg {
 		securityGroups[i] = map[string]interface{}{
-			"id":          i32toa(rawSecurityGroup.ID),
-			"name":        rawSecurityGroup.Name,
-			"cidr":        rawSecurityGroup.RemoteIPPrefix,
-			"ip_protocol": strings.ToUpper(rawSecurityGroup.Protocol),
+			"id":          i32toa(rawSecurityGroup.GetId()),
+			"name":        rawSecurityGroup.GetName(),
+			"cidr":        rawSecurityGroup.GetRemoteIpPrefix(),
+			"ip_protocol": strings.ToUpper(rawSecurityGroup.GetProtocol()),
 		}
-		if rawSecurityGroup.PortMinRange != -1 {
-			securityGroups[i]["from_port"] = rawSecurityGroup.PortMinRange
+		if rawSecurityGroup.GetPortMinRange() != -1 {
+			securityGroups[i]["from_port"] = rawSecurityGroup.GetPortMinRange()
 		}
-		if rawSecurityGroup.PortMaxRange != -1 {
-			securityGroups[i]["to_port"] = rawSecurityGroup.PortMaxRange
+		if rawSecurityGroup.GetPortMaxRange() != -1 {
+			securityGroups[i]["to_port"] = rawSecurityGroup.GetPortMaxRange()
 		}
 	}
 
 	return map[string]interface{}{
-		"id":                i32toa(rawStandaloneProfile.ID),
-		"lock":              rawStandaloneProfile.IsLocked,
-		"name":              rawStandaloneProfile.Name,
-		"organization_id":   i32toa(rawStandaloneProfile.OrganizationID),
-		"organization_name": rawStandaloneProfile.OrganizationName,
-		"public_key":        rawStandaloneProfile.PublicKey,
+		"id":                i32toa(rawStandaloneProfile.GetId()),
+		"lock":              rawStandaloneProfile.GetIsLocked(),
+		"name":              rawStandaloneProfile.GetName(),
+		"organization_id":   i32toa(rawStandaloneProfile.GetOrganizationId()),
+		"organization_name": rawStandaloneProfile.GetOrganizationName(),
+		"public_key":        rawStandaloneProfile.GetPublicKey(),
 		"security_group":    securityGroups,
 	}
 }
 
-func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.StandAloneProfileLockManagementCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := stand_alone_profile.NewStandAloneProfileLockManagementParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.StandAloneProfile.StandAloneProfileLockManagement(params, apiClient)
-	return err
+func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.StandAloneProfileLockManagementCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+
+	res, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileLockManagement(context.TODO()).StandAloneProfileLockManagementCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

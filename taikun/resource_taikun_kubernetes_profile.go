@@ -2,13 +2,12 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/kubernetes_profiles"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
@@ -111,17 +110,16 @@ func resourceTaikunKubernetesProfile() *schema.Resource {
 }
 
 func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	octaviaEnabled, taikunLBEnabled := parseLoadBalancingSolution(d.Get("load_balancing_solution").(string))
-	body := &models.CreateKubernetesProfileCommand{
-		Name:                    d.Get("name").(string),
-		AllowSchedulingOnMaster: d.Get("schedule_on_master").(bool),
-		TaikunLBEnabled:         taikunLBEnabled,
-		OctaviaEnabled:          octaviaEnabled,
-		ExposeNodePortOnBastion: d.Get("bastion_proxy").(bool),
-		UniqueClusterName:       d.Get("unique_cluster_name").(bool),
-	}
+	body := tkcore.CreateKubernetesProfileCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetAllowSchedulingOnMaster(d.Get("schedule_on_master").(bool))
+	body.SetTaikunLBEnabled(taikunLBEnabled)
+	body.SetOctaviaEnabled(octaviaEnabled)
+	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
+	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -129,20 +127,19 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
-	params := kubernetes_profiles.NewKubernetesProfilesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesCreate(params, apiClient)
+	createResult, res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesCreate(context.TODO()).CreateKubernetesProfileCommand(body).Execute()
+	if err != nil {
+		return diag.FromErr(tk.CreateError(res, err))
+	}
+	id, err := atoi32(createResult.GetId())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	id, err := atoi32(createResult.Payload.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
 		if err := resourceTaikunKubernetesProfileLock(id, true, apiClient); err != nil {
@@ -160,18 +157,18 @@ func generateResourceTaikunKubernetesProfileReadWithoutRetries() schema.ReadCont
 }
 func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadContextFunc {
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesList(kubernetes_profiles.NewKubernetesProfilesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -179,9 +176,9 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 			return nil
 		}
 
-		rawKubernetesProfile := response.GetPayload().Data[0]
+		rawKubernetesProfile := response.GetData()[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunKubernetesProfile(rawKubernetesProfile))
+		err = setResourceDataFromMap(d, flattenTaikunKubernetesProfile(&rawKubernetesProfile))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -193,7 +190,7 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 }
 
 func resourceTaikunKubernetesProfileUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
 	id, err := atoi32(d.Id())
 	if err != nil {
@@ -209,47 +206,45 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, d *schema.Resour
 	return readAfterUpdateWithRetries(generateResourceTaikunKubernetesProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunKubernetesProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+func resourceTaikunKubernetesProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := kubernetes_profiles.NewKubernetesProfilesDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.Client.KubernetesProfiles.KubernetesProfilesDelete(params, apiClient)
+	res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesDelete(ctx, id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunKubernetesProfile(rawKubernetesProfile *models.KubernetesProfilesListDto) map[string]interface{} {
+func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfilesListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"bastion_proxy":           rawKubernetesProfile.ExposeNodePortOnBastion,
-		"created_by":              rawKubernetesProfile.CreatedBy,
-		"cni":                     rawKubernetesProfile.Cni,
-		"id":                      i32toa(rawKubernetesProfile.ID),
-		"lock":                    rawKubernetesProfile.IsLocked,
-		"last_modified":           rawKubernetesProfile.LastModified,
-		"last_modified_by":        rawKubernetesProfile.LastModifiedBy,
-		"load_balancing_solution": getLoadBalancingSolution(rawKubernetesProfile.OctaviaEnabled, rawKubernetesProfile.TaikunLBEnabled),
-		"name":                    rawKubernetesProfile.Name,
-		"organization_id":         i32toa(rawKubernetesProfile.OrganizationID),
-		"organization_name":       rawKubernetesProfile.OrganizationName,
-		"schedule_on_master":      rawKubernetesProfile.AllowSchedulingOnMaster,
+		"bastion_proxy":           rawKubernetesProfile.GetExposeNodePortOnBastion(),
+		"created_by":              rawKubernetesProfile.GetCreatedBy(),
+		"cni":                     rawKubernetesProfile.GetCni(),
+		"id":                      i32toa(rawKubernetesProfile.GetId()),
+		"lock":                    rawKubernetesProfile.GetIsLocked(),
+		"last_modified":           rawKubernetesProfile.GetLastModified(),
+		"last_modified_by":        rawKubernetesProfile.GetLastModifiedBy(),
+		"load_balancing_solution": getLoadBalancingSolution(rawKubernetesProfile.GetOctaviaEnabled(), rawKubernetesProfile.GetTaikunLBEnabled()),
+		"name":                    rawKubernetesProfile.GetName(),
+		"organization_id":         i32toa(rawKubernetesProfile.GetOrganizationId()),
+		"organization_name":       rawKubernetesProfile.GetOrganizationName(),
+		"schedule_on_master":      rawKubernetesProfile.GetAllowSchedulingOnMaster(),
 	}
 }
 
-func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *taikungoclient.Client) error {
-	body := models.KubernetesProfilesLockManagerCommand{
-		ID:   id,
-		Mode: getLockMode(lock),
-	}
-	params := kubernetes_profiles.NewKubernetesProfilesLockManagerParams().WithV(ApiVersion).WithBody(&body)
-	_, err := apiClient.Client.KubernetesProfiles.KubernetesProfilesLockManager(params, apiClient)
-	return err
+func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+	body := tkcore.KubernetesProfilesLockManagerCommand{}
+	body.SetId(id)
+	body.SetMode(getLockMode(lock))
+
+	res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesLockManager(context.TODO()).KubernetesProfilesLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

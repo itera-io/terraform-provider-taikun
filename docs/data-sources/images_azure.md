@@ -16,7 +16,6 @@ Retrieve images for a given Azure cloud credential.
 resource "taikun_cloud_credential_azure" "foo" {
   name              = "foo"
   location          = "northeurope"
-  availability_zone = "1"
 }
 
 data "taikun_images_azure" "foo" {

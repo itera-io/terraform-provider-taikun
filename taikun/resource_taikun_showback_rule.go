@@ -2,14 +2,13 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/models"
-	"github.com/itera-io/taikungoclient/showbackclient/showback_rules"
 )
 
 func resourceTaikunShowbackRuleSchema() map[string]*schema.Schema {
@@ -146,17 +145,16 @@ func resourceTaikunShowbackRule() *schema.Resource {
 }
 
 func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 
-	body := &models.CreateShowbackRuleCommand{
-		Name:              d.Get("name").(string),
-		MetricName:        d.Get("metric_name").(string),
-		Type:              getEPrometheusType(d.Get("type").(string)),
-		Kind:              getShowbackType(d.Get("kind").(string)),
-		Price:             d.Get("price").(float64),
-		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
-		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
-	}
+	body := tkshowback.CreateShowbackRuleCommand{}
+	body.SetName(d.Get("name").(string))
+	body.SetMetricName(d.Get("metric_name").(string))
+	body.SetType(getEPrometheusType(d.Get("type").(string)))
+	body.SetKind(getShowbackType(d.Get("kind").(string)))
+	body.SetPrice(d.Get("price").(float64))
+	body.SetProjectAlertLimit(int32(d.Get("project_alert_limit").(int)))
+	body.SetGlobalAlertLimit(int32(d.Get("global_alert_limit").(int)))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -164,7 +162,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 		}
-		body.OrganizationID = organizationId
+		body.SetOrganizationId(organizationId)
 	}
 
 	showbackCredentialIDData, showbackCredentialIDIsSet := d.GetOk("showback_credential_id")
@@ -173,27 +171,25 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 		if err != nil {
 			return diag.Errorf("showback_credential_id isn't valid: %s", d.Get("showback_credential_id").(string))
 		}
-		body.ShowbackCredentialID = &showbackCredentialId
+		body.SetShowbackCredentialId(showbackCredentialId)
 	}
 
 	rawLabelsList := d.Get("label").(*schema.Set).List()
-	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
+	LabelsList := make([]tkshowback.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
-		LabelsList[i] = &models.ShowbackLabelCreateDto{
-			Label: rawLabel["key"].(string),
-			Value: rawLabel["value"].(string),
-		}
+		LabelsList[i] = tkshowback.ShowbackLabelCreateDto{}
+		LabelsList[i].SetLabel(rawLabel["key"].(string))
+		LabelsList[i].SetValue(rawLabel["value"].(string))
 	}
 	body.Labels = LabelsList
 
-	params := showback_rules.NewShowbackRulesCreateParams().WithV(ApiVersion).WithBody(body)
-	createResult, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesCreate(params, apiClient)
+	createResult, resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesCreate(context.TODO()).CreateShowbackRuleCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(resp, err))
 	}
 
-	d.SetId(createResult.Payload.ID)
+	d.SetId(createResult.GetId())
 
 	return readAfterCreateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
@@ -205,18 +201,18 @@ func generateResourceTaikunShowbackRuleReadWithoutRetries() schema.ReadContextFu
 }
 func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-		apiClient := meta.(*taikungoclient.Client)
+		apiClient := meta.(*tk.Client)
 		id, err := atoi32(d.Id())
 		d.SetId("")
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(showback_rules.NewShowbackRulesListParams().WithV(ApiVersion).WithID(&id), apiClient)
+		response, resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(resp, err))
 		}
-		if len(response.Payload.Data) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -224,9 +220,9 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 			return nil
 		}
 
-		rawShowbackRule := response.GetPayload().Data[0]
+		rawShowbackRule := response.GetData()[0]
 
-		err = setResourceDataFromMap(d, flattenTaikunShowbackRule(rawShowbackRule))
+		err = setResourceDataFromMap(d, flattenTaikunShowbackRule(&rawShowbackRule))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -238,90 +234,86 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 }
 
 func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	body := &models.UpdateShowbackRuleCommand{
-		ID:                id,
-		Name:              d.Get("name").(string),
-		MetricName:        d.Get("metric_name").(string),
-		Type:              getEPrometheusType(d.Get("type").(string)),
-		Kind:              getShowbackType(d.Get("kind").(string)),
-		Price:             d.Get("price").(float64),
-		ProjectAlertLimit: int32(d.Get("project_alert_limit").(int)),
-		GlobalAlertLimit:  int32(d.Get("global_alert_limit").(int)),
-	}
+	body := tkshowback.UpdateShowbackRuleCommand{}
+	body.SetId(id)
+	body.SetName(d.Get("name").(string))
+	body.SetMetricName(d.Get("metric_name").(string))
+	body.SetType(getEPrometheusType(d.Get("type").(string)))
+	body.SetKind(getShowbackType(d.Get("kind").(string)))
+	body.SetPrice(d.Get("price").(float64))
+	body.SetProjectAlertLimit(int32(d.Get("project_alert_limit").(int)))
+	body.SetGlobalAlertLimit(int32(d.Get("global_alert_limit").(int)))
 
 	rawLabelsList := d.Get("label").(*schema.Set).List()
-	LabelsList := make([]*models.ShowbackLabelCreateDto, len(rawLabelsList))
+	LabelsList := make([]tkshowback.ShowbackLabelCreateDto, len(rawLabelsList))
 	for i, e := range rawLabelsList {
 		rawLabel := e.(map[string]interface{})
-		LabelsList[i] = &models.ShowbackLabelCreateDto{
-			Label: rawLabel["key"].(string),
-			Value: rawLabel["value"].(string),
-		}
+		LabelsList[i] = tkshowback.ShowbackLabelCreateDto{}
+		LabelsList[i].SetLabel(rawLabel["key"].(string))
+		LabelsList[i].SetValue(rawLabel["value"].(string))
 	}
 	body.Labels = LabelsList
 
-	params := showback_rules.NewShowbackRulesUpdateParams().WithV(ApiVersion).WithBody(body)
-	_, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesUpdate(params, apiClient)
+	resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(resp, err))
 	}
 
 	return readAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
 
 func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	id, err := atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	params := showback_rules.NewShowbackRulesDeleteParams().WithV(ApiVersion).WithID(id)
-	_, _, err = apiClient.ShowbackClient.ShowbackRules.ShowbackRulesDelete(params, apiClient)
+	resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesDelete(context.TODO(), id).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(resp, err))
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func flattenTaikunShowbackRule(rawShowbackRule *models.ShowbackRulesListDto) map[string]interface{} {
+func flattenTaikunShowbackRule(rawShowbackRule *tkshowback.ShowbackRulesListDto) map[string]interface{} {
 
-	labels := make([]map[string]interface{}, len(rawShowbackRule.Labels))
-	for i, rawLabel := range rawShowbackRule.Labels {
+	labels := make([]map[string]interface{}, len(rawShowbackRule.GetLabels()))
+	for i, rawLabel := range rawShowbackRule.GetLabels() {
 		labels[i] = map[string]interface{}{
-			"key":   rawLabel.Label,
-			"value": rawLabel.Value,
+			"key":   rawLabel.GetLabel(),
+			"value": rawLabel.GetValue(),
 		}
 	}
 
 	result := map[string]interface{}{
-		"created_by":          rawShowbackRule.CreatedBy,
-		"global_alert_limit":  rawShowbackRule.GlobalAlertLimit,
-		"id":                  i32toa(rawShowbackRule.ID),
-		"kind":                rawShowbackRule.Kind,
+		"created_by":          rawShowbackRule.GetCreatedBy(),
+		"global_alert_limit":  rawShowbackRule.GetGlobalAlertLimit(),
+		"id":                  i32toa(rawShowbackRule.GetId()),
+		"kind":                rawShowbackRule.GetKind(),
 		"label":               labels,
-		"last_modified":       rawShowbackRule.LastModified,
-		"last_modified_by":    rawShowbackRule.LastModifiedBy,
-		"metric_name":         rawShowbackRule.MetricName,
-		"name":                rawShowbackRule.Name,
-		"organization_id":     i32toa(rawShowbackRule.OrganizationID),
-		"organization_name":   rawShowbackRule.OrganizationName,
-		"price":               rawShowbackRule.Price,
-		"project_alert_limit": rawShowbackRule.ProjectAlertLimit,
-		"type":                rawShowbackRule.Type,
+		"last_modified":       rawShowbackRule.GetLastModified(),
+		"last_modified_by":    rawShowbackRule.GetLastModifiedBy(),
+		"metric_name":         rawShowbackRule.GetMetricName(),
+		"name":                rawShowbackRule.GetName(),
+		"organization_id":     i32toa(rawShowbackRule.GetOrganizationId()),
+		"organization_name":   rawShowbackRule.GetOrganizationName(),
+		"price":               rawShowbackRule.GetPrice(),
+		"project_alert_limit": rawShowbackRule.GetProjectAlertLimit(),
+		"type":                rawShowbackRule.GetType(),
 	}
 
-	if rawShowbackRule.ShowbackCredentialID != nil {
-		result["showback_credential_id"] = i32toa(*rawShowbackRule.ShowbackCredentialID)
-		result["showback_credential_name"] = rawShowbackRule.ShowbackCredentialName
+	if _, ok := rawShowbackRule.GetShowbackCredentialIdOk(); ok {
+		result["showback_credential_id"] = i32toa(rawShowbackRule.GetShowbackCredentialId())
+		result["showback_credential_name"] = rawShowbackRule.GetShowbackCredentialName()
 	}
 	return result
 }

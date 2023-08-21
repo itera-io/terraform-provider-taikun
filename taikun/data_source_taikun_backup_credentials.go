@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/s3_credentials"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunBackupCredentials() *schema.Resource {
@@ -35,10 +33,11 @@ func dataSourceTaikunBackupCredentials() *schema.Resource {
 }
 
 func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := s3_credentials.NewS3CredentialsListParams().WithV(ApiVersion)
+	params := apiClient.Client.S3CredentialsApi.S3credentialsList(context.TODO())
+	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -47,26 +46,25 @@ func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.Resource
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var backupCredentialsList []*models.BackupCredentialsListDto
+	var backupCredentialsList []tkcore.BackupCredentialsListDto
 	for {
-		response, err := apiClient.Client.S3Credentials.S3CredentialsList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		backupCredentialsList = append(backupCredentialsList, response.GetPayload().Data...)
-		if len(backupCredentialsList) == int(response.GetPayload().TotalCount) {
+		backupCredentialsList = append(backupCredentialsList, response.Data...)
+		if len(backupCredentialsList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(backupCredentialsList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(backupCredentialsList))
 	}
 
 	backupCredentials := make([]map[string]interface{}, len(backupCredentialsList))
 	for i, rawBackupCredential := range backupCredentialsList {
-		backupCredentials[i] = flattenTaikunBackupCredential(rawBackupCredential)
+		backupCredentials[i] = flattenTaikunBackupCredential(&rawBackupCredential)
 	}
 	if err := d.Set("backup_credentials", backupCredentials); err != nil {
 		return diag.FromErr(err)

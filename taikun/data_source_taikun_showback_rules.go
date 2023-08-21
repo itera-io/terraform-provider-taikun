@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
+	tk "github.com/chnyda/taikungoclient"
+	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/models"
-	"github.com/itera-io/taikungoclient/showbackclient/showback_rules"
 )
 
 func dataSourceTaikunShowbackRules() *schema.Resource {
@@ -34,10 +33,11 @@ func dataSourceTaikunShowbackRules() *schema.Resource {
 }
 
 func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := showback_rules.NewShowbackRulesListParams().WithV(ApiVersion)
+	params := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO())
+	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -46,26 +46,25 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var showbackRulesList []*models.ShowbackRulesListDto
+	var showbackRulesList []tkshowback.ShowbackRulesListDto
 	for {
-		response, err := apiClient.ShowbackClient.ShowbackRules.ShowbackRulesList(params, apiClient)
+		response, resp, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(resp, err))
 		}
-		showbackRulesList = append(showbackRulesList, response.GetPayload().Data...)
-		if len(showbackRulesList) == int(response.GetPayload().TotalCount) {
+		showbackRulesList = append(showbackRulesList, response.GetData()...)
+		if len(showbackRulesList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(showbackRulesList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(showbackRulesList))
 	}
 
 	showbackRules := make([]map[string]interface{}, len(showbackRulesList))
 	for i, rawShowbackRule := range showbackRulesList {
-		showbackRules[i] = flattenTaikunShowbackRule(rawShowbackRule)
+		showbackRules[i] = flattenTaikunShowbackRule(&rawShowbackRule)
 	}
 	if err := d.Set("showback_rules", showbackRules); err != nil {
 		return diag.FromErr(err)

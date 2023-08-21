@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/slack"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunSlackConfigurations() *schema.Resource {
@@ -35,10 +33,11 @@ func dataSourceTaikunSlackConfigurations() *schema.Resource {
 }
 
 func dataSourceTaikunSlackConfigurationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := slack.NewSlackListParams().WithV(ApiVersion)
+	params := apiClient.Client.SlackApi.SlackList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -47,26 +46,25 @@ func dataSourceTaikunSlackConfigurationsRead(_ context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.WithOrganizationID(&organizationID)
+		params = params.OrganizationId(organizationID)
 	}
 
-	var slackConfigurationsList []*models.SlackConfigurationDto
+	var slackConfigurationsList []tkcore.SlackConfigurationDto
 	for {
-		response, err := apiClient.Client.Slack.SlackList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		slackConfigurationsList = append(slackConfigurationsList, response.Payload.Data...)
-		if len(slackConfigurationsList) == int(response.Payload.TotalCount) {
+		slackConfigurationsList = append(slackConfigurationsList, response.Data...)
+		if len(slackConfigurationsList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(slackConfigurationsList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(slackConfigurationsList))
 	}
 
 	slackConfigurations := make([]map[string]interface{}, len(slackConfigurationsList))
 	for i, rawSlackConfiguration := range slackConfigurationsList {
-		slackConfigurations[i] = flattenTaikunSlackConfiguration(rawSlackConfiguration)
+		slackConfigurations[i] = flattenTaikunSlackConfiguration(&rawSlackConfiguration)
 	}
 
 	if err := d.Set("slack_configurations", slackConfigurations); err != nil {

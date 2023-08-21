@@ -4,12 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/stand_alone_profile"
 )
 
 const testAccResourceTaikunStandaloneProfileConfig = `
@@ -224,7 +223,7 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 }
 
 func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_standalone_profile" {
@@ -232,10 +231,9 @@ func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.Client.StandAloneProfile.StandAloneProfileList(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := client.Client.StandaloneProfileApi.StandaloneprofileList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("standalone profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -244,7 +242,7 @@ func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_standalone_profile" {
@@ -253,13 +251,12 @@ func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := stand_alone_profile.NewStandAloneProfileListParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.Client.StandAloneProfile.StandAloneProfileList(params, client)
+			response, _, err := client.Client.StandaloneProfileApi.StandaloneprofileList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("standalone profile still exists"))
 			}
 			return nil

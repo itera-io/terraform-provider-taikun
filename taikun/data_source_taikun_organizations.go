@@ -2,13 +2,11 @@ package taikun
 
 import (
 	"context"
-
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/organizations"
+	tk "github.com/chnyda/taikungoclient"
+	tkcore "github.com/chnyda/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/itera-io/taikungoclient/models"
 )
 
 func dataSourceTaikunOrganizations() *schema.Resource {
@@ -29,32 +27,32 @@ func dataSourceTaikunOrganizations() *schema.Resource {
 }
 
 func dataSourceTaikunOrganizationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*taikungoclient.Client)
+	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
+	var offset int32 = 0
 
-	params := organizations.NewOrganizationsListParams().WithV(ApiVersion)
+	params := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO())
 
-	var rawOrganizationsList []*models.OrganizationDetailsDto
+	var rawOrganizationsList []tkcore.OrganizationDetailsDto
 	for {
-		response, err := apiClient.Client.Organizations.OrganizationsList(params, apiClient)
+		response, res, err := params.Offset(offset).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
-		rawOrganizationsList = append(rawOrganizationsList, response.Payload.Data...)
-		if len(rawOrganizationsList) == int(response.Payload.TotalCount) {
+		rawOrganizationsList = append(rawOrganizationsList, response.Data...)
+		if len(rawOrganizationsList) == int(response.GetTotalCount()) {
 			break
 		}
-		offset := int32(len(rawOrganizationsList))
-		params = params.WithOffset(&offset)
+		offset = int32(len(rawOrganizationsList))
 	}
 
 	organizationsList := make([]map[string]interface{}, len(rawOrganizationsList))
 	for i, rawOrganization := range rawOrganizationsList {
-		organizationsList[i] = flattenTaikunOrganization(rawOrganization)
-		organizationsList[i]["cloud_credentials"] = rawOrganization.CloudCredentials
-		organizationsList[i]["projects"] = rawOrganization.Projects
-		organizationsList[i]["servers"] = rawOrganization.Servers
-		organizationsList[i]["users"] = rawOrganization.Users
+		organizationsList[i] = flattenTaikunOrganization(&rawOrganization)
+		organizationsList[i]["cloud_credentials"] = rawOrganization.GetCloudCredentials()
+		organizationsList[i]["projects"] = rawOrganization.GetProjects()
+		organizationsList[i]["servers"] = rawOrganization.GetServers()
+		organizationsList[i]["users"] = rawOrganization.GetUsers()
 	}
 	if err := d.Set("organizations", organizationsList); err != nil {
 		return diag.FromErr(err)

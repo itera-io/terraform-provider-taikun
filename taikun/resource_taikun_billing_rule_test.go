@@ -4,13 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	tk "github.com/chnyda/taikungoclient"
 	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/itera-io/taikungoclient"
-	"github.com/itera-io/taikungoclient/client/prometheus"
 )
 
 const testAccResourceTaikunBillingRuleConfig = `
@@ -204,7 +203,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 }
 
 func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_rule" {
@@ -212,10 +211,9 @@ func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-		response, err := client.Client.Prometheus.PrometheusListOfRules(params, client)
-		if err != nil || response.Payload.TotalCount != 1 {
+		response, _, err := client.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("billing rule doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -224,7 +222,7 @@ func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
 }
 
 func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*taikungoclient.Client)
+	client := testAccProvider.Meta().(*tk.Client)
 
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "taikun_billing_rule" {
@@ -233,13 +231,12 @@ func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			params := prometheus.NewPrometheusListOfRulesParams().WithV(ApiVersion).WithID(&id)
 
-			response, err := client.Client.Prometheus.PrometheusListOfRules(params, client)
+			response, _, err := client.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
-			if response.Payload.TotalCount != 0 {
+			if response.GetTotalCount() != 0 {
 				return resource.RetryableError(errors.New("billing rule still exists ()"))
 			}
 			return nil

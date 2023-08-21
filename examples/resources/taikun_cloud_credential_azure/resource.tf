@@ -6,7 +6,6 @@ resource "taikun_cloud_credential_azure" "foo" {
   subscription_id   = "subscription_id"
   tenant_id         = "tenant_id"
   location          = "location"
-  availability_zone = "availability_zone"
 
   organization_id = "42"
   lock            = false
