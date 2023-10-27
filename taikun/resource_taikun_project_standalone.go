@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"reflect"
 	"regexp"
 
@@ -345,7 +345,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetVmIds(vmIds)
 
-		res, err := apiClient.Client.StandaloneApi.StandaloneDelete(ctx).DeleteStandAloneVmCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.StandaloneAPI.StandaloneDelete(ctx).DeleteStandAloneVmCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -401,7 +401,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				body.SetId(vmId)
 				body.SetMode(mode)
 
-				res, err := apiClient.Client.StandaloneApi.StandaloneIpManagement(ctx).StandAloneVmIpManagementCommand(body).Execute()
+				res, err := apiClient.Client.StandaloneAPI.StandaloneIpManagement(ctx).StandAloneVmIpManagementCommand(body).Execute()
 				if err != nil {
 					return tk.CreateError(res, err)
 				}
@@ -412,7 +412,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				body.SetId(vmId)
 				body.SetFlavor(new["flavor"].(string))
 
-				res, err := apiClient.Client.StandaloneApi.StandaloneUpdateFlavor(ctx).UpdateStandAloneVmFlavorCommand(body).Execute()
+				res, err := apiClient.Client.StandaloneAPI.StandaloneUpdateFlavor(ctx).UpdateStandAloneVmFlavorCommand(body).Execute()
 				if err != nil {
 					return tk.CreateError(res, err)
 				}
@@ -432,7 +432,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	if repairNeeded {
 		body := tkcore.RepairStandAloneVmCommand{}
 		body.SetProjectId(projectID)
-		res, err := apiClient.Client.StandaloneApi.StandaloneRepair(ctx).RepairStandAloneVmCommand(body).Execute()
+		res, err := apiClient.Client.StandaloneAPI.StandaloneRepair(ctx).RepairStandAloneVmCommand(body).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -471,7 +471,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 		deleteDiskBody.SetVmDiskIds(diskIds)
 		deleteDiskBody.SetStandaloneVmId(vmID)
 
-		res, err := apiClient.Client.StandaloneVMDisksApi.StandalonevmdisksDelete(ctx).DeleteStandAloneVmDiskCommand(deleteDiskBody).Execute()
+		res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksDelete(ctx).DeleteStandAloneVmDiskCommand(deleteDiskBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -497,7 +497,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 				body.SetId(diskId)
 				body.SetSize(int64(new["size"].(int)))
 
-				res, err := apiClient.Client.StandaloneVMDisksApi.StandalonevmdisksUpdateSize(ctx).UpdateStandaloneVmDiskSizeCommand(body).Execute()
+				res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksUpdateSize(ctx).UpdateStandaloneVmDiskSizeCommand(body).Execute()
 				if err != nil {
 					return tk.CreateError(res, err)
 				}
@@ -566,7 +566,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 		vmCreateBody.SetStandAloneVmDisks(disksList)
 	}
 
-	vmCreateResponse, res, err := apiClient.Client.StandaloneApi.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()
+	vmCreateResponse, res, err := apiClient.Client.StandaloneAPI.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()
 	if err != nil {
 		return "", nil, tk.CreateError(res, err)
 	}
@@ -583,7 +583,7 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 	diskCreateBody.SetVolumeType(diskMap["volume_type"].(string))
 	diskCreateBody.SetStandaloneVmId(vmId)
 
-	_, res, err := apiClient.Client.StandaloneVMDisksApi.StandalonevmdisksCreate(context.TODO()).CreateStandAloneDiskCommand(diskCreateBody).Execute()
+	_, res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksCreate(context.TODO()).CreateStandAloneDiskCommand(diskCreateBody).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -594,7 +594,7 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
 	body := tkcore.CommitStandAloneVmCommand{}
 	body.SetProjectId(projectID)
-	res, err := apiClient.Client.StandaloneApi.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
+	res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -620,7 +620,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 		}
 		unbindBody := tkcore.DeleteImageFromProjectCommand{}
 		unbindBody.SetIds(imageBindingsToUndo)
-		res, err := apiClient.Client.ImagesApi.ImagesUnbindImagesFromProject(context.TODO()).DeleteImageFromProjectCommand(unbindBody).Execute()
+		res, err := apiClient.Client.ImagesAPI.ImagesUnbindImagesFromProject(context.TODO()).DeleteImageFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -633,7 +633,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 		bindBody := tkcore.BindImageToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetImages(imagesToBindNames)
-		res, err := apiClient.Client.ImagesApi.ImagesBindImagesToProject(context.TODO()).BindImageToProjectCommand(bindBody).Execute()
+		res, err := apiClient.Client.ImagesAPI.ImagesBindImagesToProject(context.TODO()).BindImageToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -659,7 +659,7 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Clien
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetVmIds(vmIds)
 
-		res, err := apiClient.Client.StandaloneApi.StandaloneDelete(context.TODO()).DeleteStandAloneVmCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.StandaloneAPI.StandaloneDelete(context.TODO()).DeleteStandAloneVmCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}

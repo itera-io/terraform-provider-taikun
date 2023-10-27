@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -121,7 +121,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData
 	body.SetOperationCredentialId(billingCredentialId)
 	body.SetType(getPrometheusType(d.Get("type").(string)))
 
-	createResult, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesCreate(ctx).RuleCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesCreate(ctx).RuleCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -145,7 +145,7 @@ func generateResourceTaikunBillingRuleRead(withRetries bool) schema.ReadContextF
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -191,7 +191,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData
 	body.SetOperationCredentialId(billingCredentialId)
 	body.SetType(getPrometheusType(d.Get("type").(string)))
 
-	res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesUpdate(context.TODO(), id).RuleForUpdateDto(body).Execute()
+	res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesUpdate(context.TODO(), id).RuleForUpdateDto(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -206,7 +206,7 @@ func resourceTaikunBillingRuleDelete(_ context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesDelete(context.TODO(), id).Execute()
+	res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesDelete(context.TODO(), id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

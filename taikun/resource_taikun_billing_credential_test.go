@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"os"
 	"testing"
 

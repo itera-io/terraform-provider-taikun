@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -51,7 +51,7 @@ func dataSourceTaikunImagesOpenStackRead(ctx context.Context, d *schema.Resource
 	var offset int32 = 0
 
 	apiClient := meta.(*tk.Client)
-	params := apiClient.Client.ImagesApi.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(false)
+	params := apiClient.Client.ImagesAPI.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(false)
 
 	var imageList []map[string]interface{}
 	for {

@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"regexp"
 	"strings"
 
@@ -330,7 +330,7 @@ func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

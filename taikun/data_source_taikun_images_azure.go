@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,7 +74,7 @@ func dataSourceTaikunImagesAzureRead(ctx context.Context, d *schema.ResourceData
 
 	latest := d.Get("latest").(bool)
 
-	params := apiClient.Client.ImagesApi.ImagesAzureImages(ctx, cloudCredentialID, d.Get("publisher").(string),
+	params := apiClient.Client.ImagesAPI.ImagesAzureImages(ctx, cloudCredentialID, d.Get("publisher").(string),
 		d.Get("offer").(string), d.Get("sku").(string)).Latest(latest)
 
 	var imageList []map[string]interface{}

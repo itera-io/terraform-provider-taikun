@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"math"
 	"math/rand"
 	"os"
@@ -236,7 +236,7 @@ func testAccCheckTaikunShowbackRuleExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("showback rule doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -256,7 +256,7 @@ func testAccCheckTaikunShowbackRuleDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO()).Id(id).Execute()
+			response, _, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

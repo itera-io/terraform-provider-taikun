@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -131,7 +131,7 @@ func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("kubernetes profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -151,7 +151,7 @@ func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

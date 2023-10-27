@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"math"
 	"math/rand"
 	"os"
@@ -98,7 +98,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 			return err
 		}
 
-		response, _, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+		response, _, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 		}
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			response, _, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+			response, _, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

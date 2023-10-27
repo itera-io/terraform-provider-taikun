@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -75,7 +75,7 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 			return err
 		}
 
-		response, _, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
+		response, _, err := apiClient.Client.UsersAPI.UsersList(context.TODO()).Id(userId).Execute()
 		if err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 		}
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			response, _, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
+			response, _, err := apiClient.Client.UsersAPI.UsersList(context.TODO()).Id(userId).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

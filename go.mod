@@ -9,7 +9,15 @@ require (
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
+	github.com/itera-io/taikungoclient v0.0.0-20231024102014-2547653104f9
+	github.com/itera-io/taikungoclient/client v0.0.0-20231024102014-2547653104f9
 	github.com/robfig/cron/v3 v3.0.1
+)
+
+replace (
+	github.com/itera-io/taikungoclient => /home/radek/taikun/taikun-cli/taikungoclient-official
+	github.com/itera-io/taikungoclient/client => /home/radek/taikun/taikun-cli/taikungoclient-official/client
+	github.com/itera-io/taikungoclient/showbackclient => /home/radek/taikun/taikun-cli/taikungoclient-official/showbackclient
 )
 
 require (
@@ -47,6 +55,7 @@ require (
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
+	github.com/itera-io/taikungoclient/showbackclient v0.0.0-20231024102014-2547653104f9 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/cli v1.1.4 // indirect

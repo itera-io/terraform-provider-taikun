@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,7 +15,7 @@ func resourceTaikunCloudCredentialDelete(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDelete(ctx, id).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

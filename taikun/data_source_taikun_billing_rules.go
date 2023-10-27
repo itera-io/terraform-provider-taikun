@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,7 +30,7 @@ func dataSourceTaikunBillingRulesRead(_ context.Context, d *schema.ResourceData,
 	apiClient := meta.(*tk.Client)
 	var offset int32 = 0
 
-	params := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO())
+	params := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO())
 
 	var billingRulesList []tkcore.PrometheusRuleListDto
 	for {

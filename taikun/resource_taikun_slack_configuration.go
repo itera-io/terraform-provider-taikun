@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -96,7 +96,7 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationID)
 	}
 
-	response, res, err := apiClient.Client.SlackApi.SlackCreate(context.TODO()).CreateSlackConfigurationCommand(body).Execute()
+	response, res, err := apiClient.Client.SlackAPI.SlackCreate(context.TODO()).CreateSlackConfigurationCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -121,7 +121,7 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.SlackApi.SlackList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -168,7 +168,7 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationID)
 	}
 
-	if res, err := apiClient.Client.SlackApi.SlackUpdate(context.TODO(), id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
+	if res, err := apiClient.Client.SlackAPI.SlackUpdate(context.TODO(), id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 
@@ -184,7 +184,7 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.Resourc
 	}
 
 	body := tkcore.DeleteSlackConfigCommand{Ids: []int32{id}}
-	res, err := apiClient.Client.SlackApi.SlackDeleteMultiple(context.TODO()).DeleteSlackConfigCommand(body).Execute()
+	res, err := apiClient.Client.SlackAPI.SlackDeleteMultiple(context.TODO()).DeleteSlackConfigCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))

@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -143,7 +143,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	body.SetPhone(d.Get("phone").(string))
 	body.SetVatNumber(d.Get("vat_number").(string))
 
-	createResult, res, err := apiClient.Client.OrganizationsApi.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -170,7 +170,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 		updateLockBody.SetPhone(body.GetPhone())
 		updateLockBody.SetVatNumber(body.GetVatNumber())
 
-		res, err := apiClient.Client.OrganizationsApi.OrganizationsUpdate(ctx).UpdateOrganizationCommand(updateLockBody).Execute()
+		res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(ctx).UpdateOrganizationCommand(updateLockBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -191,7 +191,7 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 		id32, _ := atoi32(d.Id())
 		d.SetId("")
 
-		response, res, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(id32).Execute()
+		response, res, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(id32).Execute()
 
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
@@ -240,7 +240,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	body.SetPhone(d.Get("phone").(string))
 	body.SetVatNumber(d.Get("vat_number").(string))
 
-	res, err := apiClient.Client.OrganizationsApi.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
+	res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -255,7 +255,7 @@ func resourceTaikunOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.OrganizationsApi.OrganizationsDelete(ctx, id).Execute()
+	res, err := apiClient.Client.OrganizationsAPI.OrganizationsDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

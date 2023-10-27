@@ -2,10 +2,10 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 )
 
 func dataSourceTaikunAccessProfiles() *schema.Resource {
@@ -36,7 +36,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, d *schema.ResourceD
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.AccessProfilesApi.AccessprofilesList(context.TODO())
+	params := apiClient.Client.AccessProfilesAPI.AccessprofilesList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -64,7 +64,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, d *schema.ResourceD
 	accessProfiles := make([]map[string]interface{}, len(accessProfilesList))
 	for i, rawAccessProfile := range accessProfilesList {
 
-		sshResponse, res, err := apiClient.Client.SshUsersApi.SshusersList(context.TODO(), rawAccessProfile.GetId()).Execute()
+		sshResponse, res, err := apiClient.Client.SshUsersAPI.SshusersList(context.TODO(), rawAccessProfile.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

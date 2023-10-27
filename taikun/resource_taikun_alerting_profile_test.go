@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"math/rand"
 	"strings"
 	"testing"
@@ -321,7 +321,7 @@ func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("alerting profile with ID %d doesn't exist", id)
 		}
@@ -341,7 +341,7 @@ func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO()).Id(id).Execute()
+			response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

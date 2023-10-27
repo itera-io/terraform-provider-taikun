@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -448,7 +448,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := apiClient.Client.ProjectsApi.ProjectsList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(id).Execute()
 		if err != nil || len(response.GetData()) != 1 {
 			return fmt.Errorf("project doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -468,7 +468,7 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := apiClient.Client.ProjectsApi.ProjectsList(context.TODO()).Id(id).Execute()
+			response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}

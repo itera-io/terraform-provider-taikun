@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"os"
 	"regexp"
 
@@ -130,7 +130,7 @@ func resourceTaikunCloudCredentialGCP() *schema.Resource {
 func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
-	params := apiClient.Client.GoogleApi.GooglecloudCreate(context.TODO())
+	params := apiClient.Client.GoogleAPI.GooglecloudCreate(context.TODO())
 
 	configFile, err := os.Open(d.Get("config_file").(string))
 	if err != nil {
@@ -208,7 +208,7 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -271,6 +271,6 @@ func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	_, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	_, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return err
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"math"
 	"math/rand"
 	"testing"
@@ -195,7 +195,7 @@ func testAccCheckTaikunOrganizationExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		response, _, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(id).Execute()
 		if err != nil || len(response.GetData()) != 1 {
 			return fmt.Errorf("organization doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -214,7 +214,7 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
-			response, _, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(id).Execute()
+			response, _, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(id).Execute()
 
 			if err != nil {
 				return resource.NonRetryableError(err)

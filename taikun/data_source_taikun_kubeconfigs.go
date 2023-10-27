@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -41,7 +41,7 @@ func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	params := apiClient.Client.KubeConfigApi.KubeconfigList(context.TODO()).ProjectId(projectID)
+	params := apiClient.Client.KubeConfigAPI.KubeconfigList(context.TODO()).ProjectId(projectID)
 
 	var kubeconfigDTOs []tkcore.KubeConfigForUserDto
 	retrievedKubeconfigCount := 0

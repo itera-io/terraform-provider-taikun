@@ -3,8 +3,8 @@ package taikun
 import (
 	"context"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -65,7 +65,7 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 		},
 		ProjectId: &projectId,
 	}
-	res, err := client.Client.UserProjectsApi.UserprojectsBindUsers(ctx).BindUsersCommand(body).Execute()
+	res, err := client.Client.UserProjectsAPI.UserprojectsBindUsers(ctx).BindUsersCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -92,7 +92,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 			return diag.Errorf("Error while reading taikun_project_user_attachment : %s", err)
 		}
 
-		response, _, err := apiClient.Client.UsersApi.UsersList(ctx).Id(userId).Execute()
+		response, _, err := apiClient.Client.UsersAPI.UsersList(ctx).Id(userId).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -138,7 +138,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		return diag.Errorf("Error while deleting taikun_project_user_attachment : %s", err)
 	}
 
-	usersListResponse, res, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
+	usersListResponse, res, err := apiClient.Client.UsersAPI.UsersList(context.TODO()).Id(userId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -147,7 +147,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		return nil
 	}
 
-	projectsListResponse, res, err := apiClient.Client.ProjectsApi.ProjectsList(context.TODO()).Id(projectId).Execute()
+	projectsListResponse, res, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(projectId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -165,7 +165,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		},
 		ProjectId: &projectId,
 	}
-	res, err = apiClient.Client.UserProjectsApi.UserprojectsBindUsers(context.TODO()).BindUsersCommand(body).Execute()
+	res, err = apiClient.Client.UserProjectsAPI.UserprojectsBindUsers(context.TODO()).BindUsersCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

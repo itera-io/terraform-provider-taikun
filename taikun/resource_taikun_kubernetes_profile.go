@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -130,7 +130,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesCreate(context.TODO()).CreateKubernetesProfileCommand(body).Execute()
+	createResult, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesCreate(context.TODO()).CreateKubernetesProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -164,7 +164,7 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -213,7 +213,7 @@ func resourceTaikunKubernetesProfileDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesDelete(ctx, id).Execute()
+	res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -245,6 +245,6 @@ func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *tk.Clie
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesLockManager(context.TODO()).KubernetesProfilesLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesLockManager(context.TODO()).KubernetesProfilesLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

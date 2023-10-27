@@ -3,8 +3,8 @@ package taikun
 import (
 	"context"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -91,7 +91,7 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 	var imageList []map[string]interface{}
 	for {
 		body.SetOffset(offset)
-		response, res, err := apiClient.Client.ImagesApi.ImagesAwsImagesList(context.TODO()).AwsImagesPostListCommand(body).Execute()
+		response, res, err := apiClient.Client.ImagesAPI.ImagesAwsImagesList(context.TODO()).AwsImagesPostListCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -114,7 +114,7 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 func dataSourceTaikunImagesAWSGetOwnerID(apiClient *tk.Client, ownerNames []interface{}) (ownerIds []string, err error) {
 
 	// Get list of Owners with ID and Name from API
-	response, res, err := apiClient.Client.AWSCloudCredentialApi.AwsOwners(context.TODO()).Execute()
+	response, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsOwners(context.TODO()).Execute()
 	if err != nil {
 		err = tk.CreateError(res, err)
 		return

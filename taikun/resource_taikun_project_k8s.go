@@ -3,8 +3,8 @@ package taikun
 import (
 	"context"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 	"strconv"
 	"time"
@@ -138,7 +138,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	serverCreateBody.SetProjectId(projectID)
 	serverCreateBody.SetRole(tkcore.CLOUDROLE_BASTION)
 
-	serverCreateResponse, res, err := apiClient.Client.ServersApi.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+	serverCreateResponse, res, err := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -161,7 +161,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
 
-		serverCreateResponse, res, newErr := apiClient.Client.ServersApi.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
 			return tk.CreateError(res, newErr)
 		}
@@ -183,7 +183,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 
-		serverCreateResponse, res, newErr := apiClient.Client.ServersApi.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
 			return tk.CreateError(res, newErr)
 		}
@@ -198,7 +198,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
-	res, err := apiClient.Client.ProjectsApi.ProjectsCommit(context.TODO(), projectID).Execute()
+	res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -223,7 +223,7 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetServerIds(serverIds)
 
-		res, err := apiClient.Client.ServersApi.ServersDelete(context.TODO()).DeleteServerCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ServersAPI.ServersDelete(context.TODO()).DeleteServerCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -266,7 +266,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 		projectID, _ := atoi32(d.Id())
 		body := tkcore.MonitoringOperationsCommand{}
 		body.SetProjectId(projectID)
-		res, err := apiClient.Client.ProjectsApi.ProjectsMonitoring(ctx).MonitoringOperationsCommand(body).Execute()
+		res, err := apiClient.Client.ProjectsAPI.ProjectsMonitoring(ctx).MonitoringOperationsCommand(body).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -284,7 +284,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 
 		disableBody := tkcore.DisableBackupCommand{}
 		disableBody.SetProjectId(projectID)
-		res, err := apiClient.Client.BackupPolicyApi.BackupDisableBackup(ctx).DisableBackupCommand(disableBody).Execute()
+		res, err := apiClient.Client.BackupPolicyAPI.BackupDisableBackup(ctx).DisableBackupCommand(disableBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -304,7 +304,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					response, _, err := apiClient.Client.ServersApi.ServersDetails(ctx, projectID).Execute()
+					response, _, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
 					if err != nil {
 						return 0, "", err
 					}
@@ -326,7 +326,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 			enableBody.SetProjectId(projectID)
 			enableBody.SetS3CredentialId(newCredentialID)
 
-			res, err := apiClient.Client.BackupPolicyApi.BackupEnableBackup(ctx).EnableBackupCommand(enableBody).Execute()
+			res, err := apiClient.Client.BackupPolicyAPI.BackupEnableBackup(ctx).EnableBackupCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -349,7 +349,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			disableBody := tkcore.DisableGatekeeperCommand{}
 			disableBody.SetProjectId(projectID)
 
-			res, err := apiClient.Client.OpaProfilesApi.OpaprofilesDisableGatekeeper(ctx).DisableGatekeeperCommand(disableBody).Execute()
+			res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesDisableGatekeeper(ctx).DisableGatekeeperCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -371,7 +371,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 					strconv.FormatBool(false),
 				},
 				Refresh: func() (interface{}, string, error) {
-					response, res, err := apiClient.Client.ServersApi.ServersDetails(ctx, projectID).Execute()
+					response, res, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
 					if err != nil {
 						return 0, "", tk.CreateError(res, err)
 					}
@@ -393,7 +393,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			enableBody.SetProjectId(projectID)
 			enableBody.SetOpaProfileId(newOPAProfilelID)
 
-			res, err := apiClient.Client.OpaProfilesApi.OpaprofilesEnableGatekeeper(ctx).EnableGatekeeperCommand(enableBody).Execute()
+			res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesEnableGatekeeper(ctx).EnableGatekeeperCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -425,7 +425,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		}
 		unbindBody := tkcore.UnbindFlavorFromProjectCommand{}
 		unbindBody.SetIds(flavorBindingsToUndo)
-		res, err := apiClient.Client.FlavorsApi.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
+		res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -438,7 +438,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		bindBody := tkcore.BindFlavorToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetFlavors(flavorsToBindNames)
-		res, err := apiClient.Client.FlavorsApi.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
+		res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}

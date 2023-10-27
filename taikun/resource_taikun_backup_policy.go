@@ -3,8 +3,8 @@ package taikun
 import (
 	"context"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 	"strings"
 
@@ -94,7 +94,7 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	body.SetProjectId(projectId)
 	body.SetRetentionPeriod(d.Get("retention_period").(string))
 
-	res, err := apiClient.Client.BackupPolicyApi.BackupCreate(ctx).CreateBackupPolicyCommand(body).Execute()
+	res, err := apiClient.Client.BackupPolicyAPI.BackupCreate(ctx).CreateBackupPolicyCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -122,7 +122,7 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 		}
 
 		// maybe add search?
-		response, res, err := apiClient.Client.BackupPolicyApi.BackupListAllSchedules(context.TODO(), projectId).Limit(4000).Execute()
+		response, res, err := apiClient.Client.BackupPolicyAPI.BackupListAllSchedules(context.TODO(), projectId).Limit(4000).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -159,7 +159,7 @@ func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData,
 	deleteBody.SetName(backupPolicyName)
 	deleteBody.SetProjectId(projectId)
 
-	res, err := apiClient.Client.BackupPolicyApi.BackupDeleteSchedule(context.TODO()).DeleteScheduleCommand(deleteBody).Execute()
+	res, err := apiClient.Client.BackupPolicyAPI.BackupDeleteSchedule(context.TODO()).DeleteScheduleCommand(deleteBody).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"math/rand"
 	"testing"
 
@@ -109,7 +109,7 @@ func testAccCheckTaikunSlackConfigurationExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.SlackApi.SlackList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("slack configuration doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -129,7 +129,7 @@ func testAccCheckTaikunSlackConfigurationDestroy(state *terraform.State) error {
 		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.SlackApi.SlackList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return resource.NonRetryableError(err)
 			}
