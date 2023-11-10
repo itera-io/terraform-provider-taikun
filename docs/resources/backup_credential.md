@@ -33,7 +33,9 @@ resource "taikun_backup_credential" "foo" {
 ### Required
 
 - `name` (String) The name of the backup credential.
-- `s3_endpoint` (String) The S3 endpoint URL.
+- `s3_endpoint` (String) The S3 endpoint URL. The URL validity is verified by backend. Trailing backslash forces replacement loop.
+  - "https://mockup.dev/" forces replacement every time
+  - "https://mockup.dev"  works fine
 - `s3_region` (String) The S3 region.
 
 ### Optional

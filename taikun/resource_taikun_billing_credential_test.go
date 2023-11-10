@@ -26,13 +26,19 @@ resource "taikun_billing_credential" "foo" {
 func TestAccResourceTaikunBillingCredential(t *testing.T) {
 	firstName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBillingCredentialDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, firstName, false, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
+				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig,
+					firstName,
+					false,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
+				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
@@ -55,7 +61,7 @@ func TestAccResourceTaikunBillingCredential(t *testing.T) {
 func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 	firstName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBillingCredentialDestroy,
@@ -97,8 +103,8 @@ func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
 		}
 
 		id, _ := atoi32(rs.Primary.ID)
-		resource, err := resourceTaikunBillingCredentialFind(id, client)
-		if err != nil || resource == nil {
+		foundBillingCredId, err := resourceTaikunBillingCredentialFind(id, client)
+		if err != nil || foundBillingCredId == nil {
 			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}

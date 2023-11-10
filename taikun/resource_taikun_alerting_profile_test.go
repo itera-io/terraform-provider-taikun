@@ -6,6 +6,7 @@ import (
 	"fmt"
 	tk "github.com/itera-io/taikungoclient"
 	"math/rand"
+	"os"
 	"strings"
 	"testing"
 
@@ -63,7 +64,7 @@ resource "taikun_slack_configuration" "foo" {
   organization_id = resource.taikun_organization.foo.id
 
   name = "%s"
-  url  = "https://www.example.org"
+  url  = "%s"
   channel = "any"
   type = "Alert"
 }
@@ -92,6 +93,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
+	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
 	isLocked := randomBool()
@@ -111,6 +113,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					slackConfigName,
+					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -142,6 +145,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
+	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
 	isLocked := randomBool()
@@ -168,6 +172,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					slackConfigName,
+					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -191,6 +196,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					slackConfigName,
+					slackUrl,
 					newAlertingProfileName,
 					newReminder,
 					newIsLocked,
@@ -217,6 +223,7 @@ func TestAccResourceTaikunAlertingProfileModifyIntegrations(t *testing.T) {
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
+	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
 	isLocked := randomBool()
@@ -263,6 +270,7 @@ integration {
 					organizationName,
 					organizationFullName,
 					slackConfigName,
+					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -288,6 +296,7 @@ integration {
 					organizationName,
 					organizationFullName,
 					slackConfigName,
+					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,

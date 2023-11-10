@@ -66,7 +66,7 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			Description:  "The S3 access key ID.",
 			Type:         schema.TypeString,
 			Required:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("S3_ACCESS_KEY_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"s3_endpoint": {
@@ -87,7 +87,7 @@ func resourceTaikunBackupCredentialSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("AWS_SECRET_ACCESS_KEY", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("S3_SECRET_ACCESS_KEY", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
