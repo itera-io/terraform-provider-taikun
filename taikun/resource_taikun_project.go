@@ -63,11 +63,11 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"delete_on_expiration": {
-			Description:  "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Default:      false,
-			ForceNew:     true,
+			Description: "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			//ForceNew:     true, // We do not need to force recreate project for just delete on expiration update.
 			RequiredWith: []string{"expiration_date"},
 		},
 		"expiration_date": {
@@ -523,7 +523,12 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		projectMap := flattenTaikunProject(&projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, &quotaResponse.Data[0])
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectDetailsDTO.GetProjectId(), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		projectMap := flattenTaikunProject(&projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, &quotaResponse.Data[0], deleteOnExpiration)
 		usernames := resourceTaikunProjectGetResourceDataVmUsernames(d)
 		if err := setResourceDataFromMap(d, projectMap); err != nil {
 			return diag.FromErr(err)
@@ -648,7 +653,10 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-	if d.HasChange("expiration_date") {
+
+	// expiration_date can exist without delete_on_expiration
+	// delete_on_expiration must exist with expiration_date
+	if d.HasChange("expiration_date") || d.HasChange("delete_on_expiration") {
 		body := tkcore.ProjectExtendLifeTimeCommand{}
 		body.SetProjectId(id)
 
@@ -658,6 +666,13 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		} else {
 			body.SetExpireAtNil()
 		}
+
+		if deleteOnExpiration, deleteOnExpirationIsSet := d.GetOk("delete_on_expiration"); deleteOnExpirationIsSet {
+			body.SetDeleteOnExpiration(deleteOnExpiration.(bool))
+		} else {
+			body.SetDeleteOnExpiration(false)
+		}
+
 		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
@@ -914,6 +929,7 @@ func flattenTaikunProject(
 	boundFlavorDTOs []tkcore.BoundFlavorsForProjectsListDto,
 	boundImageDTOs []tkcore.BoundImagesForProjectsListDto,
 	projectQuotaDTO *tkcore.ProjectQuotaListDto,
+	projectDeleteOnExpiration bool,
 ) map[string]interface{} {
 
 	flavors := make([]string, len(boundFlavorDTOs))
@@ -933,7 +949,7 @@ func flattenTaikunProject(
 		"cloud_credential_id":   i32toa(projectDetailsDTO.GetCloudId()),
 		"auto_upgrade":          projectDetailsDTO.GetIsAutoUpgrade(),
 		"monitoring":            projectDetailsDTO.GetIsMonitoringEnabled(),
-		//"delete_on_expiration":  projectDetailsDTO.GetDeleteOnExpiration(),
+		"delete_on_expiration":  projectDeleteOnExpiration,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
 		"flavors":               flavors,
 		"images":                images,
@@ -1062,6 +1078,14 @@ func flattenTaikunProject(
 	}
 
 	return projectMap
+}
+
+func resourceTaikunProjectGetDeleteOnExpiration(projectID int32, apiClient *tk.Client) (bool, error) {
+	data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(projectID).Execute()
+	if err != nil {
+		return false, tk.CreateError(response, err)
+	}
+	return data.GetData()[0].GetDeleteOnExpiration(), nil
 }
 
 func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *tk.Client) ([]tkcore.BoundFlavorsForProjectsListDto, error) {

@@ -82,8 +82,13 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return nil
 		}
 
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectEntityDTO.GetId(), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		responseProject := response.GetProject()
-		projects[i] = flattenTaikunProject(&responseProject, response.GetData(), responseVM.GetData(), boundFlavorDTOs, boundImageDTOs, &quotaResponse.GetData()[0])
+		projects[i] = flattenTaikunProject(&responseProject, response.GetData(), responseVM.GetData(), boundFlavorDTOs, boundImageDTOs, &quotaResponse.GetData()[0], deleteOnExpiration)
 	}
 	if err := d.Set("projects", projects); err != nil {
 		return diag.FromErr(err)
