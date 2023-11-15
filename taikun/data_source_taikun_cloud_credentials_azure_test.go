@@ -30,7 +30,7 @@ func TestAccDataSourceTaikunCloudCredentialsAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialsAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_azure.all", "id", "all"),
@@ -85,7 +85,7 @@ func TestAccDataSourceTaikunCloudCredentialsAzureWithFilter(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_azure.all", "cloud_credentials.0.organization_name", organizationName),

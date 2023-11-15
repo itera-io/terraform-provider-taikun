@@ -34,7 +34,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_CLIENT_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
@@ -42,7 +42,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_SECRET", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"created_by": {
@@ -113,7 +113,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_SUBSCRIPTION", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"tenant_id": {
@@ -121,7 +121,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_TENANT", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}

@@ -77,7 +77,7 @@ func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunFlavorsAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					cpu, cpu,
 					ram, ram,
 				),

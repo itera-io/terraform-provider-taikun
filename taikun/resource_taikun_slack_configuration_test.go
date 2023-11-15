@@ -6,6 +6,7 @@ import (
 	"fmt"
 	tk "github.com/itera-io/taikungoclient"
 	"math/rand"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -23,7 +24,8 @@ resource "taikun_slack_configuration" "foo" {
 
 func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 	name := randomTestName()
-	url := "https://www.example.org"
+	//url := "https://www.example.org"
+	url := os.Getenv("SLACK_WEBHOOK")
 	channel := randomTestName()
 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
@@ -57,12 +59,16 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 	name := randomTestName()
 	newName := randomTestName()
-	url := "https://www.example.org"
-	newUrl := "https://www.example.com"
+	url := os.Getenv("SLACK_WEBHOOK")
+	//url := "https://www.example.org"
+	newUrl := os.Getenv("SLACK_WEBHOOK")
+	//newUrl := "https://www.example.com"
 	channel := randomTestName()
 	newChannel := randomTestName()
-	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
-	newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
+	//slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
+	//newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
+	slackConfigType := "Alert"
+	newSlackConfigType := "General"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },

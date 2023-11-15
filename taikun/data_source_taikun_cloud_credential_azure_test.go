@@ -31,7 +31,7 @@ func TestAccDataSourceTaikunCloudCredentialAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					false,
 				),
 				Check: checkDataSourceStateMatchesResourceStateWithIgnores(

@@ -601,7 +601,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,
@@ -645,7 +645,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,
@@ -671,7 +671,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					1,
@@ -711,7 +711,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,

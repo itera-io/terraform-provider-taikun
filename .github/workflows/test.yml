@@ -112,13 +112,13 @@ jobs:
           AWS_AVAILABILITY_ZONE: a
           AWS_AZ_COUNT: 1
 
-          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
           ARM_AVAILABILITY_ZONE: 1
-          ARM_AZ_COUNT: 1
-          ARM_LOCATION: northeurope
+          AZURE_AZ_COUNT: 1
+          AZURE_LOCATION: northeurope
 
           S3_REGION: eu-west-2
           S3_ENDPOINT: https://s3.eu-west-2.amazonaws.com
