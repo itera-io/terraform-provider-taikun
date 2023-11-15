@@ -8,11 +8,11 @@ require (
 	github.com/hashicorp/go-uuid v1.0.3
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
-	github.com/itera-io/taikungoclient v0.0.0-00010101000000-000000000000
+	github.com/itera-io/taikungoclient v0.0.0-20231108163040-e87aa3bc38ff
 	github.com/robfig/cron/v3 v3.0.1
 )
 
-replace github.com/itera-io/taikungoclient => /home/radek/taikun/taikungoclient/taikungoclient-official
+// replace github.com/itera-io/taikungoclient => /home/radek/taikun/taikungoclient/taikungoclient-official
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
