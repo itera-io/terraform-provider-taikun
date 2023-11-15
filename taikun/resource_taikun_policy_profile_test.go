@@ -132,7 +132,7 @@ func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 	firstName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy,

@@ -61,7 +61,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 	showbackCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy,

@@ -70,7 +70,7 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 	slackConfigType := "Alert"
 	newSlackConfigType := "General"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,

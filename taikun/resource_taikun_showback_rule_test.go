@@ -92,7 +92,7 @@ func TestAccResourceTaikunShowbackRuleUpdate(t *testing.T) {
 	newProjectLimit := rand.Int31()
 	newGlobalLimit := rand.Int31()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunShowbackRuleDestroy,
