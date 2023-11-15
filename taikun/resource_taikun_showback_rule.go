@@ -312,8 +312,12 @@ func flattenTaikunShowbackRule(rawShowbackRule *tkshowback.ShowbackRulesListDto)
 	}
 
 	if _, ok := rawShowbackRule.GetShowbackCredentialIdOk(); ok {
-		result["showback_credential_id"] = i32toa(rawShowbackRule.GetShowbackCredentialId())
-		result["showback_credential_name"] = rawShowbackRule.GetShowbackCredentialName()
+		// It seems there was a slight change in the API. Now it returns id 0 and name "" for empty credential.
+		// Set this only if it is actually set.
+		if rawShowbackRule.GetShowbackCredentialName() != "" {
+			result["showback_credential_id"] = i32toa(rawShowbackRule.GetShowbackCredentialId())
+			result["showback_credential_name"] = rawShowbackRule.GetShowbackCredentialName()
+		}
 	}
 	return result
 }
