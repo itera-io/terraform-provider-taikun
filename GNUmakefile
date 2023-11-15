@@ -38,33 +38,55 @@ testacc:
 # TF_ACC=1 go test github.com/itera-io/terraform-provider-taikun github.com/itera-io/terraform-provider-taikun/taikun -v -run TestAccResourceTaikunBillingCredential$ -timeout=30s -parallel=4
 
 # Radek's acklowledgment testing
-RADEK_TESTS='(TestAccResourceTaikunBillingCredential$$|TestAccResourceTaikunBillingRule$$)'
+#RADEK_TESTS='(TestAccResourceTaikunProject$$)'
+
+# All the tests NOT OK so far
+
+
+# All the tests OK so far together
+#RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectModify|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunUser|TestAccResourceTaikunStandaloneProfile|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunOrganization|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential)'
+
+# Part 1 - Every other resource
+#RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunStandaloneProfile|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunOrganization|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential)'
+# Part 2 - Non resource projects
+RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
+# Part 3 - Resource projects
+# Part 4 - All data sources
 
 rtestacc:
+	date
+	go clean -testcache
 	TF_ACC=1 go test . ./taikun -v -run ${RADEK_TESTS} -timeout 120m
 
+rtestacc1:
+	date
+	# __________________________________________________________
+	# >>>>>>>>>>>>>>>> TESTACC start Threads: 1 <<<<<<<<<<<<<<<<
+	go clean -testcache
+	TF_ACC=1 go test $(TEST) -v -run ${RADEK_TESTS} -timeout 120m -parallel=1
+
 rtestacc2:
-	clear
+	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 2 <<<<<<<<<<<<<<<<
 	go clean -testcache
-	TF_ACC=1 go test $(TEST) -v RADEK_TESTS -timeout 120m -parallel=2
+	TF_ACC=1 go test $(TEST) -v -run ${RADEK_TESTS} -timeout 120m -parallel=2
 
 rtestacc3:
-	#
+	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 3 <<<<<<<<<<<<<<<<
 	go clean -testcache
-	TF_ACC=1 go test $(TEST) -v RADEK_TESTS -timeout 120m -parallel=3
+	TF_ACC=1 go test $(TEST) -v -run ${RADEK_TESTS} -timeout 120m -parallel=3
 
 rtestacc4:
-	#
+	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 4 <<<<<<<<<<<<<<<<
 	go clean -testcache
-	TF_ACC=1 go test $(TEST) -v RADEK_TESTS -timeout 120m -parallel=4
+	TF_ACC=1 go test $(TEST) -v -run ${RADEK_TESTS} -timeout 120m -parallel=4
 
-rtestaccrigorous: rtestacc2 rtestacc3 rtestacc4
+rtestaccrigorous: rtestacc1 rtestacc2 rtestacc3 rtestacc4
 
 clean:
 	rm -f ${BINARY}
