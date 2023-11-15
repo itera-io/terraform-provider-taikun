@@ -282,11 +282,20 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 	if d.HasChange("backup_credential_id") {
 		projectID, _ := atoi32(d.Id())
 
-		disableBody := tkcore.DisableBackupCommand{}
-		disableBody.SetProjectId(projectID)
-		res, err := apiClient.Client.BackupPolicyAPI.BackupDisableBackup(ctx).DisableBackupCommand(disableBody).Execute()
+		// Get the current state of backups. If they are already disabled, skip disabling query.
+		data, response, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
 		if err != nil {
-			return tk.CreateError(res, err)
+			return tk.CreateError(response, err)
+		}
+		project := data.GetProject()
+		backupCurrentyEnabled := project.GetIsBackupEnabled()
+		if backupCurrentyEnabled {
+			disableBody := tkcore.DisableBackupCommand{}
+			disableBody.SetProjectId(projectID)
+			res, err := apiClient.Client.BackupPolicyAPI.BackupDisableBackup(ctx).DisableBackupCommand(disableBody).Execute()
+			if err != nil {
+				return tk.CreateError(res, err)
+			}
 		}
 
 		newCredential, newCredentialIsSet := d.GetOk("backup_credential_id")
