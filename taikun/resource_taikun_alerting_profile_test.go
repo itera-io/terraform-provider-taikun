@@ -162,7 +162,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 	newNumberOfWebhooks := 4
 	newWebhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(newNumberOfWebhooks)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy,
@@ -220,6 +220,10 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 }
 
 func TestAccResourceTaikunAlertingProfileModifyIntegrations(t *testing.T) {
+	//fmt.Println("Random URLs")
+	//for i := 0; i < 20; i++ {
+	//	fmt.Println(randomURL())
+	//}
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	slackConfigName := randomTestName()
