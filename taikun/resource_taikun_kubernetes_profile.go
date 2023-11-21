@@ -119,7 +119,11 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetTaikunLBEnabled(taikunLBEnabled)
 	body.SetOctaviaEnabled(octaviaEnabled)
 	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
-	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
+
+	// Cluster name is optional and thus we must check if it was given
+	if uniqueClusterName, uniqueClusterNameSet := d.GetOk("unique_cluster_name"); uniqueClusterNameSet {
+		body.SetUniqueClusterName(uniqueClusterName.(bool))
+	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -237,6 +241,7 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 		"organization_id":         i32toa(rawKubernetesProfile.GetOrganizationId()),
 		"organization_name":       rawKubernetesProfile.GetOrganizationName(),
 		"schedule_on_master":      rawKubernetesProfile.GetAllowSchedulingOnMaster(),
+		"unique_cluster_name":     rawKubernetesProfile.GetUniqueClusterName(),
 	}
 }
 
