@@ -29,34 +29,58 @@ test:
 testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
-# TF_ACC=1 go test github.com/itera-io/terraform-provider-taikun github.com/itera-io/terraform-provider-taikun/taikun -v -run TestAccResourceTaikunBillingCredential$ -timeout=30s -parallel=4
-# TF_ACC=1 go test . ./taikun -v -run TestAccResourceTaikunBillingCredential$ -timeout=30s -parallel=4
-# TESTARGS="-run (TestAccResourceTaikunBillingCredential$|TestAccResourceTaikunBillingRule$)" make rtestacc
-# TESTARGS="-run (TestAccResourceTaikunBillingCredential$|TestAccResourceTaikunBillingRule$)" make rtestaccrigorous
-# RARGS="-run (TestAccResourceTaikunBillingCredential$|TestAccResourceTaikunBillingRule$)" make rtestacc
-
-# TF_ACC=1 go test github.com/itera-io/terraform-provider-taikun github.com/itera-io/terraform-provider-taikun/taikun -v -run TestAccResourceTaikunBillingCredential$ -timeout=30s -parallel=4
-
 # Radek's acklowledgment testing
-#RADEK_TESTS='(TestAccResourceTaikunProject$$)'
+#RADEK_TESTS='(TestAccDataSourceTaikunProjects$$)'
 
 # All the tests NOT OK so far
 
 
-# All the tests OK so far together
-#RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectModify|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunUser|TestAccResourceTaikunStandaloneProfile|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunOrganization|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential)'
+# Part 1a - Lipton tests / Every other resource -- 231 s
+RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
 
-# Part 1 - Every other resource
-#RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunStandaloneProfile|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunOrganization|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential)'
-# Part 2 - Non resource projects
-RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
-# Part 3 - Resource projects
-# Part 4 - All data sources
+# Part 1b - 7up tests / Non resource projects -- 230 s
+#RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
+
+# Part 1c - Mirinda tests / Data sources fast -- 230 s
+#RADEK_TESTS='(TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunShowbackRule|TestAccDataSourceTaikunUser)'
+
+# Part 1d - Mountain Dew tests / 246 s
+#RADEK_TESTS='(TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS$$|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential|TestAccDataSourceTaikunKubernetes)'
+
+# Part 1e - Fanta tests / 150s s
+#RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS)'
+
+# --- Creating resources, long ---
+# Openstack has enough limit to run the 4 Standalone OpenStack in parallel
+# Part 2a - Pepsi Max- 256 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
+# Part 2b - Pepsi Lime - 730 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
+# Part 2c - Pepsi Mango - 388 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
+# Part 2d - Pepsi Classic 230 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
+
+# Part  5a - Monster energy 780 s - Creating k8s cluster in openstack - so Far openstack does not have resources to run it in parallel with other Openstack tests.
+#RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
+
+# Part 3a - Kofola Classic 391 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal)'
+# Part 3b - Kofola Lime 583 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor)'
+
+# Part 4a - Coca Cola classic -- 515
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal)'
+# Part 4b - Coca Cola zero -- 706 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor)'
+# Part 4c - Coca Cola Cherry -- 464 s
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType)'
+
 
 rtestacc:
 	date
 	go clean -testcache
-	TF_ACC=1 go test . ./taikun -v -run ${RADEK_TESTS} -timeout 120m
+	TF_ACC=1 go test . ./taikun -v -run ${RADEK_TESTS} -timeout 120m -list
 
 rtestacc1:
 	date

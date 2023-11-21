@@ -11,6 +11,55 @@ on:
       - 'examples/**'
       - 'templates/**'
 
+env:
+  TF_ACC: "1"
+  TF_ACC_TERRAFORM_VERSION: "1.1.0"
+
+  TAIKUN_EMAIL: ${{ secrets.TAIKUN_EMAIL }}
+  TAIKUN_PASSWORD: ${{ secrets.TAIKUN_PASSWORD }}
+
+  PROMETHEUS_PASSWORD: ${{ secrets.PROMETHEUS_PASSWORD }}
+  PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
+  PROMETHEUS_USERNAME: ${{ secrets.PROMETHEUS_USERNAME }}
+
+  OS_USERNAME: ${{ secrets.OS_USERNAME }}
+  OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+  OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
+  OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
+  OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
+  OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
+  OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
+  OS_CONTINENT: ${{ secrets.OS_CONTINENT }}
+
+  GCP_FOLDER_ID: ${{ secrets.GCP_FOLDER_ID }}
+  GCP_BILLING_ACCOUNT: ${{ secrets.GCP_BILLING_ACCOUNT }}
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+  GCP_ZONE: ${{ secrets.GCP_ZONE }}
+  GCP_AZ_COUNT: 1
+
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: eu-central-1
+  AWS_AVAILABILITY_ZONE: a
+  AWS_AZ_COUNT: 1
+
+  AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
+  AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
+  ARM_AVAILABILITY_ZONE: 1
+  AZURE_AZ_COUNT: 1
+  AZURE_LOCATION: northeurope
+
+  S3_REGION: eu-west-2
+  S3_ENDPOINT: https://s3.eu-west-2.amazonaws.com
+
+#      - name: Create GCP config file
+#        env:
+#          GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
+#        run: |
+#          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
+
 jobs:
   build:
     name: Build
@@ -37,7 +86,6 @@ jobs:
   golangci:
     name: Lint
     runs-on: self-hosted
-    needs: build
     timeout-minutes: 5
     steps:
       - name: Check out code into the Go module directory
@@ -53,12 +101,11 @@ jobs:
         with:
           version: latest
 
-  test:
-    name: Acceptance Tests
-    needs: build
+  test1a:
+    name: 1a Tests
+    needs: [build,golangci]
     runs-on: self-hosted
-    timeout-minutes: 180
-    concurrency: test-acc
+    timeout-minutes: 15
     steps:
 
       - name: Set up Go
@@ -73,55 +120,358 @@ jobs:
         run: |
           go mod download
 
-      - name: Create GCP config file
-        env:
-          GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
+      - name: TF acceptance tests
         run: |
-          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
+          date
+          RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+
+  test1b:
+    name: 1b Tests
+    needs: [build,golangci]
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
 
       - name: TF acceptance tests
-        env:
-          TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: "1.1.0"
-
-          TAIKUN_EMAIL: ${{ secrets.TAIKUN_EMAIL }}
-          TAIKUN_PASSWORD: ${{ secrets.TAIKUN_PASSWORD }}
-
-          PROMETHEUS_PASSWORD: ${{ secrets.PROMETHEUS_PASSWORD }}
-          PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
-          PROMETHEUS_USERNAME: ${{ secrets.PROMETHEUS_USERNAME }}
-
-          OS_USERNAME: ${{ secrets.OS_USERNAME }}
-          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
-          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
-          OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
-          OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
-          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
-          OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
-          OS_CONTINENT: ${{ secrets.OS_CONTINENT }}
-
-          GCP_FOLDER_ID: ${{ secrets.GCP_FOLDER_ID }}
-          GCP_BILLING_ACCOUNT: ${{ secrets.GCP_BILLING_ACCOUNT }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-          GCP_ZONE: ${{ secrets.GCP_ZONE }}
-          GCP_AZ_COUNT: 1
-
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-central-1
-          AWS_AVAILABILITY_ZONE: a
-          AWS_AZ_COUNT: 1
-
-          AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_TENANT: ${{ secrets.AZURE_TENANT }}
-          AZURE_SECRET: ${{ secrets.AZURE_SECRET }}
-          ARM_AVAILABILITY_ZONE: 1
-          AZURE_AZ_COUNT: 1
-          AZURE_LOCATION: northeurope
-
-          S3_REGION: eu-west-2
-          S3_ENDPOINT: https://s3.eu-west-2.amazonaws.com
-
         run: |
-          go test -v -timeout 0 -cover ./taikun
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+
+  test1c:
+    name: 1c Tests
+    needs: [build,golangci]
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunShowbackRule|TestAccDataSourceTaikunUser)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+
+  test1d:
+    name: 1d Tests
+    needs: [build,golangci]
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS$$|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential|TestAccDataSourceTaikunKubernetes)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+
+  test1e:
+    name: 1e Tests
+    needs: [build,golangci]
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 10m
+
+  test2a:
+    name: 2a Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+   
+  test2b:
+    name: 2b Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+   
+  test2c:
+    name: 2c Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+    
+  test2d:
+    name: 2d Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+
+  test3a:
+    name: 3a Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+
+  test3b:
+    name: 3b Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+
+  test4a:
+    name: 4a Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+
+  test4b:
+    name: 4b Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+
+  test4c:
+    name: 4c Tests
+    needs: [test1a, test1b, test1c, test1d, test1e]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+
+  test5a:
+    name: 5a Tests
+    needs: [test2a, test2b, test2c, test2d]
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: TF acceptance tests
+        run: |
+          date
+          RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
+          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
