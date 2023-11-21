@@ -290,6 +290,7 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *tkcore.AmazonCredentialsL
 		"organization_name":  rawAWSCredential.GetOrganizationName(),
 		"availability_zones": rawAWSCredential.GetAvailabilityZones(),
 		"region":             rawAWSCredential.GetRegion(),
+		"az_count":           rawAWSCredential.GetAvailabilityZonesCount(),
 	}
 }
 

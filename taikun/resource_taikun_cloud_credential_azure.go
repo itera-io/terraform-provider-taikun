@@ -276,6 +276,7 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *tkcore.AzureCredentia
 		"availability_zones": rawAzureCredential.GetAvailabilityZones(),
 		"location":           rawAzureCredential.GetLocation(),
 		"tenant_id":          rawAzureCredential.GetTenantId(),
+		"az_count":           rawAzureCredential.GetAvailabilityZonesCount(),
 	}
 }
 
