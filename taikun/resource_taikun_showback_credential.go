@@ -110,12 +110,13 @@ func resourceTaikunShowbackCredentialCreate(ctx context.Context, d *schema.Resou
 	if organizationIDIsSet {
 		organizationId, err := atoi32(organizationIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
+			//return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
+			return diag.FromErr(err)
 		}
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, resp, err := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsCreate(ctx).CreateShowbackCredentialCommand(body).Execute()
+	createResult, resp, err := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsCreate(context.TODO()).CreateShowbackCredentialCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}

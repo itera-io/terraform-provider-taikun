@@ -71,7 +71,7 @@ resource "taikun_showback_credential" "foo" {
 }
 
 data "taikun_showback_credentials" "all" {
-  //organization_id = resource.taikun_organization.foo.id
+  organization_id = resource.taikun_organization.foo.id
 
   depends_on = [
     taikun_showback_credential.foo
