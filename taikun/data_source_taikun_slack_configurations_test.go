@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -10,7 +11,7 @@ import (
 const testAccDataSourceTaikunSlackConfigurationsConfig = `
 resource "taikun_slack_configuration" "foo" {
   name = "%s"
-  url = "https://www.example.org"
+  url = "%s"
   channel = "any"
   type = "General"
 }
@@ -24,13 +25,14 @@ data "taikun_slack_configurations" "all" {
 
 func TestAccDataSourceTaikunSlackConfigurations(t *testing.T) {
 	slackConfigurationName := randomTestName()
+	url := os.Getenv("SLACK_WEBHOOK") // Slack webhook is checked if valid in new API
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunSlackConfigurationsConfig, slackConfigurationName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunSlackConfigurationsConfig, slackConfigurationName, url),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_slack_configurations.all", "id", "all"),
 					resource.TestCheckResourceAttrSet("data.taikun_slack_configurations.all", "slack_configurations.#"),
@@ -58,7 +60,7 @@ resource "taikun_slack_configuration" "foo" {
   organization_id = resource.taikun_organization.foo.id
 
   name = "%s"
-  url = "https://www.example.org"
+  url = "%s"
   channel = "any"
   type = "General"
 }
@@ -76,6 +78,7 @@ func TestAccDataSourceTaikunSlackConfigurationsWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 	organizationFullName := randomTestName()
 	slackConfigurationName := randomTestName()
+	url := os.Getenv("SLACK_WEBHOOK") // Slack webhook is checked if valid in new API
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -86,6 +89,7 @@ func TestAccDataSourceTaikunSlackConfigurationsWithFilter(t *testing.T) {
 					organizationName,
 					organizationFullName,
 					slackConfigurationName,
+					url,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_slack_configurations.all", "slack_configurations.0.organization_name", organizationName),

@@ -59,16 +59,12 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 	name := randomTestName()
 	newName := randomTestName()
-	url := os.Getenv("SLACK_WEBHOOK")
-	//url := "https://www.example.org"
-	newUrl := os.Getenv("SLACK_WEBHOOK")
-	//newUrl := "https://www.example.com"
+	url := os.Getenv("SLACK_WEBHOOK")    // Slack webhook is checked if valid in new API
+	newUrl := os.Getenv("SLACK_WEBHOOK") // I do not have a second slack WEBHOOK URL, #TODO room for improvement
 	channel := randomTestName()
 	newChannel := randomTestName()
-	//slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
-	//newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
-	slackConfigType := "Alert"
-	newSlackConfigType := "General"
+	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
+	newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
