@@ -126,7 +126,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1b:
     name: 1b Tests
@@ -151,7 +151,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1c:
     name: 1c Tests
@@ -176,7 +176,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunShowbackRule|TestAccDataSourceTaikunUser)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1d:
     name: 1d Tests
@@ -201,7 +201,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS$$|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential|TestAccDataSourceTaikunKubernetes)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1e:
     name: 1e Tests
@@ -226,7 +226,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 10m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 10m
 
   test2a:
     name: 2a Tests
@@ -251,7 +251,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
    
   test2b:
     name: 2b Tests
@@ -276,7 +276,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
    
   test2c:
     name: 2c Tests
@@ -301,7 +301,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
     
   test2d:
     name: 2d Tests
@@ -326,7 +326,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test3a:
     name: 3a Tests
@@ -351,7 +351,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test3b:
     name: 3b Tests
@@ -376,7 +376,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test4a:
     name: 4a Tests
@@ -401,7 +401,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test4b:
     name: 4b Tests
@@ -426,7 +426,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test4c:
     name: 4c Tests
@@ -451,7 +451,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test5a:
     name: 5a Tests
@@ -476,4 +476,4 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
-          go test -list . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
