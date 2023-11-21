@@ -195,7 +195,7 @@ func randomName(prefix string, length int) string {
 }
 
 func randomString() string {
-	return acctest.RandString(rand.Int()%10 + 10)
+	return fmt.Sprintf("%s%s", "tf", acctest.RandString(rand.Int()%6+7)) // Taikun can have problems with strings starting with numbers
 }
 
 func randomURL() string {
