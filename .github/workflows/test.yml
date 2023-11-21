@@ -5,11 +5,13 @@ on:
     branches:
       - 'main'
       - 'dev'
+      - 'chore/enable-testing'
     paths-ignore:
       - 'README.md'
       - 'docs/**'
       - 'examples/**'
       - 'templates/**'
+  workflow_dispatch:
 
 env:
   TF_ACC: "1"
