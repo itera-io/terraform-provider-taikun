@@ -131,7 +131,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
+          RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunBackupCredential|TestProvider$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1b:
@@ -181,7 +181,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunShowbackRule|TestAccDataSourceTaikunUser)'
+          RADEK_TESTS='(TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1d:
@@ -206,7 +206,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS$$|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential|TestAccDataSourceTaikunKubernetes)'
+          RADEK_TESTS='(TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1e:
@@ -231,7 +231,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS)'
+          RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 10m
 
   test2a:
@@ -356,7 +356,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test3b:
@@ -381,7 +381,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test4a:
@@ -406,7 +406,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test4b:
@@ -431,7 +431,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test4c:
@@ -456,7 +456,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
 
   test5a:
@@ -481,5 +481,5 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
