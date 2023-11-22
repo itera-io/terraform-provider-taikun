@@ -57,7 +57,7 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 	numberOfWebhooks := 4
 	webhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(numberOfWebhooks)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{

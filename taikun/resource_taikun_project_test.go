@@ -201,7 +201,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 	enableMonitoring := false
 	expirationDate := "01/04/2999"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
