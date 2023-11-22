@@ -62,25 +62,25 @@ RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResour
 #RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
 
 # Part  5a - Monster energy 780 s - Creating k8s cluster in openstack - so Far openstack does not have resources to run it in parallel with other Openstack tests.
-#RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
+RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
 
 # Part 3a - Kofola Classic 391 s
-#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
 # Part 3b - Kofola Lime 583 s
-#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
 
 # Part 4a - Coca Cola classic -- 515
-#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
 # Part 4b - Coca Cola zero -- 706 s
-#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
 # Part 4c - Coca Cola Cherry -- 464 s
-#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
 
 
 rtestacc:
 	date
 	go clean -testcache
-	TF_ACC=1 go test . ./taikun -v -run ${RADEK_TESTS} -timeout 120m -list
+	TF_ACC=1 go test . ./taikun -v -run ${RADEK_TESTS} -timeout 120m
 
 rtestacc1:
 	date
