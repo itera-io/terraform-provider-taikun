@@ -43,10 +43,6 @@ func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 						"prometheus_password": {},
 					},
 				),
-				//Check: checkDataSourceStateMatchesResourceState(
-				//	"data.taikun_billing_credential.foo",
-				//	"taikun_billing_credential.foo",
-				//),
 			},
 		},
 	})
