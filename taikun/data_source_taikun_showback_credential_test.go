@@ -36,9 +36,12 @@ func TestAccDataSourceTaikunShowbackCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: checkDataSourceStateMatchesResourceState(
+				Check: checkDataSourceStateMatchesResourceStateWithIgnores(
 					"data.taikun_showback_credential.foo",
 					"taikun_showback_credential.foo",
+					map[string]struct{}{
+						"password": {},
+					},
 				),
 			},
 		},

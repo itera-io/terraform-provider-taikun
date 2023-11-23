@@ -218,9 +218,9 @@ func flattenTaikunShowbackCredential(rawShowbackCredential *tkshowback.ShowbackC
 		"name":              rawShowbackCredential.GetName(),
 		"organization_id":   i32toa(rawShowbackCredential.GetOrganizationId()),
 		"organization_name": rawShowbackCredential.GetOrganizationName(),
-		"password":          rawShowbackCredential.GetPassword(),
-		"url":               rawShowbackCredential.GetUrl(),
-		"username":          rawShowbackCredential.GetUsername(),
+		//"password":          rawShowbackCredential.GetPassword(), // Password is no longer returned from API for security reasosns
+		"url":      rawShowbackCredential.GetUrl(),
+		"username": rawShowbackCredential.GetUsername(),
 	}
 }
 

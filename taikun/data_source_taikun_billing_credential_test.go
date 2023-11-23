@@ -36,10 +36,17 @@ func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: checkDataSourceStateMatchesResourceState(
+				Check: checkDataSourceStateMatchesResourceStateWithIgnores(
 					"data.taikun_billing_credential.foo",
 					"taikun_billing_credential.foo",
+					map[string]struct{}{
+						"prometheus_password": {},
+					},
 				),
+				//Check: checkDataSourceStateMatchesResourceState(
+				//	"data.taikun_billing_credential.foo",
+				//	"taikun_billing_credential.foo",
+				//),
 			},
 		},
 	})

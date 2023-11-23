@@ -212,16 +212,16 @@ func resourceTaikunBillingCredentialDelete(_ context.Context, d *schema.Resource
 func flattenTaikunBillingCredential(rawOperationCredential *tkcore.OperationCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":          rawOperationCredential.GetCreatedBy(),
-		"id":                  i32toa(rawOperationCredential.GetId()),
-		"lock":                rawOperationCredential.GetIsLocked(),
-		"is_default":          rawOperationCredential.GetIsDefault(),
-		"last_modified":       rawOperationCredential.GetLastModified(),
-		"last_modified_by":    rawOperationCredential.GetLastModifiedBy(),
-		"name":                rawOperationCredential.GetName(),
-		"organization_id":     i32toa(rawOperationCredential.GetOrganizationId()),
-		"organization_name":   rawOperationCredential.GetOrganizationName(),
-		"prometheus_password": rawOperationCredential.GetPrometheusPassword(),
+		"created_by":        rawOperationCredential.GetCreatedBy(),
+		"id":                i32toa(rawOperationCredential.GetId()),
+		"lock":              rawOperationCredential.GetIsLocked(),
+		"is_default":        rawOperationCredential.GetIsDefault(),
+		"last_modified":     rawOperationCredential.GetLastModified(),
+		"last_modified_by":  rawOperationCredential.GetLastModifiedBy(),
+		"name":              rawOperationCredential.GetName(),
+		"organization_id":   i32toa(rawOperationCredential.GetOrganizationId()),
+		"organization_name": rawOperationCredential.GetOrganizationName(),
+		//"prometheus_password": rawOperationCredential.GetPrometheusPassword(), // Password is no longer returned from API for security reasosns
 		"prometheus_url":      rawOperationCredential.GetPrometheusUrl(),
 		"prometheus_username": rawOperationCredential.GetPrometheusUsername(),
 	}
