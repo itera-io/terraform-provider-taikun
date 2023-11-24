@@ -382,8 +382,15 @@ resource "taikun_backup_policy" "foo" {
   name = "%s"
   project_id = resource.taikun_project.foo.id
   cron_period = "0 0 * * 0"
-  retention_period = "2h"
+  retention_period = "02h"
   included_namespaces = ["default"]
+
+  depends_on = [
+    taikun_kubeconfig.view,
+    taikun_kubeconfig.edit,
+    taikun_kubeconfig.admin,
+    taikun_kubeconfig.cluster_admin,
+  ]
 }
 
 resource "taikun_policy_profile" "foo" {
