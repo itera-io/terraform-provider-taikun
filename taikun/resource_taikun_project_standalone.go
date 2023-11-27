@@ -577,7 +577,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.Client, vmId int32) error {
 
 	diskCreateBody := tkcore.CreateStandAloneDiskCommand{}
-	diskCreateBody.SetDeviceName(diskMap["device_name"].(string))
+	// diskCreateBody.SetDeviceName(diskMap["device_name"].(string)) // Removed from API at 27.11.2023 by Arzu. Method forever in our hearts.
 	diskCreateBody.SetName(diskMap["name"].(string))
 	diskCreateBody.SetSize(int64(diskMap["size"].(int)))
 	diskCreateBody.SetVolumeType(diskMap["volume_type"].(string))
