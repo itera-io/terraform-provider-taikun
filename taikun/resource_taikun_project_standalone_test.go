@@ -398,12 +398,12 @@ resource "taikun_project" "foo" {
     disk {
       name = "tf-acc-disk"
       size = 30
-      device_name = "/dev/sde"
+      //device_name = "/dev/sde"
     }
     disk {
       name = "tf-acc-disk2"
       size = 30
-      device_name = "/dev/sdf"
+      //device_name = "/dev/sdf"
     }
     //tag {
     //  key = "key"

@@ -1051,7 +1051,7 @@ func flattenTaikunProject(
 		disks := make([]map[string]interface{}, len(vm.GetDisks()))
 		for i, rawDisk := range vm.GetDisks() {
 			disks[i] = map[string]interface{}{
-				"device_name": rawDisk.GetDeviceName(),
+				//"device_name": rawDisk.GetDeviceName(),
 				"id":          i32toa(rawDisk.GetId()),
 				"name":        rawDisk.GetName(),
 				"size":        rawDisk.GetCurrentSize(),

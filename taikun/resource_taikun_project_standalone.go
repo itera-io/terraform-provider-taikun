@@ -35,16 +35,16 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"device_name": {
-						Description: "Name of the device (required with AWS).",
-						Type:        schema.TypeString,
-						Optional:    true,
-						Computed:    true,
-						ValidateFunc: validation.StringMatch(
-							regexp.MustCompile("^/dev/sd[a-z]$"),
-							"Must be a valid device name",
-						),
-					},
+					//"device_name": {
+					//	Description: "Name of the device (required with AWS).",
+					//	Type:        schema.TypeString,
+					//	Optional:    true,
+					//	Computed:    true,
+					//	ValidateFunc: validation.StringMatch(
+					//		regexp.MustCompile("^/dev/sd[a-z]$"),
+					//		"Must be a valid device name",
+					//	),
+					//},
 					"id": {
 						Description: "ID of the disk.",
 						Type:        schema.TypeString,
@@ -270,7 +270,8 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 }
 
 func shouldRecreateDisk(old map[string]interface{}, new map[string]interface{}) bool {
-	return hasChanges(old, new, "device_name", "name", "volume_type")
+	//return hasChanges(old, new, "device_name", "name", "volume_type")
+	return hasChanges(old, new, "name", "volume_type")
 }
 
 func computeDiff(oldMap []map[string]interface{}, newMap []map[string]interface{}, recreateFunc func(old map[string]interface{}, new map[string]interface{}) bool) ([]map[string]interface{}, []map[string]interface{}, []map[string]interface{}) {
@@ -553,12 +554,12 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 		for i, e := range rawDisks {
 			rawDisk := e.(map[string]interface{})
 			disksList[i] = tkcore.StandAloneVmDiskDto{}
-			deviceName := rawDisk["device_name"].(string)
-			if deviceName != "" {
-				disksList[i].SetDeviceName(deviceName)
-			} else {
-				disksList[i].SetDeviceNameNil()
-			}
+			//deviceName := rawDisk["device_name"].(string)
+			//if deviceName != "" {
+			//	disksList[i].SetDeviceName(deviceName)
+			//} else {
+			//	disksList[i].SetDeviceNameNil()
+			//}
 			disksList[i].SetName(rawDisk["name"].(string))
 			disksList[i].SetSize(int64(rawDisk["size"].(int)))
 			disksList[i].SetVolumeType(rawDisk["volume_type"].(string))
