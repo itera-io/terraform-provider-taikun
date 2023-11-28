@@ -125,10 +125,6 @@ resource "taikun_project" "foobar" {
       size        = 30
       volume_type = "ssd-2000iops"
 
-      // device_name would have been required with AWS:
-      // for example:
-      // device_name = "/dev/sda3"
-
       // lun_id would have been required with Azure
       // for example:
       // lun_id = 3
@@ -332,7 +328,6 @@ Required:
 
 Optional:
 
-- `device_name` (String) Name of the device (required with AWS).
 - `lun_id` (Number) LUN ID (required with Azure).
 - `volume_type` (String) Type of the volume (only valid with OpenStack).
 

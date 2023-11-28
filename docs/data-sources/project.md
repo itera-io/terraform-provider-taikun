@@ -152,7 +152,7 @@ Read-Only:
 
 Read-Only:
 
-- `device_name` (String)
+[//]: # (- `device_name` &#40;String&#41;)
 - `id` (String)
 - `lun_id` (Number)
 - `name` (String)
