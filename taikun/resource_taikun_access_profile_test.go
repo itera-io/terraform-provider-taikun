@@ -108,7 +108,7 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 	const locked = true
 	const unlocked = false
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
@@ -209,7 +209,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 	name := randomTestName()
 	const unlocked = false
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,

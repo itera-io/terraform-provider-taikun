@@ -57,7 +57,7 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 	backupCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBackupCredentialDestroy,
@@ -110,7 +110,7 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 	backupCredentialName := randomTestName()
 	newBackupCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckS3(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBackupCredentialDestroy,

@@ -58,7 +58,7 @@ func TestAccResourceTaikunCloudCredentialOpenStack(t *testing.T) {
 func TestAccResourceTaikunCloudCredentialOpenStackLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialOpenStackDestroy,
@@ -117,7 +117,7 @@ func TestAccResourceTaikunCloudCredentialOpenStackRename(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	newCloudCredentialName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialOpenStackDestroy,

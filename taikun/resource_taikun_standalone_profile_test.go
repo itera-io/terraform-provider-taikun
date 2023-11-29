@@ -86,7 +86,7 @@ func TestAccResourceTaikunStandaloneProfile(t *testing.T) {
 func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 	name := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
@@ -133,7 +133,7 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 	name := randomTestName()
 	newName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
@@ -180,7 +180,7 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 	name := randomTestName()
 	newName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,

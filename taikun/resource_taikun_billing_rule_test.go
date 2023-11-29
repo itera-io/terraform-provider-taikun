@@ -75,7 +75,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 	ruleName := randomTestName()
 	ruleNameNew := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
@@ -157,7 +157,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 	credName := randomTestName()
 	ruleName := randomTestName()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,

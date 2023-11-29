@@ -30,13 +30,13 @@ testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 # Radek's acklowledgment testing
-#RADEK_TESTS='(TestAccDataSourceTaikunProjects$$)'
+RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
 
 # All the tests NOT OK so far
 
 
 # Part 1a - Lipton tests / Every other resource -- 231 s
-RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
+#RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
 
 # Part 1b - 7up tests / Non resource projects -- 230 s
 #RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
@@ -62,7 +62,7 @@ RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResour
 #RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
 
 # Part  5a - Monster energy 780 s - Creating k8s cluster in openstack - so Far openstack does not have resources to run it in parallel with other Openstack tests.
-RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
 
 # Part 3a - Kofola Classic 391 s
 #RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
