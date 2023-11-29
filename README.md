@@ -158,3 +158,14 @@ ignored.
 
 To know more about the `-run <regexp>` test flag and other go test flags, see the
 [go-testflag (7) man page](https://manpages.debian.org/testing/golang-go/go-testflag.7.en.html#run)
+
+### Pipeline and Rigorous testing
+#TODO
+
+### Parallel testing
+When running test with multiple steps, be sure to run the "Test" method instead of "ParallelTest" method.
+If not, the tests may sometimes fail with "text file busy error"
+
+``` bash
+resource_***_cloud_credential_azure_test.go:122: failed to create new working directory: unable to disable terraform-exec provider verification: fork/exec /tmp/plugintest-terraform1517105639/terraform: text file busy
+```
