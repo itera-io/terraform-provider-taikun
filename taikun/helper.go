@@ -25,9 +25,9 @@ import (
 
 const testNamePrefix = "tf-acc-test-"
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
+//func init() {
+//	rand.Seed(time.Now().UnixNano())
+//}
 
 func setResourceDataFromMap(d *schema.ResourceData, m map[string]interface{}) error {
 	for key, value := range m {
