@@ -161,7 +161,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModifyImages)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectToggle)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1c:
@@ -262,7 +262,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors)'
+          RADEK_TESTS='(TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
 #
