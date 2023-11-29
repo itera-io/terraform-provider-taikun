@@ -61,7 +61,7 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	azCount, _ := atoi32(os.Getenv("AZURE_AZ_COUNT"))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialOpenStackDestroy,
@@ -119,7 +119,7 @@ func TestAccResourceTaikunCloudCredentialAzureRename(t *testing.T) {
 	newCloudCredentialName := randomTestName()
 	azCount, _ := atoi32(os.Getenv("AZURE_AZ_COUNT"))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAzure(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialOpenStackDestroy,

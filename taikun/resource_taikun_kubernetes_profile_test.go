@@ -21,7 +21,7 @@ resource "taikun_kubernetes_profile" "foo" {
 func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 	firstName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
@@ -86,7 +86,7 @@ func TestAccResourceTaikunKubernetesProfileNoUniqueClusterName(t *testing.T) {
 func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 	firstName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,

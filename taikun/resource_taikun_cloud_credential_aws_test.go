@@ -57,7 +57,7 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	azCount, _ := atoi32(os.Getenv("AWS_AZ_COUNT"))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialAWSDestroy,
@@ -109,7 +109,7 @@ func TestAccResourceTaikunCloudCredentialAWSRename(t *testing.T) {
 	newCloudCredentialName := randomTestName()
 	azCount, _ := atoi32(os.Getenv("AWS_AZ_COUNT"))
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialAWSDestroy,

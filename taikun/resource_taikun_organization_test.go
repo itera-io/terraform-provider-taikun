@@ -117,7 +117,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 	letManagersChangeSubscription := rand.Int()%2 == 0
 	newLetManagersChangeSubscription := !letManagersChangeSubscription
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunOrganizationDestroy,

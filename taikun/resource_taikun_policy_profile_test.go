@@ -71,7 +71,7 @@ func TestAccResourceTaikunPolicyProfile(t *testing.T) {
 func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 	firstName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy,

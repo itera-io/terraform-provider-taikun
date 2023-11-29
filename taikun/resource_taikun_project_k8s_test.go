@@ -16,7 +16,7 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 	disableMonitoring := false
 	expirationDate := "01/04/2999"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
@@ -115,7 +115,7 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 	backupCredentialName2 := randomTestName()
 	projectName := shortRandomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t); testAccPreCheckS3(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,

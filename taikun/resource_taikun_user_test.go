@@ -75,7 +75,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 	newRole := "Manager"
 	newDisplayName := randomTestName()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunUserDestroy,
