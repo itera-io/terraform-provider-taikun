@@ -136,7 +136,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunSlack|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunBackupCredential|TestProvider$$)'
+          RADEK_TESTS='(TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
   test1b:
@@ -262,7 +262,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors)'
+          RADEK_TESTS='(TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 15m
 
 #
