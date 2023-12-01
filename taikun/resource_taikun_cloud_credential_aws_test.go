@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"os"
 	"testing"
@@ -183,15 +184,15 @@ func testAccCheckTaikunCloudCredentialAWSDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
 			response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCountAws() != 0 {
-				return resource.RetryableError(errors.New("aws cloud credential still exists"))
+				return retry.RetryableError(errors.New("aws cloud credential still exists"))
 			}
 			return nil
 		})

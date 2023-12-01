@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
@@ -148,15 +149,15 @@ func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
 			response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("kubernetes profile still exists"))
+				return retry.RetryableError(errors.New("kubernetes profile still exists"))
 			}
 			return nil
 		})

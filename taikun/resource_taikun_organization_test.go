@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"math"
 	"math/rand"
@@ -212,15 +213,15 @@ func testAccCheckTaikunOrganizationDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 			response, _, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(id).Execute()
 
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("organization still exists"))
+				return retry.RetryableError(errors.New("organization still exists"))
 			}
 			return nil
 		})
