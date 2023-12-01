@@ -3,13 +3,13 @@ package taikun
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -305,7 +305,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 			newCredentialID, _ := atoi32(newCredential.(string))
 
 			// Wait for the backup to be disabled
-			disableStateConf := &resource.StateChangeConf{
+			disableStateConf := &retry.StateChangeConf{
 				Pending: []string{
 					strconv.FormatBool(true),
 				},
@@ -372,7 +372,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			newOPAProfilelID, _ := atoi32(newOPAProfile.(string))
 
 			// Wait for the OPA to be disabled
-			disableStateConf := &resource.StateChangeConf{
+			disableStateConf := &retry.StateChangeConf{
 				Pending: []string{
 					strconv.FormatBool(true),
 				},
