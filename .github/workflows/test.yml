@@ -97,13 +97,6 @@ jobs:
           go build -v .
 
 
-  golangci:
-    name: Lint
-    runs-on: self-hosted
-    timeout-minutes: 5
-    steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
 #  golangci:
 #    name: Lint
 #    runs-on: self-hosted
@@ -111,16 +104,23 @@ jobs:
 #    steps:
 #      - name: Check out code into the Go module directory
 #        uses: actions/checkout@v3
-#
-#      - name: Set up Go
-#        uses: actions/setup-go@v3
-#        with:
-#          go-version: '1.20'
-#
-#      - name: Lint (golangci-lint)
-#        uses: golangci/golangci-lint-action@v3
-#        with:
-#          version: latest
+  golangci:
+    name: Lint
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20'
+
+      - name: Lint (golangci-lint)
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
 
   test1alpha:
     name: 1alpha) Testing Taikun
@@ -331,7 +331,7 @@ jobs:
     name: 2a) Openstack, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -350,13 +350,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test2b:
     name: 2b) Openstack, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -375,13 +375,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test2c:
     name: 2c) Openstack, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -400,13 +400,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test2d:
     name: 2d) Openstack, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -425,13 +425,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test3a:
     name: 3a) AWS, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -450,13 +450,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test3b:
     name: 3b) AWS, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -475,13 +475,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test4a:
     name: 4a) Azure, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -500,13 +500,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test4b:
     name: 4b) Azure, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -525,13 +525,13 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test4c:
     name: 4c) Azure, creating instances
     needs: [test1alpha, test1beta]
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
 
       - name: Set up Go
@@ -550,7 +550,7 @@ jobs:
         run: |
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 20m
+          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
 
   test5a:
     name: 5a) Openstack, creating k8s
