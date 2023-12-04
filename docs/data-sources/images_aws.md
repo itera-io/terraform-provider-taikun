@@ -14,7 +14,7 @@ Retrieve images for a given AWS cloud credential.
 
 ```terraform
 resource "taikun_cloud_credential_aws" "foo" {
-  name              = "foo"
+  name = "foo"
 }
 
 data "taikun_images_aws" "foo" {
