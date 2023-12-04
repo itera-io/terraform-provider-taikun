@@ -29,29 +29,17 @@ test:
 testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
-# Radek's acklowledgment testing
-RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
+# --- Radek's rigorous testing here ---
+# RADEK_TESTS='(TestAccResourceTaikunShowback|TestAccDataSourceTaikunShowbackRule|TestAccDataSourceTaikunShowback)'
 
-# All the tests NOT OK so far
+# --- CI: Not creating resources ---
+# Radek's acklowledgment testing ALPHA
+# RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)'
+# Radek's acklowledgment testing BETA
+# RADEK_TESTS='(TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)'
 
-
-# Part 1a - Lipton tests / Every other resource -- 231 s
-#RADEK_TESTS='(TestAccResourceTaikunUser|TestAccResourceTaikunSlack|TestAccResourceTaikunShowback|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBilling|TestAccResourceTaikunAlerting|TestAccResourceTaikunAccess|TestAccResourceTaikunBackupCredential|TestProvider$$)'
-
-# Part 1b - 7up tests / Non resource projects -- 230 s
-#RADEK_TESTS='(TestAccResourceTaikunProject$$|TestAccResourceTaikunProjectE|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunProjectU|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunProjectModify)'
-
-# Part 1c - Mirinda tests / Data sources fast -- 230 s
-#RADEK_TESTS='(TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunShowbackRule|TestAccDataSourceTaikunUser)'
-
-# Part 1d - Mountain Dew tests / 246 s
-#RADEK_TESTS='(TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS$$|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential|TestAccDataSourceTaikunKubernetes)'
-
-# Part 1e - Fanta tests / 150s s
-#RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS)'
-
-# --- Creating resources, long ---
-# Openstack has enough limit to run the 4 Standalone OpenStack in parallel
+# --- CI: Creating resources ---
+# Openstack user (found in Bitwarden) has enough limit to run the 4 Standalone OpenStack in parallel
 # Part 2a - Pepsi Max- 256 s
 #RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
 # Part 2b - Pepsi Lime - 730 s
@@ -62,7 +50,7 @@ RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
 #RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
 
 # Part  5a - Monster energy 780 s - Creating k8s cluster in openstack - so Far openstack does not have resources to run it in parallel with other Openstack tests.
-#RADEK_TESTS='(TestAccResourceTaikunProjectMinimal)'
+#RADEK_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
 
 # Part 3a - Kofola Classic 391 s
 #RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
