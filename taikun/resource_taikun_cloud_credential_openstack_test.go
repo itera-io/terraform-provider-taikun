@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunCloudCredentialOpenStackConfig = `
@@ -182,7 +183,7 @@ func testAccCheckTaikunCloudCredentialOpenStackExists(state *terraform.State) er
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCountOpenstack() != 1 {
 			return fmt.Errorf("openstack cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -199,15 +200,15 @@ func testAccCheckTaikunCloudCredentialOpenStackDestroy(state *terraform.State) e
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCountOpenstack() != 0 {
-				return resource.RetryableError(errors.New("openstack cloud credential still exists"))
+				return retry.RetryableError(errors.New("openstack cloud credential still exists"))
 			}
 			return nil
 		})

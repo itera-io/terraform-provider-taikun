@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunShowbackCredentialsConfig = `
@@ -45,7 +45,6 @@ func TestAccDataSourceTaikunShowbackCredentials(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.password"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.url"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.username"),
 				),
@@ -71,7 +70,7 @@ resource "taikun_showback_credential" "foo" {
 }
 
 data "taikun_showback_credentials" "all" {
-  //organization_id = resource.taikun_organization.foo.id
+  organization_id = resource.taikun_organization.foo.id
 
   depends_on = [
     taikun_showback_credential.foo
@@ -105,7 +104,6 @@ func TestAccDataSourceTaikunShowbackCredentialsWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.lock"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.password"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.url"),
 					resource.TestCheckResourceAttrSet("data.taikun_showback_credentials.all", "showback_credentials.0.username"),
 				),

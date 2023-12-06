@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	//"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func checkDataSourceStateMatchesResourceState(dataSourceName, resourceName string) func(*terraform.State) error {

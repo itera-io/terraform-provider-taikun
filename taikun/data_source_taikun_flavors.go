@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -107,7 +107,7 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	sortBy := "name"
 	sortDir := "asc"
 
-	prepare := apiClient.Client.CloudCredentialApi.CloudcredentialsAllFlavors(context.TODO(), cloudCredentialID)
+	prepare := apiClient.Client.CloudCredentialAPI.CloudcredentialsAllFlavors(context.TODO(), cloudCredentialID)
 	prepare = prepare.StartCpu(startCPU).EndCpu(endCPU).StartRam(startRAM).EndRam(endRAM).SortBy(sortBy).SortDirection(sortDir)
 	var offset int32 = 0
 

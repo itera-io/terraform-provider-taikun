@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
+	tk "github.com/itera-io/taikungoclient"
+	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -184,7 +184,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	createResult, resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesCreate(context.TODO()).CreateShowbackRuleCommand(body).Execute()
+	createResult, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesCreate(context.TODO()).CreateShowbackRuleCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}
@@ -208,7 +208,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		response, resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO()).Id(id).Execute()
+		response, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(resp, err))
 		}
@@ -260,7 +260,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
+	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}
@@ -275,7 +275,7 @@ func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	resp, err := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesDelete(context.TODO(), id).Execute()
+	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesDelete(context.TODO(), id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}
@@ -312,8 +312,12 @@ func flattenTaikunShowbackRule(rawShowbackRule *tkshowback.ShowbackRulesListDto)
 	}
 
 	if _, ok := rawShowbackRule.GetShowbackCredentialIdOk(); ok {
-		result["showback_credential_id"] = i32toa(rawShowbackRule.GetShowbackCredentialId())
-		result["showback_credential_name"] = rawShowbackRule.GetShowbackCredentialName()
+		// It seems there was a slight change in the API. Now it returns id 0 and name "" for empty credential.
+		// Set this only if it is actually set.
+		if rawShowbackRule.GetShowbackCredentialName() != "" {
+			result["showback_credential_id"] = i32toa(rawShowbackRule.GetShowbackCredentialId())
+			result["showback_credential_name"] = rawShowbackRule.GetShowbackCredentialName()
+		}
 	}
 	return result
 }

@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -164,7 +164,7 @@ func resourceTaikunPolicyProfileCreate(ctx context.Context, d *schema.ResourceDa
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.OpaProfilesApi.OpaprofilesCreate(context.TODO()).CreateOpaProfileCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesCreate(context.TODO()).CreateOpaProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -253,7 +253,7 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceDa
 		body.SetUniqueServiceSelector(d.Get("unique_service_selector").(bool))
 		body.SetId(id)
 
-		res, err := apiClient.Client.OpaProfilesApi.OpaprofilesUpdate(context.TODO()).OpaProfileUpdateCommand(body).Execute()
+		res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesUpdate(context.TODO()).OpaProfileUpdateCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -277,7 +277,7 @@ func resourceTaikunPolicyProfileDelete(_ context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.OpaProfilesApi.OpaprofilesDelete(context.TODO(), id).Execute()
+	res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesDelete(context.TODO(), id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -291,7 +291,7 @@ func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *tk.Client) 
 	lockBody.SetId(id)
 	lockBody.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.OpaProfilesApi.OpaprofilesLockManager(context.TODO()).OpaProfileLockManagerCommand(lockBody).Execute()
+	res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesLockManager(context.TODO()).OpaProfileLockManagerCommand(lockBody).Execute()
 
 	return tk.CreateError(res, err)
 }
@@ -317,7 +317,7 @@ func flattenTaikunPolicyProfile(rawPolicyProfile *tkcore.OpaProfileListDto) map[
 }
 
 func resourceTaikunPolicyProfileFind(id int32, apiClient *tk.Client) (*tkcore.OpaProfileListDto, error) {
-	params := apiClient.Client.OpaProfilesApi.OpaprofilesList(context.TODO())
+	params := apiClient.Client.OpaProfilesAPI.OpaprofilesList(context.TODO())
 	var offset int32 = 0
 
 	for {

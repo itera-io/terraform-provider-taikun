@@ -163,7 +163,6 @@ Read-Only:
 
 Read-Only:
 
-- `device_name` (String)
 - `id` (String)
 - `lun_id` (Number)
 - `name` (String)

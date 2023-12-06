@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -48,7 +48,7 @@ func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData,
 
 	var limit int32 = 1
 
-	params := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Limit(limit)
+	params := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Limit(limit)
 	id := d.Get("id").(string)
 	id32, _ := atoi32(id)
 	if id != "" {

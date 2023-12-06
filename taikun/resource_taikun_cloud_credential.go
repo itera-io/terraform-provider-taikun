@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 	"regexp"
 	"strings"
 
@@ -68,7 +68,7 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_CLIENT_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
@@ -76,7 +76,7 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_SECRET", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"continent": {
@@ -232,7 +232,7 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_SUBSCRIPTION", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"tenant_id": {
@@ -240,7 +240,7 @@ func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Optional:     true,
 			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_TENANT", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"type": {
@@ -330,7 +330,7 @@ func generateResourceTaikunCloudCredentialRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

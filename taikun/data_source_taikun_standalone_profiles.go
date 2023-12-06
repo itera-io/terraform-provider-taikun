@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,7 +37,7 @@ func dataSourceTaikunStandaloneProfilesRead(ctx context.Context, d *schema.Resou
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.StandaloneProfileApi.StandaloneprofileList(ctx)
+	params := apiClient.Client.StandaloneProfileAPI.StandaloneprofileList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -65,7 +65,7 @@ func dataSourceTaikunStandaloneProfilesRead(ctx context.Context, d *schema.Resou
 	standaloneProfiles := make([]map[string]interface{}, len(standaloneProfilesListDtos))
 	for i, rawStandaloneProfile := range standaloneProfilesListDtos {
 
-		securityGroupResponse, res, err := apiClient.Client.SecurityGroupApi.SecuritygroupList(ctx, rawStandaloneProfile.GetId()).Execute()
+		securityGroupResponse, res, err := apiClient.Client.SecurityGroupAPI.SecuritygroupList(ctx, rawStandaloneProfile.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

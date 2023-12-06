@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
@@ -382,7 +382,7 @@ resource "taikun_backup_policy" "foo" {
   name = "%s"
   project_id = resource.taikun_project.foo.id
   cron_period = "0 0 * * 0"
-  retention_period = "2h"
+  retention_period = "02h"
   included_namespaces = ["default"]
 }
 

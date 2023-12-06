@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -119,7 +119,11 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetTaikunLBEnabled(taikunLBEnabled)
 	body.SetOctaviaEnabled(octaviaEnabled)
 	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
-	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
+
+	// Cluster name is optional and thus we must check if it was given
+	if uniqueClusterName, uniqueClusterNameSet := d.GetOk("unique_cluster_name"); uniqueClusterNameSet {
+		body.SetUniqueClusterName(uniqueClusterName.(bool))
+	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -130,7 +134,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesCreate(context.TODO()).CreateKubernetesProfileCommand(body).Execute()
+	createResult, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesCreate(context.TODO()).CreateKubernetesProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -164,7 +168,7 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -213,7 +217,7 @@ func resourceTaikunKubernetesProfileDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesDelete(ctx, id).Execute()
+	res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -237,6 +241,7 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 		"organization_id":         i32toa(rawKubernetesProfile.GetOrganizationId()),
 		"organization_name":       rawKubernetesProfile.GetOrganizationName(),
 		"schedule_on_master":      rawKubernetesProfile.GetAllowSchedulingOnMaster(),
+		"unique_cluster_name":     rawKubernetesProfile.GetUniqueClusterName(),
 	}
 }
 
@@ -245,6 +250,6 @@ func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *tk.Clie
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesLockManager(context.TODO()).KubernetesProfilesLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesLockManager(context.TODO()).KubernetesProfilesLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

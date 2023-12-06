@@ -5,7 +5,7 @@ resource "taikun_user" "foo" {
 }
 
 resource "taikun_cloud_credential_aws" "foo" {
-  name              = "foo"
+  name = "foo"
 }
 
 resource "taikun_project" "foo" {

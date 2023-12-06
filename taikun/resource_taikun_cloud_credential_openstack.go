@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -216,7 +216,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 		body.SetOpenStackContinent(continentShorthand(continentData.(string)))
 	}
 
-	createResult, res, err := apiClient.Client.OpenstackCloudCredentialApi.OpenstackCreate(context.TODO()).CreateOpenstackCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackCreate(context.TODO()).CreateOpenstackCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -250,7 +250,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -295,7 +295,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 		updateBody.SetOpenStackPassword(d.Get("password").(string))
 		updateBody.SetOpenStackUser(d.Get("user").(string))
 
-		res, err := apiClient.Client.OpenstackCloudCredentialApi.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
+		res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -340,6 +340,6 @@ func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

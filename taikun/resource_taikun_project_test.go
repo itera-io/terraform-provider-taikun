@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunProjectConfig = `
@@ -201,7 +202,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 	enableMonitoring := false
 	expirationDate := "01/04/2999"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunProjectDestroy,
@@ -448,7 +449,7 @@ func testAccCheckTaikunProjectExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := apiClient.Client.ProjectsApi.ProjectsList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(id).Execute()
 		if err != nil || len(response.GetData()) != 1 {
 			return fmt.Errorf("project doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -465,15 +466,15 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := apiClient.Client.ProjectsApi.ProjectsList(context.TODO()).Id(id).Execute()
+			response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if len(response.GetData()) != 0 {
-				return resource.RetryableError(errors.New("project still exists"))
+				return retry.RetryableError(errors.New("project still exists"))
 			}
 			return nil
 		})

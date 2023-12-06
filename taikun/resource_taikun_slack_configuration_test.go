@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"math/rand"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunSlackConfigurationConfig = `
@@ -23,7 +25,8 @@ resource "taikun_slack_configuration" "foo" {
 
 func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 	name := randomTestName()
-	url := "https://www.example.org"
+	//url := "https://www.example.org"
+	url := os.Getenv("SLACK_WEBHOOK")
 	channel := randomTestName()
 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
@@ -57,14 +60,14 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 	name := randomTestName()
 	newName := randomTestName()
-	url := "https://www.example.org"
-	newUrl := "https://www.example.com"
+	url := os.Getenv("SLACK_WEBHOOK")    // Slack webhook is checked if valid in new API
+	newUrl := os.Getenv("SLACK_WEBHOOK") // I do not have a second slack WEBHOOK URL, #TODO room for improvement
 	channel := randomTestName()
 	newChannel := randomTestName()
 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 	newSlackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
@@ -109,7 +112,7 @@ func testAccCheckTaikunSlackConfigurationExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.SlackApi.SlackList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("slack configuration doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -126,15 +129,15 @@ func testAccCheckTaikunSlackConfigurationDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.SlackApi.SlackList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("slack configuration still exists"))
+				return retry.RetryableError(errors.New("slack configuration still exists"))
 			}
 			return nil
 		})

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccResourceTaikunProjectConfigWithImages = `
@@ -97,18 +97,18 @@ resource "taikun_project" "foo" {
   quota_vm_volume_size = 512
 
   vm {
-    name = "my-vm"
+    name = "tf-acc-vm"
     flavor = local.flavors[%d]
     image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
     %s
     disk {
-      name = "mydisk"
+      name = "tf-acc-disk"
       size = 30
     }
     disk {
-      name = "mydisk2"
+      name = "tf-acc-disk2"
       size = 30
       volume_type = "ssd"
     }
@@ -390,20 +390,18 @@ resource "taikun_project" "foo" {
   images = ["ami-0f94f6b47f28fb0e7"]
 
   vm {
-    name = "my-vm"
+    name = "tf-acc-vm"
     flavor = local.flavors[%d]
     image_id = "ami-0f94f6b47f28fb0e7"
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
     disk {
-      name = "mydisk"
+      name = "tf-acc-disk"
       size = 30
-      device_name = "/dev/sde"
     }
     disk {
-      name = "mydisk2"
+      name = "tf-acc-disk2"
       size = 30
-      device_name = "/dev/sdf"
     }
     //tag {
     //  key = "key"
@@ -560,7 +558,7 @@ resource "taikun_project" "foo" {
   images = local.images
 
   vm {
-    name = "my-vm"
+    name = "tf-acc-vm"
     flavor = local.flavors[%d]
     image_id = local.images[0]
     username = "foobar"
@@ -568,11 +566,11 @@ resource "taikun_project" "foo" {
     volume_size = 60
     %s
     disk {
-      name = "mydisk"
+      name = "tf-acc-disk"
       size = 30
     }
     disk {
-      name = "mydisk2"
+      name = "tf-acc-disk2"
       size = 30
       volume_type = "Premium_LRS"
     }
@@ -601,7 +599,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,
@@ -645,7 +643,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,
@@ -671,7 +669,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					1,
@@ -711,7 +709,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,

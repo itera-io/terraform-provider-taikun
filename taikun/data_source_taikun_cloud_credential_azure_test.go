@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunCloudCredentialAzureConfig = `
@@ -31,7 +31,7 @@ func TestAccDataSourceTaikunCloudCredentialAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunCloudCredentialAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					false,
 				),
 				Check: checkDataSourceStateMatchesResourceStateWithIgnores(

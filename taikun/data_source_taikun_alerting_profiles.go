@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,7 +37,7 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceD
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO())
+	params := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO())
 
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
@@ -64,7 +64,7 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceD
 	alertingProfiles := make([]map[string]interface{}, len(alertingProfileDTOs))
 	for i, alertingProfileDTO := range alertingProfileDTOs {
 
-		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
+		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

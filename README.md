@@ -84,10 +84,10 @@ AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
 
 # Azure
-ARM_CLIENT_ID
-ARM_CLIENT_SECRET
-ARM_SUBSCRIPTION_ID
-ARM_TENANT_ID
+AZURE_CLIENT_ID
+AZURE_SECRET
+AZURE_SUBSCRIPTION
+AZURE_TENANT
 
 # GCP
 GCP_BILLING_ACCOUNT
@@ -158,3 +158,32 @@ ignored.
 
 To know more about the `-run <regexp>` test flag and other go test flags, see the
 [go-testflag (7) man page](https://manpages.debian.org/testing/golang-go/go-testflag.7.en.html#run)
+
+### Rigorous testing
+For testing the prepared bundles of CI acceptance tests, you can use the ```make rtestacc``` command while uncommenting the correct line of tests in makefile.
+
+The ```rtestacc``` command can be also used to specify how many parallel threads you want to run with ```retestacc1-4```.
+You can also run the test bundle 4 times in sequence with increasing number of 1-4 threads with ```rtestaccrigorous```.
+
+### Pipeline
+The CI pipeline in GitHub Actions consists of 4 logical sequential steps.
+- Build
+  - Build - try to compile the code
+  - Lint - Find any linting errors
+- Test Taikun - Test Taikun functionality that does not create any instances, vms, servers.
+  - 1alpha - A random half of the acceptance tests
+  - 1beta - A second half of the acceptance tests
+- Test creating reources
+  - 2x - Test if Taikun can create Openstack resources 
+  - 3x - Test if Taikun can create AWS resources
+  - 4x - Test if Taikun can create Azure resources
+- Test Kubernetes creation
+  - Test if Taikun can create Kubernetes cluster in Openstack.
+
+### Parallel testing
+When running many tests in parallel, a race condition from Terraform can sometimes be observed.
+If this happend during tests that do not create any resources (1alpha/1beta), the tests are simply rerun again, up to 3 times.
+
+``` bash
+resource_***_cloud_credential_azure_test.go:122: failed to create new working directory: unable to disable terraform-exec provider verification: fork/exec /tmp/plugintest-terraform1517105639/terraform: text file busy
+```

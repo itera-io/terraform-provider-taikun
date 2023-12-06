@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -120,7 +120,7 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, d *schema.Resour
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.OperationCredentialsApi.OpscredentialsCreate(ctx).OperationCredentialsCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsCreate(ctx).OperationCredentialsCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -200,7 +200,7 @@ func resourceTaikunBillingCredentialDelete(_ context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.OperationCredentialsApi.OpscredentialsDelete(context.TODO(), id).Execute()
+	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsDelete(context.TODO(), id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -212,16 +212,16 @@ func resourceTaikunBillingCredentialDelete(_ context.Context, d *schema.Resource
 func flattenTaikunBillingCredential(rawOperationCredential *tkcore.OperationCredentialsListDto) map[string]interface{} {
 
 	return map[string]interface{}{
-		"created_by":          rawOperationCredential.GetCreatedBy(),
-		"id":                  i32toa(rawOperationCredential.GetId()),
-		"lock":                rawOperationCredential.GetIsLocked(),
-		"is_default":          rawOperationCredential.GetIsDefault(),
-		"last_modified":       rawOperationCredential.GetLastModified(),
-		"last_modified_by":    rawOperationCredential.GetLastModifiedBy(),
-		"name":                rawOperationCredential.GetName(),
-		"organization_id":     i32toa(rawOperationCredential.GetOrganizationId()),
-		"organization_name":   rawOperationCredential.GetOrganizationName(),
-		"prometheus_password": rawOperationCredential.GetPrometheusPassword(),
+		"created_by":        rawOperationCredential.GetCreatedBy(),
+		"id":                i32toa(rawOperationCredential.GetId()),
+		"lock":              rawOperationCredential.GetIsLocked(),
+		"is_default":        rawOperationCredential.GetIsDefault(),
+		"last_modified":     rawOperationCredential.GetLastModified(),
+		"last_modified_by":  rawOperationCredential.GetLastModifiedBy(),
+		"name":              rawOperationCredential.GetName(),
+		"organization_id":   i32toa(rawOperationCredential.GetOrganizationId()),
+		"organization_name": rawOperationCredential.GetOrganizationName(),
+		//"prometheus_password": rawOperationCredential.GetPrometheusPassword(), // Password is no longer returned from API for security reasosns
 		"prometheus_url":      rawOperationCredential.GetPrometheusUrl(),
 		"prometheus_username": rawOperationCredential.GetPrometheusUsername(),
 	}
@@ -232,13 +232,13 @@ func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *tk.Clie
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.OperationCredentialsApi.OpscredentialsLockManager(context.TODO()).OperationCredentialLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsLockManager(context.TODO()).OperationCredentialLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
 
 // Returns the Billing Credential with the given ID or nil if it wasn't found
 func resourceTaikunBillingCredentialFind(id int32, apiClient *tk.Client) (*tkcore.OperationCredentialsListDto, error) {
-	params := apiClient.Client.OperationCredentialsApi.OpscredentialsList(context.TODO())
+	params := apiClient.Client.OperationCredentialsAPI.OpscredentialsList(context.TODO())
 	var offset int32 = 0
 
 	for {

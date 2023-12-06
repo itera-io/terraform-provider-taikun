@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -180,7 +180,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 		Name: *tkcore.NewNullableString(stringPtr(d.Get("name").(string))),
 	}
 
-	apiClient.Client.AlertingProfilesApi.AlertingprofilesCreate(ctx).CreateAlertingProfileCommand(body)
+	apiClient.Client.AlertingProfilesAPI.AlertingprofilesCreate(ctx).CreateAlertingProfileCommand(body)
 
 	if _, emailsIsSet := d.GetOk("emails"); emailsIsSet {
 		body.SetEmails(getEmailDTOsFromAlertingProfileResourceData(d))
@@ -216,7 +216,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 		body.SetAlertingIntegrations(getIntegrationDTOsFromAlertingProfileResourceData(d))
 	}
 
-	response, bodyResponse, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesCreate(context.TODO()).CreateAlertingProfileCommand(body).Execute()
+	response, bodyResponse, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesCreate(context.TODO()).CreateAlertingProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(bodyResponse, err))
 	}
@@ -251,7 +251,7 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -264,7 +264,7 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 		}
 		alertingProfileDTO := response.Data[0]
 
-		alertingIntegrationsResponse, _, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
+		alertingIntegrationsResponse, _, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -317,7 +317,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 			body.SetSlackConfigurationId(slackConfigID)
 		}
 
-		_, res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesEdit(ctx).UpdateAlertingProfileCommand(body).Execute()
+		_, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesEdit(ctx).UpdateAlertingProfileCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -325,7 +325,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChange("emails") {
 		alertEmails := getEmailDTOsFromAlertingProfileResourceData(d)
-		res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesAssignEmail(ctx, id).AlertingEmailDto(alertEmails).Execute()
+		res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAssignEmail(ctx, id).AlertingEmailDto(alertEmails).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -333,7 +333,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChange("webhook") {
 		webhooks := getWebhookDTOsFromAlertingProfileResourceData(d)
-		res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesAssignWebhooks(ctx, id).AlertingWebhookDto(webhooks).Execute()
+		res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAssignWebhooks(ctx, id).AlertingWebhookDto(webhooks).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -363,7 +363,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 	for _, oldIntegrationData := range oldIntegrations {
 		oldIntegration := oldIntegrationData.(map[string]interface{})
 		oldIntegrationID, _ := atoi32(oldIntegration["id"].(string))
-		res, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsDelete(context.TODO(), oldIntegrationID).Execute()
+		res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsDelete(context.TODO(), oldIntegrationID).Execute()
 		if err != nil {
 			err = tk.CreateError(res, err)
 			return err
@@ -380,7 +380,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 			alertingIntegrationCreateBody.SetUrl(alertingIntegration.GetUrl())
 			alertingIntegrationCreateBody.SetAlertingProfileId(id)
 
-			_, res, err := apiClient.Client.AlertingIntegrationsApi.AlertingintegrationsCreate(context.TODO()).CreateAlertingIntegrationCommand(alertingIntegrationCreateBody).Execute()
+			_, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsCreate(context.TODO()).CreateAlertingIntegrationCommand(alertingIntegrationCreateBody).Execute()
 			if err != nil {
 				err = tk.CreateError(res, err)
 				return err
@@ -398,7 +398,7 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesDelete(context.TODO(), id).Execute(); err != nil {
+	if res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDelete(context.TODO(), id).Execute(); err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 
@@ -512,6 +512,6 @@ func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *tk.Client
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.AlertingProfilesApi.AlertingprofilesLockManager(context.TODO()).AlertingProfilesLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesLockManager(context.TODO()).AlertingProfilesLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

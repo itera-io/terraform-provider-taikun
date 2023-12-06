@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunImagesAzureConfig = `
@@ -33,7 +33,7 @@ func TestAccDataSourceTaikunImagesAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunImagesAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_images_azure.foo", "images.#"),

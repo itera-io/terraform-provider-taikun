@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunBillingCredentialConfig = `
@@ -36,9 +36,12 @@ func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_URL"),
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
-				Check: checkDataSourceStateMatchesResourceState(
+				Check: checkDataSourceStateMatchesResourceStateWithIgnores(
 					"data.taikun_billing_credential.foo",
 					"taikun_billing_credential.foo",
+					map[string]struct{}{
+						"prometheus_password": {},
+					},
 				),
 			},
 		},

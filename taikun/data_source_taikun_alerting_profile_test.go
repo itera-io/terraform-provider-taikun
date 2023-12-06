@@ -2,15 +2,16 @@ package taikun
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunAlertingProfileConfig = `
 resource "taikun_slack_configuration" "foo" {
   name = "%s"
-  url  = "https://www.example.org"
+  url  = "%s"
   channel = "any"
   type = "Alert"
 }
@@ -47,6 +48,7 @@ data "taikun_alerting_profile" "foo" {
 
 func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 	slackConfigName := randomTestName()
+	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := randomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[randomInt(3)]
 	isLocked := randomBool()
@@ -55,13 +57,14 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 	numberOfWebhooks := 4
 	webhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(numberOfWebhooks)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAlertingProfileConfig,
 					slackConfigName,
+					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,

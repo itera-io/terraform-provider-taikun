@@ -1,7 +1,7 @@
 package taikun
 
 import (
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tkcore "github.com/itera-io/taikungoclient/client"
 )
 
 func stringPtr(s string) *string {

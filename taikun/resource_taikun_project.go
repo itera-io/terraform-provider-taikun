@@ -3,14 +3,14 @@ package taikun
 import (
 	"context"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -63,11 +63,11 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ForceNew:         true,
 		},
 		"delete_on_expiration": {
-			Description:  "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Default:      false,
-			ForceNew:     true,
+			Description: "If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			//ForceNew:     true, // We do not need to force recreate project for just delete on expiration update.
 			RequiredWith: []string{"expiration_date"},
 		},
 		"expiration_date": {
@@ -401,7 +401,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Send project creation request
-	response, responseBody, err := apiClient.Client.ProjectsApi.ProjectsCreate(context.TODO()).CreateProjectCommand(body).Execute()
+	response, responseBody, err := apiClient.Client.ProjectsAPI.ProjectsCreate(context.TODO()).CreateProjectCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(responseBody, err))
 	}
@@ -477,7 +477,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.ServersApi.ServersDetails(ctx, id32).Execute()
+		response, _, err := apiClient.Client.ServersAPI.ServersDetails(ctx, id32).Execute()
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -486,7 +486,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		responseVM, _, err := apiClient.Client.StandaloneApi.StandaloneDetails(ctx, id32).Execute()
+		responseVM, _, err := apiClient.Client.StandaloneAPI.StandaloneDetails(ctx, id32).Execute()
 		if err != nil {
 			if withRetries {
 				d.SetId(id)
@@ -511,7 +511,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return diag.FromErr(err)
 		}
 
-		quotaResponse, bodyResponse, err := apiClient.Client.ProjectQuotasApi.ProjectquotasList(context.TODO()).Id(id32).Execute()
+		quotaResponse, bodyResponse, err := apiClient.Client.ProjectQuotasAPI.ProjectquotasList(context.TODO()).Id(id32).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(bodyResponse, err))
 		}
@@ -523,7 +523,12 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		projectMap := flattenTaikunProject(&projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, &quotaResponse.Data[0])
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectDetailsDTO.GetProjectId(), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		projectMap := flattenTaikunProject(&projectDetailsDTO, serverList, vmList, boundFlavorDTOs, boundImageDTOs, &quotaResponse.Data[0], deleteOnExpiration)
 		usernames := resourceTaikunProjectGetResourceDataVmUsernames(d)
 		if err := setResourceDataFromMap(d, projectMap); err != nil {
 			return diag.FromErr(err)
@@ -635,20 +640,23 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("alerting_profile_id") {
 		body := tkcore.AttachDetachAlertingProfileCommand{}
 		body.SetProjectId(id)
-		bodyResponse, newErr := apiClient.Client.AlertingProfilesApi.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+		bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
 		if newErr != nil {
 			return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 		}
 		if newAlertingProfileIDData, newAlertingProfileIDProvided := d.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
 			newAlertingProfileID, _ := atoi32(newAlertingProfileIDData.(string))
 			body.SetAlertingProfileId(newAlertingProfileID)
-			bodyResponse, newErr := apiClient.Client.AlertingProfilesApi.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+			bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
 			if newErr != nil {
 				return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 			}
 		}
 	}
-	if d.HasChange("expiration_date") {
+
+	// expiration_date can exist without delete_on_expiration
+	// delete_on_expiration must exist with expiration_date
+	if d.HasChange("expiration_date") || d.HasChange("delete_on_expiration") {
 		body := tkcore.ProjectExtendLifeTimeCommand{}
 		body.SetProjectId(id)
 
@@ -658,7 +666,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		} else {
 			body.SetExpireAtNil()
 		}
-		_, err = apiClient.Client.ProjectsApi.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+
+		if deleteOnExpiration, deleteOnExpirationIsSet := d.GetOk("delete_on_expiration"); deleteOnExpirationIsSet {
+			body.SetDeleteOnExpiration(deleteOnExpiration.(bool))
+		} else {
+			body.SetDeleteOnExpiration(false)
+		}
+
+		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -742,7 +757,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				deleteServerBody.SetProjectId(id)
 				deleteServerBody.SetServerIds(serverIds)
 
-				_, err = apiClient.Client.ServersApi.ServersDelete(ctx).DeleteServerCommand(deleteServerBody).Execute()
+				_, err = apiClient.Client.ServersAPI.ServersDelete(ctx).DeleteServerCommand(deleteServerBody).Execute()
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -768,7 +783,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverCreateBody.SetProjectId(id)
 					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 
-					serverCreateResponse, _, newErr := apiClient.Client.ServersApi.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
+					serverCreateResponse, _, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 					if newErr != nil {
 						return diag.FromErr(newErr)
 					}
@@ -849,7 +864,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	body := tkcore.DeleteProjectCommand{}
 	body.SetProjectId(id)
 	body.SetIsForceDelete(false)
-	_, err = apiClient.Client.ProjectsApi.ProjectsDelete(ctx).DeleteProjectCommand(body).Execute()
+	_, err = apiClient.Client.ProjectsAPI.ProjectsDelete(ctx).DeleteProjectCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -859,7 +874,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *tk.Client) error {
-	response, _, err := apiClient.Client.ServersApi.ServersDetails(context.TODO(), projectID).Execute()
+	response, _, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
 	if err != nil {
 		return err
 	}
@@ -903,7 +918,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *tk.Clien
 		body.SetVmVolumeSize(int64(vmVolume.(int))) // No conversion needed, API takes GBs
 	}
 
-	_, err = apiClient.Client.ProjectQuotasApi.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
+	_, err = apiClient.Client.ProjectQuotasAPI.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
 	return
 }
 
@@ -914,6 +929,7 @@ func flattenTaikunProject(
 	boundFlavorDTOs []tkcore.BoundFlavorsForProjectsListDto,
 	boundImageDTOs []tkcore.BoundImagesForProjectsListDto,
 	projectQuotaDTO *tkcore.ProjectQuotaListDto,
+	projectDeleteOnExpiration bool,
 ) map[string]interface{} {
 
 	flavors := make([]string, len(boundFlavorDTOs))
@@ -933,7 +949,7 @@ func flattenTaikunProject(
 		"cloud_credential_id":   i32toa(projectDetailsDTO.GetCloudId()),
 		"auto_upgrade":          projectDetailsDTO.GetIsAutoUpgrade(),
 		"monitoring":            projectDetailsDTO.GetIsMonitoringEnabled(),
-		"delete_on_expiration":  projectDetailsDTO.GetDeleteOnExpiration(),
+		"delete_on_expiration":  projectDeleteOnExpiration,
 		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
 		"flavors":               flavors,
 		"images":                images,
@@ -1035,7 +1051,7 @@ func flattenTaikunProject(
 		disks := make([]map[string]interface{}, len(vm.GetDisks()))
 		for i, rawDisk := range vm.GetDisks() {
 			disks[i] = map[string]interface{}{
-				"device_name": rawDisk.GetDeviceName(),
+				//"device_name": rawDisk.GetDeviceName(),
 				"id":          i32toa(rawDisk.GetId()),
 				"name":        rawDisk.GetName(),
 				"size":        rawDisk.GetCurrentSize(),
@@ -1064,10 +1080,18 @@ func flattenTaikunProject(
 	return projectMap
 }
 
+func resourceTaikunProjectGetDeleteOnExpiration(projectID int32, apiClient *tk.Client) (bool, error) {
+	data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(projectID).Execute()
+	if err != nil {
+		return false, tk.CreateError(response, err)
+	}
+	return data.GetData()[0].GetDeleteOnExpiration(), nil
+}
+
 func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *tk.Client) ([]tkcore.BoundFlavorsForProjectsListDto, error) {
 	var boundFlavorDTOs []tkcore.BoundFlavorsForProjectsListDto
 	var offset int32 = 0
-	params := apiClient.Client.FlavorsApi.FlavorsSelectedFlavorsForProject(context.TODO()).ProjectId(projectID)
+	params := apiClient.Client.FlavorsAPI.FlavorsSelectedFlavorsForProject(context.TODO()).ProjectId(projectID)
 	for {
 		response, _, err := params.Offset(offset).Execute()
 		if err != nil {
@@ -1087,7 +1111,7 @@ func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *tk.Clien
 	var boundImageDTOs []tkcore.BoundImagesForProjectsListDto
 	var offset int32 = 0
 	for {
-		response, _, err := apiClient.Client.ImagesApi.ImagesSelectedImagesForProject(context.TODO()).ProjectId(projectID).Offset(offset).Execute()
+		response, _, err := apiClient.Client.ImagesAPI.ImagesSelectedImagesForProject(context.TODO()).ProjectId(projectID).Offset(offset).Execute()
 		if err != nil {
 			return nil, err
 		}
@@ -1110,11 +1134,11 @@ func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMaste
 }
 
 func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *tk.Client, projectID int32) error {
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: pendingList,
 		Target:  targetList,
 		Refresh: func() (interface{}, string, error) {
-			resp, _, err := apiClient.Client.ServersApi.ServersDetails(context.TODO(), projectID).Execute()
+			resp, _, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
 			if err != nil {
 				return nil, "", err
 			}
@@ -1164,7 +1188,7 @@ func resourceTaikunProjectValidateKubernetesProfileLB(d *schema.ResourceData, ap
 }
 
 func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, apiClient *tk.Client) (string, error) {
-	response, _, err := apiClient.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(kubernetesProfileID).Execute()
+	response, _, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(kubernetesProfileID).Execute()
 	if err != nil {
 		return "", err
 	}
@@ -1176,7 +1200,7 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 }
 
 func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Client) (string, error) {
-	response, _, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(cloudCredentialID).Execute()
+	response, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(cloudCredentialID).Execute()
 	if err != nil {
 		return "", err
 	}
@@ -1199,7 +1223,7 @@ func resourceTaikunProjectLock(id int32, lock bool, apiClient *tk.Client) error 
 	body := tkcore.ProjectLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
-	_, err := apiClient.Client.ProjectsApi.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
+	_, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
 	return err
 }
 

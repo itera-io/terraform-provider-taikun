@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -82,7 +82,7 @@ func dataSourceTaikunImagesRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	apiClient := meta.(*tk.Client)
-	list, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(ctx).Id(cloudCredentialID).Execute()
+	list, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(ctx).Id(cloudCredentialID).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -100,7 +100,7 @@ func dataSourceTaikunImagesRead(ctx context.Context, d *schema.ResourceData, met
 		if !SKUIsSet || !publisherIsSet || !offerIsSet {
 			return diag.Errorf("All of the following attributes must be set: azure_offer, azure_publisher, azure_sku")
 		}
-		params := apiClient.Client.ImagesApi.ImagesAzureImages(ctx, cloudCredentialID, publisher.(string), offer.(string), SKU.(string)).Latest(false)
+		params := apiClient.Client.ImagesAPI.ImagesAzureImages(ctx, cloudCredentialID, publisher.(string), offer.(string), SKU.(string)).Latest(false)
 		var offset int32 = 0
 
 		for {
@@ -120,7 +120,7 @@ func dataSourceTaikunImagesRead(ctx context.Context, d *schema.ResourceData, met
 			limit = int32(limitData.(int))
 		}
 
-		params := apiClient.Client.ImagesApi.ImagesAwsCommonImages(ctx, cloudCredentialID)
+		params := apiClient.Client.ImagesAPI.ImagesAwsCommonImages(ctx, cloudCredentialID)
 
 		response, res, err := params.Execute()
 		if err != nil {
@@ -132,7 +132,7 @@ func dataSourceTaikunImagesRead(ctx context.Context, d *schema.ResourceData, met
 		}
 	default: // OpenStack
 		var offset int32 = 0
-		params := apiClient.Client.ImagesApi.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(d.Get("personal").(bool)).Personal(false)
+		params := apiClient.Client.ImagesAPI.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(d.Get("personal").(bool)).Personal(false)
 
 		for {
 			response, res, err := params.Offset(offset).Execute()

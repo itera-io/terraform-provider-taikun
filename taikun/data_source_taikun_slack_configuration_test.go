@@ -3,9 +3,10 @@ package taikun
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunSlackConfigurationConfig = `
@@ -23,7 +24,7 @@ data "taikun_slack_configuration" "foo" {
 
 func TestAccDataSourceTaikunSlackConfiguration(t *testing.T) {
 	name := randomTestName()
-	url := "https://www.example.org"
+	url := os.Getenv("SLACK_WEBHOOK") // Slack webhook is checked if valid in new API
 	channel := randomString()
 	slackConfigType := []string{"Alert", "General"}[rand.Int()%2]
 
