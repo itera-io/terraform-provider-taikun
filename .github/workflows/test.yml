@@ -11,6 +11,8 @@ on:
       - 'examples/**'
       - 'templates/**'
   workflow_dispatch:
+    schedule:
+      - cron: 0 4 * * 5
 
 env:
   TF_ACC: "1"
