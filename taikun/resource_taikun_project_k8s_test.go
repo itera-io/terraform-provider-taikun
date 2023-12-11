@@ -406,8 +406,8 @@ resource "taikun_policy_profile" "foo" {
 `
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
-	kubernetesProfileName := randomTestName()
 	cloudCredentialName := randomTestName()
+	kubernetesProfileName := randomTestName()
 	backupCredentialName := randomTestName()
 	backupPolicyName := randomTestName()
 	projectName := shortRandomTestName()
@@ -420,8 +420,8 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectMinimal,
-					kubernetesProfileName,
 					cloudCredentialName,
+					kubernetesProfileName,
 					projectName,
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
