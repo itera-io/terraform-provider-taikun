@@ -89,7 +89,7 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Description: "If not enabled, the cluster name will be cluster.local.",
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Default:     true,
+			Default:     false,
 			ForceNew:    true,
 		},
 		"nvidia_gpu_operator": {
@@ -127,11 +127,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetOctaviaEnabled(octaviaEnabled)
 	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
 	body.SetNvidiaGpuOperatorEnabled(d.Get("nvidia_gpu_operator").(bool))
-
-	// Cluster name is optional and thus we must check if it was given
-	if uniqueClusterName, uniqueClusterNameSet := d.GetOk("unique_cluster_name"); uniqueClusterNameSet {
-		body.SetUniqueClusterName(uniqueClusterName.(bool))
-	}
+	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
