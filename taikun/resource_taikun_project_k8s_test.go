@@ -294,12 +294,18 @@ locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
+resource "taikun_kubernetes_profile" "foo" {
+  name = "%s"
+  wasm = true
+}
+
 resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   flavors = local.flavors
   backup_credential_id = resource.taikun_backup_credential.foo.id
   policy_profile_id = resource.taikun_policy_profile.foo.id
+  kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
 
   quota_cpu_units = 64
   quota_ram_size = 256
@@ -314,6 +320,7 @@ resource "taikun_project" "foo" {
      name = "w"
      disk_size = 30
      flavor = local.flavors[0]
+	 wasm = true
   }
   server_kubemaster {
      name = "m"
@@ -399,6 +406,7 @@ resource "taikun_policy_profile" "foo" {
 `
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
+	kubernetesProfileName := randomTestName()
 	cloudCredentialName := randomTestName()
 	backupCredentialName := randomTestName()
 	backupPolicyName := randomTestName()
@@ -412,6 +420,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectMinimal,
+					kubernetesProfileName,
 					cloudCredentialName,
 					projectName,
 					backupCredentialName,

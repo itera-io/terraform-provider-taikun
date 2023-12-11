@@ -20,8 +20,16 @@ func taikunServerKubeworkerSchema() map[string]*schema.Schema {
 	return kubeworkerSchema
 }
 
+// Only for Controlplane and Workers
 func taikunServerSchemaWithKubernetesNodeLabels() map[string]*schema.Schema {
 	serverSchema := taikunServerBasicSchema()
+	serverSchema["wasm"] = &schema.Schema{
+		Description: "Enable if the server should support WASM.",
+		Type:        schema.TypeBool,
+		Optional:    true,
+		ForceNew:    true,
+		Default:     false,
+	}
 	serverSchema["kubernetes_node_label"] = &schema.Schema{
 		Description: "Attach Kubernetes node labels.",
 		Type:        schema.TypeSet,
@@ -159,6 +167,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeMasterMap))
 		serverCreateBody.SetName(kubeMasterMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
+		serverCreateBody.SetWasmEnabled(kubeMasterMap["wasm"].(bool))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
 
 		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
@@ -181,6 +190,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		//serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
 		serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
+		serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 
 		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
