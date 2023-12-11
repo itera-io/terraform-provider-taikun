@@ -93,7 +93,14 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"nvidia_gpu_operator": {
-			Description: "When enabled, the workload will have NVIDIA GPU support in Kubernetes.",
+			Description: "When enabled, the Kubernetes will have NVIDIA GPU support.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
+		"wasm": {
+			Description: "When enabled, the Kubernetes will have WASM support.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -128,6 +135,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
 	body.SetNvidiaGpuOperatorEnabled(d.Get("nvidia_gpu_operator").(bool))
 	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
+	body.SetWasmEnabled(d.Get("wasm").(bool))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -247,6 +255,7 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 		"schedule_on_master":      rawKubernetesProfile.GetAllowSchedulingOnMaster(),
 		"unique_cluster_name":     rawKubernetesProfile.GetUniqueClusterName(),
 		"nvidia_gpu_operator":     rawKubernetesProfile.GetNvidiaGpuOperatorEnabled(),
+		"wasm":                    rawKubernetesProfile.GetWasmEnabled(),
 	}
 }
 
