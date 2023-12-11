@@ -34,18 +34,18 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 ### Required
 
-- `client_id` (String, Sensitive) The Azure client ID.
-- `client_secret` (String, Sensitive) The Azure client secret.
 - `location` (String) The Azure location.
 - `name` (String) The name of the Azure cloud credential.
-- `subscription_id` (String) The Azure subscription ID.
-- `tenant_id` (String) The Azure tenant ID.
 
 ### Optional
 
 - `az_count` (Number) The number of Azure availability zone expected for the region. Defaults to `1`.
+- `client_id` (String, Sensitive) The Azure client ID.
+- `client_secret` (String, Sensitive) The Azure client secret.
 - `lock` (Boolean) Indicates whether to lock the Azure cloud credential. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the Azure cloud credential.
+- `subscription_id` (String) The Azure subscription ID.
+- `tenant_id` (String) The Azure tenant ID.
 
 ### Read-Only
 
