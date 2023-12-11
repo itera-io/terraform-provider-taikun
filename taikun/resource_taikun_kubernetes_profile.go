@@ -92,6 +92,13 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     true,
 			ForceNew:    true,
 		},
+		"nvidia_gpu_operator": {
+			Description: "When enabled, the workload will have NVIDIA GPU support in Kubernetes.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
 	}
 }
 
@@ -119,6 +126,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetTaikunLBEnabled(taikunLBEnabled)
 	body.SetOctaviaEnabled(octaviaEnabled)
 	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
+	body.SetNvidiaGpuOperatorEnabled(d.Get("nvidia_gpu_operator").(bool))
 
 	// Cluster name is optional and thus we must check if it was given
 	if uniqueClusterName, uniqueClusterNameSet := d.GetOk("unique_cluster_name"); uniqueClusterNameSet {
@@ -242,6 +250,7 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 		"organization_name":       rawKubernetesProfile.GetOrganizationName(),
 		"schedule_on_master":      rawKubernetesProfile.GetAllowSchedulingOnMaster(),
 		"unique_cluster_name":     rawKubernetesProfile.GetUniqueClusterName(),
+		"nvidia_gpu_operator":     rawKubernetesProfile.GetNvidiaGpuOperatorEnabled(),
 	}
 }
 
