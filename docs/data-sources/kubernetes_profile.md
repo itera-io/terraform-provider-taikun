@@ -35,11 +35,9 @@ data "taikun_kubernetes_profile" "foo" {
 - `load_balancing_solution` (String) The load-balancing solution: `None`, `Octavia` or `Taikun`. `Octavia` and `Taikun` are only available for OpenStack cloud.
 - `lock` (Boolean) Indicates whether to lock the Kubernetes profile.
 - `name` (String) The name of the Kubernetes profile.
-- `nvidia_gpu_operator` (Boolean) When enabled, the Kubernetes will have NVIDIA GPU support.
 - `organization_id` (String) The ID of the organization which owns the Kubernetes profile.
 - `organization_name` (String) The name of the organization which owns the Kubernetes profile.
 - `schedule_on_master` (Boolean) When enabled, the workload will also run on master nodes (not recommended).
 - `unique_cluster_name` (Boolean) If not enabled, the cluster name will be cluster.local.
-- `wasm` (Boolean) When enabled, the Kubernetes will have WASM support.
 
 

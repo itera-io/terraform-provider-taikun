@@ -96,7 +96,6 @@ Read-Only:
 - `last_modified_by` (String)
 - `name` (String)
 - `status` (String)
-- `wasm` (Boolean)
 
 <a id="nestedobjatt--projects--server_kubemaster--kubernetes_node_label"></a>
 ### Nested Schema for `projects.server_kubemaster.kubernetes_node_label`
@@ -123,7 +122,6 @@ Read-Only:
 - `last_modified_by` (String)
 - `name` (String)
 - `status` (String)
-- `wasm` (Boolean)
 
 <a id="nestedobjatt--projects--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `projects.server_kubeworker.kubernetes_node_label`

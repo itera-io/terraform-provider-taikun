@@ -226,7 +226,6 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
-- `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
 
@@ -259,7 +258,6 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
-- `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
 
