@@ -277,6 +277,69 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 	})
 }
 
+const testAccResourceTaikunProjectConfigWithWasm = `
+resource "taikun_cloud_credential_openstack" "foo" {
+  name = "%s"
+}
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  min_cpu = %d
+  max_cpu = %d
+}
+locals {
+  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+}
+
+resource "taikun_kubernetes_profile" "foo" {
+  name = "%s"
+  wasm = true
+}
+
+resource "taikun_project" "foo" {
+  name = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
+  flavors = local.flavors
+}
+`
+
+func TestAccResourceTaikunProjectWasm(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := randomTestName()
+	kubernetesProfileName := randomTestName()
+	cpuCount := 2
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithWasm,
+					cloudCredentialName,
+					cpuCount, cpuCount,
+					kubernetesProfileName,
+					projectName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttrPair("taikun_project.foo", "flavors.#", "data.taikun_flavors.foo", "flavors.#"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "true"),
+				),
+			},
+			{
+				ResourceName:      "taikun_project.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 const testAccResourceTaikunProjectMinimal = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
@@ -294,18 +357,12 @@ locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
-resource "taikun_kubernetes_profile" "foo" {
-  name = "%s"
-  wasm = true
-}
-
 resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   flavors = local.flavors
   backup_credential_id = resource.taikun_backup_credential.foo.id
   policy_profile_id = resource.taikun_policy_profile.foo.id
-  kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
 
   quota_cpu_units = 64
   quota_ram_size = 256
@@ -320,7 +377,6 @@ resource "taikun_project" "foo" {
      name = "w"
      disk_size = 30
      flavor = local.flavors[0]
-	 wasm = true
   }
   server_kubemaster {
      name = "m"
@@ -407,7 +463,6 @@ resource "taikun_policy_profile" "foo" {
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	kubernetesProfileName := randomTestName()
 	backupCredentialName := randomTestName()
 	backupPolicyName := randomTestName()
 	projectName := shortRandomTestName()
@@ -421,7 +476,6 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectMinimal,
 					cloudCredentialName,
-					kubernetesProfileName,
 					projectName,
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
