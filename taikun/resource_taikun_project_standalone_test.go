@@ -12,11 +12,11 @@ const testAccResourceTaikunProjectConfigWithImages = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 }
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  images = [for image in data.taikun_images_openstack.foo.images: image.id]
 }
 resource "taikun_project" "foo" {
   name = "%s"
@@ -72,12 +72,12 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  images = [for image in data.taikun_images_openstack.foo.images: image.id]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
@@ -534,15 +534,16 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_azure" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
-  azure_publisher = "Canonical"
-  azure_offer = "UbuntuServer"
-  azure_sku = "19.04"
+  publisher = "Canonical"
+  offer = "0001-com-ubuntu-server-jammy"
+  sku = "22_04-lts"
+  latest = true
 }
 
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  images = [for image in data.taikun_images_azure.foo.images: image.id]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 

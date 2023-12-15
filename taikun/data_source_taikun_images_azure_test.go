@@ -17,8 +17,8 @@ resource "taikun_cloud_credential_azure" "foo" {
 data "taikun_images_azure" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
   publisher = "Canonical"
-  offer = "UbuntuServer"
-  sku = "19.04"
+  offer = "0001-com-ubuntu-server-jammy"
+  sku = "22_04-lts"
   latest = true
 }
 `
