@@ -1006,6 +1006,7 @@ func flattenTaikunProject(
 				}
 			}
 			serverMap["kubernetes_node_label"] = labels
+			serverMap["wasm"] = server.GetWasmEnabled()
 
 			if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
 				kubeMasters = append(kubeMasters, serverMap)
