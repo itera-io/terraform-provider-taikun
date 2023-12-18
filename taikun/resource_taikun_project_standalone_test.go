@@ -35,7 +35,7 @@ func TestAccResourceTaikunProjectModifyImages(t *testing.T) {
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-		resource.TestCheckResourceAttrPair("taikun_project.foo", "images.#", "data.taikun_images.foo", "images.#"),
+		resource.TestCheckResourceAttrPair("taikun_project.foo", "images.#", "data.taikun_images_openstack.foo", "images.#"),
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
