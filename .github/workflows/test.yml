@@ -58,7 +58,7 @@ env:
   TERRAFORM_SKIP_VERIFY: true
 
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-  SLACK_WEBHOOK_FEEDBACK: ${{ secrets.$SLACK_WEBHOOK_FEEDBACK }}
+  SLACK_WEBHOOK_FEEDBACK: ${{ secrets.SLACK_WEBHOOK_FEEDBACK }}
 
 #      - name: Create GCP config file
 #        env:
