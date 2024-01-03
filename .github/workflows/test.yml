@@ -417,4 +417,4 @@ jobs:
     steps:
       - name: The job has failed
         run: |
-          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED"}' $SLACK_WEBHOOK_FEEDBACK
+          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED\n'"$CI_JOB_URL"'"}' $SLACK_WEBHOOK_FEEDBACK
