@@ -1,12 +1,6 @@
 name: Tests
 on:
   pull_request:
-  push:
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
-      - 'examples/**'
-      - 'templates/**'
   workflow_dispatch:
   schedule:
     - cron: 0 4 * * 5
@@ -64,6 +58,7 @@ env:
   TERRAFORM_SKIP_VERIFY: true
 
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  $SLACK_WEBHOOK_FEEDBACK: ${{ secrets.$SLACK_WEBHOOK_FEEDBACK }}
 
 #      - name: Create GCP config file
 #        env:
@@ -412,3 +407,14 @@ jobs:
           date
           RADEK_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
           go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+
+  slackWebhook:
+    name: End) Send feedback to slack
+    if: ${{ failure() }}
+    needs: [test5a, test3a, test3b, test4a, test4b, test4c]
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: The job has failed
+        run: |
+          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED"}' $SLACK_WEBHOOK_FEEDBACK
