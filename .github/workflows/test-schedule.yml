@@ -1,7 +1,8 @@
-name: Tests
+name: Tests Scheduled
 on:
-  pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: 0 4 * * 5
 
 env:
   TF_ACC: "1"
@@ -78,6 +79,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -95,6 +97,7 @@ jobs:
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -120,6 +123,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -145,6 +149,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -170,6 +175,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -195,6 +201,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -220,6 +227,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -245,6 +253,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -270,6 +279,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -295,6 +305,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -320,6 +331,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -345,6 +357,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -370,6 +383,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -395,6 +409,7 @@ jobs:
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+        with: { ref: dev }
 
       - name: Get dependencies
         run: |
@@ -415,4 +430,4 @@ jobs:
     steps:
       - name: The job has failed
         run: |
-          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED\n'"$CI_JOB_URL"'"}' $SLACK_WEBHOOK_FEEDBACK
+          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF scheduled dev tests FAILED\n'"$CI_JOB_URL"'"}' $SLACK_WEBHOOK_FEEDBACK
