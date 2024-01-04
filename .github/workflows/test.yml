@@ -1,18 +1,9 @@
 name: Tests
 on:
   pull_request:
-  push:
-    branches:
-      - 'main'
-      - 'dev'
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
-      - 'examples/**'
-      - 'templates/**'
   workflow_dispatch:
-    schedule:
-      - cron: 0 4 * * 5
+  schedule:
+    - cron: 0 4 * * 5
 
 env:
   TF_ACC: "1"
@@ -67,6 +58,7 @@ env:
   TERRAFORM_SKIP_VERIFY: true
 
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  SLACK_WEBHOOK_FEEDBACK: ${{ secrets.SLACK_WEBHOOK_FEEDBACK }}
 
 #      - name: Create GCP config file
 #        env:
@@ -82,7 +74,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -107,7 +99,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -124,7 +116,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -138,8 +130,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)' ./scripts/rerun_failed_tests.sh
-#          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m || go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectWasm$$|TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)' ./scripts/rerun_failed_tests.sh
+#          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m || go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test1beta:
     name: 1beta) Testing Taikun
@@ -149,7 +141,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -163,8 +155,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
-#          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m || go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
+#          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m || go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2a:
     name: 2a) Openstack, creating instances
@@ -174,7 +166,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -188,8 +180,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2b:
     name: 2b) Openstack, creating instances
@@ -199,7 +191,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -213,8 +205,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2c:
     name: 2c) Openstack, creating instances
@@ -224,7 +216,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -238,8 +230,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2d:
     name: 2d) Openstack, creating instances
@@ -249,7 +241,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -263,8 +255,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3a:
     name: 3a) AWS, creating instances
@@ -274,7 +266,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -288,8 +280,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3b:
     name: 3b) AWS, creating instances
@@ -299,7 +291,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -313,8 +305,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4a:
     name: 4a) Azure, creating instances
@@ -324,7 +316,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -338,8 +330,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4b:
     name: 4b) Azure, creating instances
@@ -349,7 +341,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -363,8 +355,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4c:
     name: 4c) Azure, creating instances
@@ -374,7 +366,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -388,8 +380,8 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test5a:
     name: 5a) Openstack, creating k8s
@@ -399,7 +391,7 @@ jobs:
     steps:
 
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -413,5 +405,16 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          RADEK_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
-          go test . ./taikun -v -run ${RADEK_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+
+  slackWebhook:
+    name: End) Send feedback to slack
+    if: ${{ failure() }}
+    needs: [test5a, test3a, test3b, test4a, test4b, test4c]
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: The job has failed
+        run: |
+          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED\n'"$CI_JOB_URL"'"}' $SLACK_WEBHOOK_FEEDBACK

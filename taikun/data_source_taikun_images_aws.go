@@ -139,7 +139,7 @@ func dataSourceTaikunImagesAWSGetOwnerID(apiClient *tk.Client, ownerNames []inte
 	return
 }
 
-func flattenTaikunImagesAWS(rawImages ...tkcore.AwsExtendedImagesListDto) []map[string]interface{} {
+func flattenTaikunImagesAWS(rawImages ...tkcore.CommonStringBasedDropdownDto) []map[string]interface{} {
 
 	images := make([]map[string]interface{}, len(rawImages))
 	for i, rawImage := range rawImages {

@@ -89,7 +89,21 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Description: "If not enabled, the cluster name will be cluster.local.",
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Default:     true,
+			Default:     false,
+			ForceNew:    true,
+		},
+		"nvidia_gpu_operator": {
+			Description: "When enabled, the Kubernetes will have NVIDIA GPU support.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
+		"wasm": {
+			Description: "When enabled, the Kubernetes will have WASM support.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
 			ForceNew:    true,
 		},
 	}
@@ -119,11 +133,9 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetTaikunLBEnabled(taikunLBEnabled)
 	body.SetOctaviaEnabled(octaviaEnabled)
 	body.SetExposeNodePortOnBastion(d.Get("bastion_proxy").(bool))
-
-	// Cluster name is optional and thus we must check if it was given
-	if uniqueClusterName, uniqueClusterNameSet := d.GetOk("unique_cluster_name"); uniqueClusterNameSet {
-		body.SetUniqueClusterName(uniqueClusterName.(bool))
-	}
+	body.SetNvidiaGpuOperatorEnabled(d.Get("nvidia_gpu_operator").(bool))
+	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
+	body.SetWasmEnabled(d.Get("wasm").(bool))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -242,6 +254,8 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 		"organization_name":       rawKubernetesProfile.GetOrganizationName(),
 		"schedule_on_master":      rawKubernetesProfile.GetAllowSchedulingOnMaster(),
 		"unique_cluster_name":     rawKubernetesProfile.GetUniqueClusterName(),
+		"nvidia_gpu_operator":     rawKubernetesProfile.GetNvidiaGpuOperatorEnabled(),
+		"wasm":                    rawKubernetesProfile.GetWasmEnabled(),
 	}
 }
 

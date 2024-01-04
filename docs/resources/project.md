@@ -63,13 +63,13 @@ data "taikun_flavors" "small" {
   max_cpu             = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 
 locals {
   flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
-  images  = [for image in data.taikun_images.foo.images : image.id]
+  images  = [for image in data.taikun_images_openstack.foo.images : image.id]
 }
 
 resource "taikun_project" "foobar" {
@@ -226,6 +226,7 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
+- `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
 
@@ -258,6 +259,7 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+- `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
 

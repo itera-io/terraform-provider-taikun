@@ -167,13 +167,13 @@ func flattenTaikunImages(rawImages ...tkcore.CommonStringBasedDropdownDto) []map
 	return images
 }
 
-func flattenTaikunImagesAwsOwnerDetails(rawImages []tkcore.AwsOwnerDetails) []map[string]interface{} {
+func flattenTaikunImagesAwsOwnerDetails(rawImages []tkcore.CommonStringBasedDropdownDto) []map[string]interface{} {
 
 	images := make([]map[string]interface{}, len(rawImages))
 	for i, rawImage := range rawImages {
 		images[i] = map[string]interface{}{
-			"id":   rawImage.Image.GetId(),
-			"name": rawImage.Image.GetName(),
+			"id":   rawImage.GetId(),
+			"name": rawImage.GetName(),
 		}
 	}
 	return images

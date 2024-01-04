@@ -38,6 +38,8 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
 				),
 			},
 			{
@@ -84,6 +86,46 @@ func TestAccResourceTaikunKubernetesProfileNoUniqueClusterName(t *testing.T) {
 	})
 }
 
+const TestAccResourceTaikunKubernetesProfileNvidiaGpuEnableConfig = `
+resource "taikun_kubernetes_profile" "foo" {
+	name = "%s"
+	nvidia_gpu_operator = true
+}
+`
+
+func TestAccResourceTaikunKubernetesProfileNvidiaGpuEnable(t *testing.T) {
+	firstName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(TestAccResourceTaikunKubernetesProfileNvidiaGpuEnableConfig, firstName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunKubernetesProfileExists,
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "schedule_on_master", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "true"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "wasm"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "false"),
+				),
+			},
+			{
+				ResourceName: "taikun_kubernetes_profile.foo",
+				ImportState:  true,
+			},
+		},
+	})
+}
+
 func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 	firstName := randomTestName()
 
@@ -103,6 +145,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "unique_cluster_name"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "unique_cluster_name", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "wasm"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "false"),
 				),
 			},
 			{
@@ -116,6 +164,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "unique_cluster_name"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "unique_cluster_name", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "wasm"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "false"),
 				),
 			},
 		},
