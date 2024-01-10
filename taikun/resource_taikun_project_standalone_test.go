@@ -16,7 +16,8 @@ data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 locals {
-  images = [for image in data.taikun_images_openstack.foo.images: image.id]
+  # Tests will be run only on Ubuntu images to avoid pipeline fail because of bad test image in dev 
+  images = [for image in data.taikun_images_openstack.foo.images: image.id if can( regex("(?i)ubuntu", image.name) )]
 }
 resource "taikun_project" "foo" {
   name = "%s"
@@ -77,7 +78,8 @@ data "taikun_images_openstack" "foo" {
 }
 
 locals {
-  images = [for image in data.taikun_images_openstack.foo.images: image.id]
+  # Tests will be run only on Ubuntu images to avoid pipeline fail because of bad test image in dev 
+  images = [for image in data.taikun_images_openstack.foo.images: image.id if can( regex("(?i)ubuntu", image.name) )]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
@@ -374,8 +376,16 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
+data "taikun_images_aws" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  latest              = true
+  # Ubuntu latest can be unreleased testing version. For stability we use debian.
+  owners              = ["Debian"] 
+}
+
 locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+  images = [for image in data.taikun_images_aws.foo.images: image.id]
 }
 
 resource "taikun_standalone_profile" "foo" {
@@ -387,7 +397,7 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   flavors = local.flavors
-  images = ["ami-0f94f6b47f28fb0e7"]
+  images = local.images
 
   vm {
     name = "tf-acc-vm"
