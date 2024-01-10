@@ -401,7 +401,7 @@ resource "taikun_project" "foo" {
   vm {
     name = "tf-acc-vm"
     flavor = local.flavors[%d]
-    image_id = "ami-0f94f6b47f28fb0e7"
+    image_id = local.images[%d]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
     disk {
@@ -439,6 +439,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					0,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -483,6 +484,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					standaloneProfileName,
 					projectName,
 					0,
+					0,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -507,6 +509,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					standaloneProfileName,
 					projectName,
 					1,
+					0,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
