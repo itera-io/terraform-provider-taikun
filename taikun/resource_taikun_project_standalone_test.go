@@ -16,8 +16,7 @@ data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 locals {
-  # Tests will be run only on Ubuntu images to avoid pipeline fail because of bad test image in dev 
-  images = [for image in data.taikun_images_openstack.foo.images: image.id if can( regex("(?i)ubuntu", image.name) )]
+  images = [for image in data.taikun_images_openstack.foo.images: image.id ]
 }
 resource "taikun_project" "foo" {
   name = "%s"
