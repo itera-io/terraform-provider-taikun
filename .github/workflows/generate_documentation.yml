@@ -1,11 +1,20 @@
-name: Generate documentation
+name: "📚 Update command tree"
 
 on:
   workflow_dispatch:
     inputs:
       branch:
         required: true
-        type: string
+        description: 'Branch where to generate documentation'
+        default: 'dev'
+        type: choice
+        options:
+          - "dev"
+          - "staging"
+          - "main"
+
+env:
+  GO_VERSION: "1.20"
 
 jobs:
   generate:
@@ -27,7 +36,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.20'
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
