@@ -1,127 +1,15 @@
-name: Tests
+name: "🆕 Tests"
 on:
+  workflow_dispatch:
+  # Trigger on all pull requests made to  dev repository
   pull_request:
-  push:
     branches:
-      - 'main'
-      - 'dev'
-    paths-ignore:
-      - 'README.md'
-      - 'docs/**'
-      - 'examples/**'
-      - 'templates/**'
+      - dev
 
 jobs:
-  build:
-    name: Build
-    runs-on: self-hosted
-    timeout-minutes: 5
-    steps:
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
-
-      - name: Get dependencies
-        run: |
-          go mod download
-
-      - name: Build
-        run: |
-          go build -v .
-
-  golangci:
-    name: Lint
-    runs-on: self-hosted
-    needs: build
-    timeout-minutes: 5
-    steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-
-      - name: Lint (golangci-lint)
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
-
-  test:
-    name: Acceptance Tests
-    needs: build
-    runs-on: self-hosted
-    timeout-minutes: 180
-    concurrency: test-acc
-    steps:
-
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: 1.19
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
-
-      - name: Get dependencies
-        run: |
-          go mod download
-
-      - name: Create GCP config file
-        env:
-          GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
-        run: |
-          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
-
-      - name: TF acceptance tests
-        env:
-          TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: "1.1.0"
-
-          TAIKUN_EMAIL: ${{ secrets.TAIKUN_EMAIL }}
-          TAIKUN_PASSWORD: ${{ secrets.TAIKUN_PASSWORD }}
-
-          PROMETHEUS_PASSWORD: ${{ secrets.PROMETHEUS_PASSWORD }}
-          PROMETHEUS_URL: ${{ secrets.PROMETHEUS_URL }}
-          PROMETHEUS_USERNAME: ${{ secrets.PROMETHEUS_USERNAME }}
-
-          OS_USERNAME: ${{ secrets.OS_USERNAME }}
-          OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
-          OS_REGION_NAME: ${{ secrets.OS_REGION_NAME }}
-          OS_INTERFACE: ${{ secrets.OS_INTERFACE }}
-          OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
-          OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
-          OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
-          OS_CONTINENT: ${{ secrets.OS_CONTINENT }}
-
-          GCP_FOLDER_ID: ${{ secrets.GCP_FOLDER_ID }}
-          GCP_BILLING_ACCOUNT: ${{ secrets.GCP_BILLING_ACCOUNT }}
-          GCP_REGION: ${{ secrets.GCP_REGION }}
-          GCP_ZONE: ${{ secrets.GCP_ZONE }}
-          GCP_AZ_COUNT: 1
-
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: eu-central-1
-          AWS_AVAILABILITY_ZONE: a
-          AWS_AZ_COUNT: 1
-
-          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-          ARM_AVAILABILITY_ZONE: 1
-          ARM_AZ_COUNT: 1
-          ARM_LOCATION: northeurope
-
-          S3_REGION: eu-west-2
-          S3_ENDPOINT: https://s3.eu-west-2.amazonaws.com
-
-        run: |
-          go test -v -timeout 0 -cover ./taikun
+  tests:
+    uses: ./.github/workflows/tests_reusable.yml
+    with:
+      branch: ${{ github.ref }} # Run on the branch of this PR
+      endpoint: "dev"           # Run against dev taikun endpoint
+    secrets: inherit

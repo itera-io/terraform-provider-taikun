@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunImagesDeprecatedAWSConfig = `
@@ -49,8 +49,8 @@ resource "taikun_cloud_credential_azure" "foo" {
 data "taikun_images" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
   azure_publisher = "Canonical"
-  azure_offer = "UbuntuServer"
-  azure_sku = "19.04"
+  azure_offer = "0001-com-ubuntu-server-jammy"
+  azure_sku = "22_04-lts"
 }
 `
 
@@ -64,7 +64,7 @@ func TestAccDataSourceTaikunImagesDeprecatedAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunImagesDeprecatedAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_images.foo", "images.#"),

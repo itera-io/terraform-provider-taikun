@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"fmt"
-	tkcore "github.com/chnyda/taikungoclient/client"
-	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
+	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 	"math/rand"
 	"net/mail"
 	"os"
@@ -25,9 +25,9 @@ import (
 
 const testNamePrefix = "tf-acc-test-"
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
+//func init() {
+//	rand.Seed(time.Now().UnixNano())
+//}
 
 func setResourceDataFromMap(d *schema.ResourceData, m map[string]interface{}) error {
 	for key, value := range m {
@@ -195,7 +195,7 @@ func randomName(prefix string, length int) string {
 }
 
 func randomString() string {
-	return acctest.RandString(rand.Int()%10 + 10)
+	return fmt.Sprintf("%s%s", "tf", acctest.RandString(rand.Int()%6+7)) // Taikun can have problems with strings starting with numbers
 }
 
 func randomURL() string {
@@ -235,16 +235,16 @@ func getPrometheusType(prometheusType string) tkcore.PrometheusType {
 
 func getPrometheusTypeInt(prometheusType string) tkshowback.EPrometheusType {
 	if prometheusType == "Count" {
-		return tkshowback.EPROMETHEUSTYPE__100
+		return tkshowback.EPROMETHEUSTYPE_COUNT
 	}
-	return tkshowback.EPROMETHEUSTYPE__200 // Sum
+	return tkshowback.EPROMETHEUSTYPE_SUM // Sum
 }
 
 func getShowbackType(showbackType string) tkshowback.EShowbackType {
 	if showbackType == "General" {
-		return tkshowback.ESHOWBACKTYPE__100
+		return tkshowback.ESHOWBACKTYPE_GENERAL
 	}
-	return tkshowback.ESHOWBACKTYPE__200 // External
+	return tkshowback.ESHOWBACKTYPE_EXTERNAL // External
 }
 
 const (

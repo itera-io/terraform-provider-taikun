@@ -7,9 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	tk "github.com/chnyda/taikungoclient"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	tk "github.com/itera-io/taikungoclient"
 )
 
 func init() {
@@ -136,7 +136,7 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"api_host": {
 				Type:         schema.TypeString,
-				Description:  "Custom Taikun API host.",
+				Description:  "Custom Taikun API host (default api.taikun.cloud)",
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_API_HOST", "api.taikun.cloud"),
 				ValidateFunc: validation.StringIsNotEmpty,

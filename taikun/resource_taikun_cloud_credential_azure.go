@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,7 +34,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_CLIENT_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
@@ -42,7 +42,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_CLIENT_SECRET", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_SECRET", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"created_by": {
@@ -113,7 +113,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_SUBSCRIPTION_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_SUBSCRIPTION", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"tenant_id": {
@@ -121,7 +121,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("ARM_TENANT_ID", nil),
+			DefaultFunc:  schema.EnvDefaultFunc("AZURE_TENANT", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	}
@@ -167,7 +167,7 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.AzureCloudCredentialApi.AzureCreate(context.TODO()).CreateAzureCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureCreate(context.TODO()).CreateAzureCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -201,7 +201,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -246,7 +246,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 		updateBody.SetAzureClientId(d.Get("client_id").(string))
 		updateBody.SetAzureClientSecret(d.Get("client_secret").(string))
 
-		res, err := apiClient.Client.AzureCloudCredentialApi.AzureUpdate(context.TODO()).UpdateAzureCommand(updateBody).Execute()
+		res, err := apiClient.Client.AzureCloudCredentialAPI.AzureUpdate(context.TODO()).UpdateAzureCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -276,6 +276,7 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *tkcore.AzureCredentia
 		"availability_zones": rawAzureCredential.GetAvailabilityZones(),
 		"location":           rawAzureCredential.GetLocation(),
 		"tenant_id":          rawAzureCredential.GetTenantId(),
+		"az_count":           rawAzureCredential.GetAvailabilityZonesCount(),
 	}
 }
 
@@ -284,6 +285,6 @@ func resourceTaikunCloudCredentialAzureLock(id int32, lock bool, apiClient *tk.C
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

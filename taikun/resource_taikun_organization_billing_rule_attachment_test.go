@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"math"
 	"math/rand"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunOrganizationBillingRuleAttachmentConfig = `
@@ -98,7 +99,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 			return err
 		}
 
-		response, _, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+		response, _, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 		if err != nil {
 			return err
 		}
@@ -133,10 +134,10 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 			return err
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			response, _, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
+			response, _, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if len(response.GetData()) != 1 {
 				return nil
@@ -146,7 +147,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 
 			for _, e := range rawBillingRule.BoundOrganizations {
 				if e.GetId() == organizationId {
-					return resource.RetryableError(errors.New("organization_billing_rule_attachment still exists"))
+					return retry.RetryableError(errors.New("organization_billing_rule_attachment still exists"))
 				}
 			}
 			return nil

@@ -26,13 +26,13 @@ data "taikun_flavors" "small" {
   max_cpu             = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 
 locals {
   flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
-  images  = [for image in data.taikun_images.foo.images : image.id]
+  images  = [for image in data.taikun_images_openstack.foo.images : image.id]
 }
 
 resource "taikun_project" "foobar" {
@@ -87,10 +87,6 @@ resource "taikun_project" "foobar" {
       name        = "name"
       size        = 30
       volume_type = "ssd-2000iops"
-
-      // device_name would have been required with AWS:
-      // for example:
-      // device_name = "/dev/sda3"
 
       // lun_id would have been required with Azure
       // for example:

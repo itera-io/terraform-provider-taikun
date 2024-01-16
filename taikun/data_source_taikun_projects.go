@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -35,7 +35,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.Client.ProjectsApi.ProjectsList(context.TODO())
+	params := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO())
 
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
@@ -53,12 +53,12 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 
 	projects := make([]map[string]interface{}, len(response.GetData()))
 	for i, projectEntityDTO := range response.GetData() {
-		response, res, err := apiClient.Client.ServersApi.ServersDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
+		response, res, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 
-		responseVM, res, err := apiClient.Client.StandaloneApi.StandaloneDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
+		responseVM, res, err := apiClient.Client.StandaloneAPI.StandaloneDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -74,7 +74,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 		}
 
 		project := response.GetProject()
-		quotaResponse, res, err := apiClient.Client.ProjectQuotasApi.ProjectquotasList(context.TODO()).Id(project.GetProjectId()).Execute()
+		quotaResponse, res, err := apiClient.Client.ProjectQuotasAPI.ProjectquotasList(context.TODO()).Id(project.GetProjectId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -82,8 +82,13 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return nil
 		}
 
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectEntityDTO.GetId(), apiClient)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		responseProject := response.GetProject()
-		projects[i] = flattenTaikunProject(&responseProject, response.GetData(), responseVM.GetData(), boundFlavorDTOs, boundImageDTOs, &quotaResponse.GetData()[0])
+		projects[i] = flattenTaikunProject(&responseProject, response.GetData(), responseVM.GetData(), boundFlavorDTOs, boundImageDTOs, &quotaResponse.GetData()[0], deleteOnExpiration)
 	}
 	if err := d.Set("projects", projects); err != nil {
 		return diag.FromErr(err)

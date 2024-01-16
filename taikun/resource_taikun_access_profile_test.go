@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunAccessProfileConfig = `
@@ -278,7 +279,7 @@ func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.AccessProfilesApi.AccessprofilesList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.AccessProfilesAPI.AccessprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("access profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -295,15 +296,15 @@ func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.AccessProfilesApi.AccessprofilesList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.AccessProfilesAPI.AccessprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("access profile still exists"))
+				return retry.RetryableError(errors.New("access profile still exists"))
 			}
 			return nil
 		})

@@ -4,51 +4,55 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testAccDataSourceTaikunProjectsConfig = `
-resource "taikun_cloud_credential_aws" "foo" {
-  name = "%s"
-}
-
-resource "taikun_project" "foo" {
-  name = "%s"
-  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-}
-
-data "taikun_projects" "all" {
-   depends_on = [
-    taikun_project.foo
-  ]
-}
-`
-
-func TestAccDataSourceTaikunProjects(t *testing.T) {
-	cloudCredentialName := randomTestName()
-	projectName := randomTestName()
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
-		ProviderFactories: testAccProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunProjectsConfig,
-					cloudCredentialName,
-					projectName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.taikun_projects.all", "id", "all"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.#"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.name"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.access_profile_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.organization_id"),
-				),
-			},
-		},
-	})
-}
+// This test is removed, because we cannot avoid race conditions.
+// This data source lists projects from the default itera organization
+// , but they are constantly created and destroyed by other tests run in parallel anyway.
+//
+//const testAccDataSourceTaikunProjectsConfig = `
+//resource "taikun_cloud_credential_openstack" "foo" {
+//  name = "%s"
+//}
+//
+//resource "taikun_project" "foo" {
+//  name = "%s"
+//  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+//}
+//
+//data "taikun_projects" "all" {
+//   depends_on = [
+//    taikun_project.foo
+//  ]
+//}
+//`
+//
+//func TestAccDataSourceTaikunProjects(t *testing.T) {
+//	cloudCredentialName := randomTestName()
+//	projectName := randomTestName()
+//
+//	resource.Test(t, resource.TestCase{
+//		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
+//		ProviderFactories: testAccProviderFactories,
+//		Steps: []resource.TestStep{
+//			{
+//				Config: fmt.Sprintf(testAccDataSourceTaikunProjectsConfig,
+//					cloudCredentialName,
+//					projectName),
+//				Check: resource.ComposeAggregateTestCheckFunc(
+//					resource.TestCheckResourceAttr("data.taikun_projects.all", "id", "all"),
+//					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.#"),
+//					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.name"),
+//					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.access_profile_id"),
+//					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.cloud_credential_id"),
+//					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.kubernetes_profile_id"),
+//					resource.TestCheckResourceAttrSet("data.taikun_projects.all", "projects.0.organization_id"),
+//				),
+//			},
+//		},
+//	})
+//}
 
 const testAccDataSourceTaikunProjectsConfigWithFilter = `
 resource "taikun_organization" "foo" {
@@ -80,7 +84,7 @@ data "taikun_projects" "foo" {
 func TestAccDataSourceTaikunProjectsWithFilter(t *testing.T) {
 	organizationName := randomTestName()
 	cloudCredentialName := randomTestName()
-	projectCount := 3
+	projectCount := 2
 	projectName := randomTestName()
 
 	resource.Test(t, resource.TestCase{

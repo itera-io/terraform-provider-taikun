@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,7 +36,7 @@ func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.Resource
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.Client.S3CredentialsApi.S3credentialsList(context.TODO())
+	params := apiClient.Client.S3CredentialsAPI.S3credentialsList(context.TODO())
 	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")

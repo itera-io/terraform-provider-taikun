@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -18,7 +18,8 @@ func getReadAfterOpTimeout(isUpdate bool) time.Duration {
 }
 
 func timedOut(err error) bool {
-	timeoutErr, ok := err.(*resource.TimeoutError)
+	//timeoutErr, ok := err.(*resource.TimeoutError)
+	timeoutErr, ok := err.(*retry.TimeoutError)
 	return ok && timeoutErr.LastError == nil
 }
 
@@ -33,16 +34,16 @@ func readAfterUpdateWithRetries(readFunc schema.ReadContextFunc, ctx context.Con
 }
 
 func readAfterOpWithRetries(readFunc schema.ReadContextFunc, ctx context.Context, d *schema.ResourceData, meta interface{}, isUpdate bool) diag.Diagnostics {
-	retryErr := resource.RetryContext(ctx, getReadAfterOpTimeout(isUpdate), func() *resource.RetryError {
+	retryErr := retry.RetryContext(ctx, getReadAfterOpTimeout(isUpdate), func() *retry.RetryError {
 		readDiagnostics := readFunc(ctx, d, meta)
 		if readDiagnostics != nil {
 
 			if readDiagnostics[0].Summary == notFoundAfterCreateOrUpdateError {
-				return resource.RetryableError(errors.New("failed to read after create/update"))
+				return retry.RetryableError(errors.New("failed to read after create/update"))
 			}
 
 			readErrors := diagnosticsToString(readDiagnostics)
-			return resource.NonRetryableError(errors.New(readErrors))
+			return retry.NonRetryableError(errors.New(readErrors))
 		}
 		return nil
 	})

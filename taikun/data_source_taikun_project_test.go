@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunProjectConfig = `
-resource "taikun_cloud_credential_aws" "foo" {
+resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 }
 
 resource "taikun_project" "foo" {
   name = "%s"
-  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 
   auto_upgrade = %t
   monitoring = %t
@@ -34,7 +34,7 @@ func TestAccDataSourceTaikunProject(t *testing.T) {
 	expirationDate := "01/04/2999"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckOpenStack(t) },
 		ProviderFactories: testAccProviderFactories,
 		Steps: []resource.TestStep{
 			{

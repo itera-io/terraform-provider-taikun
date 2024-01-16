@@ -46,9 +46,11 @@ Read-Only:
 - `load_balancing_solution` (String)
 - `lock` (Boolean)
 - `name` (String)
+- `nvidia_gpu_operator` (Boolean)
 - `organization_id` (String)
 - `organization_name` (String)
 - `schedule_on_master` (Boolean)
 - `unique_cluster_name` (Boolean)
+- `wasm` (Boolean)
 
 

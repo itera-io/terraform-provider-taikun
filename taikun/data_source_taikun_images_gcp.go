@@ -2,7 +2,7 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
+	tk "github.com/itera-io/taikungoclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -63,7 +63,7 @@ func dataSourceTaikunImagesGCPRead(ctx context.Context, d *schema.ResourceData, 
 
 	var offset int32 = 0
 	apiClient := meta.(*tk.Client)
-	params := apiClient.Client.ImagesApi.ImagesGoogleImages(ctx, cloudCredentialID, d.Get("type").(string))
+	params := apiClient.Client.ImagesAPI.ImagesGoogleImages(ctx, cloudCredentialID, d.Get("type").(string))
 
 	var imageList []map[string]interface{}
 	for {

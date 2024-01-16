@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunBackupCredentialConfig = `
@@ -40,8 +41,8 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("S3_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("S3_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
@@ -72,8 +73,8 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("S3_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("S3_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
@@ -92,8 +93,8 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("S3_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("S3_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "true"),
@@ -125,8 +126,8 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("S3_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("S3_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
@@ -145,8 +146,8 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", newBackupCredentialName),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
-					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("S3_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("S3_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_region", os.Getenv("S3_REGION")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "lock", "false"),
@@ -169,7 +170,7 @@ func testAccCheckTaikunBackupCredentialExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.S3CredentialsApi.S3credentialsList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.S3CredentialsAPI.S3credentialsList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("backup credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -186,15 +187,15 @@ func testAccCheckTaikunBackupCredentialDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.S3CredentialsApi.S3credentialsList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.S3CredentialsAPI.S3credentialsList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("backup credential still exists ()"))
+				return retry.RetryableError(errors.New("backup credential still exists ()"))
 			}
 			return nil
 		})

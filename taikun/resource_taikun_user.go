@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -127,7 +127,7 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 		body.SetOrganizationId(organizationId)
 	}
 
-	result, res, err := apiClient.Client.UsersApi.UsersCreate(context.TODO()).CreateUserCommand(body).Execute()
+	result, res, err := apiClient.Client.UsersAPI.UsersCreate(context.TODO()).CreateUserCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -148,7 +148,7 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 		id := d.Id()
 		d.SetId("")
 
-		response, res, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.UsersAPI.UsersList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -184,7 +184,7 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	body.SetRole(tkcore.UserRole(d.Get("role").(string)))
 	body.SetIsApprovedByPartner(true)
 
-	res, err := apiClient.Client.UsersApi.UsersUpdateUser(context.TODO()).UpdateUserCommand(body).Execute()
+	res, err := apiClient.Client.UsersAPI.UsersUpdateUser(context.TODO()).UpdateUserCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
@@ -196,7 +196,7 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 func resourceTaikunUserDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
-	res, err := apiClient.Client.UsersApi.UsersDelete(context.TODO(), d.Id()).Execute()
+	res, err := apiClient.Client.UsersAPI.UsersDelete(context.TODO(), d.Id()).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))

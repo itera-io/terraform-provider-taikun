@@ -13,7 +13,9 @@ var testAccProviderFactories map[string]func() (*schema.Provider, error)
 
 func init() {
 
-	os.Setenv("TAIKUN_API_HOST", "api.taikun.dev")
+	//  Probably leftover from testing. Default endpoint is production.
+	// TF provider is now respecting endpoint in ENV, but provider configuration has precedence.
+	// os.Setenv("TAIKUN_API_HOST", "api.taikun.dev")
 
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
@@ -108,11 +110,11 @@ func testAccPreCheckGCP(t *testing.T) {
 }
 
 func testAccPreCheckS3(t *testing.T) {
-	if err := os.Getenv("AWS_ACCESS_KEY_ID"); err == "" {
-		t.Fatal("AWS_ACCESS_KEY_ID must be set for acceptance tests")
+	if err := os.Getenv("S3_ACCESS_KEY_ID"); err == "" {
+		t.Fatal("S3_ACCESS_KEY_ID must be set for acceptance tests")
 	}
-	if err := os.Getenv("AWS_SECRET_ACCESS_KEY"); err == "" {
-		t.Fatal("AWS_SECRET_ACCESS_KEY must be set for acceptance tests")
+	if err := os.Getenv("S3_SECRET_ACCESS_KEY"); err == "" {
+		t.Fatal("S3_SECRET_ACCESS_KEY must be set for acceptance tests")
 	}
 	if err := os.Getenv("S3_ENDPOINT"); err == "" {
 		t.Fatal("S3_ENDPOINT must be set for acceptance tests")
@@ -123,22 +125,22 @@ func testAccPreCheckS3(t *testing.T) {
 }
 
 func testAccPreCheckAzure(t *testing.T) {
-	if err := os.Getenv("ARM_SUBSCRIPTION_ID"); err == "" {
-		t.Fatal("ARM_SUBSCRIPTION_ID must be set for acceptance tests")
+	if err := os.Getenv("AZURE_SUBSCRIPTION"); err == "" {
+		t.Fatal("AZURE_SUBSCRIPTION must be set for acceptance tests")
 	}
-	if err := os.Getenv("ARM_CLIENT_ID"); err == "" {
-		t.Fatal("ARM_CLIENT_ID must be set for acceptance tests")
+	if err := os.Getenv("AZURE_CLIENT_ID"); err == "" {
+		t.Fatal("AZURE_CLIENT_ID must be set for acceptance tests")
 	}
-	if err := os.Getenv("ARM_TENANT_ID"); err == "" {
-		t.Fatal("ARM_TENANT_ID must be set for acceptance tests")
+	if err := os.Getenv("AZURE_TENANT"); err == "" {
+		t.Fatal("AZURE_TENANT must be set for acceptance tests")
 	}
-	if err := os.Getenv("ARM_CLIENT_SECRET"); err == "" {
-		t.Fatal("ARM_CLIENT_SECRET must be set for acceptance tests")
+	if err := os.Getenv("AZURE_SECRET"); err == "" {
+		t.Fatal("AZURE_SECRET must be set for acceptance tests")
 	}
-	if err := os.Getenv("ARM_AZ_COUNT"); err == "" {
-		t.Fatal("ARM_AZ_COUNT must be set for acceptance tests")
+	if err := os.Getenv("AZURE_AZ_COUNT"); err == "" {
+		t.Fatal("AZURE_AZ_COUNT must be set for acceptance tests")
 	}
-	if err := os.Getenv("ARM_LOCATION"); err == "" {
-		t.Fatal("ARM_LOCATION must be set for acceptance tests")
+	if err := os.Getenv("AZURE_LOCATION"); err == "" {
+		t.Fatal("AZURE_LOCATION must be set for acceptance tests")
 	}
 }

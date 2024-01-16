@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunKubernetesProfileConfig = `
@@ -37,6 +38,8 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
 				),
 			},
 			{
@@ -83,6 +86,46 @@ func TestAccResourceTaikunKubernetesProfileNoUniqueClusterName(t *testing.T) {
 	})
 }
 
+const TestAccResourceTaikunKubernetesProfileNvidiaGpuEnableConfig = `
+resource "taikun_kubernetes_profile" "foo" {
+	name = "%s"
+	nvidia_gpu_operator = true
+}
+`
+
+func TestAccResourceTaikunKubernetesProfileNvidiaGpuEnable(t *testing.T) {
+	firstName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckPrometheus(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(TestAccResourceTaikunKubernetesProfileNvidiaGpuEnableConfig, firstName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunKubernetesProfileExists,
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "schedule_on_master", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "true"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "wasm"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "false"),
+				),
+			},
+			{
+				ResourceName: "taikun_kubernetes_profile.foo",
+				ImportState:  true,
+			},
+		},
+	})
+}
+
 func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 	firstName := randomTestName()
 
@@ -102,6 +145,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "unique_cluster_name"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "unique_cluster_name", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "wasm"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "false"),
 				),
 			},
 			{
@@ -115,6 +164,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "organization_name"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "unique_cluster_name"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "unique_cluster_name", "false"),
+					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "wasm"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "false"),
 				),
 			},
 		},
@@ -131,7 +186,7 @@ func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("kubernetes profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -148,15 +203,15 @@ func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.KubernetesProfilesApi.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("kubernetes profile still exists"))
+				return retry.RetryableError(errors.New("kubernetes profile still exists"))
 			}
 			return nil
 		})

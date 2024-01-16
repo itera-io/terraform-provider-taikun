@@ -5,18 +5,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccResourceTaikunProjectConfigWithImages = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 }
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  images = [for image in data.taikun_images_openstack.foo.images: image.id ]
 }
 resource "taikun_project" "foo" {
   name = "%s"
@@ -35,7 +35,7 @@ func TestAccResourceTaikunProjectModifyImages(t *testing.T) {
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-		resource.TestCheckResourceAttrPair("taikun_project.foo", "images.#", "data.taikun_images.foo", "images.#"),
+		resource.TestCheckResourceAttrPair("taikun_project.foo", "images.#", "data.taikun_images_openstack.foo", "images.#"),
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -72,12 +72,13 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  # Tests will be run only on Ubuntu images to avoid pipeline fail because of bad test image in dev 
+  images = [for image in data.taikun_images_openstack.foo.images: image.id if can( regex("(?i)ubuntu", image.name) )]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
@@ -97,18 +98,18 @@ resource "taikun_project" "foo" {
   quota_vm_volume_size = 512
 
   vm {
-    name = "my-vm"
+    name = "tf-acc-vm"
     flavor = local.flavors[%d]
     image_id = local.images[0]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
     %s
     disk {
-      name = "mydisk"
+      name = "tf-acc-disk"
       size = 30
     }
     disk {
-      name = "mydisk2"
+      name = "tf-acc-disk2"
       size = 30
       volume_type = "ssd"
     }
@@ -374,8 +375,16 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
+data "taikun_images_aws" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  latest              = true
+  # Ubuntu latest can be unreleased testing version. For stability we use debian.
+  owners              = ["Debian"] 
+}
+
 locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+  images = [for image in data.taikun_images_aws.foo.images: image.id]
 }
 
 resource "taikun_standalone_profile" "foo" {
@@ -387,23 +396,21 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   flavors = local.flavors
-  images = ["ami-0f94f6b47f28fb0e7"]
+  images = local.images
 
   vm {
-    name = "my-vm"
+    name = "tf-acc-vm"
     flavor = local.flavors[%d]
-    image_id = "ami-0f94f6b47f28fb0e7"
+    image_id = local.images[%d]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
     disk {
-      name = "mydisk"
+      name = "tf-acc-disk"
       size = 30
-      device_name = "/dev/sde"
     }
     disk {
-      name = "mydisk2"
+      name = "tf-acc-disk2"
       size = 30
-      device_name = "/dev/sdf"
     }
     //tag {
     //  key = "key"
@@ -432,6 +439,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					cloudCredentialName,
 					standaloneProfileName,
 					projectName,
+					0,
 					0,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -476,6 +484,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					standaloneProfileName,
 					projectName,
 					0,
+					0,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -500,6 +509,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					standaloneProfileName,
 					projectName,
 					1,
+					0,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -536,15 +546,16 @@ data "taikun_flavors" "foo" {
   max_ram = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_azure" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_azure.foo.id
-  azure_publisher = "Canonical"
-  azure_offer = "UbuntuServer"
-  azure_sku = "19.04"
+  publisher = "Canonical"
+  offer = "0001-com-ubuntu-server-jammy"
+  sku = "22_04-lts"
+  latest = true
 }
 
 locals {
-  images = [for image in data.taikun_images.foo.images: image.id]
+  images = [for image in data.taikun_images_azure.foo.images: image.id]
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
 }
 
@@ -560,7 +571,7 @@ resource "taikun_project" "foo" {
   images = local.images
 
   vm {
-    name = "my-vm"
+    name = "tf-acc-vm"
     flavor = local.flavors[%d]
     image_id = local.images[0]
     username = "foobar"
@@ -568,11 +579,11 @@ resource "taikun_project" "foo" {
     volume_size = 60
     %s
     disk {
-      name = "mydisk"
+      name = "tf-acc-disk"
       size = 30
     }
     disk {
-      name = "mydisk2"
+      name = "tf-acc-disk2"
       size = 30
       volume_type = "Premium_LRS"
     }
@@ -601,7 +612,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,
@@ -645,7 +656,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,
@@ -671,7 +682,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					1,
@@ -711,7 +722,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					standaloneProfileName,
 					projectName,
 					0,

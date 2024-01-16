@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -127,7 +127,7 @@ func resourceTaikunKubeconfigCreate(ctx context.Context, d *schema.ResourceData,
 	}
 	body.SetProjectId(projectID)
 
-	response, res, err := apiClient.Client.KubeConfigApi.KubeconfigCreate(ctx).CreateKubeConfigCommand(body).Execute()
+	response, res, err := apiClient.Client.KubeConfigAPI.KubeconfigCreate(ctx).CreateKubeConfigCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -156,7 +156,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.KubeConfigApi.KubeconfigList(context.TODO()).Id(id32).ProjectId(projectID).Execute()
+		response, res, err := apiClient.Client.KubeConfigAPI.KubeconfigList(context.TODO()).Id(id32).ProjectId(projectID).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -195,7 +195,7 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 	body := tkcore.DeleteKubeConfigCommand{}
 	body.SetId(id)
 
-	res, err := apiClient.Client.KubeConfigApi.KubeconfigDelete(context.TODO()).DeleteKubeConfigCommand(body).Execute()
+	res, err := apiClient.Client.KubeConfigAPI.KubeconfigDelete(context.TODO()).DeleteKubeConfigCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
@@ -231,7 +231,7 @@ func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, api
 	body := tkcore.DownloadKubeConfigCommand{}
 	body.SetProjectId(projectID)
 	body.SetId(kubeconfigID)
-	response, _, err := apiClient.Client.KubeConfigApi.KubeconfigDownload(context.TODO()).DownloadKubeConfigCommand(body).Execute()
+	response, _, err := apiClient.Client.KubeConfigAPI.KubeconfigDownload(context.TODO()).DownloadKubeConfigCommand(body).Execute()
 
 	if err != nil {
 		return "Failed to retrieve content of kubeconfig"

@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 	"strings"
 
@@ -155,7 +155,7 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, _, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileCreate(ctx).StandAloneProfileCreateCommand(body).Execute()
+	createResult, _, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileCreate(ctx).StandAloneProfileCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,7 +189,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -203,7 +203,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 
 		rawStandaloneProfile := response.GetData()[0]
 
-		securityGroupResponse, _, err := apiClient.Client.SecurityGroupApi.SecuritygroupList(context.TODO(), id).Execute()
+		securityGroupResponse, _, err := apiClient.Client.SecurityGroupAPI.SecuritygroupList(context.TODO(), id).Execute()
 		if err != nil {
 
 			/*
@@ -240,7 +240,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		body.SetId(id)
 		body.SetName(d.Get("name").(string))
 
-		_, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
+		_, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -263,7 +263,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			_, err = apiClient.Client.SecurityGroupApi.SecuritygroupDelete(ctx, secId).Execute()
+			_, err = apiClient.Client.SecurityGroupAPI.SecuritygroupDelete(ctx, secId).Execute()
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -281,7 +281,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 			body.SetRemoteIpPrefix(rawSecurityGroup["cidr"].(string))
 			body.SetStandAloneProfileId(id)
 
-			_, res, err := apiClient.Client.SecurityGroupApi.SecuritygroupCreate(ctx).CreateSecurityGroupCommand(body).Execute()
+			_, res, err := apiClient.Client.SecurityGroupAPI.SecuritygroupCreate(ctx).CreateSecurityGroupCommand(body).Execute()
 			if err != nil {
 				return diag.FromErr(tk.CreateError(res, err))
 			}
@@ -301,7 +301,7 @@ func resourceTaikunStandaloneProfileDelete(ctx context.Context, d *schema.Resour
 	body := tkcore.DeleteStandAloneProfileCommand{}
 	body.SetId(id)
 
-	res, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
+	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -344,6 +344,6 @@ func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *tk.Clie
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.StandaloneProfileApi.StandaloneprofileLockManagement(context.TODO()).StandAloneProfileLockManagementCommand(body).Execute()
+	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileLockManagement(context.TODO()).StandAloneProfileLockManagementCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunFlavorsAWSConfig = `
@@ -77,7 +77,7 @@ func TestAccDataSourceTaikunFlavorsAzure(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunFlavorsAzureConfig,
 					cloudCredentialName,
-					os.Getenv("ARM_LOCATION"),
+					os.Getenv("AZURE_LOCATION"),
 					cpu, cpu,
 					ram, ram,
 				),

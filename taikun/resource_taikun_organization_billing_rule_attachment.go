@@ -3,8 +3,8 @@ package taikun
 import (
 	"context"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -78,7 +78,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 		PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
 	}
 
-	res, err := client.Client.PrometheusRulesApi.PrometheusrulesBindOrganizations(ctx).BindPrometheusOrganizationsCommand(body).Execute()
+	res, err := client.Client.PrometheusRulesAPI.PrometheusrulesBindOrganizations(ctx).BindPrometheusOrganizationsCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -105,7 +105,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 			return diag.Errorf("Error while reading taikun_organization_billing_rule_attachment : %s", err)
 		}
 
-		response, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(ctx).Id(billingRuleId).Execute()
+		response, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(ctx).Id(billingRuleId).Execute()
 
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
@@ -155,7 +155,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
 	}
 
-	organizationsListResponse, res, err := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO()).Id(organizationId).Execute()
+	organizationsListResponse, res, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(organizationId).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
@@ -165,7 +165,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return nil
 	}
 
-	billingRulesListResponse, res, err := apiClient.Client.PrometheusRulesApi.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+	billingRulesListResponse, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -184,7 +184,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
 	}
 
-	res, err = apiClient.Client.PrometheusRulesApi.PrometheusrulesBindOrganizations(context.TODO()).BindPrometheusOrganizationsCommand(body).Execute()
+	res, err = apiClient.Client.PrometheusRulesAPI.PrometheusrulesBindOrganizations(context.TODO()).BindPrometheusOrganizationsCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

@@ -1,6 +1,6 @@
 resource "taikun_cloud_credential_azure" "foo" {
-  name              = "foo"
-  location          = "northeurope"
+  name     = "foo"
+  location = "northeurope"
 }
 
 data "taikun_images_azure" "foo" {

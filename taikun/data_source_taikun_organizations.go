@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,7 +31,7 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, d *schema.ResourceData
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.OrganizationsApi.OrganizationsList(context.TODO())
+	params := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO())
 
 	var rawOrganizationsList []tkcore.OrganizationDetailsDto
 	for {

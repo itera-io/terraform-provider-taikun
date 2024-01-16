@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkshowback "github.com/chnyda/taikungoclient/showbackclient"
+	tk "github.com/itera-io/taikungoclient"
+	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,7 +36,7 @@ func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.ShowbackClient.ShowbackRulesApi.ShowbackrulesList(context.TODO())
+	params := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(context.TODO())
 	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")

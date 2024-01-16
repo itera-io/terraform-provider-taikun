@@ -2,8 +2,8 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/chnyda/taikungoclient"
-	tkcore "github.com/chnyda/taikungoclient/client"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -183,7 +183,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.AWSCloudCredentialApi.AwsCreate(context.TODO()).CreateAwsCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsCreate(context.TODO()).CreateAwsCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -217,7 +217,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -262,7 +262,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 		updateBody.SetAwsAccessKeyId(d.Get("access_key_id").(string))
 		updateBody.SetAwsSecretAccessKey(d.Get("secret_access_key").(string))
 
-		res, err := apiClient.Client.AWSCloudCredentialApi.AwsUpdate(context.TODO()).UpdateAwsCommand(updateBody).Execute()
+		res, err := apiClient.Client.AWSCloudCredentialAPI.AwsUpdate(context.TODO()).UpdateAwsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -290,6 +290,7 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *tkcore.AmazonCredentialsL
 		"organization_name":  rawAWSCredential.GetOrganizationName(),
 		"availability_zones": rawAWSCredential.GetAvailabilityZones(),
 		"region":             rawAWSCredential.GetRegion(),
+		"az_count":           rawAWSCredential.GetAvailabilityZonesCount(),
 	}
 }
 
@@ -298,6 +299,6 @@ func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(getLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialApi.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

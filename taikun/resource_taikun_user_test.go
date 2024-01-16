@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunUserConfig = `
@@ -140,7 +141,7 @@ func testAccCheckTaikunUserExists(state *terraform.State) error {
 			continue
 		}
 
-		response, _, err := client.Client.UsersApi.UsersList(context.TODO()).Id(rs.Primary.ID).Execute()
+		response, _, err := client.Client.UsersAPI.UsersList(context.TODO()).Id(rs.Primary.ID).Execute()
 
 		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
@@ -158,14 +159,14 @@ func testAccCheckTaikunUserDestroy(state *terraform.State) error {
 			continue
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			response, _, err := client.Client.UsersApi.UsersList(context.TODO()).Id(rs.Primary.ID).Execute()
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
+			response, _, err := client.Client.UsersAPI.UsersList(context.TODO()).Id(rs.Primary.ID).Execute()
 
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 0 {
-				return resource.RetryableError(errors.New("user still exists"))
+				return retry.RetryableError(errors.New("user still exists"))
 			}
 			return nil
 		})

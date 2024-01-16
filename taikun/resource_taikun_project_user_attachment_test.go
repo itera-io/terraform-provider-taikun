@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	tk "github.com/chnyda/taikungoclient"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const testAccResourceTaikunProjectUserAttachmentConfig = `
@@ -75,7 +76,7 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 			return err
 		}
 
-		response, _, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
+		response, _, err := apiClient.Client.UsersAPI.UsersList(context.TODO()).Id(userId).Execute()
 		if err != nil {
 			return err
 		}
@@ -110,10 +111,10 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 			return err
 		}
 
-		retryErr := resource.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *resource.RetryError {
-			response, _, err := apiClient.Client.UsersApi.UsersList(context.TODO()).Id(userId).Execute()
+		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
+			response, _, err := apiClient.Client.UsersAPI.UsersList(context.TODO()).Id(userId).Execute()
 			if err != nil {
-				return resource.NonRetryableError(err)
+				return retry.NonRetryableError(err)
 			}
 			if response.GetTotalCount() != 1 {
 				return nil
@@ -123,7 +124,7 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 
 			for _, e := range rawUser.BoundProjects {
 				if e.GetProjectId() == projectId {
-					return resource.RetryableError(errors.New("project_user_attachment still exists"))
+					return retry.RetryableError(errors.New("project_user_attachment still exists"))
 				}
 			}
 			return nil

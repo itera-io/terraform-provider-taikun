@@ -63,13 +63,13 @@ data "taikun_flavors" "small" {
   max_cpu             = 8
 }
 
-data "taikun_images" "foo" {
+data "taikun_images_openstack" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 }
 
 locals {
   flavors = [for flavor in data.taikun_flavors.small.flavors : flavor.name]
-  images  = [for image in data.taikun_images.foo.images : image.id]
+  images  = [for image in data.taikun_images_openstack.foo.images : image.id]
 }
 
 resource "taikun_project" "foobar" {
@@ -124,10 +124,6 @@ resource "taikun_project" "foobar" {
       name        = "name"
       size        = 30
       volume_type = "ssd-2000iops"
-
-      // device_name would have been required with AWS:
-      // for example:
-      // device_name = "/dev/sda3"
 
       // lun_id would have been required with Azure
       // for example:
@@ -230,6 +226,7 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
+- `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
 
@@ -262,6 +259,7 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+- `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
 
@@ -332,7 +330,6 @@ Required:
 
 Optional:
 
-- `device_name` (String) Name of the device (required with AWS).
 - `lun_id` (Number) LUN ID (required with Azure).
 - `volume_type` (String) Type of the volume (only valid with OpenStack).
 
