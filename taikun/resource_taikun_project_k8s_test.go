@@ -343,7 +343,6 @@ func TestAccResourceTaikunProjectWasm(t *testing.T) {
 const testAccResourceTaikunProjectMinimal = `
 resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
-  public_network_name = "public-demo"
 }
 
 data "taikun_flavors" "foo" {
