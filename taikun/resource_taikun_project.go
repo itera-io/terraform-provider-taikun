@@ -287,7 +287,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Minimum number of workers created by autoscaler (specify with autoscaler_name and autoscaler_flavor).",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size"},
 		},
@@ -295,7 +294,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Maximum number of workers created by autoscaler (specify with autoscaler_name and autoscaler_flavor).",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
 		},
@@ -869,6 +867,12 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("vm") {
 		err = resourceTaikunProjectUpdateVMs(ctx, d, apiClient, id)
 		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("autoscaler_min_size") || d.HasChange("autoscaler_max_size") {
+		if err := resourceTaikunProjectUpdateAutoscaler(ctx, d, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}

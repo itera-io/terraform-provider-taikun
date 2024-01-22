@@ -464,3 +464,21 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 	}
 	return nil
 }
+
+func resourceTaikunProjectUpdateAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	body := tkcore.EditAutoscalingCommand{}
+	body.SetProjectId(projectID)
+	body.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
+	body.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
+
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableMonitoring", "DisableMonitoring"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
