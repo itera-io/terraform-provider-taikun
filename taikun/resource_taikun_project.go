@@ -267,6 +267,46 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 				Schema: taikunVMSchema(),
 			},
 		},
+		"autoscaler_name": {
+			Description:  "Autoscaler group name (specify with autoscaler_flavor).",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringLenBetween(3, 10),
+			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+		},
+		"autoscaler_flavor": {
+			Description:  "Flavor of workers created by autoscaler (specify with autoscaler_name).",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			RequiredWith: []string{"autoscaler_name", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+		},
+		"autoscaler_min_size": {
+			Description:  "Minimum number of workers created by autoscaler (specify with autoscaler_name and autoscaler_flavor).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size"},
+		},
+		"autoscaler_max_size": {
+			Description:  "Maximum number of workers created by autoscaler (specify with autoscaler_name and autoscaler_flavor).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
+		},
+		"autoscaler_disk_size": {
+			Description:  "Disk size of autoscaler in GB (specify with autoscaler name, flavor, min and max size).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			ValidateFunc: validation.IntAtLeast(30),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_max_size", "autoscaler_min_size"},
+		},
 	}
 }
 
@@ -398,6 +438,24 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
 		body.SetKubernetesVersion(kubernetesVersion.(string))
+	}
+
+	// Autoscaler
+	autoscalerName, autoscalerNameIsSet := d.GetOk("autoscaler_name")
+	autoscalerFlavor, autoscalerFlavorIsSet := d.GetOk("autoscaler_flavor")
+	autoscalerMin, autoscalerMinIsSet := d.GetOk("autoscaler_min_size")
+	autoscalerMax, autoscalerMaxIsSet := d.GetOk("autoscaler_max_size")
+	autoscalerDisk, autoscalerDiskIsSet := d.GetOk("autoscaler_disk_size")
+
+	if autoscalerNameIsSet && autoscalerFlavorIsSet && autoscalerMinIsSet && autoscalerMaxIsSet && autoscalerDiskIsSet {
+		body.SetAutoscalingGroupName(autoscalerName.(string))
+		body.SetAutoscalingFlavor(autoscalerFlavor.(string))
+		body.SetMinSize(int32(autoscalerMin.(int)))
+		body.SetMaxSize(int32(autoscalerMax.(int)))
+		body.SetDiskSize(float64(gibiByteToByte(autoscalerDisk.(int))))
+
+		body.SetAutoscalingEnabled(true)
+		body.SetAutoscalingSpotEnabled(false)
 	}
 
 	// Send project creation request
@@ -841,6 +899,17 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		d.Get("server_kubemaster"),
 		d.Get("server_kubeworker"),
 	)
+
+	// Get all autoscaler servers
+	autoscalerData, _, err := apiClient.Client.ServersAPI.ServersList(ctx).AutoscalingGroup(d.Get("autoscaler_name").(string)).Execute()
+	// Add the ids to the list of servers about to be deleted
+	var i int32 = 0
+	for ; i < autoscalerData.GetTotalCount(); i++ {
+		serversToPurge = append(serversToPurge, map[string]interface{}{"id": fmt.Sprint(autoscalerData.GetData()[0].GetId())})
+	}
+	// errstring := fmt.Sprint(serversToPurge)
+	// tflog.Error(ctx, errstring)
+
 	if len(serversToPurge) != 0 {
 		err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
 		if err != nil {
@@ -965,11 +1034,17 @@ func flattenTaikunProject(
 		"quota_vm_cpu_units":    projectQuotaDTO.GetVmCpu(),
 		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.GetVmRam()),
 		"quota_vm_volume_size":  projectQuotaDTO.GetVmVolumeSize(),
+		"autoscaler_name":       projectDetailsDTO.GetAutoscalingGroupName(),
+		"autoscaler_flavor":     projectDetailsDTO.GetFlavor(),
+		"autoscaler_min_size":   projectDetailsDTO.GetMinSize(),
+		"autoscaler_max_size":   projectDetailsDTO.GetMaxSize(),
+		"autoscaler_disk_size":  byteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
 	}
 
 	bastions := make([]map[string]interface{}, 0)
 	kubeMasters := make([]map[string]interface{}, 0)
 	kubeWorkers := make([]map[string]interface{}, 0)
+	skip_this_server := false
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
 			"created_by":       server.GetCreatedBy(),
@@ -1004,14 +1079,23 @@ func flattenTaikunProject(
 					"key":   *rawLabel.Key.Get(),
 					"value": *rawLabel.Value.Get(),
 				}
-			}
-			serverMap["kubernetes_node_label"] = labels
-			serverMap["wasm"] = server.GetWasmEnabled()
 
-			if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
-				kubeMasters = append(kubeMasters, serverMap)
-			} else {
-				kubeWorkers = append(kubeWorkers, serverMap)
+				// Autoscaler If label shows the node is created by autoscaler - ignore it, for TF it is invisible.
+				if *rawLabel.Key.Get() == "taikun.cloud/autoscaling-group" {
+					skip_this_server = true
+				}
+			}
+
+			// Add server to state only if its not an autoscaler server
+			if skip_this_server == false {
+				serverMap["kubernetes_node_label"] = labels
+				serverMap["wasm"] = server.GetWasmEnabled()
+
+				if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
+					kubeMasters = append(kubeMasters, serverMap)
+				} else {
+					kubeWorkers = append(kubeWorkers, serverMap)
+				}
 			}
 		}
 	}
