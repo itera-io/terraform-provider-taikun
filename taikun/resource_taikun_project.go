@@ -906,6 +906,9 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 
 	// Get all autoscaler servers
 	autoscalerData, _, err := apiClient.Client.ServersAPI.ServersList(ctx).AutoscalingGroup(d.Get("autoscaler_name").(string)).Execute()
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	// Add the ids to the list of servers about to be deleted
 	var i int32 = 0
 	for ; i < autoscalerData.GetTotalCount(); i++ {
@@ -1091,7 +1094,7 @@ func flattenTaikunProject(
 			}
 
 			// Add server to state only if its not an autoscaler server
-			if skip_this_server == false {
+			if !skip_this_server {
 				serverMap["kubernetes_node_label"] = labels
 				serverMap["wasm"] = server.GetWasmEnabled()
 
