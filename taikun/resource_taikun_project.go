@@ -271,7 +271,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Autoscaler group name (specify with autoscaler_flavor).",
 			Type:         schema.TypeString,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringLenBetween(3, 10),
 			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
 		},
@@ -279,9 +278,15 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Flavor of workers created by autoscaler (specify with autoscaler_name).",
 			Type:         schema.TypeString,
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			RequiredWith: []string{"autoscaler_name", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+		},
+		"autoscaler_disk_size": {
+			Description:  "Disk size of autoscaler in GB (specify with autoscaler name, flavor, min and max size).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(30),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_max_size", "autoscaler_min_size"},
 		},
 		"autoscaler_min_size": {
 			Description:  "Minimum number of workers created by autoscaler (specify with autoscaler_name and autoscaler_flavor).",
@@ -296,14 +301,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(1),
 			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
-		},
-		"autoscaler_disk_size": {
-			Description:  "Disk size of autoscaler in GB (specify with autoscaler name, flavor, min and max size).",
-			Type:         schema.TypeInt,
-			Optional:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.IntAtLeast(30),
-			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_max_size", "autoscaler_min_size"},
 		},
 	}
 }
@@ -445,7 +442,27 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	autoscalerMax, autoscalerMaxIsSet := d.GetOk("autoscaler_max_size")
 	autoscalerDisk, autoscalerDiskIsSet := d.GetOk("autoscaler_disk_size")
 
-	if autoscalerNameIsSet && autoscalerFlavorIsSet && autoscalerMinIsSet && autoscalerMaxIsSet && autoscalerDiskIsSet {
+	// If we would specify a flavor not bound to project, Taikun would bind it for us
+	// - terraform would be very confused by this since it did not bind the flavor.
+	// For that reason Taikun TF proivder forbids to specify autoscaler flavor outside of bound flavors.
+	if autoscalerFlavor != "" {
+		desiredFlavorIsBound := false
+		for _, oneFlavor := range flavors {
+			if oneFlavor == autoscalerFlavor {
+				desiredFlavorIsBound = true
+			}
+		}
+		if !desiredFlavorIsBound {
+			return diag.Errorf("Error: Autoscaler's flavor must be present in flavors already bound to project.")
+		}
+	}
+
+	if autoscalerNameIsSet && autoscalerName != "" &&
+		autoscalerFlavorIsSet && autoscalerFlavor != "" &&
+		autoscalerMinIsSet && autoscalerMin != 0 &&
+		autoscalerMaxIsSet && autoscalerMax != 0 &&
+		autoscalerDiskIsSet && autoscalerDisk != 0 {
+
 		body.SetAutoscalingGroupName(autoscalerName.(string))
 		body.SetAutoscalingFlavor(autoscalerFlavor.(string))
 		body.SetMinSize(int32(autoscalerMin.(int)))
@@ -454,6 +471,8 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 		body.SetAutoscalingEnabled(true)
 		body.SetAutoscalingSpotEnabled(false)
+	} else {
+		body.SetAutoscalingEnabled(false)
 	}
 
 	// Send project creation request
@@ -734,11 +753,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
-	if d.HasChange("flavors") {
-		if err = resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
-			return diag.FromErr(err)
-		}
-	}
 	if d.HasChange("images") {
 		if err = resourceTaikunProjectEditImages(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
@@ -871,8 +885,35 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	if d.HasChange("autoscaler_min_size") || d.HasChange("autoscaler_max_size") {
+	// Autoscaler disable and enable with different flavor and autoscaling group name
+	// Precedence: high, first we check if we must recreate the whole autoscaler
+	iWishToDisable := d.Get("autoscaler_name") == "" || d.Get("autoscaler_flavor") == "" || d.Get("autoscaler_disk_size") == "0"
+	if d.HasChange("autoscaler_name") || d.HasChange("autoscaler_flavor") || d.HasChange("autoscaler_disk_size") {
+		if iWishToDisable {
+			// Disable autoscaler
+			if err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			// Enable or Recreate autoscaler with changes
+			if err := resourceTaikunProjectRecreateAutoscaler(ctx, d, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	// Autoscaler edit
+	// Precedence: medium, worst case, autoscaler was just recreated
+	if (d.HasChange("autoscaler_min_size") || d.HasChange("autoscaler_max_size")) && !iWishToDisable {
 		if err := resourceTaikunProjectUpdateAutoscaler(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// Flavor changes must be checked after autoscaler
+	// Precedence: low, autoscaler flavors should not interfere
+	if d.HasChange("flavors") {
+		if err = resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
