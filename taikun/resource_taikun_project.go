@@ -302,6 +302,12 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.IntAtLeast(1),
 			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
 		},
+		"autoscaler_spot_enabled": {
+			Description:  "When enabled, autoscaler will use spot flavors for autoscaled workers (be sure to enable spot flavors for this project).",
+			Type:         schema.TypeBool,
+			Optional:     true,
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size", "autoscaler_max_size"},
+		},
 	}
 }
 
@@ -441,6 +447,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	autoscalerMin, autoscalerMinIsSet := d.GetOk("autoscaler_min_size")
 	autoscalerMax, autoscalerMaxIsSet := d.GetOk("autoscaler_max_size")
 	autoscalerDisk, autoscalerDiskIsSet := d.GetOk("autoscaler_disk_size")
+	autoscalerSpot, autoscalerSpotIsSet := d.GetOk("autoscaler_spot_enabled")
 
 	// If we would specify a flavor not bound to project, Taikun would bind it for us
 	// - terraform would be very confused by this since it did not bind the flavor.
@@ -457,19 +464,23 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	if autoscalerNameIsSet && autoscalerName != "" &&
-		autoscalerFlavorIsSet && autoscalerFlavor != "" &&
-		autoscalerMinIsSet && autoscalerMin != 0 &&
-		autoscalerMaxIsSet && autoscalerMax != 0 &&
-		autoscalerDiskIsSet && autoscalerDisk != 0 {
+	if autoscalerNameIsSet &&
+		autoscalerFlavorIsSet &&
+		autoscalerDiskIsSet &&
+		autoscalerMinIsSet &&
+		autoscalerMaxIsSet {
 
 		body.SetAutoscalingGroupName(autoscalerName.(string))
 		body.SetAutoscalingFlavor(autoscalerFlavor.(string))
 		body.SetMinSize(int32(autoscalerMin.(int)))
 		body.SetMaxSize(int32(autoscalerMax.(int)))
 		body.SetDiskSize(float64(gibiByteToByte(autoscalerDisk.(int))))
-
 		body.SetAutoscalingEnabled(true)
+
+		if autoscalerSpotIsSet {
+			body.SetAutoscalingSpotEnabled(autoscalerSpot.(bool))
+		}
+
 		body.SetAutoscalingSpotEnabled(false)
 	} else {
 		body.SetAutoscalingEnabled(false)
@@ -888,7 +899,8 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	// Autoscaler disable and enable with different flavor and autoscaling group name
 	// Precedence: high, first we check if we must recreate the whole autoscaler
 	iWishToDisable := d.Get("autoscaler_name") == "" || d.Get("autoscaler_flavor") == "" || d.Get("autoscaler_disk_size") == "0"
-	if d.HasChange("autoscaler_name") || d.HasChange("autoscaler_flavor") || d.HasChange("autoscaler_disk_size") {
+	iJustRecreated := false
+	if d.HasChange("autoscaler_name") || d.HasChange("autoscaler_flavor") || d.HasChange("autoscaler_disk_size") || d.HasChange("autoscaler_spot_enabled") {
 		if iWishToDisable {
 			// Disable autoscaler
 			if err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient); err != nil {
@@ -899,12 +911,13 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			if err := resourceTaikunProjectRecreateAutoscaler(ctx, d, apiClient); err != nil {
 				return diag.FromErr(err)
 			}
+			iJustRecreated = true
 		}
 	}
 
 	// Autoscaler edit
-	// Precedence: medium, worst case, autoscaler was just recreated
-	if (d.HasChange("autoscaler_min_size") || d.HasChange("autoscaler_max_size")) && !iWishToDisable {
+	// Precedence: medium. Worst case, autoscaler was just recreated
+	if (d.HasChange("autoscaler_min_size") || d.HasChange("autoscaler_max_size")) && !iWishToDisable && !iJustRecreated {
 		if err := resourceTaikunProjectUpdateAutoscaler(ctx, d, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
@@ -1060,33 +1073,34 @@ func flattenTaikunProject(
 	}
 
 	projectMap := map[string]interface{}{
-		"access_ip":             projectDetailsDTO.GetAccessIp(),
-		"access_profile_id":     i32toa(projectDetailsDTO.GetAccessProfileId()),
-		"alerting_profile_name": projectDetailsDTO.GetAlertingProfileName(),
-		"cloud_credential_id":   i32toa(projectDetailsDTO.GetCloudId()),
-		"auto_upgrade":          projectDetailsDTO.GetIsAutoUpgrade(),
-		"monitoring":            projectDetailsDTO.GetIsMonitoringEnabled(),
-		"delete_on_expiration":  projectDeleteOnExpiration,
-		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
-		"flavors":               flavors,
-		"images":                images,
-		"id":                    i32toa(projectDetailsDTO.GetProjectId()),
-		"kubernetes_profile_id": i32toa(projectDetailsDTO.GetKubernetesProfileId()),
-		"kubernetes_version":    projectDetailsDTO.GetKubernetesCurrentVersion(),
-		"lock":                  projectDetailsDTO.GetIsLocked(),
-		"name":                  projectDetailsDTO.GetProjectName(),
-		"organization_id":       i32toa(projectDetailsDTO.GetOrganizationId()),
-		"quota_cpu_units":       projectQuotaDTO.GetServerCpu(),
-		"quota_ram_size":        byteToGibiByte(projectQuotaDTO.GetServerRam()),
-		"quota_disk_size":       byteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
-		"quota_vm_cpu_units":    projectQuotaDTO.GetVmCpu(),
-		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.GetVmRam()),
-		"quota_vm_volume_size":  projectQuotaDTO.GetVmVolumeSize(),
-		"autoscaler_name":       projectDetailsDTO.GetAutoscalingGroupName(),
-		"autoscaler_flavor":     projectDetailsDTO.GetFlavor(),
-		"autoscaler_min_size":   projectDetailsDTO.GetMinSize(),
-		"autoscaler_max_size":   projectDetailsDTO.GetMaxSize(),
-		"autoscaler_disk_size":  byteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
+		"access_ip":               projectDetailsDTO.GetAccessIp(),
+		"access_profile_id":       i32toa(projectDetailsDTO.GetAccessProfileId()),
+		"alerting_profile_name":   projectDetailsDTO.GetAlertingProfileName(),
+		"cloud_credential_id":     i32toa(projectDetailsDTO.GetCloudId()),
+		"auto_upgrade":            projectDetailsDTO.GetIsAutoUpgrade(),
+		"monitoring":              projectDetailsDTO.GetIsMonitoringEnabled(),
+		"delete_on_expiration":    projectDeleteOnExpiration,
+		"expiration_date":         rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
+		"flavors":                 flavors,
+		"images":                  images,
+		"id":                      i32toa(projectDetailsDTO.GetProjectId()),
+		"kubernetes_profile_id":   i32toa(projectDetailsDTO.GetKubernetesProfileId()),
+		"kubernetes_version":      projectDetailsDTO.GetKubernetesCurrentVersion(),
+		"lock":                    projectDetailsDTO.GetIsLocked(),
+		"name":                    projectDetailsDTO.GetProjectName(),
+		"organization_id":         i32toa(projectDetailsDTO.GetOrganizationId()),
+		"quota_cpu_units":         projectQuotaDTO.GetServerCpu(),
+		"quota_ram_size":          byteToGibiByte(projectQuotaDTO.GetServerRam()),
+		"quota_disk_size":         byteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
+		"quota_vm_cpu_units":      projectQuotaDTO.GetVmCpu(),
+		"quota_vm_ram_size":       byteToGibiByte(projectQuotaDTO.GetVmRam()),
+		"quota_vm_volume_size":    projectQuotaDTO.GetVmVolumeSize(),
+		"autoscaler_name":         projectDetailsDTO.GetAutoscalingGroupName(),
+		"autoscaler_flavor":       projectDetailsDTO.GetFlavor(),
+		"autoscaler_min_size":     projectDetailsDTO.GetMinSize(),
+		"autoscaler_max_size":     projectDetailsDTO.GetMaxSize(),
+		"autoscaler_disk_size":    byteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
+		"autoscaler_spot_enabled": projectDetailsDTO.GetIsAutoscalingSpotEnabled(),
 	}
 
 	bastions := make([]map[string]interface{}, 0)

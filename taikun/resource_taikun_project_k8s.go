@@ -496,9 +496,8 @@ func resourceTaikunProjectRecreateAutoscaler(ctx context.Context, d *schema.Reso
 		if err != nil {
 			return err
 		}
-	} else {
-		// Autoscaler was disabled -> keep calm and carry on
 	}
+	// else autoscaler was disabled -> keep calm and carry on
 
 	// Enable autoscaler with new values
 	err = resourceTaikunProjectEnableAutoscaler(ctx, d, apiClient)
@@ -532,7 +531,7 @@ func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.Resour
 	bodyEnable.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
 	bodyEnable.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
 	bodyEnable.SetDiskSize(float64(gibiByteToByte(d.Get("autoscaler_disk_size").(int))))
-	//bodyEnable.SetSpotEnabled() // Spots not yet implemented
+	bodyEnable.SetSpotEnabled(d.Get("autoscaler_spot_enabled").(bool))
 
 	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
 	if err != nil {
