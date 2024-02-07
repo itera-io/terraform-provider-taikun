@@ -488,3 +488,138 @@ func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
 
 	return nil
 }
+
+const testAccResourceTaikunProjectAutoscalerOpenstackConfig = `
+resource "taikun_cloud_credential_openstack" "foo" {
+  name = "%s"
+}
+
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  min_cpu = 2
+  max_cpu = 2
+  min_ram = 4
+  max_ram = 8
+}
+
+locals {
+  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+}
+
+resource "taikun_project" "foo" {
+  name = "%s"
+  flavors = local.flavors
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  
+  autoscaler_name = "scaler"
+  autoscaler_flavor = local.flavors[0]
+  autoscaler_min_size = 1
+  autoscaler_max_size = 2
+  autoscaler_disk_size = 30
+}
+`
+
+func TestAccResourceTaikunAutoscalerOpenstackProject(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerOpenstackConfig,
+					cloudCredentialName,
+					projectName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "30"),
+				),
+			},
+			{
+				ResourceName:      "taikun_project.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+//const testAccResourceTaikunProjectAutoscalerAwsConfig = `
+//resource "taikun_cloud_credential_aws" "foo" {
+//  name = "%s"
+//}
+//
+//data "taikun_flavors" "foo" {
+//  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+//  min_cpu = 2
+//  max_cpu = 2
+//  min_ram = 4
+//  max_ram = 8
+//}
+//
+//locals {
+//  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+//}
+//
+//resource "taikun_project" "foo" {
+//  name = "%s"
+//  flavors = local.flavors
+//  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+//
+//  autoscaler_name = "scaler"
+//  autoscaler_flavor = local.flavors[0]
+//  autoscaler_min_size = 1
+//  autoscaler_max_size = 2
+//  autoscaler_disk_size = 30
+//  autoscaler_spot_enabled = "%s"
+//
+//  // Enable spots for project - TODO
+//}
+//`
+//
+//func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
+//	cloudCredentialName := randomTestName()
+//	projectName := randomTestName()
+//
+//	resource.ParallelTest(t, resource.TestCase{
+//		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+//		ProviderFactories: testAccProviderFactories,
+//		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+//		Steps: []resource.TestStep{
+//			{
+//				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerAwsConfig,
+//					cloudCredentialName,
+//					projectName,
+//					false),
+//				Check: resource.ComposeAggregateTestCheckFunc(
+//					testAccCheckTaikunProjectExists,
+//					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+//					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+//					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+//					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+//					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "1"),
+//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "2"),
+//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "30"),
+//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_spot_enabled", "false"),
+//				),
+//			},
+//			{
+//				ResourceName:      "taikun_project.foo",
+//				ImportState:       true,
+//				ImportStateVerify: true,
+//			},
+//		},
+//	})
+//}
