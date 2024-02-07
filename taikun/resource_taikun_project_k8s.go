@@ -464,3 +464,82 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 	}
 	return nil
 }
+
+func resourceTaikunProjectUpdateAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	body := tkcore.EditAutoscalingCommand{}
+	body.SetProjectId(projectID)
+	body.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
+	body.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
+
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableAutoscaler", "DisableAutoscaler"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectRecreateAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	// Is autoscaler enabled or disabled?
+	projectID, _ := atoi32(d.Id())
+	data, response, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
+	if err != nil {
+		return tk.CreateError(response, err)
+	}
+	if *data.GetProject().IsAutoscalingEnabled {
+		// Autoscaler was enabled -> Disable autoscaler
+		err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	// else autoscaler was disabled -> keep calm and carry on
+
+	// Enable autoscaler with new values
+	err = resourceTaikunProjectEnableAutoscaler(ctx, d, apiClient)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceTaikunProjectDisableAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyDisable := tkcore.DisableAutoscalingCommand{}
+	bodyDisable.SetProjectId(projectID)
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingDisable(ctx).DisableAutoscalingCommand(bodyDisable).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableAutoscaler", "DisableAutoscaler"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyEnable := tkcore.EnableAutoscalingCommand{}
+	bodyEnable.SetId(projectID)
+	bodyEnable.SetAutoscalingGroupName(d.Get("autoscaler_name").(string))
+	bodyEnable.SetFlavor(d.Get("autoscaler_flavor").(string))
+	bodyEnable.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
+	bodyEnable.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
+	bodyEnable.SetDiskSize(float64(gibiByteToByte(d.Get("autoscaler_disk_size").(int))))
+	bodyEnable.SetSpotEnabled(d.Get("autoscaler_spot_enabled").(bool))
+
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableAutoscaler", "DisableAutoscaler"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
