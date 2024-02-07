@@ -481,10 +481,6 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		if autoscalerSpotIsSet {
 			body.SetAutoscalingSpotEnabled(autoscalerSpot.(bool))
 		}
-
-		body.SetAutoscalingSpotEnabled(false)
-	} else {
-		body.SetAutoscalingEnabled(false)
 	}
 
 	// Send project creation request
