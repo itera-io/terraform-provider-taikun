@@ -30,6 +30,12 @@ data "taikun_project" "foo" {
 - `alerting_profile_id` (String) ID of the project's alerting profile.
 - `alerting_profile_name` (String) Name of the project's alerting profile.
 - `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available.
+- `autoscaler_disk_size` (Number) Disk size of autoscaler in GB (specify together with all other autoscaler parameters).
+- `autoscaler_flavor` (String) Flavor of workers created by autoscaler (specify together with all other autoscaler parameters).
+- `autoscaler_max_size` (Number) Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters).
+- `autoscaler_min_size` (Number) Minimum number of workers created by autoscaler (specify together with all other autoscaler parameters).
+- `autoscaler_name` (String) Autoscaler group name (specify together with all other autoscaler parameters).
+- `autoscaler_spot_enabled` (Boolean) When enabled, autoscaler will use spot flavors for autoscaled workers (be sure to enable spot flavors for this project). If not specified, defaults to false.
 - `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
 - `cloud_credential_id` (String) ID of the cloud credential used to create the project's servers.
 - `delete_on_expiration` (Boolean) If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.
