@@ -108,6 +108,7 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
+          args: --timeout=10m
 
   test1alpha:
     name: 1alpha) Testing Taikun
