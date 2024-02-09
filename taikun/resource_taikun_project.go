@@ -309,6 +309,34 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Default:      false,
 			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size", "autoscaler_max_size"},
 		},
+		"spot_full": {
+			Description:   "When enabled, project will support full spot Kubernetes (controlplane + workers)",
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"spot_worker"},
+		},
+		"spot_worker": {
+			Description:   "When enabled, project will support spot flavors for Kubernetes worker nodes",
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"spot_full"},
+		},
+		"spot_vms": {
+			Description: "When enabled, project will support spot flavors of standalone VMs",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"spot_max_price": {
+			Description:  "When enabled, project will support spot flavors of standalone VMs",
+			Type:         schema.TypeFloat,
+			Optional:     true,
+			Default:      false,
+			ForceNew:     true,
+			AtLeastOneOf: []string{"spot_full", "spot_worker", "spot_vms"},
+		},
 	}
 }
 
@@ -440,6 +468,20 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
 		body.SetKubernetesVersion(kubernetesVersion.(string))
+	}
+
+	// Spots
+	if spotFull, spotFullIsSet := d.GetOk("spot_full"); spotFullIsSet {
+		body.SetAllowFullSpotKubernetes(spotFull.(bool))
+	}
+	if spotWorker, spotWorkerIsSet := d.GetOk("spot_worker"); spotWorkerIsSet {
+		body.SetAllowSpotWorkers(spotWorker.(bool))
+	}
+	if spotVms, spotVmsIsSet := d.GetOk("spot_vms"); spotVmsIsSet {
+		body.SetAllowSpotVMs(spotVms.(bool))
+	}
+	if spotMaxPrice, spotMaxPriceIsSet := d.GetOk("spot_max_price"); spotMaxPriceIsSet {
+		body.SetMaxSpotPrice(spotMaxPrice.(float64))
 	}
 
 	// Autoscaler
@@ -893,6 +935,32 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
+	// Spots for project
+	spotFullChange := d.HasChange("spot_full")
+	spotWorkerChange := d.HasChange("spot_worker")
+	spotVmsChange := d.HasChange("spot_vms")
+
+	// Vm spots do not collide with anything
+	if spotVmsChange {
+		if err = resourceTaikunProjectToggleVmsSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	// Full and Worker chanege can collide if there was a change on remote
+	if spotFullChange && spotWorkerChange {
+		diag.Errorf("There has been a change in conflicting parameters spot_full and spot_worker")
+	}
+	if spotFullChange {
+		if err = resourceTaikunProjectToggleFullSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if spotWorkerChange {
+		if err = resourceTaikunProjectToggleWorkerSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	// Autoscaler disable and enable with different flavor and autoscaling group name
 	// Precedence: high, first we check if we must recreate the whole autoscaler
 	iWishToDisable := d.Get("autoscaler_name") == "" || d.Get("autoscaler_flavor") == "" || d.Get("autoscaler_disk_size") == "0"
@@ -1098,6 +1166,10 @@ func flattenTaikunProject(
 		"autoscaler_max_size":     projectDetailsDTO.GetMaxSize(),
 		"autoscaler_disk_size":    byteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
 		"autoscaler_spot_enabled": projectDetailsDTO.GetIsAutoscalingSpotEnabled(),
+		"spot_full":               projectDetailsDTO.GetAllowFullSpotKubernetes(),
+		"spot_worker":             projectDetailsDTO.GetAllowSpotWorkers(),
+		"spot_vms":                projectDetailsDTO.GetAllowSpotVMs(),
+		"spot_max_price":          projectDetailsDTO.GetMaxSpotPrice(),
 	}
 
 	bastions := make([]map[string]interface{}, 0)

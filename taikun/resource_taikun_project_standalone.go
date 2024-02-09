@@ -667,3 +667,21 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Clien
 	}
 	return nil
 }
+
+func resourceTaikunProjectToggleVmsSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.SpotVmOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_vms").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotVms(ctx).SpotVmOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+	return nil
+}

@@ -543,3 +543,39 @@ func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.Resour
 	}
 	return nil
 }
+
+func resourceTaikunProjectToggleFullSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.FullSpotOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleFullSpot(ctx).FullSpotOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+	return nil
+}
+
+func resourceTaikunProjectToggleWorkerSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.SpotWorkerOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_worker").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotWorkers(ctx).SpotWorkerOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+	return nil
+}
