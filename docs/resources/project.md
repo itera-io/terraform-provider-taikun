@@ -188,6 +188,10 @@ resource "taikun_project" "foobar" {
 - `server_bastion` (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
 - `server_kubemaster` (Block Set) Kubemaster server. Required with: `server_bastion`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_kubemaster))
 - `server_kubeworker` (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
+- `spot_full` (Boolean) When enabled, project will support full spot Kubernetes (controlplane + workers) Defaults to `false`. Conflicts with: `spot_worker`.
+- `spot_max_price` (Number) When enabled, project will support spot flavors of standalone VMs Defaults to `false`.
+- `spot_vms` (Boolean) When enabled, project will support spot flavors of standalone VMs Defaults to `false`.
+- `spot_worker` (Boolean) When enabled, project will support spot flavors for Kubernetes worker nodes Defaults to `false`. Conflicts with: `spot_full`.
 - `taikun_lb_flavor` (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `vm` (Block List) Virtual machines. (see [below for nested schema](#nestedblock--vm))

@@ -58,6 +58,10 @@ data "taikun_project" "foo" {
 - `server_bastion` (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
 - `server_kubemaster` (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
 - `server_kubeworker` (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
+- `spot_full` (Boolean) When enabled, project will support full spot Kubernetes (controlplane + workers)
+- `spot_max_price` (Number) When enabled, project will support spot flavors of standalone VMs
+- `spot_vms` (Boolean) When enabled, project will support spot flavors of standalone VMs
+- `spot_worker` (Boolean) When enabled, project will support spot flavors for Kubernetes worker nodes
 - `vm` (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
 
 <a id="nestedatt--server_bastion"></a>

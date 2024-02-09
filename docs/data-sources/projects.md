@@ -69,6 +69,10 @@ Read-Only:
 - `server_bastion` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_bastion))
 - `server_kubemaster` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster))
 - `server_kubeworker` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker))
+- `spot_full` (Boolean)
+- `spot_max_price` (Number)
+- `spot_vms` (Boolean)
+- `spot_worker` (Boolean)
 - `vm` (List of Object) (see [below for nested schema](#nestedobjatt--projects--vm))
 
 <a id="nestedobjatt--projects--server_bastion"></a>
