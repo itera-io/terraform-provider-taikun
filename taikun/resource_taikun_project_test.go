@@ -554,72 +554,114 @@ func TestAccResourceTaikunAutoscalerOpenstackProject(t *testing.T) {
 	})
 }
 
-//  // Taikun Terraform provider cannot yet enable spot flavors for projects - TODO
-//const testAccResourceTaikunProjectAutoscalerAwsConfig = `
-//resource "taikun_cloud_credential_aws" "foo" {
-//  name = "%s"
-//}
-//
-//data "taikun_flavors" "foo" {
-//  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-//  min_cpu = 2
-//  max_cpu = 2
-//  min_ram = 4
-//  max_ram = 8
-//}
-//
-//locals {
-//  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
-//}
-//
-//resource "taikun_project" "foo" {
-//  name = "%s"
-//  flavors = local.flavors
-//  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-//
-//  autoscaler_name = "scaler"
-//  autoscaler_flavor = local.flavors[0]
-//  autoscaler_min_size = 1
-//  autoscaler_max_size = 2
-//  autoscaler_disk_size = 30
-//  autoscaler_spot_enabled = "%s"
-//
-//}
-//`
-//
-//func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
-//	cloudCredentialName := randomTestName()
-//	projectName := randomTestName()
-//
-//	resource.ParallelTest(t, resource.TestCase{
-//		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
-//		ProviderFactories: testAccProviderFactories,
-//		CheckDestroy:      testAccCheckTaikunProjectDestroy,
-//		Steps: []resource.TestStep{
-//			{
-//				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerAwsConfig,
-//					cloudCredentialName,
-//					projectName,
-//					false),
-//				Check: resource.ComposeAggregateTestCheckFunc(
-//					testAccCheckTaikunProjectExists,
-//					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
-//					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
-//					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
-//					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-//					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
-//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
-//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "1"),
-//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "2"),
-//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "30"),
-//					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_spot_enabled", "false"),
-//				),
-//			},
-//			{
-//				ResourceName:      "taikun_project.foo",
-//				ImportState:       true,
-//				ImportStateVerify: true,
-//			},
-//		},
-//	})
-//}
+// Taikun Terraform provider cannot yet enable spot flavors for projects - TODO
+const testAccResourceTaikunProjectAutoscalerAwsConfig = `
+resource "taikun_cloud_credential_aws" "foo" {
+ name = "%s"
+}
+
+data "taikun_flavors" "foo" {
+ cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+ min_cpu = 2
+ max_cpu = 2
+ min_ram = 4
+ max_ram = 8
+}
+
+locals {
+ flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+}
+
+resource "taikun_project" "foo" {
+ name = "%s"
+ flavors = local.flavors
+ cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+
+ autoscaler_name = "scaler"
+ autoscaler_flavor = local.flavors[0]
+ autoscaler_min_size = "%d"
+ autoscaler_max_size = "%d"
+ autoscaler_disk_size = "%d"
+ autoscaler_spot_enabled = "%t"
+
+ spot_max_price="%d"
+ spot_vms="%t"
+ spot_worker="%t"
+}
+`
+
+func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	projectName := randomTestName()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerAwsConfig,
+					cloudCredentialName,
+					projectName,
+					2,     // Autoscaler min
+					3,     // Autoscaler max
+					31,    // Autoscaler disk
+					true,  // Autoscaler spot enabled
+					10,    // Autoscaler spot max price
+					true,  // Spot Vms enabled
+					true), //Spot workers enabled
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "3"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_spot_enabled", "true"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_full", "false"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_worker", "true"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_vms", "true"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_max_price", "10"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerAwsConfig,
+					cloudCredentialName,
+					projectName,
+					1,     // Autoscaler min
+					2,     // Autoscaler max
+					31,    // Autoscaler disk
+					false, // Autoscaler spot enabled
+					10,    // Autoscaler spot max price
+					false, // Spot Vms enabled
+					true), //Spot workers enabled
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "1"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "31"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_spot_enabled", "false"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_full", "false"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_worker", "true"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_vms", "false"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_max_price", "10"),
+				),
+			},
+			{
+				ResourceName:      "taikun_project.foo",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

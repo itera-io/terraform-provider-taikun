@@ -330,12 +330,11 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"spot_max_price": {
-			Description:  "When enabled, project will support spot flavors of standalone VMs",
-			Type:         schema.TypeFloat,
-			Optional:     true,
-			Default:      false,
-			ForceNew:     true,
-			AtLeastOneOf: []string{"spot_full", "spot_worker", "spot_vms"},
+			Description: "When enabled, project will support spot flavors of standalone VMs",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
 		},
 	}
 }
@@ -471,17 +470,25 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Spots
-	if spotFull, spotFullIsSet := d.GetOk("spot_full"); spotFullIsSet {
+	spotFull, spotFullIsSet := d.GetOk("spot_full")
+	spotWorker, spotWorkerIsSet := d.GetOk("spot_worker")
+	spotVms, spotVmsIsSet := d.GetOk("spot_vms")
+	spotMaxPrice, spotMaxPriceIsSet := d.GetOk("spot_max_price")
+
+	if spotMaxPriceIsSet {
+		if !spotFullIsSet && !spotWorkerIsSet && !spotVmsIsSet {
+			return diag.Errorf("If you set max spot price, the project must have spots enabled.")
+		}
+		body.SetMaxSpotPrice(spotMaxPrice.(float64))
+	}
+	if spotFullIsSet {
 		body.SetAllowFullSpotKubernetes(spotFull.(bool))
 	}
-	if spotWorker, spotWorkerIsSet := d.GetOk("spot_worker"); spotWorkerIsSet {
+	if spotWorkerIsSet {
 		body.SetAllowSpotWorkers(spotWorker.(bool))
 	}
-	if spotVms, spotVmsIsSet := d.GetOk("spot_vms"); spotVmsIsSet {
+	if spotVmsIsSet {
 		body.SetAllowSpotVMs(spotVms.(bool))
-	}
-	if spotMaxPrice, spotMaxPriceIsSet := d.GetOk("spot_max_price"); spotMaxPriceIsSet {
-		body.SetMaxSpotPrice(spotMaxPrice.(float64))
 	}
 
 	// Autoscaler
