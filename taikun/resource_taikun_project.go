@@ -330,7 +330,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"spot_max_price": {
-			Description: "When enabled, project will support spot flavors of standalone VMs",
+			Description: "Maximum spot price the user can set on servers/standalone VMs.",
 			Type:        schema.TypeFloat,
 			Optional:    true,
 			Default:     false,

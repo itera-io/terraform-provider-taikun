@@ -189,7 +189,7 @@ resource "taikun_project" "foobar" {
 - `server_kubemaster` (Block Set) Kubemaster server. Required with: `server_bastion`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_kubemaster))
 - `server_kubeworker` (Block Set) Kubeworker server. Required with: `server_bastion`, `server_kubemaster`. (see [below for nested schema](#nestedblock--server_kubeworker))
 - `spot_full` (Boolean) When enabled, project will support full spot Kubernetes (controlplane + workers) Defaults to `false`. Conflicts with: `spot_worker`.
-- `spot_max_price` (Number) When enabled, project will support spot flavors of standalone VMs Defaults to `false`.
+- `spot_max_price` (Number) Maximum spot price the user can set on servers/standalone VMs. Defaults to `false`.
 - `spot_vms` (Boolean) When enabled, project will support spot flavors of standalone VMs Defaults to `false`.
 - `spot_worker` (Boolean) When enabled, project will support spot flavors for Kubernetes worker nodes Defaults to `false`. Conflicts with: `spot_full`.
 - `taikun_lb_flavor` (String) OpenStack flavor for the Taikun load balancer (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `router_id_start_range`.
@@ -213,6 +213,8 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
+- `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
+- `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
 
 Read-Only:
 
@@ -236,6 +238,8 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
+- `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
+- `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
 - `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
@@ -269,6 +273,8 @@ Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+- `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
+- `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
 - `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
 
 Read-Only:
@@ -315,6 +321,8 @@ Optional:
 - `cloud_init` (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
 - `disk` (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
 - `public_ip` (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
+- `spot_vm` (Boolean) Enable if this to create standalone VM on spot instances Defaults to `false`.
+- `spot_vm_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the current on-demand price is used.
 - `tag` (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
 - `username` (String) The VM's username (required for Azure).
 - `volume_type` (String) Volume type (updating this field will recreate the VM).

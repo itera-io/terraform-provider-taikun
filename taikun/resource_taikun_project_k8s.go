@@ -135,7 +135,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"spot_server_max_price": {
-			Description: "The maximum price you are willing to pay for the spot instance (USD)",
+			Description: "The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.",
 			Type:        schema.TypeFloat,
 			Optional:    true,
 		},
