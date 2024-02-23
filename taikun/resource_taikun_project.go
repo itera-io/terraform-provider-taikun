@@ -226,7 +226,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:     1,
 			Optional:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -236,7 +236,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -246,7 +246,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
 			Elem: &schema.Resource{
 				Schema: taikunServerKubeworkerSchema(),
 			},
@@ -909,6 +909,11 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 					serverCreateBody.SetProjectId(id)
 					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
+					serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+					serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
+					if err != nil {
+						return diag.Errorf("There was an error in server spot configuration")
+					}
 
 					serverCreateResponse, _, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 					if newErr != nil {
@@ -1185,14 +1190,16 @@ func flattenTaikunProject(
 	skip_this_server := false
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
-			"created_by":       server.GetCreatedBy(),
-			"disk_size":        byteToGibiByte(server.GetDiskSize()),
-			"id":               i32toa(server.GetId()),
-			"ip":               server.GetIpAddress(),
-			"last_modified":    server.GetLastModified(),
-			"last_modified_by": server.GetLastModifiedBy(),
-			"name":             server.GetName(),
-			"status":           server.GetStatus(),
+			"created_by":            server.GetCreatedBy(),
+			"disk_size":             byteToGibiByte(server.GetDiskSize()),
+			"id":                    i32toa(server.GetId()),
+			"ip":                    server.GetIpAddress(),
+			"last_modified":         server.GetLastModified(),
+			"last_modified_by":      server.GetLastModifiedBy(),
+			"name":                  server.GetName(),
+			"status":                server.GetStatus(),
+			"spot_server":           server.GetSpotInstance(),
+			"spot_server_max_price": server.GetSpotPrice(),
 		}
 
 		switch server.GetCloudType() {
@@ -1260,6 +1267,8 @@ func flattenTaikunProject(
 			"status":                vm.GetStatus(),
 			"volume_size":           vm.GetVolumeSize(),
 			"volume_type":           vm.GetVolumeType(),
+			"spot_vm":               vm.GetSpotInstance(),
+			"spot_vm_max_price":     vm.GetSpotPrice(),
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))

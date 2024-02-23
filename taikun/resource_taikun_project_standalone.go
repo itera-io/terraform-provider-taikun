@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"fmt"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"reflect"
@@ -132,6 +133,21 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
+		},
+		"spot_vm": {
+			Description: "Enable if this to create standalone VM on spot instances",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"spot_vm_max_price": {
+			Description: "The maximum price you are willing to pay for the spot instance (USD)",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+			// Ignore all changes to max price (API returns/sets on-demand spotPrice if we send null spotPrice)
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				return old != "" // Set the value only first time
+			},
 		},
 		"standalone_profile_id": {
 			Description:      "Standalone profile ID bound to the VM (updating this field will recreate the VM).",
@@ -265,6 +281,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			"username",
 			"volume_size",
 			"volume_type",
+			"spot_vm",
 		)
 	}
 }
@@ -565,6 +582,19 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 			disksList[i].SetVolumeType(rawDisk["volume_type"].(string))
 		}
 		vmCreateBody.SetStandAloneVmDisks(disksList)
+	}
+
+	// Standalone VM spots
+	if (vmMap["spot_vm_max_price"].(float64) != 0) && (!vmMap["spot_vm"].(bool)) {
+		return "", nil, fmt.Errorf("Spot VM max price is set, but the VM does not have spot enabled.")
+	}
+	if vmMap["spot_vm"] != nil {
+		spotForThisVm := vmMap["spot_vm"].(bool)
+		vmCreateBody.SetSpotInstance(spotForThisVm)
+		vmCreateBody.SetSpotPrice(vmMap["spot_vm_max_price"].(float64))
+		if vmMap["spot_vm_max_price"].(float64) == 0 {
+			vmCreateBody.UnsetSpotPrice() // Send null if the user did not specify anything
+		}
 	}
 
 	vmCreateResponse, res, err := apiClient.Client.StandaloneAPI.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()

@@ -127,6 +127,18 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"spot_server": {
+			Description: "Enable if this to create kubernetes servers with spot instances",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+		},
+		"spot_server_max_price": {
+			Description: "The maximum price you are willing to pay for the spot instance (USD)",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+		},
 	}
 }
 
@@ -145,6 +157,10 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	serverCreateBody.SetName(bastion["name"].(string))
 	serverCreateBody.SetProjectId(projectID)
 	serverCreateBody.SetRole(tkcore.CLOUDROLE_BASTION)
+	serverCreateBody, err := resourceTaikunProjectSetServerSpots(bastion, serverCreateBody) // Spots
+	if err != nil {
+		return err
+	}
 
 	serverCreateResponse, res, err := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 	if err != nil {
@@ -169,6 +185,10 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeMasterMap["wasm"].(bool))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
+		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeMasterMap, serverCreateBody) // Spots
+		if err != nil {
+			return err
+		}
 
 		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
@@ -192,6 +212,10 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
+		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
+		if err != nil {
+			return err
+		}
 
 		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
@@ -205,6 +229,23 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	}
 
 	return nil
+}
+
+// Kubernetes server spots
+func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serverCreateBody tkcore.ServerForCreateDto) (tkcore.ServerForCreateDto, error) {
+	if (serverMap["spot_server_max_price"].(float64) != 0) && (!serverMap["spot_server"].(bool)) {
+		return serverCreateBody, fmt.Errorf("Spot server max price is set, but the server does not have spot enabled.")
+	}
+	if serverMap["spot_server"] != nil {
+		spotForThisVm := serverMap["spot_server"].(bool)
+		serverCreateBody.SetSpotInstance(spotForThisVm)
+		if serverMap["spot_server_max_price"].(float64) == 0 {
+			serverCreateBody.UnsetSpotPrice() // Send null if the user did not specify anything
+		} else {
+			serverCreateBody.SetSpotPrice(serverMap["spot_server_max_price"].(float64))
+		}
+	}
+	return serverCreateBody, nil
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
