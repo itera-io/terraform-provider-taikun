@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"fmt"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"reflect"
@@ -132,6 +133,21 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
+		},
+		"spot_vm": {
+			Description: "Enable if this to create standalone VM on spot instances",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"spot_vm_max_price": {
+			Description: "The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the current on-demand price is used.",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+			// Ignore all changes to max price (API returns/sets on-demand spotPrice if we send null spotPrice)
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				return old != "" // Set the value only first time
+			},
 		},
 		"standalone_profile_id": {
 			Description:      "Standalone profile ID bound to the VM (updating this field will recreate the VM).",
@@ -265,6 +281,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			"username",
 			"volume_size",
 			"volume_type",
+			"spot_vm",
 		)
 	}
 }
@@ -567,6 +584,19 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 		vmCreateBody.SetStandAloneVmDisks(disksList)
 	}
 
+	// Standalone VM spots
+	if (vmMap["spot_vm_max_price"].(float64) != 0) && (!vmMap["spot_vm"].(bool)) {
+		return "", nil, fmt.Errorf("Spot VM max price is set, but the VM does not have spot enabled.")
+	}
+	if vmMap["spot_vm"] != nil {
+		spotForThisVm := vmMap["spot_vm"].(bool)
+		vmCreateBody.SetSpotInstance(spotForThisVm)
+		vmCreateBody.SetSpotPrice(vmMap["spot_vm_max_price"].(float64))
+		if vmMap["spot_vm_max_price"].(float64) == 0 {
+			vmCreateBody.UnsetSpotPrice() // Send null if the user did not specify anything
+		}
+	}
+
 	vmCreateResponse, res, err := apiClient.Client.StandaloneAPI.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()
 	if err != nil {
 		return "", nil, tk.CreateError(res, err)
@@ -664,6 +694,24 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Clien
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectToggleVmsSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.SpotVmOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_vms").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotVms(ctx).SpotVmOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
 	}
 	return nil
 }

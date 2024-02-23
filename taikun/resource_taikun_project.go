@@ -226,7 +226,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:     1,
 			Optional:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -236,7 +236,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -246,7 +246,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
 			Elem: &schema.Resource{
 				Schema: taikunServerKubeworkerSchema(),
 			},
@@ -308,6 +308,33 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Optional:     true,
 			Default:      false,
 			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size", "autoscaler_max_size"},
+		},
+		"spot_full": {
+			Description:   "When enabled, project will support full spot Kubernetes (controlplane + workers)",
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"spot_worker"},
+		},
+		"spot_worker": {
+			Description:   "When enabled, project will support spot flavors for Kubernetes worker nodes",
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"spot_full"},
+		},
+		"spot_vms": {
+			Description: "When enabled, project will support spot flavors of standalone VMs",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"spot_max_price": {
+			Description: "Maximum spot price the user can set on servers/standalone VMs.",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
 		},
 	}
 }
@@ -440,6 +467,28 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
 		body.SetKubernetesVersion(kubernetesVersion.(string))
+	}
+
+	// Spots
+	spotFull, spotFullIsSet := d.GetOk("spot_full")
+	spotWorker, spotWorkerIsSet := d.GetOk("spot_worker")
+	spotVms, spotVmsIsSet := d.GetOk("spot_vms")
+	spotMaxPrice, spotMaxPriceIsSet := d.GetOk("spot_max_price")
+
+	if spotMaxPriceIsSet {
+		if !spotFullIsSet && !spotWorkerIsSet && !spotVmsIsSet {
+			return diag.Errorf("If you set max spot price, the project must have spots enabled.")
+		}
+		body.SetMaxSpotPrice(spotMaxPrice.(float64))
+	}
+	if spotFullIsSet {
+		body.SetAllowFullSpotKubernetes(spotFull.(bool))
+	}
+	if spotWorkerIsSet {
+		body.SetAllowSpotWorkers(spotWorker.(bool))
+	}
+	if spotVmsIsSet {
+		body.SetAllowSpotVMs(spotVms.(bool))
 	}
 
 	// Autoscaler
@@ -860,6 +909,11 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 					serverCreateBody.SetProjectId(id)
 					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
+					serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+					serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
+					if err != nil {
+						return diag.Errorf("There was an error in server spot configuration")
+					}
 
 					serverCreateResponse, _, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 					if newErr != nil {
@@ -889,6 +943,32 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("vm") {
 		err = resourceTaikunProjectUpdateVMs(ctx, d, apiClient, id)
 		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// Spots for project
+	spotFullChange := d.HasChange("spot_full")
+	spotWorkerChange := d.HasChange("spot_worker")
+	spotVmsChange := d.HasChange("spot_vms")
+
+	// Vm spots do not collide with anything
+	if spotVmsChange {
+		if err = resourceTaikunProjectToggleVmsSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	// Full and Worker chanege can collide if there was a change on remote
+	if spotFullChange && spotWorkerChange {
+		diag.Errorf("There has been a change in conflicting parameters spot_full and spot_worker")
+	}
+	if spotFullChange {
+		if err = resourceTaikunProjectToggleFullSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if spotWorkerChange {
+		if err = resourceTaikunProjectToggleWorkerSpot(ctx, d, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -1098,6 +1178,10 @@ func flattenTaikunProject(
 		"autoscaler_max_size":     projectDetailsDTO.GetMaxSize(),
 		"autoscaler_disk_size":    byteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
 		"autoscaler_spot_enabled": projectDetailsDTO.GetIsAutoscalingSpotEnabled(),
+		"spot_full":               projectDetailsDTO.GetAllowFullSpotKubernetes(),
+		"spot_worker":             projectDetailsDTO.GetAllowSpotWorkers(),
+		"spot_vms":                projectDetailsDTO.GetAllowSpotVMs(),
+		"spot_max_price":          projectDetailsDTO.GetMaxSpotPrice(),
 	}
 
 	bastions := make([]map[string]interface{}, 0)
@@ -1106,14 +1190,16 @@ func flattenTaikunProject(
 	skip_this_server := false
 	for _, server := range serverListDTO {
 		serverMap := map[string]interface{}{
-			"created_by":       server.GetCreatedBy(),
-			"disk_size":        byteToGibiByte(server.GetDiskSize()),
-			"id":               i32toa(server.GetId()),
-			"ip":               server.GetIpAddress(),
-			"last_modified":    server.GetLastModified(),
-			"last_modified_by": server.GetLastModifiedBy(),
-			"name":             server.GetName(),
-			"status":           server.GetStatus(),
+			"created_by":            server.GetCreatedBy(),
+			"disk_size":             byteToGibiByte(server.GetDiskSize()),
+			"id":                    i32toa(server.GetId()),
+			"ip":                    server.GetIpAddress(),
+			"last_modified":         server.GetLastModified(),
+			"last_modified_by":      server.GetLastModifiedBy(),
+			"name":                  server.GetName(),
+			"status":                server.GetStatus(),
+			"spot_server":           server.GetSpotInstance(),
+			"spot_server_max_price": server.GetSpotPrice(),
 		}
 
 		switch server.GetCloudType() {
@@ -1181,6 +1267,8 @@ func flattenTaikunProject(
 			"status":                vm.GetStatus(),
 			"volume_size":           vm.GetVolumeSize(),
 			"volume_type":           vm.GetVolumeType(),
+			"spot_vm":               vm.GetSpotInstance(),
+			"spot_vm_max_price":     vm.GetSpotPrice(),
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))

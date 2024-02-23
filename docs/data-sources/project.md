@@ -58,6 +58,10 @@ data "taikun_project" "foo" {
 - `server_bastion` (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
 - `server_kubemaster` (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
 - `server_kubeworker` (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
+- `spot_full` (Boolean) When enabled, project will support full spot Kubernetes (controlplane + workers)
+- `spot_max_price` (Number) Maximum spot price the user can set on servers/standalone VMs.
+- `spot_vms` (Boolean) When enabled, project will support spot flavors of standalone VMs
+- `spot_worker` (Boolean) When enabled, project will support spot flavors for Kubernetes worker nodes
 - `vm` (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
 
 <a id="nestedatt--server_bastion"></a>
@@ -73,6 +77,8 @@ Read-Only:
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 
 
@@ -90,6 +96,8 @@ Read-Only:
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
 
@@ -117,6 +125,8 @@ Read-Only:
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
 
@@ -148,6 +158,8 @@ Read-Only:
 - `last_modified_by` (String)
 - `name` (String)
 - `public_ip` (Boolean)
+- `spot_vm` (Boolean)
+- `spot_vm_max_price` (Number)
 - `standalone_profile_id` (String)
 - `status` (String)
 - `tag` (Set of Object) (see [below for nested schema](#nestedobjatt--vm--tag))

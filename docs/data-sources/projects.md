@@ -69,6 +69,10 @@ Read-Only:
 - `server_bastion` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_bastion))
 - `server_kubemaster` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster))
 - `server_kubeworker` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker))
+- `spot_full` (Boolean)
+- `spot_max_price` (Number)
+- `spot_vms` (Boolean)
+- `spot_worker` (Boolean)
 - `vm` (List of Object) (see [below for nested schema](#nestedobjatt--projects--vm))
 
 <a id="nestedobjatt--projects--server_bastion"></a>
@@ -84,6 +88,8 @@ Read-Only:
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 
 
@@ -101,6 +107,8 @@ Read-Only:
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
 
@@ -128,6 +136,8 @@ Read-Only:
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
 
@@ -159,6 +169,8 @@ Read-Only:
 - `last_modified_by` (String)
 - `name` (String)
 - `public_ip` (Boolean)
+- `spot_vm` (Boolean)
+- `spot_vm_max_price` (Number)
 - `standalone_profile_id` (String)
 - `status` (String)
 - `tag` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--vm--tag))
