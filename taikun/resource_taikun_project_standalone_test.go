@@ -397,6 +397,8 @@ resource "taikun_project" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   flavors = local.flavors
   images = local.images
+  spot_vms = true
+  spot_worker = true
 
   vm {
     name = "tf-acc-vm"
@@ -404,6 +406,9 @@ resource "taikun_project" "foo" {
     image_id = local.images[%d]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
+    spot_vm = true
+    spot_vm_max_price = 42
+
     disk {
       name = "tf-acc-disk"
       size = 30
@@ -451,12 +456,16 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_vms", "true"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "spot_worker", "true"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
 					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.spot_vm", "true"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.spot_vm_max_price", "42"),
 				),
 			},
 			{
