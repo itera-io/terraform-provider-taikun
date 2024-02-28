@@ -107,10 +107,8 @@ func Provider() *schema.Provider {
 			"taikun_users":                       dataSourceTaikunUsers(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"taikun_access_profile": resourceTaikunAccessProfile(),
-
-			"taikun_alerting_profile": resourceTaikunAlertingProfile(),
-
+			"taikun_access_profile":                       resourceTaikunAccessProfile(),
+			"taikun_alerting_profile":                     resourceTaikunAlertingProfile(),
 			"taikun_backup_credential":                    resourceTaikunBackupCredential(),
 			"taikun_backup_policy":                        resourceTaikunBackupPolicy(),
 			"taikun_billing_credential":                   resourceTaikunBillingCredential(),
@@ -120,6 +118,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_azure":               resourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":                 resourceTaikunCloudCredentialGCP(),
 			"taikun_cloud_credential_openstack":           resourceTaikunCloudCredentialOpenStack(),
+			"taikun_cloud_credential_proxmox":             resourceTaikunCloudCredentialProxmox(),
 			"taikun_kubeconfig":                           resourceTaikunKubeconfig(),
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),
