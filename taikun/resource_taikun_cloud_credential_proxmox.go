@@ -84,7 +84,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"api_host": {
-			Description:  "The Proxmox authentication URL.",
+			Description:  "The Proxmox authentication URL. (Can be set with env PROXMOX_API_HOST)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -92,7 +92,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_id": {
-			Description: "The Proxmox Client ID.",
+			Description: "The Proxmox Client ID. (Can be set with env PROXMOX_CLIENT_ID)",
 			Type:        schema.TypeString,
 			Required:    true,
 			//ForceNew:     true,
@@ -100,7 +100,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
-			Description: "The Proxmox Client Secret.",
+			Description: "The Proxmox Client Secret. (Can be set with env PROXMOX_CLIENT_SECRET)",
 			Type:        schema.TypeString,
 			Required:    true,
 			Sensitive:   true,
@@ -109,7 +109,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"storage": {
-			Description:  "The Proxmox storage option.",
+			Description:  "The Proxmox storage option. (Can be set with env PROXMOX_STORAGE)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -117,7 +117,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"vm_template_name": {
-			Description:  "The Proxmox VM template name",
+			Description:  "The Proxmox VM template name. (Can be set with env PROXMOX_VM_TEMPLATE_NAME)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -125,14 +125,14 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"hypervisors": {
-			Description: "The Proxmox hypervisors string array",
+			Description: "The Proxmox hypervisors string array.",
 			Type:        schema.TypeList,
 			Required:    true,
 			//ForceNew:    true,
 			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		"public_ip_address": {
-			Description:  "Public network address IP",
+			Description:  "Public network address IP. (Can be set with env PROXMOX_PUBLIC_NETWORK)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PUBLIC_NETWORK", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -140,7 +140,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"public_net_mask": {
-			Description:  "Public network mask in number format (CIDR after /)",
+			Description:  "Public network mask in number format - CIDR after /. (Can be set with env PROXMOX_PUBLIC_NETMASK)",
 			Type:         schema.TypeInt,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PUBLIC_NETMASK", nil),
 			ValidateFunc: validation.IntBetween(1, 32),
@@ -148,7 +148,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"public_gateway": {
-			Description:  "Public network gateway IP (must be inside defined network)",
+			Description:  "Public network gateway IP, must be inside defined network. (Can be set with env PROXMOX_PUBLIC_GATEWAY)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PUBLIC_GATEWAY", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -156,7 +156,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"public_begin_allocation_range": {
-			Description:  "Start of allocation range from public network (must be inside defined network)",
+			Description:  "Start of allocation range from public network, must be inside defined network. (Can be set with env PROXMOX_PUBLIC_BEGIN_RANGE)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PUBLIC_BEGIN_RANGE", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -164,7 +164,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"public_end_allocation_range": {
-			Description:  "End of allocation range from public network (must be inside defined network)",
+			Description:  "End of allocation range from public network, must be inside defined network. (Can be set with env PROXMOX_PUBLIC_END_RANGE)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PUBLIC_END_RANGE", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -172,7 +172,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"public_bridge": {
-			Description:  "Bridge interace name for private network",
+			Description:  "Bridge interace name for private network. (Can be set with env PROXMOX_PUBLIC_BRIDGE)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PUBLIC_BRIDGE", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -180,7 +180,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"private_ip_address": {
-			Description:  "Private network address IP",
+			Description:  "Private network address IP. (Can be set with env PROXMOX_PRIVATE_NETWORK)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PRIVATE_NETWORK", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -188,7 +188,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"private_net_mask": {
-			Description:  "Private network mask in number format (CIDR after /)",
+			Description:  "Private network mask in number format - CIDR after /. (Can be set with env PROXMOX_PRIVATE_NETMASK)",
 			Type:         schema.TypeInt,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PRIVATE_NETMASK", nil),
 			ValidateFunc: validation.IntBetween(1, 32),
@@ -196,7 +196,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"private_gateway": {
-			Description:  "Private network gateway IP (must be inside defined network)",
+			Description:  "Private network gateway IP, must be inside defined network. (Can be set with env PROXMOX_PRIVATE_GATEWAY)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PRIVATE_GATEWAY", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -204,7 +204,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"private_begin_allocation_range": {
-			Description:  "Start of allocation range from private network (must be inside defined network)",
+			Description:  "Start of allocation range from private network, must be inside defined network. (Can be set with env PROXMOX_PRIVATE_BEGIN_RANGE)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PRIVATE_BEGIN_RANGE", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -212,7 +212,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"private_end_allocation_range": {
-			Description:  "End of allocation range from private network (must be inside defined network)",
+			Description:  "End of allocation range from private network, must be inside defined network. (Can be set with env PROXMOX_PRIVATE_END_RANGE)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PRIVATE_END_RANGE", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
@@ -220,7 +220,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"private_bridge": {
-			Description:  "Bridge interace name for private network",
+			Description:  "Bridge interace name for private network. (Can be set with env PROXMOX_PRIVATE_BRIDGE)",
 			Type:         schema.TypeString,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_PRIVATE_BRIDGE", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
