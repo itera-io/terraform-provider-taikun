@@ -32,10 +32,10 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 ### Required
 
-- `access_key_id` (String, Sensitive) The AWS access key ID.
+- `access_key_id` (String, Sensitive) The AWS access key ID. (Can be set with env AWS_ACCESS_KEY_ID)
 - `name` (String) The name of the AWS cloud credential.
-- `region` (String) The AWS region.
-- `secret_access_key` (String, Sensitive) The AWS secret access key.
+- `region` (String) The AWS region. (Can be set with env AWS_DEFAULT_REGION)
+- `secret_access_key` (String, Sensitive) The AWS secret access key. (Can be set with env AWS_SECRET_ACCESS_KEY)
 
 ### Optional
 

@@ -14,7 +14,7 @@ import (
 func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"access_key_id": {
-			Description:  "The AWS access key ID.",
+			Description:  "The AWS access key ID. (Can be set with env AWS_ACCESS_KEY_ID)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -94,7 +94,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"region": {
-			Description: "The AWS region.",
+			Description: "The AWS region. (Can be set with env AWS_DEFAULT_REGION)",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
@@ -134,7 +134,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			),
 		},
 		"secret_access_key": {
-			Description:  "The AWS secret access key.",
+			Description:  "The AWS secret access key. (Can be set with env AWS_SECRET_ACCESS_KEY)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,

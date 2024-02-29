@@ -46,14 +46,14 @@ resource "taikun_cloud_credential_openstack" "foo" {
 
 ### Required
 
-- `domain` (String) The OpenStack domain.
+- `domain` (String) The OpenStack domain. (Can be set with env OS_USER_DOMAIN_NAME)
 - `name` (String) The name of the OpenStack cloud credential.
-- `password` (String, Sensitive) The OpenStack password.
-- `project_name` (String) The OpenStack project name.
-- `public_network_name` (String) The name of the public OpenStack network to use.
-- `region` (String) The OpenStack region.
-- `url` (String) The OpenStack authentication URL.
-- `user` (String) The OpenStack user.
+- `password` (String, Sensitive) The OpenStack password. (Can be set with env OS_PASSWORD)
+- `project_name` (String) The OpenStack project name. (Can be set with env OS_PROJECT_NAME)
+- `public_network_name` (String) The name of the public OpenStack network to use. (Can be set with env OS_INTERFACE)
+- `region` (String) The OpenStack region. (Can be set with env OS_REGION_NAME)
+- `url` (String) The OpenStack authentication URL. (Can be set with env OS_AUTH_URL)
+- `user` (String) The OpenStack user. (Can be set with env OS_USERNAME)
 
 ### Optional
 
