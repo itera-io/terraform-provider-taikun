@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -33,112 +34,132 @@ func TestProvider(t *testing.T) {
 }
 
 func testAccPreCheck(t *testing.T) {
-	if err := os.Getenv("TAIKUN_EMAIL"); err == "" {
-		t.Fatal("TAIKUN_EMAIL must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"TAIKUN_EMAIL",
+		"TAIKUN_PASSWORD",
 	}
-	if err := os.Getenv("TAIKUN_PASSWORD"); err == "" {
-		t.Fatal("TAIKUN_PASSWORD must be set for acceptance tests")
-	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
 }
 
 func testAccPreCheckPrometheus(t *testing.T) {
-	if err := os.Getenv("PROMETHEUS_URL"); err == "" {
-		t.Fatal("PROMETHEUS_URL must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"PROMETHEUS_URL",
+		"PROMETHEUS_USERNAME",
+		"PROMETHEUS_PASSWORD",
 	}
-	if err := os.Getenv("PROMETHEUS_USERNAME"); err == "" {
-		t.Fatal("PROMETHEUS_USERNAME must be set for acceptance tests")
-	}
-	if err := os.Getenv("PROMETHEUS_PASSWORD"); err == "" {
-		t.Fatal("PROMETHEUS_PASSWORD must be set for acceptance tests")
-	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
 }
 
 func testAccPreCheckOpenStack(t *testing.T) {
-	if err := os.Getenv("OS_AUTH_URL"); err == "" {
-		t.Fatal("OS_AUTH_URL must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"OS_AUTH_URL",
+		"OS_USERNAME",
+		"OS_PASSWORD",
+		"OS_USER_DOMAIN_NAME",
+		"OS_PROJECT_NAME",
+		"OS_INTERFACE",
+		"OS_REGION_NAME",
 	}
-	if err := os.Getenv("OS_USERNAME"); err == "" {
-		t.Fatal("OS_USERNAME must be set for acceptance tests")
-	}
-	if err := os.Getenv("OS_PASSWORD"); err == "" {
-		t.Fatal("OS_PASSWORD must be set for acceptance tests")
-	}
-	if err := os.Getenv("OS_USER_DOMAIN_NAME"); err == "" {
-		t.Fatal("OS_USER_DOMAIN_NAME must be set for acceptance tests")
-	}
-	if err := os.Getenv("OS_PROJECT_NAME"); err == "" {
-		t.Fatal("OS_PROJECT_NAME must be set for acceptance tests")
-	}
-	if err := os.Getenv("OS_INTERFACE"); err == "" {
-		t.Fatal("OS_INTERFACE must be set for acceptance tests")
-	}
-	if err := os.Getenv("OS_REGION_NAME"); err == "" {
-		t.Fatal("OS_REGION_NAME must be set for acceptance tests")
-	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
 }
 
 func testAccPreCheckAWS(t *testing.T) {
-	if err := os.Getenv("AWS_ACCESS_KEY_ID"); err == "" {
-		t.Fatal("AWS_ACCESS_KEY_ID must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"AWS_ACCESS_KEY_ID",
+		"AWS_SECRET_ACCESS_KEY",
+		"AWS_DEFAULT_REGION",
+		"AWS_AZ_COUNT",
 	}
-	if err := os.Getenv("AWS_SECRET_ACCESS_KEY"); err == "" {
-		t.Fatal("AWS_SECRET_ACCESS_KEY must be set for acceptance tests")
-	}
-	if err := os.Getenv("AWS_DEFAULT_REGION"); err == "" {
-		t.Fatal("AWS_DEFAULT_REGION must be set for acceptance tests")
-	}
-	if err := os.Getenv("AWS_AZ_COUNT"); err == "" {
-		t.Fatal("AWS_AZ_COUNT must be set for acceptance tests")
-	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
 }
 
 func testAccPreCheckGCP(t *testing.T) {
-	if err := os.Getenv("GCP_FOLDER_ID"); err == "" {
-		t.Fatal("GCP_FOLDER_ID must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"GCP_FOLDER_ID",
+		"GCP_BILLING_ACCOUNT",
+		"GCP_REGION",
+		"GCP_AZ_COUNT",
 	}
-	if err := os.Getenv("GCP_BILLING_ACCOUNT"); err == "" {
-		t.Fatal("GCP_BILLING_ACCOUNT must be set for acceptance tests")
-	}
-	if err := os.Getenv("GCP_REGION"); err == "" {
-		t.Fatal("GCP_REGION must be set for acceptance tests")
-	}
-	if err := os.Getenv("GCP_AZ_COUNT"); err == "" {
-		t.Fatal("GCP_AZ_COUNT must be set for acceptance tests")
-	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
 }
 
 func testAccPreCheckS3(t *testing.T) {
-	if err := os.Getenv("S3_ACCESS_KEY_ID"); err == "" {
-		t.Fatal("S3_ACCESS_KEY_ID must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"S3_ACCESS_KEY_ID",
+		"S3_SECRET_ACCESS_KEY",
+		"S3_ENDPOINT",
+		"S3_REGION",
 	}
-	if err := os.Getenv("S3_SECRET_ACCESS_KEY"); err == "" {
-		t.Fatal("S3_SECRET_ACCESS_KEY must be set for acceptance tests")
-	}
-	if err := os.Getenv("S3_ENDPOINT"); err == "" {
-		t.Fatal("S3_ENDPOINT must be set for acceptance tests")
-	}
-	if err := os.Getenv("S3_REGION"); err == "" {
-		t.Fatal("S3_REGION must be set for acceptance tests")
-	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
 }
 
 func testAccPreCheckAzure(t *testing.T) {
-	if err := os.Getenv("AZURE_SUBSCRIPTION"); err == "" {
-		t.Fatal("AZURE_SUBSCRIPTION must be set for acceptance tests")
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"AZURE_SUBSCRIPTION",
+		"AZURE_CLIENT_ID",
+		"AZURE_TENANT",
+		"AZURE_SECRET",
+		"AZURE_AZ_COUNT",
+		"AZURE_LOCATION",
 	}
-	if err := os.Getenv("AZURE_CLIENT_ID"); err == "" {
-		t.Fatal("AZURE_CLIENT_ID must be set for acceptance tests")
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
+}
+
+func testAccPreCheckProxmox(t *testing.T) {
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"PROXMOX_API_HOST",
+		"PROXMOX_CLIENT_ID",
+		"PROXMOX_CLIENT_SECRET",
+		"PROXMOX_STORAGE",
+		"PROXMOX_VM_TEMPLATE_NAME",
+		"PROXMOX_PUBLIC_NETWORK",
+		"PROXMOX_PUBLIC_NETMASK",
+		"PROXMOX_PUBLIC_GATEWAY",
+		"PROXMOX_PUBLIC_BEGIN_RANGE",
+		"PROXMOX_PUBLIC_END_RANGE",
+		"PROXMOX_PUBLIC_BRIDGE",
+		"PROXMOX_PRIVATE_NETWORK",
+		"PROXMOX_PRIVATE_NETMASK",
+		"PROXMOX_PRIVATE_GATEWAY",
+		"PROXMOX_PRIVATE_BEGIN_RANGE",
+		"PROXMOX_PRIVATE_END_RANGE",
+		"PROXMOX_PRIVATE_BRIDGE",
+		"PROXMOX_HYPERVISOR",
+		"PROXMOX_HYPERVISOR2",
 	}
-	if err := os.Getenv("AZURE_TENANT"); err == "" {
-		t.Fatal("AZURE_TENANT must be set for acceptance tests")
-	}
-	if err := os.Getenv("AZURE_SECRET"); err == "" {
-		t.Fatal("AZURE_SECRET must be set for acceptance tests")
-	}
-	if err := os.Getenv("AZURE_AZ_COUNT"); err == "" {
-		t.Fatal("AZURE_AZ_COUNT must be set for acceptance tests")
-	}
-	if err := os.Getenv("AZURE_LOCATION"); err == "" {
-		t.Fatal("AZURE_LOCATION must be set for acceptance tests")
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
+}
+
+func checkEnvVariables(requiredEnvSlice []string, t *testing.T) {
+	// Iterate through the required enviroment variables and check if all are set.
+	for _, requiredEnv := range requiredEnvSlice {
+		if err := os.Getenv(requiredEnv); err == "" {
+			fatalString := fmt.Sprintf("%s must be set for acceptance tests", requiredEnv)
+			t.Fatal(fatalString)
+		}
 	}
 }
