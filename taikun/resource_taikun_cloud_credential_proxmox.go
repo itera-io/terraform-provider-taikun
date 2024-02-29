@@ -62,7 +62,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			Description: "The name of the Proxmox cloud credential.",
 			Type:        schema.TypeString,
 			Required:    true,
-			ForceNew:    true,
+			//ForceNew:    true,
 			ValidateFunc: validation.All(
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
@@ -92,19 +92,19 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_id": {
-			Description:  "The Proxmox Client ID.",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
+			Description: "The Proxmox Client ID.",
+			Type:        schema.TypeString,
+			Required:    true,
+			//ForceNew:     true,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_CLIENT_ID", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
-			Description:  "The Proxmox Client Secret.",
-			Type:         schema.TypeString,
-			Required:     true,
-			Sensitive:    true,
-			ForceNew:     true,
+			Description: "The Proxmox Client Secret.",
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			//ForceNew:     true,
 			DefaultFunc:  schema.EnvDefaultFunc("PROXMOX_CLIENT_SECRET", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
@@ -128,8 +128,8 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 			Description: "The Proxmox hypervisors string array",
 			Type:        schema.TypeList,
 			Required:    true,
-			ForceNew:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
+			//ForceNew:    true,
+			Elem: &schema.Schema{Type: schema.TypeString},
 		},
 		"public_ip_address": {
 			Description:  "Public network address IP",
@@ -358,7 +358,7 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 		}
 	}
 
-	if d.HasChanges("user", "password", "name") {
+	if d.HasChanges("client_id", "client_secret", "name") {
 		updateBody := tkcore.UpdateProxmoxCommand{}
 		updateBody.SetId(id)
 		updateBody.SetName(d.Get("name").(string))
@@ -366,6 +366,17 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 		updateBody.SetTokenSecret(d.Get("client_secret").(string))
 
 		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdate(context.TODO()).UpdateProxmoxCommand(updateBody).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(res, err))
+		}
+	}
+
+	if d.HasChanges("hypervisors") {
+		updateBody := tkcore.UpdateHypervisorsCommand{}
+		updateBody.SetId(id)
+		updateBody.SetHypervisors(resourceGetStringList(d.Get("hypervisors")))
+
+		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdateHypervisors(context.TODO()).UpdateHypervisorsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
