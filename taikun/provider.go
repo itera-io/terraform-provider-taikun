@@ -87,6 +87,7 @@ func Provider() *schema.Provider {
 			"taikun_images_azure":                dataSourceTaikunImagesAzure(),
 			"taikun_images_gcp":                  dataSourceTaikunImagesGCP(),
 			"taikun_images_openstack":            dataSourceTaikunImagesOpenStack(),
+			"taikun_images_proxmox":              dataSourceTaikunImagesProxmox(),
 			"taikun_kubeconfig":                  dataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 dataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          dataSourceTaikunKubernetesProfile(),
