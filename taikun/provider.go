@@ -75,10 +75,12 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_azure":      dataSourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":        dataSourceTaikunCloudCredentialGCP(),
 			"taikun_cloud_credential_openstack":  dataSourceTaikunCloudCredentialOpenStack(),
+			"taikun_cloud_credential_proxmox":    dataSourceTaikunCloudCredentialProxmox(),
 			"taikun_cloud_credentials_aws":       dataSourceTaikunCloudCredentialsAWS(),
 			"taikun_cloud_credentials_azure":     dataSourceTaikunCloudCredentialsAzure(),
 			"taikun_cloud_credentials_gcp":       dataSourceTaikunCloudCredentialsGCP(),
 			"taikun_cloud_credentials_openstack": dataSourceTaikunCloudCredentialsOpenStack(),
+			"taikun_cloud_credentials_proxmox":   dataSourceTaikunCloudCredentialsProxmox(),
 			"taikun_flavors":                     dataSourceTaikunFlavors(),
 			"taikun_images":                      dataSourceTaikunImages(), // DEPRECATED
 			"taikun_images_aws":                  dataSourceTaikunImagesAWS(),
