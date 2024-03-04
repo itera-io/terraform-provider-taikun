@@ -51,7 +51,6 @@ func dataSourceTaikunImagesProxmoxRead(ctx context.Context, d *schema.ResourceDa
 	var offset int32 = 0
 
 	apiClient := meta.(*tk.Client)
-	//params := apiClient.Client.ImagesAPI.ImagesOpenstackImages(ctx, cloudCredentialID).Personal(false)
 	params := apiClient.Client.ImagesAPI.ImagesProxmoxImages(ctx, cloudCredentialID)
 
 	var imageList []map[string]interface{}

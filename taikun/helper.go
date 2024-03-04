@@ -302,6 +302,7 @@ const (
 	cloudTypeAzure     = "Azure"
 	cloudTypeOpenStack = "OpenStack"
 	cloudTypeGCP       = "GCP"
+	cloudTypeProxmox   = "Proxmox"
 )
 
 func getSecurityGroupProtocol(protocol string) tkcore.SecurityGroupProtocol {

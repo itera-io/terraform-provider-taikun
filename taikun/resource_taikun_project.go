@@ -1432,22 +1432,47 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 }
 
 func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Client) (string, error) {
-	response, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(cloudCredentialID).Execute()
+	// Check if Cloud credential is Openstack
+	responseOS, _, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(cloudCredentialID).Execute()
 	if err != nil {
 		return "", err
-	}
-	if len(response.GetAmazon()) == 1 {
-		return string(tkcore.CLOUDTYPE_AWS), nil
-	}
-	if len(response.GetAzure()) == 1 {
-		return string(tkcore.CLOUDTYPE_AZURE), nil
-	}
-	if len(response.GetOpenstack()) == 1 {
+	} else if responseOS.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_OPENSTACK), nil
 	}
-	if len(response.GetGoogle()) == 1 {
+
+	// Check if CC is AWS
+	responseAWS, _, err := apiClient.Client.AWSCloudCredentialAPI.AwsList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseAWS.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_AWS), nil
+	}
+
+	// Check if CC is Azure
+	responseAZ, _, err := apiClient.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseAZ.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_AZURE), nil
+	}
+
+	// Check if CC is Google
+	responseGCP, _, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseGCP.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_GOOGLE), nil
 	}
+
+	// Check if CC is Proxmox
+	responsePROXMOX, _, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responsePROXMOX.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_PROXMOX), nil
+	}
+
+	// Unknown CC type
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
 
