@@ -25,6 +25,11 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     "",
 		},
+		"hypervisor": {
+			Description: "Hypervisor for Proxmox Cloud credential (required for Proxmox).",
+			Type:        schema.TypeString,
+			Optional:    true,
+		},
 		"created_by": {
 			Description: "The creator of the VM.",
 			Type:        schema.TypeString,
@@ -282,6 +287,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			"volume_size",
 			"volume_type",
 			"spot_vm",
+			"hypervisor",
 		)
 	}
 }
@@ -533,7 +539,6 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	unreadableProperties := map[string]interface{}{}
 
 	vmCreateBody := tkcore.CreateStandAloneVmCommand{}
-	vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
 	vmCreateBody.SetCount(1)
 	vmCreateBody.SetFlavorName(vmMap["flavor"].(string))
 	vmCreateBody.SetImage(vmMap["image_id"].(string))
@@ -544,6 +549,14 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	vmCreateBody.SetStandAloneProfileId(standaloneProfileId)
 	vmCreateBody.SetStandAloneVmDisks(make([]tkcore.StandAloneVmDiskDto, 0))
 	vmCreateBody.SetVolumeSize(int64(vmMap["volume_size"].(int)))
+
+	if vmMap["cloud_init"] != nil {
+		vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
+	}
+
+	if vmMap["hypervisor"] != nil {
+		vmCreateBody.SetHypervisor(vmMap["hypervisor"].(string))
+	}
 
 	if vmMap["username"] != nil {
 		vmCreateBody.SetUsername(vmMap["username"].(string))
@@ -623,12 +636,12 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 }
 
 func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
-	body := tkcore.CommitStandAloneVmCommand{}
-	body.SetProjectId(projectID)
-	res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
-	if err != nil {
-		return tk.CreateError(res, err)
-	}
+	//body := tkcore.CommitStandAloneVmCommand{}
+	//body.SetProjectId(projectID)
+	//res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
+	//if err != nil {
+	//	return tk.CreateError(res, err)
+	//}
 	return nil
 }
 
