@@ -320,6 +320,7 @@ Optional:
 
 - `cloud_init` (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
 - `disk` (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
+- `hypervisor` (String) Hypervisor for Proxmox Cloud credential (required for Proxmox).
 - `public_ip` (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
 - `spot_vm` (Boolean) Enable if this to create standalone VM on spot instances Defaults to `false`.
 - `spot_vm_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the current on-demand price is used.

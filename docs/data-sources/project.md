@@ -150,6 +150,7 @@ Read-Only:
 - `created_by` (String)
 - `disk` (List of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `image_id` (String)
 - `image_name` (String)
