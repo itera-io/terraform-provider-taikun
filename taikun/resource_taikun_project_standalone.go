@@ -636,12 +636,12 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 }
 
 func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
-	//body := tkcore.CommitStandAloneVmCommand{}
-	//body.SetProjectId(projectID)
-	//res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
-	//if err != nil {
-	//	return tk.CreateError(res, err)
-	//}
+	body := tkcore.CommitStandAloneVmCommand{}
+	body.SetProjectId(projectID)
+	res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
 	return nil
 }
 
