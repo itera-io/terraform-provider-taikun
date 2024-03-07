@@ -408,6 +408,7 @@ resource "taikun_project" "foo" {
     volume_size = 60
     spot_vm = true
     spot_vm_max_price = 42
+    %s // possible zone
 
     disk {
       name = "tf-acc-disk"
@@ -433,6 +434,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 	cloudCredentialName := randomTestName()
 	standaloneProfileName := randomTestName()
 	projectName := shortRandomTestName()
+	zone := "zone = \"a\""
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -446,6 +448,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					projectName,
 					0,
 					0,
+					zone,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -481,6 +484,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 	cloudCredentialName := randomTestName()
 	standaloneProfileName := randomTestName()
 	projectName := shortRandomTestName()
+	zone := ""
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
@@ -494,6 +498,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					projectName,
 					0,
 					0,
+					zone,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
@@ -519,6 +524,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					projectName,
 					1,
 					0,
+					zone,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,

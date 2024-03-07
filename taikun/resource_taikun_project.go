@@ -1270,6 +1270,7 @@ func flattenTaikunProject(
 			"spot_vm":               vm.GetSpotInstance(),
 			"spot_vm_max_price":     vm.GetSpotPrice(),
 			"hypervisor":            vm.GetHypervisor(),
+			"zone":                  vm.GetAvailabilityZone(),
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))

@@ -216,6 +216,29 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 		},
+		"zone": {
+			Description: "Availability zone for this VM (required for AWS) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the first valid zone is used.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				// First apply, we did not specify a zone. Go.
+				if old == "" && new == "" {
+					return false
+				}
+				// Second apply, we did not specify a zone. Ignore.
+				// There used to be a zone, but now we specified none. Ignore
+				if old != "" && new == "" {
+					return true
+				}
+				// The zone was changed in .tf file. Go.
+				if old != "" && new != "" {
+					return false
+				}
+
+				// Else, Go.
+				return false
+			},
+		},
 	}
 }
 
@@ -279,6 +302,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 		// ForceNew fields within the VM subresource
 		return hasChanges(old, new,
 			"cloud_init",
+			"flavor",
 			"image_id",
 			"name",
 			"standalone_profile_id",
@@ -288,6 +312,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			"volume_type",
 			"spot_vm",
 			"hypervisor",
+			"zone",
 		)
 	}
 }
@@ -564,6 +589,10 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 
 	if vmMap["volume_type"] != nil {
 		vmCreateBody.SetVolumeType(vmMap["volume_type"].(string))
+	}
+
+	if vmMap["zone"] != nil {
+		vmCreateBody.SetAvailabilityZone(vmMap["zone"].(string))
 	}
 
 	if vmMap["tag"] != nil {
