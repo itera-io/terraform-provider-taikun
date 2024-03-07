@@ -217,7 +217,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"zone": {
-			Description: "Availability zone for this VM (required for AWS) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the first valid zone is used.",
+			Description: "Availability zone for this VM (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
 			Type:        schema.TypeString,
 			Optional:    true,
 			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {

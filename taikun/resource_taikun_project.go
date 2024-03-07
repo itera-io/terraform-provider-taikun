@@ -1200,6 +1200,7 @@ func flattenTaikunProject(
 			"status":                server.GetStatus(),
 			"spot_server":           server.GetSpotInstance(),
 			"spot_server_max_price": server.GetSpotPrice(),
+			"zone":                  server.GetAvailabilityZone(),
 		}
 
 		switch server.GetCloudType() {

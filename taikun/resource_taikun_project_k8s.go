@@ -139,6 +139,29 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Type:        schema.TypeFloat,
 			Optional:    true,
 		},
+		"zone": {
+			Description: "Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				// First apply, we did not specify a zone. Go.
+				if old == "" && new == "" {
+					return false
+				}
+				// Second apply, we did not specify a zone. Ignore.
+				// There used to be a zone, but now we specified none. Ignore
+				if old != "" && new == "" {
+					return true
+				}
+				// The zone was changed in .tf file. Go.
+				if old != "" && new != "" {
+					return false
+				}
+
+				// Else, Go.
+				return false
+			},
+		},
 	}
 }
 
