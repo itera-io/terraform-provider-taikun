@@ -226,7 +226,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:     1,
 			Optional:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server", "zone", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -236,7 +236,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -246,7 +246,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "zone", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerKubeworkerSchema(),
 			},
@@ -910,14 +910,16 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverCreateBody.SetProjectId(id)
 					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 					serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+					serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
+					serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
 					serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
 					if err != nil {
 						return diag.Errorf("There was an error in server spot configuration")
 					}
 
-					serverCreateResponse, _, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
+					serverCreateResponse, response, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 					if newErr != nil {
-						return diag.FromErr(newErr)
+						return diag.FromErr(tk.CreateError(response, newErr))
 					}
 					kubeWorkerMap["id"] = serverCreateResponse.GetId()
 
@@ -1200,7 +1202,8 @@ func flattenTaikunProject(
 			"status":                server.GetStatus(),
 			"spot_server":           server.GetSpotInstance(),
 			"spot_server_max_price": server.GetSpotPrice(),
-			"zone":                  server.GetAvailabilityZone(),
+			"zone":                  getLastCharacter(server.GetAvailabilityZone()), // Get last character of the string
+			"hypervisor":            server.GetHypervisor(),
 		}
 
 		switch server.GetCloudType() {
@@ -1212,6 +1215,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.GetOpenstackFlavor()
 		case tkcore.CLOUDTYPE_GOOGLE, "google":
 			serverMap["flavor"] = server.GetGoogleMachineType()
+		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
+			serverMap["flavor"] = server.GetProxmoxFlavor()
 		}
 
 		// Bastion
@@ -1236,6 +1241,7 @@ func flattenTaikunProject(
 			if !skip_this_server {
 				serverMap["kubernetes_node_label"] = labels
 				serverMap["wasm"] = server.GetWasmEnabled()
+				serverMap["zone"] = getLastCharacter(server.GetAvailabilityZone())
 
 				if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
 					kubeMasters = append(kubeMasters, serverMap)
@@ -1271,7 +1277,7 @@ func flattenTaikunProject(
 			"spot_vm":               vm.GetSpotInstance(),
 			"spot_vm_max_price":     vm.GetSpotPrice(),
 			"hypervisor":            vm.GetHypervisor(),
-			"zone":                  vm.GetAvailabilityZone(),
+			"zone":                  getLastCharacter(vm.GetAvailabilityZone()),
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))

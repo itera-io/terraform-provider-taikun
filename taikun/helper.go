@@ -334,3 +334,34 @@ func continentShorthand(continent string) string {
 	}
 	return ""
 }
+
+// This function is used when we have an API parameter PARAM with the following behavior
+// - We set PARAM to "x" and API returns PARAM with "x" (there is no change)
+// - We do not set PARAM. API figures out some value "y" and returns PARAM with value "y" (Terraform must ignore the change)
+func ignoreChangeFromEmpty(k string, old string, new string, d *schema.ResourceData) bool {
+	// First apply, we did not specify the PARAM. Don't supress diff.
+	if old == "" && new == "" {
+		return false
+	}
+
+	// Second apply, we did not specify a PARAM. Supress diff.
+	// There used to be a PARAM, but now we specified none. Supress diff.
+	if old != "" && new == "" {
+		return true
+	}
+
+	// The PARAM was changed in .tf file. Don't supress diff.
+	if old != "" && new != "" {
+		return false
+	}
+
+	// Else, Don't supress diff.
+	return false
+}
+
+func getLastCharacter(zoneString string) string {
+	if len(zoneString) == 0 {
+		return ""
+	}
+	return zoneString[len(zoneString)-1:]
+}

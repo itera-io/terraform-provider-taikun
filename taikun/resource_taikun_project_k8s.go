@@ -143,24 +143,15 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Description: "Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
 			Type:        schema.TypeString,
 			Optional:    true,
-			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-				// First apply, we did not specify a zone. Go.
-				if old == "" && new == "" {
-					return false
-				}
-				// Second apply, we did not specify a zone. Ignore.
-				// There used to be a zone, but now we specified none. Ignore
-				if old != "" && new == "" {
-					return true
-				}
-				// The zone was changed in .tf file. Go.
-				if old != "" && new != "" {
-					return false
-				}
-
-				// Else, Go.
-				return false
-			},
+			ForceNew:    true,
+			Default:     "",
+		},
+		"hypervisor": {
+			Description: "Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox).",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
 		},
 	}
 }
@@ -178,6 +169,8 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	serverCreateBody.SetDiskSize(gibiByteToByte(bastion["disk_size"].(int)))
 	serverCreateBody.SetFlavor(bastion["flavor"].(string))
 	serverCreateBody.SetName(bastion["name"].(string))
+	serverCreateBody.SetAvailabilityZone(bastion["zone"].(string))
+	serverCreateBody.SetHypervisor(bastion["hypervisor"].(string))
 	serverCreateBody.SetProjectId(projectID)
 	serverCreateBody.SetRole(tkcore.CLOUDROLE_BASTION)
 	serverCreateBody, err := resourceTaikunProjectSetServerSpots(bastion, serverCreateBody) // Spots
@@ -198,7 +191,6 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	kubeMastersList := kubeMasters.(*schema.Set).List()
 	for _, kubeMaster := range kubeMastersList {
 		kubeMasterMap := kubeMaster.(map[string]interface{})
-
 		serverCreateBody = tkcore.ServerForCreateDto{}
 		serverCreateBody.SetCount(1)
 		serverCreateBody.SetDiskSize(gibiByteToByte(kubeMasterMap["disk_size"].(int)))
@@ -207,6 +199,8 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetName(kubeMasterMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeMasterMap["wasm"].(bool))
+		serverCreateBody.SetAvailabilityZone(kubeMasterMap["zone"].(string))
+		serverCreateBody.SetHypervisor(kubeMasterMap["hypervisor"].(string))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
 		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeMasterMap, serverCreateBody) // Spots
 		if err != nil {
@@ -234,6 +228,8 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+		serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
+		serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
 		if err != nil {
