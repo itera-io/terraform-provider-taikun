@@ -38,6 +38,7 @@ data "taikun_kubernetes_profile" "foo" {
 - `nvidia_gpu_operator` (Boolean) When enabled, the Kubernetes will have NVIDIA GPU support.
 - `organization_id` (String) The ID of the organization which owns the Kubernetes profile.
 - `organization_name` (String) The name of the organization which owns the Kubernetes profile.
+- `proxmox_storage` (String) Choose the default Proxmox storage.
 - `schedule_on_master` (Boolean) When enabled, the workload will also run on master nodes (not recommended).
 - `unique_cluster_name` (Boolean) If not enabled, the cluster name will be cluster.local.
 - `wasm` (Boolean) When enabled, the Kubernetes will have WASM support.

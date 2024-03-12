@@ -49,6 +49,7 @@ Read-Only:
 - `nvidia_gpu_operator` (Boolean)
 - `organization_id` (String)
 - `organization_name` (String)
+- `proxmox_storage` (String)
 - `schedule_on_master` (Boolean)
 - `unique_cluster_name` (Boolean)
 - `wasm` (Boolean)
