@@ -16,6 +16,11 @@ import (
 
 func taikunServerKubeworkerSchema() map[string]*schema.Schema {
 	kubeworkerSchema := taikunServerSchemaWithKubernetesNodeLabels()
+	kubeworkerSchema["proxmox_extra_disk_size"] = &schema.Schema{
+		Description: "Specify the size of the Proxmox extra storage to enable proxmox storage. Proxmox storage type will be chosen automatically base on the Kubernetes profile used.",
+		Type:        schema.TypeInt,
+		Optional:    true,
+	}
 	removeForceNewsFromSchema(kubeworkerSchema)
 	return kubeworkerSchema
 }
@@ -230,6 +235,21 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
 		serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
 		serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
+
+		if kubeWorkerMap["proxmox_extra_disk_size"].(int) != 0 {
+			proxmoxStorageString, err1 := getProxmoxStorageStringForServer(projectID, apiClient)
+			if err1 != nil {
+				return err1
+			}
+			proxmoxRole, err2 := tkcore.NewProxmoxRoleFromValue(proxmoxStorageString)
+			if err2 != nil {
+				return err2
+			}
+			proxmoxExtraDiskSize := int32(kubeWorkerMap["proxmox_extra_disk_size"].(int))
+			serverCreateBody.SetProxmoxRole(*proxmoxRole)
+			serverCreateBody.SetProxmoxExtraDiskSize(proxmoxExtraDiskSize)
+		}
+
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
 		if err != nil {
@@ -268,10 +288,10 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
-	res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
-	if err != nil {
-		return tk.CreateError(res, err)
-	}
+	//res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
+	//if err != nil {
+	//	return tk.CreateError(res, err)
+	//}
 	return nil
 }
 

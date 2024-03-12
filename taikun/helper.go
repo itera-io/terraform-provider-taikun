@@ -1,7 +1,9 @@
 package taikun
 
 import (
+	"context"
 	"fmt"
+	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 	"math/rand"
@@ -364,4 +366,23 @@ func getLastCharacter(zoneString string) string {
 		return ""
 	}
 	return zoneString[len(zoneString)-1:]
+}
+
+// Proxmox storage options in kubernetes profile and Project are different from what we send while creating k8s servers
+func getProxmoxStorageStringForServer(projectID int32, apiClient *tk.Client) (string, error) {
+	data, response, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
+	if err != nil {
+		return "", tk.CreateError(response, err)
+	}
+
+	kubernetesProfile := data.GetProject()
+	proxmoxStorageString := kubernetesProfile.GetProxmoxStorage()
+	switch proxmoxStorageString {
+	case "NFS":
+		return "NFS", nil
+	case "OpenEBS":
+		return "STORAGE", nil
+	default:
+		return "", fmt.Errorf("Parsed an unrecognised Proxmox Storage type from Kubernetes Profile for this project.")
+	}
 }
