@@ -761,3 +761,122 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 		},
 	})
 }
+
+const testAccResourceTaikunProjectStandaloneProxmoxMinimal = `
+resource "taikun_cloud_credential_proxmox" "proxmox01" {
+  name = "%s"
+  hypervisors=[%s]
+}
+
+data "taikun_flavors" "proxmox01" {
+  cloud_credential_id = resource.taikun_cloud_credential_proxmox.proxmox01.id
+  min_cpu = 2
+  max_cpu = 2
+  min_ram = 2
+  max_ram = 12
+}
+
+data "taikun_images_proxmox" "proxmox01" {
+  cloud_credential_id = resource.taikun_cloud_credential_proxmox.proxmox01.id
+}
+
+locals {
+  flavors = [for flavor in data.taikun_flavors.proxmox01.flavors: flavor.name]
+  images = [for image in data.taikun_images_proxmox.proxmox01.images: image.id]
+}
+
+resource "taikun_standalone_profile" "proxmox01" {
+  name       = "%s"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQwGpzLk0IzqKnBpaHqecLA+X4zfHamNe9Rg3CoaXHF example@example.com"
+}
+
+resource "taikun_kubernetes_profile" "proxmox01" {
+  name = "%s"
+  proxmox_storage = "%s"
+}
+
+
+resource "taikun_project" "proxmox01" {
+  name                = "%s"
+  cloud_credential_id = resource.taikun_cloud_credential_proxmox.proxmox01.id
+
+  kubernetes_profile_id = resource.taikun_kubernetes_profile.proxmox01.id
+
+  expiration_date = "21/12/2240"
+  auto_upgrade    = true
+  monitoring      = true
+
+  quota_cpu_units = 64
+  quota_disk_size = 1024
+  quota_ram_size  = 256
+
+  flavors = local.flavors
+  images  = local.images
+
+  vm {
+    name        = "%s"
+    volume_size = 42
+    standalone_profile_id = resource.taikun_standalone_profile.proxmox01.id
+    flavor   = local.flavors[%d]
+    image_id = local.images[%d]
+    hypervisor = "%s"
+  }
+}
+`
+
+func TestAccResourceTaikunProjectStandaloneProxmoxMinimal(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	hypervisor := os.Getenv("PROXMOX_HYPERVISOR")
+	hypervisor2 := os.Getenv("PROXMOX_HYPERVISOR2")
+	hypervisors_string_update := fmt.Sprintf("\"%s\", \"%s\"", hypervisor, hypervisor2)
+	standaloneProfileName := randomTestName()
+	kubernetesProfileName := randomTestName()
+	proxmoxStorageName := "OpenEBS"
+	projectName := shortRandomTestName()
+	vmName := shortRandomTestName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckAWS(t) },
+		ProviderFactories: testAccProviderFactories,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneProxmoxMinimal,
+					cloudCredentialName,
+					hypervisors_string_update,
+					standaloneProfileName,
+					kubernetesProfileName,
+					proxmoxStorageName,
+					projectName,
+					vmName,
+					0,
+					0,
+					hypervisor,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunProjectExists,
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "name", projectName),
+					resource.TestCheckResourceAttrSet("taikun_project.proxmox01", "access_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.proxmox01", "cloud_credential_id"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "auto_upgrade", "true"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "monitoring", "true"),
+					resource.TestCheckResourceAttrSet("taikun_project.proxmox01", "kubernetes_profile_id"),
+					resource.TestCheckResourceAttrSet("taikun_project.proxmox01", "organization_id"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "spot_vms", "false"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "spot_worker", "false"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "vm.#", "1"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "vm.0.name", vmName),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "vm.0.volume_size", "42"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "vm.0.public_ip", "false"),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "vm.0.access_ip", ""),
+					resource.TestCheckResourceAttr("taikun_project.proxmox01", "vm.0.hypervisor", hypervisor),
+				),
+			},
+			{
+				ResourceName:      "taikun_project.proxmox01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}

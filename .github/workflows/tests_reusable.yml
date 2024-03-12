@@ -360,6 +360,29 @@ jobs:
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
+  test6a:
+    name: 6a) Proxmox, create VM
+    needs: [test1alpha, test1beta]
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH }}
+      - name: Get dependencies
+        run: |
+          go mod download
+      - name: TF acceptance tests
+        run: |
+          date
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneProxmoxMinimal$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+
   test5a:
     name: 5a) Openstack, creating k8s
     needs: [test2a, test2b, test2c, test2d]
