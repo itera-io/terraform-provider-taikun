@@ -183,8 +183,8 @@ func testAccCheckTaikunCloudCredentialAzureExists(state *terraform.State) error 
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCountAzure() != 1 {
+		response, _, err := client.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("azure cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -203,11 +203,11 @@ func testAccCheckTaikunCloudCredentialAzureDestroy(state *terraform.State) error
 		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
-			if response.GetTotalCountAzure() != 0 {
+			if response.GetTotalCount() != 0 {
 				return retry.RetryableError(errors.New("azure cloud credential still exists ()"))
 			}
 			return nil
