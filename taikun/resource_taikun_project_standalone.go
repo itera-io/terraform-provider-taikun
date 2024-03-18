@@ -25,6 +25,12 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     "",
 		},
+		"hypervisor": {
+			Description:      "Hypervisor used for this VM (required for Proxmox).",
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: ignoreChangeFromEmpty,
+		},
 		"created_by": {
 			Description: "The creator of the VM.",
 			Type:        schema.TypeString,
@@ -211,6 +217,12 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 		},
+		"zone": {
+			Description:      "Availability zone for this VM (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: ignoreChangeFromEmpty,
+		},
 	}
 }
 
@@ -274,6 +286,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 		// ForceNew fields within the VM subresource
 		return hasChanges(old, new,
 			"cloud_init",
+			"flavor",
 			"image_id",
 			"name",
 			"standalone_profile_id",
@@ -282,6 +295,8 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			"volume_size",
 			"volume_type",
 			"spot_vm",
+			"hypervisor",
+			"zone",
 		)
 	}
 }
@@ -533,7 +548,6 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	unreadableProperties := map[string]interface{}{}
 
 	vmCreateBody := tkcore.CreateStandAloneVmCommand{}
-	vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
 	vmCreateBody.SetCount(1)
 	vmCreateBody.SetFlavorName(vmMap["flavor"].(string))
 	vmCreateBody.SetImage(vmMap["image_id"].(string))
@@ -545,12 +559,24 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	vmCreateBody.SetStandAloneVmDisks(make([]tkcore.StandAloneVmDiskDto, 0))
 	vmCreateBody.SetVolumeSize(int64(vmMap["volume_size"].(int)))
 
+	if vmMap["cloud_init"] != nil {
+		vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
+	}
+
+	if vmMap["hypervisor"] != nil {
+		vmCreateBody.SetHypervisor(vmMap["hypervisor"].(string))
+	}
+
 	if vmMap["username"] != nil {
 		vmCreateBody.SetUsername(vmMap["username"].(string))
 	}
 
 	if vmMap["volume_type"] != nil {
 		vmCreateBody.SetVolumeType(vmMap["volume_type"].(string))
+	}
+
+	if vmMap["zone"] != nil {
+		vmCreateBody.SetAvailabilityZone(vmMap["zone"].(string))
 	}
 
 	if vmMap["tag"] != nil {

@@ -40,6 +40,7 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "bastion_proxy"),
 					resource.TestCheckResourceAttrSet("taikun_kubernetes_profile.foo", "nvidia_gpu_operator"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "nvidia_gpu_operator", "false"),
+					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "proxmox_storage", "NFS"),
 				),
 			},
 			{

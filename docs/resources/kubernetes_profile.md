@@ -40,6 +40,7 @@ resource "taikun_kubernetes_profile" "foo" {
 - `lock` (Boolean) Indicates whether to lock the Kubernetes profile. Defaults to `false`.
 - `nvidia_gpu_operator` (Boolean) When enabled, the Kubernetes will have NVIDIA GPU support. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the Kubernetes profile.
+- `proxmox_storage` (String) Choose the default Proxmox storage.
 - `schedule_on_master` (Boolean) When enabled, the workload will also run on master nodes (not recommended). Defaults to `false`.
 - `unique_cluster_name` (Boolean) If not enabled, the cluster name will be cluster.local. Defaults to `false`.
 - `wasm` (Boolean) When enabled, the Kubernetes will have WASM support. Defaults to `false`.

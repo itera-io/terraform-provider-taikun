@@ -226,7 +226,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:     1,
 			Optional:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server", "zone", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -236,7 +236,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -246,7 +246,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "zone", "hypervisor", "proxmox_extra_disk_size"),
 			Elem: &schema.Resource{
 				Schema: taikunServerKubeworkerSchema(),
 			},
@@ -910,14 +910,31 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverCreateBody.SetProjectId(id)
 					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 					serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+					serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
+					serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
+
+					if kubeWorkerMap["proxmox_extra_disk_size"].(int) != 0 {
+						proxmoxStorageString, err1 := getProxmoxStorageStringForServer(id, apiClient)
+						if err1 != nil {
+							return diag.FromErr(err1)
+						}
+						proxmoxRole, err2 := tkcore.NewProxmoxRoleFromValue(proxmoxStorageString)
+						if err2 != nil {
+							return diag.FromErr(err2)
+						}
+						proxmoxExtraDiskSize := int32(kubeWorkerMap["proxmox_extra_disk_size"].(int))
+						serverCreateBody.SetProxmoxRole(*proxmoxRole)
+						serverCreateBody.SetProxmoxExtraDiskSize(proxmoxExtraDiskSize)
+					}
+
 					serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
 					if err != nil {
 						return diag.Errorf("There was an error in server spot configuration")
 					}
 
-					serverCreateResponse, _, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
+					serverCreateResponse, response, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 					if newErr != nil {
-						return diag.FromErr(newErr)
+						return diag.FromErr(tk.CreateError(response, newErr))
 					}
 					kubeWorkerMap["id"] = serverCreateResponse.GetId()
 
@@ -1139,16 +1156,19 @@ func flattenTaikunProject(
 	projectDeleteOnExpiration bool,
 ) map[string]interface{} {
 
+	// Flatten project Flavors
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
 		flavors[i] = boundFlavorDTO.GetName()
 	}
 
+	// Flatten project Images
 	images := make([]string, len(boundImageDTOs))
 	for i, boundImageDTO := range boundImageDTOs {
 		images[i] = boundImageDTO.GetImageId()
 	}
 
+	// Flatten project attributes
 	projectMap := map[string]interface{}{
 		"access_ip":               projectDetailsDTO.GetAccessIp(),
 		"access_profile_id":       i32toa(projectDetailsDTO.GetAccessProfileId()),
@@ -1184,11 +1204,13 @@ func flattenTaikunProject(
 		"spot_max_price":          projectDetailsDTO.GetMaxSpotPrice(),
 	}
 
+	// Flatten Kubernetes servers
 	bastions := make([]map[string]interface{}, 0)
 	kubeMasters := make([]map[string]interface{}, 0)
 	kubeWorkers := make([]map[string]interface{}, 0)
 	skip_this_server := false
 	for _, server := range serverListDTO {
+		// Flatten server attributes for every server type
 		serverMap := map[string]interface{}{
 			"created_by":            server.GetCreatedBy(),
 			"disk_size":             byteToGibiByte(server.GetDiskSize()),
@@ -1200,8 +1222,25 @@ func flattenTaikunProject(
 			"status":                server.GetStatus(),
 			"spot_server":           server.GetSpotInstance(),
 			"spot_server_max_price": server.GetSpotPrice(),
+			"zone":                  getLastCharacter(server.GetAvailabilityZone()), // Get last character of the string
+			"hypervisor":            server.GetHypervisor(),
 		}
 
+		// Attributes only for Workers
+		serverRole := server.GetRole()
+		if serverRole == tkcore.CLOUDROLE_KUBEWORKER {
+			serverMap["wasm"] = server.GetWasmEnabled()
+			serverMap["zone"] = getLastCharacter(server.GetAvailabilityZone())
+			serverMap["proxmox_extra_disk_size"] = server.GetProxmoxExtraDiskSize()
+		}
+		// Attributes only for Masters
+		if serverRole == tkcore.CLOUDROLE_KUBEMASTER {
+			serverMap["wasm"] = server.GetWasmEnabled()
+			serverMap["zone"] = getLastCharacter(server.GetAvailabilityZone())
+
+		}
+
+		// Flatten flavor
 		switch server.GetCloudType() {
 		case tkcore.CLOUDTYPE_AWS:
 			serverMap["flavor"] = server.GetAwsInstanceType()
@@ -1211,13 +1250,15 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.GetOpenstackFlavor()
 		case tkcore.CLOUDTYPE_GOOGLE, "google":
 			serverMap["flavor"] = server.GetGoogleMachineType()
+		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
+			serverMap["flavor"] = server.GetProxmoxFlavor()
 		}
 
-		// Bastion
-		if server.GetRole() == tkcore.CLOUDROLE_BASTION {
+		if serverRole == tkcore.CLOUDROLE_BASTION {
+			// Flatten bastion
 			bastions = append(bastions, serverMap)
 		} else {
-
+			// Flatten masters and workers with labels
 			labels := make([]map[string]interface{}, len(server.GetKubernetesNodeLabels()))
 			for i, rawLabel := range server.GetKubernetesNodeLabels() {
 				labels[i] = map[string]interface{}{
@@ -1234,9 +1275,8 @@ func flattenTaikunProject(
 			// Add server to state only if its not an autoscaler server
 			if !skip_this_server {
 				serverMap["kubernetes_node_label"] = labels
-				serverMap["wasm"] = server.GetWasmEnabled()
 
-				if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
+				if serverRole == tkcore.CLOUDROLE_KUBEMASTER {
 					kubeMasters = append(kubeMasters, serverMap)
 				} else {
 					kubeWorkers = append(kubeWorkers, serverMap)
@@ -1248,6 +1288,7 @@ func flattenTaikunProject(
 	projectMap["server_kubemaster"] = kubeMasters
 	projectMap["server_kubeworker"] = kubeWorkers
 
+	// Flatten project VMs
 	vms := make([]map[string]interface{}, 0)
 	for _, vm := range vmListDTO {
 		vmMap := map[string]interface{}{
@@ -1269,6 +1310,8 @@ func flattenTaikunProject(
 			"volume_type":           vm.GetVolumeType(),
 			"spot_vm":               vm.GetSpotInstance(),
 			"spot_vm_max_price":     vm.GetSpotPrice(),
+			"hypervisor":            vm.GetHypervisor(),
+			"zone":                  getLastCharacter(vm.GetAvailabilityZone()),
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))
@@ -1296,15 +1339,18 @@ func flattenTaikunProject(
 	}
 	projectMap["vm"] = vms
 
+	// Flatten alerting profiles
 	var nullID int32
 	if projectDetailsDTO.GetAlertingProfileId() != nullID {
 		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.GetAlertingProfileId())
 	}
 
+	// Flatten Backups
 	if projectDetailsDTO.GetIsBackupEnabled() {
 		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.GetS3CredentialId())
 	}
 
+	// Flatten OPA profiles
 	if projectDetailsDTO.GetIsOpaEnabled() {
 		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.GetOpaProfileId())
 	}
@@ -1432,22 +1478,47 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 }
 
 func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Client) (string, error) {
-	response, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(cloudCredentialID).Execute()
+	// Check if Cloud credential is Openstack
+	responseOS, _, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(cloudCredentialID).Execute()
 	if err != nil {
 		return "", err
-	}
-	if len(response.GetAmazon()) == 1 {
-		return string(tkcore.CLOUDTYPE_AWS), nil
-	}
-	if len(response.GetAzure()) == 1 {
-		return string(tkcore.CLOUDTYPE_AZURE), nil
-	}
-	if len(response.GetOpenstack()) == 1 {
+	} else if responseOS.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_OPENSTACK), nil
 	}
-	if len(response.GetGoogle()) == 1 {
+
+	// Check if CC is AWS
+	responseAWS, _, err := apiClient.Client.AWSCloudCredentialAPI.AwsList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseAWS.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_AWS), nil
+	}
+
+	// Check if CC is Azure
+	responseAZ, _, err := apiClient.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseAZ.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_AZURE), nil
+	}
+
+	// Check if CC is Google
+	responseGCP, _, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseGCP.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_GOOGLE), nil
 	}
+
+	// Check if CC is Proxmox
+	responsePROXMOX, _, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responsePROXMOX.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_PROXMOX), nil
+	}
+
+	// Unknown CC type
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
 

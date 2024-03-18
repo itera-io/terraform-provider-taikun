@@ -16,6 +16,11 @@ import (
 
 func taikunServerKubeworkerSchema() map[string]*schema.Schema {
 	kubeworkerSchema := taikunServerSchemaWithKubernetesNodeLabels()
+	kubeworkerSchema["proxmox_extra_disk_size"] = &schema.Schema{
+		Description: "Specify the size of the Proxmox extra storage to enable proxmox storage. Proxmox storage type will be chosen automatically base on the Kubernetes profile used.",
+		Type:        schema.TypeInt,
+		Optional:    true,
+	}
 	removeForceNewsFromSchema(kubeworkerSchema)
 	return kubeworkerSchema
 }
@@ -139,6 +144,20 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Type:        schema.TypeFloat,
 			Optional:    true,
 		},
+		"zone": {
+			Description: "Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
+		},
+		"hypervisor": {
+			Description: "Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox).",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
+		},
 	}
 }
 
@@ -155,6 +174,8 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	serverCreateBody.SetDiskSize(gibiByteToByte(bastion["disk_size"].(int)))
 	serverCreateBody.SetFlavor(bastion["flavor"].(string))
 	serverCreateBody.SetName(bastion["name"].(string))
+	serverCreateBody.SetAvailabilityZone(bastion["zone"].(string))
+	serverCreateBody.SetHypervisor(bastion["hypervisor"].(string))
 	serverCreateBody.SetProjectId(projectID)
 	serverCreateBody.SetRole(tkcore.CLOUDROLE_BASTION)
 	serverCreateBody, err := resourceTaikunProjectSetServerSpots(bastion, serverCreateBody) // Spots
@@ -175,7 +196,6 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	kubeMastersList := kubeMasters.(*schema.Set).List()
 	for _, kubeMaster := range kubeMastersList {
 		kubeMasterMap := kubeMaster.(map[string]interface{})
-
 		serverCreateBody = tkcore.ServerForCreateDto{}
 		serverCreateBody.SetCount(1)
 		serverCreateBody.SetDiskSize(gibiByteToByte(kubeMasterMap["disk_size"].(int)))
@@ -184,6 +204,8 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetName(kubeMasterMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeMasterMap["wasm"].(bool))
+		serverCreateBody.SetAvailabilityZone(kubeMasterMap["zone"].(string))
+		serverCreateBody.SetHypervisor(kubeMasterMap["hypervisor"].(string))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
 		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeMasterMap, serverCreateBody) // Spots
 		if err != nil {
@@ -211,6 +233,23 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+		serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
+		serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
+
+		if kubeWorkerMap["proxmox_extra_disk_size"].(int) != 0 {
+			proxmoxStorageString, err1 := getProxmoxStorageStringForServer(projectID, apiClient)
+			if err1 != nil {
+				return err1
+			}
+			proxmoxRole, err2 := tkcore.NewProxmoxRoleFromValue(proxmoxStorageString)
+			if err2 != nil {
+				return err2
+			}
+			proxmoxExtraDiskSize := int32(kubeWorkerMap["proxmox_extra_disk_size"].(int))
+			serverCreateBody.SetProxmoxRole(*proxmoxRole)
+			serverCreateBody.SetProxmoxExtraDiskSize(proxmoxExtraDiskSize)
+		}
+
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
 		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
 		if err != nil {

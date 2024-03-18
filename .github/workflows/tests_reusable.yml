@@ -39,8 +39,7 @@ env:
 
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_DEFAULT_REGION: eu-central-1
-  AWS_AVAILABILITY_ZONE: a
+  AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
   AWS_AZ_COUNT: 1
 
   AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION }}
@@ -58,6 +57,28 @@ env:
 
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
   SLACK_WEBHOOK_FEEDBACK: ${{ secrets.SLACK_WEBHOOK_FEEDBACK }}
+
+  PROXMOX_API_HOST: ${{ secrets.PROXMOX_API_HOST }}
+  PROXMOX_CLIENT_ID: ${{ secrets.PROXMOX_CLIENT_ID }}
+  PROXMOX_CLIENT_SECRET: ${{ secrets.PROXMOX_CLIENT_SECRET }}
+  PROXMOX_STORAGE: ${{ secrets.PROXMOX_STORAGE }}
+  PROXMOX_VM_TEMPLATE_NAME: ${{ secrets.PROXMOX_VM_TEMPLATE_NAME }}
+  PROXMOX_HYPERVISOR: ${{ secrets.PROXMOX_HYPERVISOR }}
+  PROXMOX_HYPERVISOR2: ${{ secrets.PROXMOX_HYPERVISOR2 }}
+  
+  PROXMOX_PRIVATE_NETWORK: ${{ secrets.PROXMOX_PRIVATE_NETWORK }}
+  PROXMOX_PRIVATE_NETMASK: ${{ secrets.PROXMOX_PRIVATE_NETMASK }}
+  PROXMOX_PRIVATE_GATEWAY: ${{ secrets.PROXMOX_PRIVATE_GATEWAY }}
+  PROXMOX_PRIVATE_BEGIN_RANGE: ${{ secrets.PROXMOX_PRIVATE_BEGIN_RANGE }}
+  PROXMOX_PRIVATE_END_RANGE: ${{ secrets.PROXMOX_PRIVATE_END_RANGE }}
+  PROXMOX_PRIVATE_BRIDGE: ${{ secrets.PROXMOX_PRIVATE_BRIDGE }}
+
+  PROXMOX_PUBLIC_NETWORK: ${{ secrets.PROXMOX_PUBLIC_NETWORK }}
+  PROXMOX_PUBLIC_NETMASK: ${{ secrets.PROXMOX_PUBLIC_NETMASK }}
+  PROXMOX_PUBLIC_GATEWAY: ${{ secrets.PROXMOX_PUBLIC_GATEWAY }}
+  PROXMOX_PUBLIC_BEGIN_RANGE: ${{ secrets.PROXMOX_PUBLIC_BEGIN_RANGE }}
+  PROXMOX_PUBLIC_END_RANGE: ${{ secrets.PROXMOX_PUBLIC_END_RANGE }}
+  PROXMOX_PUBLIC_BRIDGE: ${{ secrets.PROXMOX_PUBLIC_BRIDGE }}
 
   # Trying to avoid race conditions
   TERRAFORM_SKIP_VERIFY: true
@@ -130,7 +151,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          ACCEPTANCE_TESTS='(TestAccResourceTaikunAutoscalerOpenstackProject$$|TestAccResourceTaikunProjectWasm$$|TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)' ./scripts/rerun_failed_tests.sh
+          ACCEPTANCE_TESTS='(TestAccDataSourceTaikunCloudCredentialsProxmoxWithFilter$$|TestAccDataSourceTaikunCloudCredentialsProxmox$$|TestAccResourceTaikunCloudCredentialProxmox$$|TestAccResourceTaikunCloudCredentialProxmoxLock$$|TestAccResourceTaikunCloudCredentialProxmoxUpdate$$|TestAccResourceTaikunAutoscalerOpenstackProject$$|TestAccResourceTaikunProjectWasm$$|TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)' ./scripts/rerun_failed_tests.sh
 
   test1beta:
     name: 1beta) Testing Taikun
@@ -361,6 +382,29 @@ jobs:
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
+  test6a:
+    name: 6a) Proxmox, create VM
+    needs: [test1alpha, test1beta]
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH }}
+      - name: Get dependencies
+        run: |
+          go mod download
+      - name: TF acceptance tests
+        run: |
+          date
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneProxmoxMinimal$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+
   test5a:
     name: 5a) Openstack, creating k8s
     needs: [test2a, test2b, test2c, test2d]
@@ -387,10 +431,10 @@ jobs:
   slackWebhook:
     name: End) Send feedback to slack
     if: ${{ failure() }}
-    needs: [test5a, test3a, test3b, test4a, test4b, test4c]
+    needs: [test5a, test3a, test3b, test4a, test4b, test4c, test6a]
     runs-on: self-hosted
     timeout-minutes: 10
     steps:
       - name: The job has failed
         run: |
-          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED\n'"$CI_JOB_URL"'"}' $SLACK_WEBHOOK_FEEDBACK
+          curl -i -X POST -H "Content-Type: application/json" -d '{"username":"TF-TEST", "text":"TF tests FAILED\n'"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"'"}' $SLACK_WEBHOOK_FEEDBACK; exit 0

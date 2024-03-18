@@ -34,12 +34,12 @@ resource "taikun_cloud_credential_azure" "foo" {
 
 ### Required
 
-- `client_id` (String, Sensitive) The Azure client ID.
-- `client_secret` (String, Sensitive) The Azure client secret.
+- `client_id` (String, Sensitive) The Azure client ID. (Can be set with env AZURE_CLIENT_ID)
+- `client_secret` (String, Sensitive) The Azure client secret. (Can be set with env AZURE_SECRET)
 - `location` (String) The Azure location.
 - `name` (String) The name of the Azure cloud credential.
-- `subscription_id` (String) The Azure subscription ID.
-- `tenant_id` (String) The Azure tenant ID.
+- `subscription_id` (String) The Azure subscription ID. (Can be set with env AZURE_SUBSCRIPTION)
+- `tenant_id` (String) The Azure tenant ID. (Can be set with env AZURE_TENANT)
 
 ### Optional
 

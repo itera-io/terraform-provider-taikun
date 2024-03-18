@@ -106,6 +106,13 @@ func resourceTaikunKubernetesProfileSchema() map[string]*schema.Schema {
 			Default:     false,
 			ForceNew:    true,
 		},
+		"proxmox_storage": {
+			Description:      "Choose the default Proxmox storage.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: ignoreChangeFromEmpty,
+		},
 	}
 }
 
@@ -136,6 +143,13 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetNvidiaGpuOperatorEnabled(d.Get("nvidia_gpu_operator").(bool))
 	body.SetUniqueClusterName(d.Get("unique_cluster_name").(bool))
 	body.SetWasmEnabled(d.Get("wasm").(bool))
+
+	proxmoxStorage, err := tkcore.NewProxmoxStorageFromValue(d.Get("proxmox_storage").(string))
+	if err == nil {
+		body.SetProxmoxStorage(*proxmoxStorage) // User input is not empty and valid.
+	} else if d.Get("proxmox_storage").(string) != "" {
+		return diag.FromErr(err) // User input is not empty and not valid.
+	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -256,6 +270,7 @@ func flattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 		"unique_cluster_name":     rawKubernetesProfile.GetUniqueClusterName(),
 		"nvidia_gpu_operator":     rawKubernetesProfile.GetNvidiaGpuOperatorEnabled(),
 		"wasm":                    rawKubernetesProfile.GetWasmEnabled(),
+		"proxmox_storage":         rawKubernetesProfile.GetProxmoxStorage(),
 	}
 }
 

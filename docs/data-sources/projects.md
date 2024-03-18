@@ -83,6 +83,7 @@ Read-Only:
 - `created_by` (String)
 - `disk_size` (Number)
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `ip` (String)
 - `last_modified` (String)
@@ -91,6 +92,7 @@ Read-Only:
 - `spot_server` (Boolean)
 - `spot_server_max_price` (Number)
 - `status` (String)
+- `zone` (String)
 
 
 <a id="nestedobjatt--projects--server_kubemaster"></a>
@@ -101,6 +103,7 @@ Read-Only:
 - `created_by` (String)
 - `disk_size` (Number)
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `ip` (String)
 - `kubernetes_node_label` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubemaster--kubernetes_node_label))
@@ -111,6 +114,7 @@ Read-Only:
 - `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
+- `zone` (String)
 
 <a id="nestedobjatt--projects--server_kubemaster--kubernetes_node_label"></a>
 ### Nested Schema for `projects.server_kubemaster.kubernetes_node_label`
@@ -130,16 +134,19 @@ Read-Only:
 - `created_by` (String)
 - `disk_size` (Number)
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `ip` (String)
 - `kubernetes_node_label` (Set of Object) (see [below for nested schema](#nestedobjatt--projects--server_kubeworker--kubernetes_node_label))
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `proxmox_extra_disk_size` (Number)
 - `spot_server` (Boolean)
 - `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
+- `zone` (String)
 
 <a id="nestedobjatt--projects--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `projects.server_kubeworker.kubernetes_node_label`
@@ -161,6 +168,7 @@ Read-Only:
 - `created_by` (String)
 - `disk` (List of Object) (see [below for nested schema](#nestedobjatt--projects--vm--disk))
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `image_id` (String)
 - `image_name` (String)
@@ -177,6 +185,7 @@ Read-Only:
 - `username` (String)
 - `volume_size` (Number)
 - `volume_type` (String)
+- `zone` (String)
 
 <a id="nestedobjatt--projects--vm--disk"></a>
 ### Nested Schema for `projects.vm.disk`

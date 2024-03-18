@@ -30,7 +30,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Default:      1,
 		},
 		"client_id": {
-			Description:  "The Azure client ID.",
+			Description:  "The Azure client ID. (Can be set with env AZURE_CLIENT_ID)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -38,7 +38,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
-			Description:  "The Azure client secret.",
+			Description:  "The Azure client secret. (Can be set with env AZURE_SECRET)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -109,7 +109,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"subscription_id": {
-			Description:  "The Azure subscription ID.",
+			Description:  "The Azure subscription ID. (Can be set with env AZURE_SUBSCRIPTION)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -117,7 +117,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"tenant_id": {
-			Description:  "The Azure tenant ID.",
+			Description:  "The Azure tenant ID. (Can be set with env AZURE_TENANT)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,

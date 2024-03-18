@@ -213,8 +213,10 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
+- `hypervisor` (String) Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox). Defaults to ` `.
 - `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
 - `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
+- `zone` (String) Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used. Defaults to ` `.
 
 Read-Only:
 
@@ -237,10 +239,12 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
+- `hypervisor` (String) Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox). Defaults to ` `.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
 - `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
 - `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
 - `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
+- `zone` (String) Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used. Defaults to ` `.
 
 Read-Only:
 
@@ -272,10 +276,13 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
+- `hypervisor` (String) Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox). Defaults to ` `.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
+- `proxmox_extra_disk_size` (Number) Specify the size of the Proxmox extra storage to enable proxmox storage. Proxmox storage type will be chosen automatically base on the Kubernetes profile used.
 - `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
 - `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
 - `wasm` (Boolean) Enable if the server should support WASM. Defaults to `false`.
+- `zone` (String) Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used. Defaults to ` `.
 
 Read-Only:
 
@@ -320,12 +327,14 @@ Optional:
 
 - `cloud_init` (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
 - `disk` (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
+- `hypervisor` (String) Hypervisor used for this VM (required for Proxmox).
 - `public_ip` (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
 - `spot_vm` (Boolean) Enable if this to create standalone VM on spot instances Defaults to `false`.
 - `spot_vm_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the current on-demand price is used.
 - `tag` (Block Set) Tags linked to the VM (updating this field will recreate the VM). (see [below for nested schema](#nestedblock--vm--tag))
 - `username` (String) The VM's username (required for Azure).
 - `volume_type` (String) Volume type (updating this field will recreate the VM).
+- `zone` (String) Availability zone for this VM (only for AWS, Azure and GCP). If not specified, the first valid zone is used.
 
 Read-Only:
 

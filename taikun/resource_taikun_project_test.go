@@ -554,7 +554,6 @@ func TestAccResourceTaikunAutoscalerOpenstackProject(t *testing.T) {
 	})
 }
 
-// Taikun Terraform provider cannot yet enable spot flavors for projects - TODO
 const testAccResourceTaikunProjectAutoscalerAwsConfig = `
 resource "taikun_cloud_credential_aws" "foo" {
  name = "%s"

@@ -38,6 +38,6 @@ data "taikun_cloud_credential_azure" "foo" {
 - `name` (String) The name of the Azure cloud credential.
 - `organization_id` (String) The ID of the organization which owns the Azure cloud credential.
 - `organization_name` (String) The name of the organization which owns the Azure cloud credential.
-- `tenant_id` (String) The Azure tenant ID.
+- `tenant_id` (String) The Azure tenant ID. (Can be set with env AZURE_TENANT)
 
 
