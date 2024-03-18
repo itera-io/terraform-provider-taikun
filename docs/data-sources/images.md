@@ -8,11 +8,11 @@ description: |-   Retrieve images for a given cloud credential.
 
 Retrieve images for a given cloud credential.
 
-~> **Role Requirement** To use the `taikun_images` data source, you need a Manager or Partner account.
-
 !> **Deprecated** The `taikun_images` data source is deprecated in favour of
 `taikun_images_aws`, `taikun_images_azure`, `taikun_images_gcp` and
 `taikun_images_openstack`.
+
+~> **Role Requirement** To use the `taikun_images` data source, you need a Manager or Partner account.
 
 ## Example Usage
 
