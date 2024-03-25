@@ -37,7 +37,7 @@ func dataSourceTaikunCloudCredentialsAzureRead(_ context.Context, d *schema.Reso
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO())
+	params := apiClient.Client.AzureCloudCredentialAPI.AzureList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -55,8 +55,8 @@ func dataSourceTaikunCloudCredentialsAzureRead(_ context.Context, d *schema.Reso
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		cloudCredentialsList = append(cloudCredentialsList, response.GetAzure()...)
-		if len(cloudCredentialsList) == int(response.GetTotalCountAzure()) {
+		cloudCredentialsList = append(cloudCredentialsList, response.GetData()...)
+		if len(cloudCredentialsList) == int(response.GetTotalCount()) {
 			break
 		}
 		offset = int32(len(cloudCredentialsList))

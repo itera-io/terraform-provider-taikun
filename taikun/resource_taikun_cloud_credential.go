@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// DEPRECATED: this data source is deprecated in favour of `taikun_cloud_credential_aws`, `taikun_cloud_credential_azure`, `taikun_cloud_credential_gcp` and `taikun_cloud_credential_openstack`...
+
 func resourceTaikunCloudCredentialSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"az_count": {

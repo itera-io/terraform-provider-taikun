@@ -250,11 +250,11 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.GetOpenstack()) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -262,7 +262,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return nil
 		}
 
-		rawCloudCredentialOpenStack := response.GetOpenstack()[0]
+		rawCloudCredentialOpenStack := response.GetData()[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(&rawCloudCredentialOpenStack))
 		if err != nil {

@@ -37,7 +37,7 @@ func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, d *schema.
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO())
+	params := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -55,8 +55,8 @@ func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, d *schema.
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		cloudCredentialsList = append(cloudCredentialsList, response.GetOpenstack()...)
-		if len(cloudCredentialsList) == int(response.GetTotalCountOpenstack()) {
+		cloudCredentialsList = append(cloudCredentialsList, response.GetData()...)
+		if len(cloudCredentialsList) == int(response.GetTotalCount()) {
 			break
 		}
 		offset = int32(len(cloudCredentialsList))
