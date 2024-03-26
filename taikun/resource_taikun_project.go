@@ -1164,8 +1164,15 @@ func flattenTaikunProject(
 
 	// Flatten project Images
 	images := make([]string, len(boundImageDTOs))
+	cloudType := projectDetailsDTO.GetCloudType()
 	for i, boundImageDTO := range boundImageDTOs {
-		images[i] = boundImageDTO.GetImageId()
+		if cloudType == tkcore.CLOUDTYPE_GOOGLE {
+			// If GCP - Google uses image.name instead of image.id
+			images[i] = boundImageDTO.GetName()
+		} else {
+			// All other CCs use image.id
+			images[i] = boundImageDTO.GetImageId()
+		}
 	}
 
 	// Flatten project attributes

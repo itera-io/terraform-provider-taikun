@@ -659,6 +659,17 @@ func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32
 }
 
 func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Client, id int32) error {
+	// Get cloud type (because not all cloud types use image.id, some use image.name instead)
+	ccID, err := atoi32(d.Get("cloud_credential_id").(string))
+	if err != nil {
+		return err
+	}
+	cloudType, err := resourceTaikunProjectGetCloudType(ccID, apiClient)
+	if err != nil {
+		return err
+	}
+
+	// Bind / unbind images
 	oldImageData, newImageData := d.GetChange("images")
 	oldImages := oldImageData.(*schema.Set)
 	newImages := newImageData.(*schema.Set)
@@ -671,8 +682,16 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 	if imagesToUnbind.Len() != 0 {
 		var imageBindingsToUndo []int32
 		for _, boundImageDTO := range boundImageDTOs {
-			if imagesToUnbind.Contains(boundImageDTO.GetImageId()) {
-				imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
+			if cloudType == string(tkcore.CLOUDTYPE_GOOGLE) {
+				// GCP uses names to identify images
+				if imagesToUnbind.Contains(boundImageDTO.GetName()) {
+					imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
+				}
+			} else {
+				// All other providers use ids to identify images
+				if imagesToUnbind.Contains(boundImageDTO.GetImageId()) {
+					imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
+				}
 			}
 		}
 		unbindBody := tkcore.DeleteImageFromProjectCommand{}
