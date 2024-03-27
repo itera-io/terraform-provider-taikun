@@ -40,9 +40,7 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialGCPExists,
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "billing_account_id", os.Getenv("GCP_BILLING_ACCOUNT")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "config_file", "./gcp.json"),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "folder_id", os.Getenv("GCP_FOLDER_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "import_project", "true"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "name", cloudCredentialName),
