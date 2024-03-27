@@ -88,10 +88,8 @@ func testAccPreCheckAWS(t *testing.T) {
 func testAccPreCheckGCP(t *testing.T) {
 	// What enviroment variables do we require to be set
 	requiredEnvSlice := []string{
-		"GCP_FOLDER_ID",
-		"GCP_BILLING_ACCOUNT",
+		"GCP_CONFIG_FILE",
 		"GCP_REGION",
-		"GCP_AZ_COUNT",
 	}
 
 	// Check if all are set
