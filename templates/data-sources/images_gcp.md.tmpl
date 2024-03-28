@@ -10,6 +10,8 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 ~> **Role Requirement** To use the `taikun_images_gcp` data source, you need a Manager or Partner account.
 
+-> **Use image name** When binding GCP images to a project please use `image.name` from the data source.
+
 ## Example Usage
 
 {{tffile "examples/data-sources/taikun_images_gcp/data-source.tf"}}

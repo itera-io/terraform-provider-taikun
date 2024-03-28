@@ -31,6 +31,7 @@ env:
   OS_USER_DOMAIN_NAME: ${{ secrets.OS_USER_DOMAIN_NAME }}
   OS_CONTINENT: ${{ secrets.OS_CONTINENT }}
 
+  GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
   GCP_FOLDER_ID: ${{ secrets.GCP_FOLDER_ID }}
   GCP_BILLING_ACCOUNT: ${{ secrets.GCP_BILLING_ACCOUNT }}
   GCP_REGION: ${{ secrets.GCP_REGION }}
@@ -83,12 +84,6 @@ env:
   # Trying to avoid race conditions
   TERRAFORM_SKIP_VERIFY: true
 
-#      - name: Create GCP config file
-#        env:
-#          GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
-#        run: |
-#          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
-
 jobs:
   # TF provider must build without failure
   build:
@@ -131,8 +126,8 @@ jobs:
           version: latest
           args: --timeout=10m
 
-  test1alpha:
-    name: 1alpha) Testing Taikun
+  test1a:
+    name: 1a) Dry test Taikun
     needs: [build,golangci]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -153,8 +148,8 @@ jobs:
           date
           ACCEPTANCE_TESTS='(TestAccDataSourceTaikunCloudCredentialsProxmoxWithFilter$$|TestAccDataSourceTaikunCloudCredentialsProxmox$$|TestAccResourceTaikunCloudCredentialProxmox$$|TestAccResourceTaikunCloudCredentialProxmoxLock$$|TestAccResourceTaikunCloudCredentialProxmoxUpdate$$|TestAccResourceTaikunAutoscalerOpenstackProject$$|TestAccResourceTaikunProjectWasm$$|TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)' ./scripts/rerun_failed_tests.sh
 
-  test1beta:
-    name: 1beta) Testing Taikun
+  test1b:
+    name: 1b) Dry test Taikun
     needs: [build,golangci]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -175,9 +170,37 @@ jobs:
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
 
+  test1c:
+    name: 1c) Dry Test GCP
+    needs: [build,golangci]
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH }}
+      - name: Get dependencies
+        run: |
+          go mod download
+      - name: Create GCP config file
+        env:
+          GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
+        run: |
+          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
+      - name: TF acceptance tests
+        run: |
+          date
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+
   test2a:
-    name: 2a) Openstack, creating instances
-    needs: [test1alpha, test1beta]
+    name: 2a) Openstack VM minimal
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -199,8 +222,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2b:
-    name: 2b) Openstack, creating instances
-    needs: [test1alpha, test1beta]
+    name: 2b) Openstack VM, update IP
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -222,8 +245,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2c:
-    name: 2c) Openstack, creating instances
-    needs: [test1alpha, test1beta]
+    name: 2c) Openstack VM, update flavor
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -245,8 +268,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2d:
-    name: 2d) Openstack, creating instances
-    needs: [test1alpha, test1beta]
+    name: 2d) Openstack VM, volume type
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -268,8 +291,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3a:
-    name: 3a) AWS, creating instances
-    needs: [test1alpha, test1beta]
+    name: 3a) AWS VM, minimal
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -291,8 +314,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3b:
-    name: 3b) AWS, creating instances
-    needs: [test1alpha, test1beta]
+    name: 3b) AWS VM, update flavor
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -314,8 +337,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4a:
-    name: 4a) Azure, creating instances
-    needs: [test1alpha, test1beta]
+    name: 4a) Azure VM, minimal
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -337,8 +360,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4b:
-    name: 4b) Azure, creating instances
-    needs: [test1alpha, test1beta]
+    name: 4b) Azure VM, update flavor
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -360,8 +383,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4c:
-    name: 4c) Azure, creating instances
-    needs: [test1alpha, test1beta]
+    name: 4c) Azure VM, volume type
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -383,8 +406,8 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test6a:
-    name: 6a) Proxmox, create VM
-    needs: [test1alpha, test1beta]
+    name: 6a) Proxmox VM, minimal
+    needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -406,7 +429,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test5a:
-    name: 5a) Openstack, creating k8s
+    name: 5a) Openstack, k8s
     needs: [test2a, test2b, test2c, test2d]
     runs-on: self-hosted
     timeout-minutes: 30

@@ -39,6 +39,12 @@ func dataSourceTaikunImagesGCP() *schema.Resource {
 					},
 				},
 			},
+			"latest": {
+				Description: "Retrieve latest GCP images.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 			"type": {
 				Description: "GCP image type.",
 				Type:        schema.TypeString,
@@ -56,6 +62,7 @@ func dataSourceTaikunImagesGCP() *schema.Resource {
 }
 
 func dataSourceTaikunImagesGCPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	latest := d.Get("latest").(bool)
 	cloudCredentialID, err := atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -67,7 +74,7 @@ func dataSourceTaikunImagesGCPRead(ctx context.Context, d *schema.ResourceData, 
 
 	var imageList []map[string]interface{}
 	for {
-		response, res, err := params.Offset(offset).Execute()
+		response, res, err := params.Offset(offset).Latest(latest).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
