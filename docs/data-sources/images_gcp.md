@@ -50,7 +50,7 @@ resource "taikun_project" "foo" {
 
 ### Optional
 
-- `latest` (Boolean) Retrieve latest AWS images. Defaults to `false`.
+- `latest` (Boolean) Retrieve latest GCP images. Defaults to `false`.
 - `type` (String) GCP image type. Defaults to `all`.
 
 ### Read-Only

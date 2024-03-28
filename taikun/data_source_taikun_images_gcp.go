@@ -40,7 +40,7 @@ func dataSourceTaikunImagesGCP() *schema.Resource {
 				},
 			},
 			"latest": {
-				Description: "Retrieve latest AWS images.",
+				Description: "Retrieve latest GCP images.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,

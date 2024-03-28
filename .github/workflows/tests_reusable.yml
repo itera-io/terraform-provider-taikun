@@ -199,7 +199,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2a:
-    name: 2a) Openstack, creating instances
+    name: 2a) Openstack VM minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -222,7 +222,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2b:
-    name: 2b) Openstack, creating instances
+    name: 2b) Openstack VM, update IP
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -245,7 +245,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2c:
-    name: 2c) Openstack, creating instances
+    name: 2c) Openstack VM, update flavor
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -268,7 +268,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2d:
-    name: 2d) Openstack, creating instances
+    name: 2d) Openstack VM, volume type
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -291,7 +291,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3a:
-    name: 3a) AWS, creating instances
+    name: 3a) AWS VM, minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -314,7 +314,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3b:
-    name: 3b) AWS, creating instances
+    name: 3b) AWS VM, update flavor
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -337,7 +337,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4a:
-    name: 4a) Azure, creating instances
+    name: 4a) Azure VM, minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -360,7 +360,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4b:
-    name: 4b) Azure, creating instances
+    name: 4b) Azure VM, update flavor
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -383,7 +383,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4c:
-    name: 4c) Azure, creating instances
+    name: 4c) Azure VM, volume type
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -406,7 +406,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test6a:
-    name: 6a) Proxmox, create VM
+    name: 6a) Proxmox VM, minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -429,7 +429,7 @@ jobs:
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test5a:
-    name: 5a) Openstack, creating k8s
+    name: 5a) Openstack, k8s
     needs: [test2a, test2b, test2c, test2d]
     runs-on: self-hosted
     timeout-minutes: 30
