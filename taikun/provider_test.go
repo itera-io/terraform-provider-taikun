@@ -14,7 +14,9 @@ var testAccProviderFactories map[string]func() (*schema.Provider, error)
 
 func init() {
 
-	os.Setenv("TAIKUN_API_HOST", "api.taikun.dev")
+	//  Probably leftover from testing. Default endpoint is production.
+	// TF provider is now respecting endpoint in ENV, but provider configuration has precedence.
+	// os.Setenv("TAIKUN_API_HOST", "api.taikun.dev")
 
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{
