@@ -218,7 +218,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialVsphereUpdate$$|TestAccResourceTaikunCloudCredentialVsphereLock$$|TestAccResourceTaikunCloudCredentialVsphere$$)'
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialVsphereUpdate$$|TestAccResourceTaikunCloudCredentialVsphereLock$$|TestAccResourceTaikunCloudCredentialVsphere$$|TestAccDataSourceTaikunCloudCredentialVsphere$$|TestAccDataSourceTaikunCloudCredentialsVsphere$$|TestAccDataSourceTaikunCloudCredentialsVsphereWithFilter$$)'
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2a:
