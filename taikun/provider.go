@@ -122,6 +122,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_gcp":                 resourceTaikunCloudCredentialGCP(),
 			"taikun_cloud_credential_openstack":           resourceTaikunCloudCredentialOpenStack(),
 			"taikun_cloud_credential_proxmox":             resourceTaikunCloudCredentialProxmox(),
+			"taikun_cloud_credential_vsphere":             resourceTaikunCloudCredentialVsphere(),
 			"taikun_kubeconfig":                           resourceTaikunKubeconfig(),
 			"taikun_kubernetes_profile":                   resourceTaikunKubernetesProfile(),
 			"taikun_organization_billing_rule_attachment": resourceTaikunOrganizationBillingRuleAttachment(),

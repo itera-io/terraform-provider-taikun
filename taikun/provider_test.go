@@ -152,6 +152,40 @@ func testAccPreCheckProxmox(t *testing.T) {
 	checkEnvVariables(requiredEnvSlice, t)
 }
 
+func testAccPreCheckVsphere(t *testing.T) {
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"VSPHERE_USERNAME",
+		"VSPHERE_PASSWORD",
+		"VSPHERE_API_URL",
+		"VSPHERE_DATACENTER",
+		"VSPHERE_RESOURCE_POOL",
+		"VSPHERE_DATA_STORE",
+		"VSPHERE_DRS_ENABLED",
+		"VSPHERE_HYPERVISOR",
+		"VSPHERE_HYPERVISOR2",
+		"VSPHERE_VM_TEMPLATE",
+		"VSPHERE_CONTINENT",
+
+		"VSPHERE_PUBLIC_NETWORK_NAME",
+		"VSPHERE_PUBLIC_NETWORK_ADDRESS",
+		"VSPHERE_PUBLIC_NETMASK",
+		"VSPHERE_PUBLIC_GATEWAY",
+		"VSPHERE_PUBLIC_BEGIN_RANGE",
+		"VSPHERE_PUBLIC_END_RANGE",
+
+		"VSPHERE_PRIVATE_NETWORK_NAME",
+		"VSPHERE_PRIVATE_NETWORK_ADDRESS",
+		"VSPHERE_PRIVATE_NETMASK",
+		"VSPHERE_PRIVATE_GATEWAY",
+		"VSPHERE_PRIVATE_BEGIN_RANGE",
+		"VSPHERE_PRIVATE_END_RANGE",
+	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
+}
+
 func checkEnvVariables(requiredEnvSlice []string, t *testing.T) {
 	// Iterate through the required enviroment variables and check if all are set.
 	for _, requiredEnv := range requiredEnvSlice {
