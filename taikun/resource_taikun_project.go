@@ -1525,6 +1525,14 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Cl
 		return string(tkcore.CLOUDTYPE_PROXMOX), nil
 	}
 
+	// Check if CC is vSphere
+	responseVSPHERE, _, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseVSPHERE.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_VSPHERE), nil
+	}
+
 	// Unknown CC type
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }

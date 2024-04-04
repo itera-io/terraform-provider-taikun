@@ -128,7 +128,7 @@ func TestAccDataSourceTaikunCloudCredentialsVsphereWithFilter(t *testing.T) {
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.data_store", os.Getenv("VSPHERE_DATA_STORE")),
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.drs_enabled", os.Getenv("VSPHERE_DRS_ENABLED")),
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.hypervisors.0", os.Getenv("VSPHERE_HYPERVISOR")),
-					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.vm_template_name", os.Getenv("VSPHERE_VM_TEMPLATE_NAME")),
+					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.vm_template_name", os.Getenv("VSPHERE_VM_TEMPLATE")),
 
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.public_name", os.Getenv("VSPHERE_PUBLIC_NETWORK_NAME")),
 					resource.TestCheckResourceAttr("data.taikun_cloud_credentials_vsphere.all", "cloud_credentials.0.public_ip_address", os.Getenv("VSPHERE_PUBLIC_NETWORK_ADDRESS")),

@@ -132,3 +132,44 @@ func TestAccDataSourceTaikunFlavorsOpenStack(t *testing.T) {
 		},
 	})
 }
+
+const testAccDataSourceTaikunFlavorsVsphereConfig = `
+resource "taikun_cloud_credential_vsphere" "foo" {
+  name = "%s"
+}
+
+data "taikun_flavors" "foo" {
+  cloud_credential_id = resource.taikun_cloud_credential_vsphere.foo.id
+
+  min_cpu = %d
+  max_cpu = %d
+  min_ram = %d
+  max_ram = %d
+}
+`
+
+func TestAccDataSourceTaikunFlavorsVsphere(t *testing.T) {
+	cloudCredentialName := randomTestName()
+	cpu := 2
+	ram := 4
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckVsphere(t) },
+		ProviderFactories: testAccProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccDataSourceTaikunFlavorsVsphereConfig,
+					cloudCredentialName,
+					cpu, cpu,
+					ram, ram,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.#"),
+					resource.TestCheckResourceAttrSet("data.taikun_flavors.foo", "flavors.0.name"),
+					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.cpu", fmt.Sprint(cpu)),
+					resource.TestCheckResourceAttr("data.taikun_flavors.foo", "flavors.0.ram", fmt.Sprint(ram)),
+				),
+			},
+		},
+	})
+}
