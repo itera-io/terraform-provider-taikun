@@ -26,7 +26,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Default:     "",
 		},
 		"hypervisor": {
-			Description:      "Hypervisor used for this VM (required for Proxmox).",
+			Description:      "Hypervisor used for this VM (required for Proxmox, required for vSphere when DRS is disabled).",
 			Type:             schema.TypeString,
 			Optional:         true,
 			DiffSuppressFunc: ignoreChangeFromEmpty,
@@ -649,12 +649,12 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 }
 
 func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
-	body := tkcore.CommitStandAloneVmCommand{}
-	body.SetProjectId(projectID)
-	res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
-	if err != nil {
-		return tk.CreateError(res, err)
-	}
+	//body := tkcore.CommitStandAloneVmCommand{}
+	//body.SetProjectId(projectID)
+	//res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
+	//if err != nil {
+	//	return tk.CreateError(res, err)
+	//}
 	return nil
 }
 

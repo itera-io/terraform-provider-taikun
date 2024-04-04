@@ -1259,6 +1259,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.GetGoogleMachineType()
 		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
 			serverMap["flavor"] = server.GetProxmoxFlavor()
+		case tkcore.CLOUDTYPE_VSPHERE, "vsphere":
+			serverMap["flavor"] = server.GetVsphereFlavor()
 		}
 
 		if serverRole == tkcore.CLOUDROLE_BASTION {

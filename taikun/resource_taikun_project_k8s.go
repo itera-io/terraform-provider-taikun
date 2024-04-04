@@ -152,7 +152,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Default:     "",
 		},
 		"hypervisor": {
-			Description: "Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox).",
+			Description: "Hypervisor used for this server from Proxmox/vSphere Cloud credential (required for Proxmox, required for vSphere when DRS is disabled).",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,
@@ -288,10 +288,10 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
-	res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
-	if err != nil {
-		return tk.CreateError(res, err)
-	}
+	//res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
+	//if err != nil {
+	//	return tk.CreateError(res, err)
+	//}
 	return nil
 }
 
