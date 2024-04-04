@@ -288,10 +288,10 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
-	//res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
-	//if err != nil {
-	//	return tk.CreateError(res, err)
-	//}
+	res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
 	return nil
 }
 
