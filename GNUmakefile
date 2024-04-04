@@ -30,39 +30,28 @@ testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 # --- Radek's rigorous testing here ---
-ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectModifyFlavors$$)'
+ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)'
 
 # --- CI: Not creating resources ---
-# Radek's acklowledgment testing ALPHA
-# ACCEPTANCE_TESTS='(TestAccDataSourceTaikunProject|TestAccDataSourceTaikunImagesDeprecated|TestAccDataSourceTaikunImagesOpenStack|TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunImagesAzure|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS|TestAccDataSourceTaikunImagesAWS|TestAccResourceTaikunProjectE|TestAccDataSourceTaikunPolicyProfile|TestAccDataSourceTaikunSlackConfiguration|TestAccResourceTaikunStandaloneProfile|TestAccDataSourceTaikunStandaloneProfile|TestAccDataSourceTaikunUser|TestAccResourceTaikunProjectToggle|TestAccResourceTaikunSlack|TestAccResourceTaikunAlerting|TestAccResourceTaikunPolicyProfile|TestAccResourceTaikunCloudCredentials|TestAccResourceTaikunCloudCredentialOpenStack|TestAccResourceTaikunCloudCredentialAzure|TestAccResourceTaikunCloudCredentialAWS|TestAccResourceTaikunBackupCredential|TestProvider$$)'
-# Radek's acklowledgment testing BETA
-# ACCEPTANCE_TESTS='(TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)'
+# Acklowledgment testing ALPHA
+# Acklowledgment testing BETA
 
 # --- CI: Creating resources ---
 # Openstack user (found in Bitwarden) has enough limit to run the 4 Standalone OpenStack in parallel
-# Part 2a - Pepsi Max- 256 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
-# Part 2b - Pepsi Lime - 730 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
-# Part 2c - Pepsi Mango - 388 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
-# Part 2d - Pepsi Classic 230 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
+# Part 2a - Openstack - 256 s
+# Part 2b - Openstack - 730 s
+# Part 2c - Openstack - 388 s
+# Part 2d - Openstack - 230 s
 
-# Part  5a - Monster energy 780 s - Creating k8s cluster in openstack - so Far openstack does not have resources to run it in parallel with other Openstack tests.
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
+# Part  5a - Openstack - cca 780 s
+# Creating k8s cluster in openstack - so Far openstack does not have resources to run it in parallel with other Openstack tests.
 
-# Part 3a - Kofola Classic 391 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
-# Part 3b - Kofola Lime 583 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
+# Part 3a - AWS 1 391 s (this one is with VM spots)
+# Part 3b - AWS 2 583 s
 
-# Part 4a - Coca Cola classic -- 515
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
-# Part 4b - Coca Cola zero -- 706 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
-# Part 4c - Coca Cola Cherry -- 464 s
-#ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
+# Part 4a - Azure -- 515
+# Part 4b - Azure -- 706 s
+# Part 4c - Azure -- 464 s
 
 
 rtestacc:

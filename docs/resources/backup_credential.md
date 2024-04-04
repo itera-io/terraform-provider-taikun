@@ -12,8 +12,6 @@ Taikun Backup Credential
 
 -> **Organization ID** `organization_id` can be specified for the Partner role, it otherwise defaults to the user's organization.
 
--> **s3_endpoint** The URL validity is verified by backend. Trailing backslash forces replacement loop.
-
 ## Example Usage
 
 ```terraform

@@ -8,9 +8,13 @@ description: |-   Taikun Cloud Credential
 
 Taikun Cloud Credential
 
+!> **Deprecated** The `taikun_cloud_credential` resource is deprecated in favour of
+`taikun_cloud_credential_aws`, `taikun_cloud_credential_azure`, `taikun_cloud_credential_gcp`,
+`taikun_cloud_credential_openstack` ...
+
 ~> **Role Requirement** To use the `taikun_cloud_credential` resource, you need a Manager or Partner account.
 
-!> **Import Network (Openstack)** If you choose to import a network, the access profile's DNS will be ignored.
+~> **Import Network (Openstack)** If you choose to import a network, the access profile's DNS will be ignored.
 
 ~> **Import Network (Openstack)** If you choose to import a network, a router between the public network and the internal network must
 already exist. There should be internal access on the internal network, either from the router or directly.

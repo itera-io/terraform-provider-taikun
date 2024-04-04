@@ -183,8 +183,8 @@ func testAccCheckTaikunCloudCredentialOpenStackExists(state *terraform.State) er
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCountOpenstack() != 1 {
+		response, _, err := client.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("openstack cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -203,11 +203,11 @@ func testAccCheckTaikunCloudCredentialOpenStackDestroy(state *terraform.State) e
 		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
-			if response.GetTotalCountOpenstack() != 0 {
+			if response.GetTotalCount() != 0 {
 				return retry.RetryableError(errors.New("openstack cloud credential still exists"))
 			}
 			return nil

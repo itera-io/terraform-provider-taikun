@@ -1,6 +1,7 @@
 package taikun
 
 import (
+	"fmt"
 	"hash/crc32"
 	"strconv"
 )
@@ -30,6 +31,10 @@ func hashAttributes(keys ...string) func(v interface{}) int {
 
 			if v, ok := set[key].(int); ok {
 				stringToHash += strconv.Itoa(v)
+			}
+
+			if v, ok := set[key].(float64); ok {
+				stringToHash += fmt.Sprintf("%f", v)
 			}
 
 			if v, ok := set[key].(bool); ok {

@@ -16,6 +16,11 @@ import (
 
 func taikunServerKubeworkerSchema() map[string]*schema.Schema {
 	kubeworkerSchema := taikunServerSchemaWithKubernetesNodeLabels()
+	kubeworkerSchema["proxmox_extra_disk_size"] = &schema.Schema{
+		Description: "Specify the size of the Proxmox extra storage to enable proxmox storage. Proxmox storage type will be chosen automatically base on the Kubernetes profile used.",
+		Type:        schema.TypeInt,
+		Optional:    true,
+	}
 	removeForceNewsFromSchema(kubeworkerSchema)
 	return kubeworkerSchema
 }
@@ -127,6 +132,32 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"spot_server": {
+			Description: "Enable if this to create kubernetes servers with spot instances",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+		},
+		"spot_server_max_price": {
+			Description: "The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+		},
+		"zone": {
+			Description: "Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
+		},
+		"hypervisor": {
+			Description: "Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox).",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
+		},
 	}
 }
 
@@ -143,8 +174,14 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	serverCreateBody.SetDiskSize(gibiByteToByte(bastion["disk_size"].(int)))
 	serverCreateBody.SetFlavor(bastion["flavor"].(string))
 	serverCreateBody.SetName(bastion["name"].(string))
+	serverCreateBody.SetAvailabilityZone(bastion["zone"].(string))
+	serverCreateBody.SetHypervisor(bastion["hypervisor"].(string))
 	serverCreateBody.SetProjectId(projectID)
 	serverCreateBody.SetRole(tkcore.CLOUDROLE_BASTION)
+	serverCreateBody, err := resourceTaikunProjectSetServerSpots(bastion, serverCreateBody) // Spots
+	if err != nil {
+		return err
+	}
 
 	serverCreateResponse, res, err := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 	if err != nil {
@@ -159,7 +196,6 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	kubeMastersList := kubeMasters.(*schema.Set).List()
 	for _, kubeMaster := range kubeMastersList {
 		kubeMasterMap := kubeMaster.(map[string]interface{})
-
 		serverCreateBody = tkcore.ServerForCreateDto{}
 		serverCreateBody.SetCount(1)
 		serverCreateBody.SetDiskSize(gibiByteToByte(kubeMasterMap["disk_size"].(int)))
@@ -168,7 +204,13 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetName(kubeMasterMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeMasterMap["wasm"].(bool))
+		serverCreateBody.SetAvailabilityZone(kubeMasterMap["zone"].(string))
+		serverCreateBody.SetHypervisor(kubeMasterMap["hypervisor"].(string))
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEMASTER)
+		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeMasterMap, serverCreateBody) // Spots
+		if err != nil {
+			return err
+		}
 
 		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
@@ -191,7 +233,28 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 		serverCreateBody.SetProjectId(projectID)
 		serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+		serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
+		serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
+
+		if kubeWorkerMap["proxmox_extra_disk_size"].(int) != 0 {
+			proxmoxStorageString, err1 := getProxmoxStorageStringForServer(projectID, apiClient)
+			if err1 != nil {
+				return err1
+			}
+			proxmoxRole, err2 := tkcore.NewProxmoxRoleFromValue(proxmoxStorageString)
+			if err2 != nil {
+				return err2
+			}
+			proxmoxExtraDiskSize := int32(kubeWorkerMap["proxmox_extra_disk_size"].(int))
+			serverCreateBody.SetProxmoxRole(*proxmoxRole)
+			serverCreateBody.SetProxmoxExtraDiskSize(proxmoxExtraDiskSize)
+		}
+
 		serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
+		serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
+		if err != nil {
+			return err
+		}
 
 		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
@@ -205,6 +268,23 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	}
 
 	return nil
+}
+
+// Kubernetes server spots
+func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serverCreateBody tkcore.ServerForCreateDto) (tkcore.ServerForCreateDto, error) {
+	if (serverMap["spot_server_max_price"].(float64) != 0) && (!serverMap["spot_server"].(bool)) {
+		return serverCreateBody, fmt.Errorf("Spot server max price is set, but the server does not have spot enabled.")
+	}
+	if serverMap["spot_server"] != nil {
+		spotForThisVm := serverMap["spot_server"].(bool)
+		serverCreateBody.SetSpotInstance(spotForThisVm)
+		if serverMap["spot_server_max_price"].(float64) == 0 {
+			serverCreateBody.UnsetSpotPrice() // Send null if the user did not specify anything
+		} else {
+			serverCreateBody.SetSpotPrice(serverMap["spot_server_max_price"].(float64))
+		}
+	}
+	return serverCreateBody, nil
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
@@ -461,6 +541,121 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectUpdateAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	body := tkcore.EditAutoscalingCommand{}
+	body.SetProjectId(projectID)
+	body.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
+	body.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
+
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableAutoscaler", "DisableAutoscaler"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectRecreateAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	// Is autoscaler enabled or disabled?
+	projectID, _ := atoi32(d.Id())
+	data, response, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
+	if err != nil {
+		return tk.CreateError(response, err)
+	}
+	if *data.GetProject().IsAutoscalingEnabled {
+		// Autoscaler was enabled -> Disable autoscaler
+		err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient)
+		if err != nil {
+			return err
+		}
+	}
+	// else autoscaler was disabled -> keep calm and carry on
+
+	// Enable autoscaler with new values
+	err = resourceTaikunProjectEnableAutoscaler(ctx, d, apiClient)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func resourceTaikunProjectDisableAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyDisable := tkcore.DisableAutoscalingCommand{}
+	bodyDisable.SetProjectId(projectID)
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingDisable(ctx).DisableAutoscalingCommand(bodyDisable).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableAutoscaler", "DisableAutoscaler"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyEnable := tkcore.EnableAutoscalingCommand{}
+	bodyEnable.SetId(projectID)
+	bodyEnable.SetAutoscalingGroupName(d.Get("autoscaler_name").(string))
+	bodyEnable.SetFlavor(d.Get("autoscaler_flavor").(string))
+	bodyEnable.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
+	bodyEnable.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
+	bodyEnable.SetDiskSize(float64(gibiByteToByte(d.Get("autoscaler_disk_size").(int))))
+	bodyEnable.SetSpotEnabled(d.Get("autoscaler_spot_enabled").(bool))
+
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+
+	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableAutoscaler", "DisableAutoscaler"}, apiClient, projectID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func resourceTaikunProjectToggleFullSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.FullSpotOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleFullSpot(ctx).FullSpotOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
+	}
+	return nil
+}
+
+func resourceTaikunProjectToggleWorkerSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.SpotWorkerOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_worker").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotWorkers(ctx).SpotWorkerOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
 	}
 	return nil
 }

@@ -12,9 +12,9 @@ const testAccDataSourceTaikunImagesGCPConfig = `
 resource "taikun_cloud_credential_gcp" "foo" {
   name = "%s"
   config_file = "./gcp.json"
-  billing_account_id = "%s"
-  folder_id = "%s"
+  import_project = true
   region = "%s"
+  lock = true
 }
 
 data "taikun_images_gcp" "foo" {
@@ -33,8 +33,6 @@ func TestAccDataSourceTaikunImagesGCP(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunImagesGCPConfig,
 					cloudCredentialName,
-					os.Getenv("GCP_BILLING_ACCOUNT"),
-					os.Getenv("GCP_FOLDER_ID"),
 					os.Getenv("GCP_REGION"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(

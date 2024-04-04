@@ -30,7 +30,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Default:      1,
 		},
 		"client_id": {
-			Description:  "The Azure client ID.",
+			Description:  "The Azure client ID. (Can be set with env AZURE_CLIENT_ID)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -38,7 +38,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"client_secret": {
-			Description:  "The Azure client secret.",
+			Description:  "The Azure client secret. (Can be set with env AZURE_SECRET)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -109,7 +109,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"subscription_id": {
-			Description:  "The Azure subscription ID.",
+			Description:  "The Azure subscription ID. (Can be set with env AZURE_SUBSCRIPTION)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -117,7 +117,7 @@ func resourceTaikunCloudCredentialAzureSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"tenant_id": {
-			Description:  "The Azure tenant ID.",
+			Description:  "The Azure tenant ID. (Can be set with env AZURE_TENANT)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -201,11 +201,11 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.GetAzure()) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -213,7 +213,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 			return nil
 		}
 
-		rawCloudCredentialAzure := response.GetAzure()[0]
+		rawCloudCredentialAzure := response.GetData()[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAzure(&rawCloudCredentialAzure))
 		if err != nil {

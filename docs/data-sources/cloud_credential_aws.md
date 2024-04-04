@@ -37,6 +37,6 @@ data "taikun_cloud_credential_aws" "foo" {
 - `name` (String) The name of the AWS cloud credential.
 - `organization_id` (String) The ID of the organization which owns the AWS cloud credential.
 - `organization_name` (String) The name of the organization which owns the AWS cloud credential.
-- `region` (String) The AWS region.
+- `region` (String) The AWS region. (Can be set with env AWS_DEFAULT_REGION)
 
 

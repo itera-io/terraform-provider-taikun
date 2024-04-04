@@ -2,6 +2,7 @@ package taikun
 
 import (
 	"context"
+	"fmt"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"reflect"
@@ -23,6 +24,12 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Default:     "",
+		},
+		"hypervisor": {
+			Description:      "Hypervisor used for this VM (required for Proxmox).",
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: ignoreChangeFromEmpty,
 		},
 		"created_by": {
 			Description: "The creator of the VM.",
@@ -133,6 +140,21 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
+		"spot_vm": {
+			Description: "Enable if this to create standalone VM on spot instances",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"spot_vm_max_price": {
+			Description: "The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the current on-demand price is used.",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+			// Ignore all changes to max price (API returns/sets on-demand spotPrice if we send null spotPrice)
+			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				return old != "" // Set the value only first time
+			},
+		},
 		"standalone_profile_id": {
 			Description:      "Standalone profile ID bound to the VM (updating this field will recreate the VM).",
 			Type:             schema.TypeString,
@@ -194,6 +216,12 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
+		},
+		"zone": {
+			Description:      "Availability zone for this VM (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: ignoreChangeFromEmpty,
 		},
 	}
 }
@@ -258,6 +286,7 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 		// ForceNew fields within the VM subresource
 		return hasChanges(old, new,
 			"cloud_init",
+			"flavor",
 			"image_id",
 			"name",
 			"standalone_profile_id",
@@ -265,6 +294,9 @@ func genVmRecreateFunc(cloudType string) func(old, new map[string]interface{}) b
 			"username",
 			"volume_size",
 			"volume_type",
+			"spot_vm",
+			"hypervisor",
+			"zone",
 		)
 	}
 }
@@ -516,7 +548,6 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	unreadableProperties := map[string]interface{}{}
 
 	vmCreateBody := tkcore.CreateStandAloneVmCommand{}
-	vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
 	vmCreateBody.SetCount(1)
 	vmCreateBody.SetFlavorName(vmMap["flavor"].(string))
 	vmCreateBody.SetImage(vmMap["image_id"].(string))
@@ -528,12 +559,24 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	vmCreateBody.SetStandAloneVmDisks(make([]tkcore.StandAloneVmDiskDto, 0))
 	vmCreateBody.SetVolumeSize(int64(vmMap["volume_size"].(int)))
 
+	if vmMap["cloud_init"] != nil {
+		vmCreateBody.SetCloudInit(vmMap["cloud_init"].(string))
+	}
+
+	if vmMap["hypervisor"] != nil {
+		vmCreateBody.SetHypervisor(vmMap["hypervisor"].(string))
+	}
+
 	if vmMap["username"] != nil {
 		vmCreateBody.SetUsername(vmMap["username"].(string))
 	}
 
 	if vmMap["volume_type"] != nil {
 		vmCreateBody.SetVolumeType(vmMap["volume_type"].(string))
+	}
+
+	if vmMap["zone"] != nil {
+		vmCreateBody.SetAvailabilityZone(vmMap["zone"].(string))
 	}
 
 	if vmMap["tag"] != nil {
@@ -565,6 +608,19 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 			disksList[i].SetVolumeType(rawDisk["volume_type"].(string))
 		}
 		vmCreateBody.SetStandAloneVmDisks(disksList)
+	}
+
+	// Standalone VM spots
+	if (vmMap["spot_vm_max_price"].(float64) != 0) && (!vmMap["spot_vm"].(bool)) {
+		return "", nil, fmt.Errorf("Spot VM max price is set, but the VM does not have spot enabled.")
+	}
+	if vmMap["spot_vm"] != nil {
+		spotForThisVm := vmMap["spot_vm"].(bool)
+		vmCreateBody.SetSpotInstance(spotForThisVm)
+		vmCreateBody.SetSpotPrice(vmMap["spot_vm_max_price"].(float64))
+		if vmMap["spot_vm_max_price"].(float64) == 0 {
+			vmCreateBody.UnsetSpotPrice() // Send null if the user did not specify anything
+		}
 	}
 
 	vmCreateResponse, res, err := apiClient.Client.StandaloneAPI.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()
@@ -603,6 +659,17 @@ func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32
 }
 
 func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Client, id int32) error {
+	// Get cloud type (because not all cloud types use image.id, some use image.name instead)
+	ccID, err := atoi32(d.Get("cloud_credential_id").(string))
+	if err != nil {
+		return err
+	}
+	cloudType, err := resourceTaikunProjectGetCloudType(ccID, apiClient)
+	if err != nil {
+		return err
+	}
+
+	// Bind / unbind images
 	oldImageData, newImageData := d.GetChange("images")
 	oldImages := oldImageData.(*schema.Set)
 	newImages := newImageData.(*schema.Set)
@@ -615,8 +682,16 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 	if imagesToUnbind.Len() != 0 {
 		var imageBindingsToUndo []int32
 		for _, boundImageDTO := range boundImageDTOs {
-			if imagesToUnbind.Contains(boundImageDTO.GetImageId()) {
-				imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
+			if cloudType == string(tkcore.CLOUDTYPE_GOOGLE) {
+				// GCP uses names to identify images
+				if imagesToUnbind.Contains(boundImageDTO.GetName()) {
+					imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
+				}
+			} else {
+				// All other providers use ids to identify images
+				if imagesToUnbind.Contains(boundImageDTO.GetImageId()) {
+					imageBindingsToUndo = append(imageBindingsToUndo, boundImageDTO.GetId())
+				}
 			}
 		}
 		unbindBody := tkcore.DeleteImageFromProjectCommand{}
@@ -664,6 +739,24 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Clien
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
+	}
+	return nil
+}
+
+func resourceTaikunProjectToggleVmsSpot(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	projectID, _ := atoi32(d.Id())
+	bodyToggle := tkcore.SpotVmOperationCommand{}
+	bodyToggle.SetId(projectID)
+
+	if d.Get("spot_vms").(bool) {
+		bodyToggle.SetMode("enable")
+	} else if !d.Get("spot_full").(bool) {
+		bodyToggle.SetMode("disable")
+	}
+
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotVms(ctx).SpotVmOperationCommand(bodyToggle).Execute()
+	if err != nil {
+		return tk.CreateError(res, err)
 	}
 	return nil
 }

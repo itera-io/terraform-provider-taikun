@@ -17,16 +17,15 @@ const testAccResourceTaikunCloudCredentialGCPConfig = `
 resource "taikun_cloud_credential_gcp" "foo" {
   name = "%s"
   config_file = "./gcp.json"
-  billing_account_id = "%s"
-  folder_id = "%s"
+  import_project = true
   region = "%s"
-  az_count = "%d"
+  lock = false
+  az_count = %s
 }
 `
 
 func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 	cloudCredentialName := randomTestName()
-	azCount, _ := atoi32(os.Getenv("GCP_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckGCP(t) },
@@ -36,58 +35,14 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialGCPConfig,
 					cloudCredentialName,
-					os.Getenv("GCP_BILLING_ACCOUNT"),
-					os.Getenv("GCP_FOLDER_ID"),
 					os.Getenv("GCP_REGION"),
-					azCount,
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialGCPExists,
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "billing_account_id", os.Getenv("GCP_BILLING_ACCOUNT")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "config_file", "./gcp.json"),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "folder_id", os.Getenv("GCP_FOLDER_ID")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "import_project", "false"),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "false"),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "name", cloudCredentialName),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "region", os.Getenv("GCP_REGION")),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "az_count", os.Getenv("GCP_AZ_COUNT")),
-				),
-			},
-		},
-	})
-}
-
-const testAccResourceTaikunCloudCredentialGCPImportProjectConfig = `
-resource "taikun_cloud_credential_gcp" "foo" {
-  name = "%s"
-  config_file = "./gcp.json"
-  import_project = true
-  region = "%s"
-  az_count = "%d"
-  lock = true
-}
-`
-
-func TestAccResourceTaikunCloudCredentialGCPImportProject(t *testing.T) {
-	cloudCredentialName := randomTestName()
-	azCount, _ := atoi32(os.Getenv("GCP_AZ_COUNT"))
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t); testAccPreCheckGCP(t) },
-		ProviderFactories: testAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialGCPDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialGCPImportProjectConfig,
-					cloudCredentialName,
-					os.Getenv("GCP_REGION"),
-					azCount,
+					os.Getenv("GCP_AZ_COUNT"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunCloudCredentialGCPExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "config_file", "./gcp.json"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "import_project", "true"),
-					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "true"),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "region", os.Getenv("GCP_REGION")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "az_count", os.Getenv("GCP_AZ_COUNT")),
@@ -107,8 +62,8 @@ func testAccCheckTaikunCloudCredentialGCPExists(state *terraform.State) error {
 
 		id, _ := atoi32(rs.Primary.ID)
 
-		response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCountGoogle() != 1 {
+		response, _, err := client.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
 			return fmt.Errorf("gcp cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 		}
 	}
@@ -127,11 +82,11 @@ func testAccCheckTaikunCloudCredentialGCPDestroy(state *terraform.State) error {
 		retryErr := retry.RetryContext(context.Background(), getReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+			response, _, err := client.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}
-			if response.GetTotalCountGoogle() != 0 {
+			if response.GetTotalCount() != 0 {
 				return retry.RetryableError(errors.New("gcp cloud credential still exists"))
 			}
 			return nil

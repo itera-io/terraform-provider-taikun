@@ -37,7 +37,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"domain": {
-			Description:  "The OpenStack domain.",
+			Description:  "The OpenStack domain. (Can be set with env OS_USER_DOMAIN_NAME)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -102,7 +102,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"password": {
-			Description:  "The OpenStack password.",
+			Description:  "The OpenStack password. (Can be set with env OS_PASSWORD)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -115,7 +115,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"project_name": {
-			Description:  "The OpenStack project name.",
+			Description:  "The OpenStack project name. (Can be set with env OS_PROJECT_NAME)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -123,7 +123,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"public_network_name": {
-			Description:  "The name of the public OpenStack network to use.",
+			Description:  "The name of the public OpenStack network to use. (Can be set with env OS_INTERFACE)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -131,7 +131,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"region": {
-			Description:  "The OpenStack region.",
+			Description:  "The OpenStack region. (Can be set with env OS_REGION_NAME)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -139,7 +139,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"url": {
-			Description:  "The OpenStack authentication URL.",
+			Description:  "The OpenStack authentication URL. (Can be set with env OS_AUTH_URL)",
 			Type:         schema.TypeString,
 			Required:     true,
 			ForceNew:     true,
@@ -147,7 +147,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"user": {
-			Description:  "The OpenStack user.",
+			Description:  "The OpenStack user. (Can be set with env OS_USERNAME)",
 			Type:         schema.TypeString,
 			Required:     true,
 			DefaultFunc:  schema.EnvDefaultFunc("OS_USERNAME", nil),
@@ -250,11 +250,11 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.GetOpenstack()) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -262,7 +262,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return nil
 		}
 
-		rawCloudCredentialOpenStack := response.GetOpenstack()[0]
+		rawCloudCredentialOpenStack := response.GetData()[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialOpenStack(&rawCloudCredentialOpenStack))
 		if err != nil {

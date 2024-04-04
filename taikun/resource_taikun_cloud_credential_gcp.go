@@ -208,11 +208,11 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, _, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(response.GetGoogle()) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -220,7 +220,7 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawCloudCredentialGCP := response.GetGoogle()[0]
+		rawCloudCredentialGCP := response.GetData()[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialGCP(&rawCloudCredentialGCP))
 		if err != nil {

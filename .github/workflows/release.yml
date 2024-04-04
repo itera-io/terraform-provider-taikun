@@ -16,7 +16,7 @@ on:
       - 'v*'
 
 env:
-  GO_VERSION: "1.20"
+  GO_VERSION: "1.21"
 
 jobs:
   goreleaser:
@@ -37,7 +37,7 @@ jobs:
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v6.1.0
-        env:
+        with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }} # Hasicorp ghaction is deprecated https://github.com/hashicorp/ghaction-import-gpg
           passphrase: ${{ secrets.PASSPHRASE }}
 
@@ -45,7 +45,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --rm-dist
+          args: release --clean
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

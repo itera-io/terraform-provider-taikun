@@ -38,7 +38,7 @@ func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.Resour
 
 	var offset int32 = 0
 
-	params := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO())
+	params := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO())
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -56,8 +56,8 @@ func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.Resour
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		cloudCredentialsList = append(cloudCredentialsList, response.GetGoogle()...)
-		if len(cloudCredentialsList) == int(response.GetTotalCountGoogle()) {
+		cloudCredentialsList = append(cloudCredentialsList, response.GetData()...)
+		if len(cloudCredentialsList) == int(response.GetTotalCount()) {
 			break
 		}
 		offset = int32(len(cloudCredentialsList))

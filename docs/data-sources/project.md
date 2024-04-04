@@ -30,6 +30,12 @@ data "taikun_project" "foo" {
 - `alerting_profile_id` (String) ID of the project's alerting profile.
 - `alerting_profile_name` (String) Name of the project's alerting profile.
 - `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available.
+- `autoscaler_disk_size` (Number) Disk size of autoscaler in GB (specify together with all other autoscaler parameters).
+- `autoscaler_flavor` (String) Flavor of workers created by autoscaler (specify together with all other autoscaler parameters).
+- `autoscaler_max_size` (Number) Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters).
+- `autoscaler_min_size` (Number) Minimum number of workers created by autoscaler (specify together with all other autoscaler parameters).
+- `autoscaler_name` (String) Autoscaler group name (specify together with all other autoscaler parameters).
+- `autoscaler_spot_enabled` (Boolean) When enabled, autoscaler will use spot flavors for autoscaled workers (be sure to enable spot flavors for this project). If not specified, defaults to false.
 - `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
 - `cloud_credential_id` (String) ID of the cloud credential used to create the project's servers.
 - `delete_on_expiration` (Boolean) If enabled, the project will be deleted on the expiration date and it will not be possible to recover it.
@@ -52,6 +58,10 @@ data "taikun_project" "foo" {
 - `server_bastion` (Set of Object) Bastion server. (see [below for nested schema](#nestedatt--server_bastion))
 - `server_kubemaster` (Set of Object) Kubemaster server. (see [below for nested schema](#nestedatt--server_kubemaster))
 - `server_kubeworker` (Set of Object) Kubeworker server. (see [below for nested schema](#nestedatt--server_kubeworker))
+- `spot_full` (Boolean) When enabled, project will support full spot Kubernetes (controlplane + workers)
+- `spot_max_price` (Number) Maximum spot price the user can set on servers/standalone VMs.
+- `spot_vms` (Boolean) When enabled, project will support spot flavors of standalone VMs
+- `spot_worker` (Boolean) When enabled, project will support spot flavors for Kubernetes worker nodes
 - `vm` (List of Object) Virtual machines. (see [below for nested schema](#nestedatt--vm))
 
 <a id="nestedatt--server_bastion"></a>
@@ -62,12 +72,16 @@ Read-Only:
 - `created_by` (String)
 - `disk_size` (Number)
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `ip` (String)
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
+- `zone` (String)
 
 
 <a id="nestedatt--server_kubemaster"></a>
@@ -78,14 +92,18 @@ Read-Only:
 - `created_by` (String)
 - `disk_size` (Number)
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `ip` (String)
 - `kubernetes_node_label` (Set of Object) (see [below for nested schema](#nestedobjatt--server_kubemaster--kubernetes_node_label))
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
+- `zone` (String)
 
 <a id="nestedobjatt--server_kubemaster--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubemaster.kubernetes_node_label`
@@ -105,14 +123,19 @@ Read-Only:
 - `created_by` (String)
 - `disk_size` (Number)
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `ip` (String)
 - `kubernetes_node_label` (Set of Object) (see [below for nested schema](#nestedobjatt--server_kubeworker--kubernetes_node_label))
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `name` (String)
+- `proxmox_extra_disk_size` (Number)
+- `spot_server` (Boolean)
+- `spot_server_max_price` (Number)
 - `status` (String)
 - `wasm` (Boolean)
+- `zone` (String)
 
 <a id="nestedobjatt--server_kubeworker--kubernetes_node_label"></a>
 ### Nested Schema for `server_kubeworker.kubernetes_node_label`
@@ -134,6 +157,7 @@ Read-Only:
 - `created_by` (String)
 - `disk` (List of Object) (see [below for nested schema](#nestedobjatt--vm--disk))
 - `flavor` (String)
+- `hypervisor` (String)
 - `id` (String)
 - `image_id` (String)
 - `image_name` (String)
@@ -142,12 +166,15 @@ Read-Only:
 - `last_modified_by` (String)
 - `name` (String)
 - `public_ip` (Boolean)
+- `spot_vm` (Boolean)
+- `spot_vm_max_price` (Number)
 - `standalone_profile_id` (String)
 - `status` (String)
 - `tag` (Set of Object) (see [below for nested schema](#nestedobjatt--vm--tag))
 - `username` (String)
 - `volume_size` (Number)
 - `volume_type` (String)
+- `zone` (String)
 
 <a id="nestedobjatt--vm--disk"></a>
 ### Nested Schema for `vm.disk`

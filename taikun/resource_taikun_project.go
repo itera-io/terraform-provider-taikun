@@ -226,7 +226,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:     1,
 			Optional:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "spot_server", "zone", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -236,7 +236,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubeworker"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerSchemaWithKubernetesNodeLabels(),
 			},
@@ -246,7 +246,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
-			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label"),
+			Set:          hashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "zone", "hypervisor", "proxmox_extra_disk_size"),
 			Elem: &schema.Resource{
 				Schema: taikunServerKubeworkerSchema(),
 			},
@@ -266,6 +266,75 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: taikunVMSchema(),
 			},
+		},
+		"autoscaler_name": {
+			Description:  "Autoscaler group name (specify together with all other autoscaler parameters).",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(3, 10),
+			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+		},
+		"autoscaler_flavor": {
+			Description:  "Flavor of workers created by autoscaler (specify together with all other autoscaler parameters).",
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringIsNotEmpty,
+			RequiredWith: []string{"autoscaler_name", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+		},
+		"autoscaler_disk_size": {
+			Description:  "Disk size of autoscaler in GB (specify together with all other autoscaler parameters).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(30),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_max_size", "autoscaler_min_size"},
+		},
+		"autoscaler_min_size": {
+			Description:  "Minimum number of workers created by autoscaler (specify together with all other autoscaler parameters).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size"},
+		},
+		"autoscaler_max_size": {
+			Description:  "Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters).",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
+		},
+		"autoscaler_spot_enabled": {
+			Description:  "When enabled, autoscaler will use spot flavors for autoscaled workers (be sure to enable spot flavors for this project). If not specified, defaults to false.",
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Default:      false,
+			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size", "autoscaler_max_size"},
+		},
+		"spot_full": {
+			Description:   "When enabled, project will support full spot Kubernetes (controlplane + workers)",
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"spot_worker"},
+		},
+		"spot_worker": {
+			Description:   "When enabled, project will support spot flavors for Kubernetes worker nodes",
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"spot_full"},
+		},
+		"spot_vms": {
+			Description: "When enabled, project will support spot flavors of standalone VMs",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+		},
+		"spot_max_price": {
+			Description: "Maximum spot price the user can set on servers/standalone VMs.",
+			Type:        schema.TypeFloat,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
 		},
 	}
 }
@@ -398,6 +467,69 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 
 	if kubernetesVersion, kubernetesVersionIsSet := d.GetOk("kubernetes_version"); kubernetesVersionIsSet {
 		body.SetKubernetesVersion(kubernetesVersion.(string))
+	}
+
+	// Spots
+	spotFull, spotFullIsSet := d.GetOk("spot_full")
+	spotWorker, spotWorkerIsSet := d.GetOk("spot_worker")
+	spotVms, spotVmsIsSet := d.GetOk("spot_vms")
+	spotMaxPrice, spotMaxPriceIsSet := d.GetOk("spot_max_price")
+
+	if spotMaxPriceIsSet {
+		if !spotFullIsSet && !spotWorkerIsSet && !spotVmsIsSet {
+			return diag.Errorf("If you set max spot price, the project must have spots enabled.")
+		}
+		body.SetMaxSpotPrice(spotMaxPrice.(float64))
+	}
+	if spotFullIsSet {
+		body.SetAllowFullSpotKubernetes(spotFull.(bool))
+	}
+	if spotWorkerIsSet {
+		body.SetAllowSpotWorkers(spotWorker.(bool))
+	}
+	if spotVmsIsSet {
+		body.SetAllowSpotVMs(spotVms.(bool))
+	}
+
+	// Autoscaler
+	autoscalerName, autoscalerNameIsSet := d.GetOk("autoscaler_name")
+	autoscalerFlavor, autoscalerFlavorIsSet := d.GetOk("autoscaler_flavor")
+	autoscalerMin, autoscalerMinIsSet := d.GetOk("autoscaler_min_size")
+	autoscalerMax, autoscalerMaxIsSet := d.GetOk("autoscaler_max_size")
+	autoscalerDisk, autoscalerDiskIsSet := d.GetOk("autoscaler_disk_size")
+	autoscalerSpot, autoscalerSpotIsSet := d.GetOk("autoscaler_spot_enabled")
+
+	// If we would specify a flavor not bound to project, Taikun would bind it for us
+	// - terraform would be very confused by this since it did not bind the flavor.
+	// For that reason Taikun TF proivder forbids to specify autoscaler flavor outside of bound flavors.
+	if autoscalerFlavor != "" {
+		desiredFlavorIsBound := false
+		for _, oneFlavor := range flavors {
+			if oneFlavor == autoscalerFlavor {
+				desiredFlavorIsBound = true
+			}
+		}
+		if !desiredFlavorIsBound {
+			return diag.Errorf("Error: Autoscaler's flavor must be present in flavors already bound to project.")
+		}
+	}
+
+	if autoscalerNameIsSet &&
+		autoscalerFlavorIsSet &&
+		autoscalerDiskIsSet &&
+		autoscalerMinIsSet &&
+		autoscalerMaxIsSet {
+
+		body.SetAutoscalingGroupName(autoscalerName.(string))
+		body.SetAutoscalingFlavor(autoscalerFlavor.(string))
+		body.SetMinSize(int32(autoscalerMin.(int)))
+		body.SetMaxSize(int32(autoscalerMax.(int)))
+		body.SetDiskSize(float64(gibiByteToByte(autoscalerDisk.(int))))
+		body.SetAutoscalingEnabled(true)
+
+		if autoscalerSpotIsSet {
+			body.SetAutoscalingSpotEnabled(autoscalerSpot.(bool))
+		}
 	}
 
 	// Send project creation request
@@ -678,11 +810,6 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 	}
-	if d.HasChange("flavors") {
-		if err = resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
-			return diag.FromErr(err)
-		}
-	}
 	if d.HasChange("images") {
 		if err = resourceTaikunProjectEditImages(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
@@ -782,10 +909,32 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverCreateBody.SetName(kubeWorkerMap["name"].(string))
 					serverCreateBody.SetProjectId(id)
 					serverCreateBody.SetRole(tkcore.CLOUDROLE_KUBEWORKER)
+					serverCreateBody.SetWasmEnabled(kubeWorkerMap["wasm"].(bool))
+					serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
+					serverCreateBody.SetAvailabilityZone(kubeWorkerMap["zone"].(string))
 
-					serverCreateResponse, _, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
+					if kubeWorkerMap["proxmox_extra_disk_size"].(int) != 0 {
+						proxmoxStorageString, err1 := getProxmoxStorageStringForServer(id, apiClient)
+						if err1 != nil {
+							return diag.FromErr(err1)
+						}
+						proxmoxRole, err2 := tkcore.NewProxmoxRoleFromValue(proxmoxStorageString)
+						if err2 != nil {
+							return diag.FromErr(err2)
+						}
+						proxmoxExtraDiskSize := int32(kubeWorkerMap["proxmox_extra_disk_size"].(int))
+						serverCreateBody.SetProxmoxRole(*proxmoxRole)
+						serverCreateBody.SetProxmoxExtraDiskSize(proxmoxExtraDiskSize)
+					}
+
+					serverCreateBody, err = resourceTaikunProjectSetServerSpots(kubeWorkerMap, serverCreateBody) // Spots
+					if err != nil {
+						return diag.Errorf("There was an error in server spot configuration")
+					}
+
+					serverCreateResponse, response, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 					if newErr != nil {
-						return diag.FromErr(newErr)
+						return diag.FromErr(tk.CreateError(response, newErr))
 					}
 					kubeWorkerMap["id"] = serverCreateResponse.GetId()
 
@@ -811,6 +960,67 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("vm") {
 		err = resourceTaikunProjectUpdateVMs(ctx, d, apiClient, id)
 		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// Spots for project
+	spotFullChange := d.HasChange("spot_full")
+	spotWorkerChange := d.HasChange("spot_worker")
+	spotVmsChange := d.HasChange("spot_vms")
+
+	// Vm spots do not collide with anything
+	if spotVmsChange {
+		if err = resourceTaikunProjectToggleVmsSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	// Full and Worker chanege can collide if there was a change on remote
+	if spotFullChange && spotWorkerChange {
+		diag.Errorf("There has been a change in conflicting parameters spot_full and spot_worker")
+	}
+	if spotFullChange {
+		if err = resourceTaikunProjectToggleFullSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if spotWorkerChange {
+		if err = resourceTaikunProjectToggleWorkerSpot(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// Autoscaler disable and enable with different flavor and autoscaling group name
+	// Precedence: high, first we check if we must recreate the whole autoscaler
+	iWishToDisable := d.Get("autoscaler_name") == "" || d.Get("autoscaler_flavor") == "" || d.Get("autoscaler_disk_size") == "0"
+	iJustRecreated := false
+	if d.HasChange("autoscaler_name") || d.HasChange("autoscaler_flavor") || d.HasChange("autoscaler_disk_size") || d.HasChange("autoscaler_spot_enabled") {
+		if iWishToDisable {
+			// Disable autoscaler
+			if err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			// Enable or Recreate autoscaler with changes
+			if err := resourceTaikunProjectRecreateAutoscaler(ctx, d, apiClient); err != nil {
+				return diag.FromErr(err)
+			}
+			iJustRecreated = true
+		}
+	}
+
+	// Autoscaler edit
+	// Precedence: medium. Worst case, autoscaler was just recreated
+	if (d.HasChange("autoscaler_min_size") || d.HasChange("autoscaler_max_size")) && !iWishToDisable && !iJustRecreated {
+		if err := resourceTaikunProjectUpdateAutoscaler(ctx, d, apiClient); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// Flavor changes must be checked after autoscaler
+	// Precedence: low, autoscaler flavors should not interfere
+	if d.HasChange("flavors") {
+		if err = resourceTaikunProjectEditFlavors(d, apiClient, id); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -841,6 +1051,20 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		d.Get("server_kubemaster"),
 		d.Get("server_kubeworker"),
 	)
+
+	// Get all autoscaler servers
+	autoscalerData, _, err := apiClient.Client.ServersAPI.ServersList(ctx).AutoscalingGroup(d.Get("autoscaler_name").(string)).Execute()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	// Add the ids to the list of servers about to be deleted
+	var i int32 = 0
+	for ; i < autoscalerData.GetTotalCount(); i++ {
+		serversToPurge = append(serversToPurge, map[string]interface{}{"id": fmt.Sprint(autoscalerData.GetData()[0].GetId())})
+	}
+	// errstring := fmt.Sprint(serversToPurge)
+	// tflog.Error(ctx, errstring)
+
 	if len(serversToPurge) != 0 {
 		err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
 		if err != nil {
@@ -932,56 +1156,98 @@ func flattenTaikunProject(
 	projectDeleteOnExpiration bool,
 ) map[string]interface{} {
 
+	// Flatten project Flavors
 	flavors := make([]string, len(boundFlavorDTOs))
 	for i, boundFlavorDTO := range boundFlavorDTOs {
 		flavors[i] = boundFlavorDTO.GetName()
 	}
 
+	// Flatten project Images
 	images := make([]string, len(boundImageDTOs))
+	cloudType := projectDetailsDTO.GetCloudType()
 	for i, boundImageDTO := range boundImageDTOs {
-		images[i] = boundImageDTO.GetImageId()
+		if cloudType == tkcore.CLOUDTYPE_GOOGLE {
+			// If GCP - Google uses image.name instead of image.id
+			images[i] = boundImageDTO.GetName()
+		} else {
+			// All other CCs use image.id
+			images[i] = boundImageDTO.GetImageId()
+		}
 	}
 
+	// Flatten project attributes
 	projectMap := map[string]interface{}{
-		"access_ip":             projectDetailsDTO.GetAccessIp(),
-		"access_profile_id":     i32toa(projectDetailsDTO.GetAccessProfileId()),
-		"alerting_profile_name": projectDetailsDTO.GetAlertingProfileName(),
-		"cloud_credential_id":   i32toa(projectDetailsDTO.GetCloudId()),
-		"auto_upgrade":          projectDetailsDTO.GetIsAutoUpgrade(),
-		"monitoring":            projectDetailsDTO.GetIsMonitoringEnabled(),
-		"delete_on_expiration":  projectDeleteOnExpiration,
-		"expiration_date":       rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
-		"flavors":               flavors,
-		"images":                images,
-		"id":                    i32toa(projectDetailsDTO.GetProjectId()),
-		"kubernetes_profile_id": i32toa(projectDetailsDTO.GetKubernetesProfileId()),
-		"kubernetes_version":    projectDetailsDTO.GetKubernetesCurrentVersion(),
-		"lock":                  projectDetailsDTO.GetIsLocked(),
-		"name":                  projectDetailsDTO.GetProjectName(),
-		"organization_id":       i32toa(projectDetailsDTO.GetOrganizationId()),
-		"quota_cpu_units":       projectQuotaDTO.GetServerCpu(),
-		"quota_ram_size":        byteToGibiByte(projectQuotaDTO.GetServerRam()),
-		"quota_disk_size":       byteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
-		"quota_vm_cpu_units":    projectQuotaDTO.GetVmCpu(),
-		"quota_vm_ram_size":     byteToGibiByte(projectQuotaDTO.GetVmRam()),
-		"quota_vm_volume_size":  projectQuotaDTO.GetVmVolumeSize(),
+		"access_ip":               projectDetailsDTO.GetAccessIp(),
+		"access_profile_id":       i32toa(projectDetailsDTO.GetAccessProfileId()),
+		"alerting_profile_name":   projectDetailsDTO.GetAlertingProfileName(),
+		"cloud_credential_id":     i32toa(projectDetailsDTO.GetCloudId()),
+		"auto_upgrade":            projectDetailsDTO.GetIsAutoUpgrade(),
+		"monitoring":              projectDetailsDTO.GetIsMonitoringEnabled(),
+		"delete_on_expiration":    projectDeleteOnExpiration,
+		"expiration_date":         rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
+		"flavors":                 flavors,
+		"images":                  images,
+		"id":                      i32toa(projectDetailsDTO.GetProjectId()),
+		"kubernetes_profile_id":   i32toa(projectDetailsDTO.GetKubernetesProfileId()),
+		"kubernetes_version":      projectDetailsDTO.GetKubernetesCurrentVersion(),
+		"lock":                    projectDetailsDTO.GetIsLocked(),
+		"name":                    projectDetailsDTO.GetProjectName(),
+		"organization_id":         i32toa(projectDetailsDTO.GetOrganizationId()),
+		"quota_cpu_units":         projectQuotaDTO.GetServerCpu(),
+		"quota_ram_size":          byteToGibiByte(projectQuotaDTO.GetServerRam()),
+		"quota_disk_size":         byteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
+		"quota_vm_cpu_units":      projectQuotaDTO.GetVmCpu(),
+		"quota_vm_ram_size":       byteToGibiByte(projectQuotaDTO.GetVmRam()),
+		"quota_vm_volume_size":    projectQuotaDTO.GetVmVolumeSize(),
+		"autoscaler_name":         projectDetailsDTO.GetAutoscalingGroupName(),
+		"autoscaler_flavor":       projectDetailsDTO.GetFlavor(),
+		"autoscaler_min_size":     projectDetailsDTO.GetMinSize(),
+		"autoscaler_max_size":     projectDetailsDTO.GetMaxSize(),
+		"autoscaler_disk_size":    byteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
+		"autoscaler_spot_enabled": projectDetailsDTO.GetIsAutoscalingSpotEnabled(),
+		"spot_full":               projectDetailsDTO.GetAllowFullSpotKubernetes(),
+		"spot_worker":             projectDetailsDTO.GetAllowSpotWorkers(),
+		"spot_vms":                projectDetailsDTO.GetAllowSpotVMs(),
+		"spot_max_price":          projectDetailsDTO.GetMaxSpotPrice(),
 	}
 
+	// Flatten Kubernetes servers
 	bastions := make([]map[string]interface{}, 0)
 	kubeMasters := make([]map[string]interface{}, 0)
 	kubeWorkers := make([]map[string]interface{}, 0)
+	skip_this_server := false
 	for _, server := range serverListDTO {
+		// Flatten server attributes for every server type
 		serverMap := map[string]interface{}{
-			"created_by":       server.GetCreatedBy(),
-			"disk_size":        byteToGibiByte(server.GetDiskSize()),
-			"id":               i32toa(server.GetId()),
-			"ip":               server.GetIpAddress(),
-			"last_modified":    server.GetLastModified(),
-			"last_modified_by": server.GetLastModifiedBy(),
-			"name":             server.GetName(),
-			"status":           server.GetStatus(),
+			"created_by":            server.GetCreatedBy(),
+			"disk_size":             byteToGibiByte(server.GetDiskSize()),
+			"id":                    i32toa(server.GetId()),
+			"ip":                    server.GetIpAddress(),
+			"last_modified":         server.GetLastModified(),
+			"last_modified_by":      server.GetLastModifiedBy(),
+			"name":                  server.GetName(),
+			"status":                server.GetStatus(),
+			"spot_server":           server.GetSpotInstance(),
+			"spot_server_max_price": server.GetSpotPrice(),
+			"zone":                  getLastCharacter(server.GetAvailabilityZone()), // Get last character of the string
+			"hypervisor":            server.GetHypervisor(),
 		}
 
+		// Attributes only for Workers
+		serverRole := server.GetRole()
+		if serverRole == tkcore.CLOUDROLE_KUBEWORKER {
+			serverMap["wasm"] = server.GetWasmEnabled()
+			serverMap["zone"] = getLastCharacter(server.GetAvailabilityZone())
+			serverMap["proxmox_extra_disk_size"] = server.GetProxmoxExtraDiskSize()
+		}
+		// Attributes only for Masters
+		if serverRole == tkcore.CLOUDROLE_KUBEMASTER {
+			serverMap["wasm"] = server.GetWasmEnabled()
+			serverMap["zone"] = getLastCharacter(server.GetAvailabilityZone())
+
+		}
+
+		// Flatten flavor
 		switch server.GetCloudType() {
 		case tkcore.CLOUDTYPE_AWS:
 			serverMap["flavor"] = server.GetAwsInstanceType()
@@ -991,27 +1257,37 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.GetOpenstackFlavor()
 		case tkcore.CLOUDTYPE_GOOGLE, "google":
 			serverMap["flavor"] = server.GetGoogleMachineType()
+		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
+			serverMap["flavor"] = server.GetProxmoxFlavor()
 		}
 
-		// Bastion
-		if server.GetRole() == tkcore.CLOUDROLE_BASTION {
+		if serverRole == tkcore.CLOUDROLE_BASTION {
+			// Flatten bastion
 			bastions = append(bastions, serverMap)
 		} else {
-
+			// Flatten masters and workers with labels
 			labels := make([]map[string]interface{}, len(server.GetKubernetesNodeLabels()))
 			for i, rawLabel := range server.GetKubernetesNodeLabels() {
 				labels[i] = map[string]interface{}{
 					"key":   *rawLabel.Key.Get(),
 					"value": *rawLabel.Value.Get(),
 				}
-			}
-			serverMap["kubernetes_node_label"] = labels
-			serverMap["wasm"] = server.GetWasmEnabled()
 
-			if server.GetRole() == tkcore.CLOUDROLE_KUBEMASTER {
-				kubeMasters = append(kubeMasters, serverMap)
-			} else {
-				kubeWorkers = append(kubeWorkers, serverMap)
+				// Autoscaler If label shows the node is created by autoscaler - ignore it, for TF it is invisible.
+				if *rawLabel.Key.Get() == "taikun.cloud/autoscaling-group" {
+					skip_this_server = true
+				}
+			}
+
+			// Add server to state only if its not an autoscaler server
+			if !skip_this_server {
+				serverMap["kubernetes_node_label"] = labels
+
+				if serverRole == tkcore.CLOUDROLE_KUBEMASTER {
+					kubeMasters = append(kubeMasters, serverMap)
+				} else {
+					kubeWorkers = append(kubeWorkers, serverMap)
+				}
 			}
 		}
 	}
@@ -1019,6 +1295,7 @@ func flattenTaikunProject(
 	projectMap["server_kubemaster"] = kubeMasters
 	projectMap["server_kubeworker"] = kubeWorkers
 
+	// Flatten project VMs
 	vms := make([]map[string]interface{}, 0)
 	for _, vm := range vmListDTO {
 		vmMap := map[string]interface{}{
@@ -1038,6 +1315,10 @@ func flattenTaikunProject(
 			"status":                vm.GetStatus(),
 			"volume_size":           vm.GetVolumeSize(),
 			"volume_type":           vm.GetVolumeType(),
+			"spot_vm":               vm.GetSpotInstance(),
+			"spot_vm_max_price":     vm.GetSpotPrice(),
+			"hypervisor":            vm.GetHypervisor(),
+			"zone":                  getLastCharacter(vm.GetAvailabilityZone()),
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))
@@ -1065,15 +1346,18 @@ func flattenTaikunProject(
 	}
 	projectMap["vm"] = vms
 
+	// Flatten alerting profiles
 	var nullID int32
 	if projectDetailsDTO.GetAlertingProfileId() != nullID {
 		projectMap["alerting_profile_id"] = i32toa(projectDetailsDTO.GetAlertingProfileId())
 	}
 
+	// Flatten Backups
 	if projectDetailsDTO.GetIsBackupEnabled() {
 		projectMap["backup_credential_id"] = i32toa(projectDetailsDTO.GetS3CredentialId())
 	}
 
+	// Flatten OPA profiles
 	if projectDetailsDTO.GetIsOpaEnabled() {
 		projectMap["policy_profile_id"] = i32toa(projectDetailsDTO.GetOpaProfileId())
 	}
@@ -1201,22 +1485,47 @@ func resourceTaikunProjectGetKubernetesLBSolution(kubernetesProfileID int32, api
 }
 
 func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Client) (string, error) {
-	response, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(cloudCredentialID).Execute()
+	// Check if Cloud credential is Openstack
+	responseOS, _, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(cloudCredentialID).Execute()
 	if err != nil {
 		return "", err
-	}
-	if len(response.GetAmazon()) == 1 {
-		return string(tkcore.CLOUDTYPE_AWS), nil
-	}
-	if len(response.GetAzure()) == 1 {
-		return string(tkcore.CLOUDTYPE_AZURE), nil
-	}
-	if len(response.GetOpenstack()) == 1 {
+	} else if responseOS.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_OPENSTACK), nil
 	}
-	if len(response.GetGoogle()) == 1 {
+
+	// Check if CC is AWS
+	responseAWS, _, err := apiClient.Client.AWSCloudCredentialAPI.AwsList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseAWS.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_AWS), nil
+	}
+
+	// Check if CC is Azure
+	responseAZ, _, err := apiClient.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseAZ.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_AZURE), nil
+	}
+
+	// Check if CC is Google
+	responseGCP, _, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseGCP.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_GOOGLE), nil
 	}
+
+	// Check if CC is Proxmox
+	responsePROXMOX, _, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responsePROXMOX.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_PROXMOX), nil
+	}
+
+	// Unknown CC type
 	return "", fmt.Errorf("cloud credential with ID %d not found", cloudCredentialID)
 }
 
