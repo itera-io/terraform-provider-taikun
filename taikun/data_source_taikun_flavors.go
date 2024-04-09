@@ -95,9 +95,9 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	var startRAM float64
 	var endRAM float64
 
-	if cloudType == string(tkcore.CLOUDTYPE_GOOGLE) || cloudType == string(tkcore.CLOUDTYPE_PROXMOX) {
-		startRAM = float64(gibiByteToByte(d.Get("min_ram").(int)))
-		endRAM = float64(gibiByteToByte(d.Get("max_ram").(int)))
+	if cloudType == string(tkcore.CLOUDTYPE_GOOGLE) || cloudType == string(tkcore.CLOUDTYPE_PROXMOX) || cloudType == string(tkcore.CLOUDTYPE_VSPHERE) {
+		startRAM = float64(gibiByteToByte(d.Get("min_ram").(int))) - 1000 // Rounding errors prevent recognising interval starting and ending in same numbers
+		endRAM = float64(gibiByteToByte(d.Get("max_ram").(int))) + 1000   // Rounding errors prevent recognising interval starting and ending in same numbers
 	} else {
 		startRAM = float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
 		endRAM = float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
@@ -153,6 +153,8 @@ func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSour
 		return flattenDataSourceTaikunFlavorsOpenStackItem
 	case string(tkcore.CLOUDTYPE_PROXMOX):
 		return flattenDataSourceTaikunFlavorsProxmoxItem
+	case string(tkcore.CLOUDTYPE_VSPHERE):
+		return flattenDataSourceTaikunFlavorsVsphereItem
 	default: // GCP
 		return flattenDataSourceTaikunFlavorsGCPItem
 	}
@@ -183,6 +185,14 @@ func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *tkcore.FlavorsListDt
 }
 
 func flattenDataSourceTaikunFlavorsProxmoxItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
+	return map[string]interface{}{
+		"cpu":  flavorDTO.GetCpu(),
+		"name": flavorDTO.GetName(),
+		"ram":  byteToGibiByte(flavorDTO.GetRam()),
+	}
+}
+
+func flattenDataSourceTaikunFlavorsVsphereItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
 	return map[string]interface{}{
 		"cpu":  flavorDTO.GetCpu(),
 		"name": flavorDTO.GetName(),

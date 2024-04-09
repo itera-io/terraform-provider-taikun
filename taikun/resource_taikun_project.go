@@ -1259,6 +1259,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.GetGoogleMachineType()
 		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
 			serverMap["flavor"] = server.GetProxmoxFlavor()
+		case tkcore.CLOUDTYPE_VSPHERE, "vsphere":
+			serverMap["flavor"] = server.GetVsphereFlavor()
 		}
 
 		if serverRole == tkcore.CLOUDROLE_BASTION {
@@ -1523,6 +1525,14 @@ func resourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Cl
 		return "", err
 	} else if responsePROXMOX.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_PROXMOX), nil
+	}
+
+	// Check if CC is vSphere
+	responseVSPHERE, _, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseVSPHERE.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_VSPHERE), nil
 	}
 
 	// Unknown CC type

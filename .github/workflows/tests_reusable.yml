@@ -81,6 +81,32 @@ env:
   PROXMOX_PUBLIC_END_RANGE: ${{ secrets.PROXMOX_PUBLIC_END_RANGE }}
   PROXMOX_PUBLIC_BRIDGE: ${{ secrets.PROXMOX_PUBLIC_BRIDGE }}
 
+  VSPHERE_USERNAME: ${{ secrets.VSPHERE_USERNAME }}
+  VSPHERE_PASSWORD: ${{ secrets.VSPHERE_PASSWORD }}
+  VSPHERE_API_URL:  ${{ secrets.VSPHERE_API_URL }}
+  VSPHERE_DATACENTER: ${{ secrets.VSPHERE_DATACENTER }}
+  VSPHERE_RESOURCE_POOL: ${{ secrets.VSPHERE_RESOURCE_POOL }}
+  VSPHERE_DATA_STORE: ${{ secrets.VSPHERE_DATA_STORE }}
+  VSPHERE_DRS_ENABLED: ${{ secrets.VSPHERE_DRS_ENABLED }}
+  VSPHERE_HYPERVISOR: ${{ secrets.VSPHERE_HYPERVISOR }}
+  VSPHERE_HYPERVISOR2: ${{ secrets.VSPHERE_HYPERVISOR2 }}
+  VSPHERE_VM_TEMPLATE: ${{ secrets.VSPHERE_VM_TEMPLATE }}
+  VSPHERE_CONTINENT: ${{ secrets.VSPHERE_CONTINENT }}
+
+  VSPHERE_PUBLIC_NETWORK_NAME: ${{ secrets.VSPHERE_PUBLIC_NETWORK_NAME }}
+  VSPHERE_PUBLIC_NETWORK_ADDRESS: ${{ secrets.VSPHERE_PUBLIC_NETWORK_ADDRESS }}
+  VSPHERE_PUBLIC_NETMASK: ${{ secrets.VSPHERE_PUBLIC_NETMASK }}
+  VSPHERE_PUBLIC_GATEWAY: ${{ secrets.VSPHERE_PUBLIC_GATEWAY }}
+  VSPHERE_PUBLIC_BEGIN_RANGE: ${{ secrets.VSPHERE_PUBLIC_BEGIN_RANGE }}
+  VSPHERE_PUBLIC_END_RANGE: ${{ secrets.VSPHERE_PUBLIC_END_RANGE }}
+
+  VSPHERE_PRIVATE_NETWORK_NAME: ${{ secrets.VSPHERE_PRIVATE_NETWORK_NAME }}
+  VSPHERE_PRIVATE_NETWORK_ADDRESS: ${{ secrets.VSPHERE_PRIVATE_NETWORK_ADDRESS }}
+  VSPHERE_PRIVATE_NETMASK: ${{ secrets.VSPHERE_PRIVATE_NETMASK }}
+  VSPHERE_PRIVATE_GATEWAY: ${{ secrets.VSPHERE_PRIVATE_GATEWAY }}
+  VSPHERE_PRIVATE_BEGIN_RANGE: ${{ secrets.VSPHERE_PRIVATE_BEGIN_RANGE }}
+  VSPHERE_PRIVATE_END_RANGE: ${{ secrets.VSPHERE_PRIVATE_END_RANGE }}
+
   # Trying to avoid race conditions
   TERRAFORM_SKIP_VERIFY: true
 
@@ -198,9 +224,32 @@ jobs:
           ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)'
           go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
+  test1d:
+    name: 1d) Dry Test vSphere
+    needs: [build,golangci]
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.BRANCH }}
+      - name: Get dependencies
+        run: |
+          go mod download
+      - name: TF acceptance tests
+        run: |
+          date
+          ACCEPTANCE_TESTS='(TestAccDataSourceTaikunImagesVsphere$$|TestAccDataSourceTaikunFlavorsVsphere$$|TestAccResourceTaikunCloudCredentialVsphereUpdate$$|TestAccResourceTaikunCloudCredentialVsphereLock$$|TestAccResourceTaikunCloudCredentialVsphere$$|TestAccDataSourceTaikunCloudCredentialVsphere$$|TestAccDataSourceTaikunCloudCredentialsVsphere$$|TestAccDataSourceTaikunCloudCredentialsVsphereWithFilter$$)'
+          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+
   test2a:
     name: 2a) Openstack VM minimal
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -223,7 +272,7 @@ jobs:
 
   test2b:
     name: 2b) Openstack VM, update IP
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -246,7 +295,7 @@ jobs:
 
   test2c:
     name: 2c) Openstack VM, update flavor
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -269,7 +318,7 @@ jobs:
 
   test2d:
     name: 2d) Openstack VM, volume type
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -292,7 +341,7 @@ jobs:
 
   test3a:
     name: 3a) AWS VM, minimal
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -315,7 +364,7 @@ jobs:
 
   test3b:
     name: 3b) AWS VM, update flavor
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -338,7 +387,7 @@ jobs:
 
   test4a:
     name: 4a) Azure VM, minimal
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -361,7 +410,7 @@ jobs:
 
   test4b:
     name: 4b) Azure VM, update flavor
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -384,7 +433,7 @@ jobs:
 
   test4c:
     name: 4c) Azure VM, volume type
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:
@@ -407,7 +456,7 @@ jobs:
 
   test6a:
     name: 6a) Proxmox VM, minimal
-    needs: [test1a, test1b, test1c]
+    needs: [test1a, test1b, test1c, test1d]
     runs-on: self-hosted
     timeout-minutes: 30
     steps:

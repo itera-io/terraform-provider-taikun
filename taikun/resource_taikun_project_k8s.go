@@ -152,7 +152,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Default:     "",
 		},
 		"hypervisor": {
-			Description: "Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox).",
+			Description: "Hypervisor used for this server from Proxmox/vSphere Cloud credential (required for Proxmox, required for vSphere when DRS is disabled).",
 			Type:        schema.TypeString,
 			Optional:    true,
 			ForceNew:    true,

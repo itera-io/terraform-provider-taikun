@@ -26,7 +26,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 			Default:     "",
 		},
 		"hypervisor": {
-			Description:      "Hypervisor used for this VM (required for Proxmox).",
+			Description:      "Hypervisor used for this VM (required for Proxmox, required for vSphere when DRS is disabled).",
 			Type:             schema.TypeString,
 			Optional:         true,
 			DiffSuppressFunc: ignoreChangeFromEmpty,
