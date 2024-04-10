@@ -21,7 +21,6 @@ resource "taikun_backup_policy" "foo" {
   retention_period = "72h"
 
   included_namespaces = ["name"]
-  excluded_namespaces = ["space"]
 }
 ```
 

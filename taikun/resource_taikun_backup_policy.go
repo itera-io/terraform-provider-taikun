@@ -74,8 +74,8 @@ func resourceTaikunBackupPolicy() *schema.Resource {
 		Schema:        resourceTaikunBackupPolicySchema(),
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 
-			if len(diff.Get("included_namespaces").([]interface{})) == 0 && len(diff.Get("excluded_namespaces").([]interface{})) == 0 {
-				return fmt.Errorf("please specify include or exclude namespace to create backup")
+			if len(diff.Get("included_namespaces").([]interface{})) == 0 {
+				return fmt.Errorf("please specify include namespace to create backup")
 			}
 
 			return nil
