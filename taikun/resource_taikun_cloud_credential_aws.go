@@ -14,7 +14,7 @@ import (
 func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"access_key_id": {
-			Description:  "The AWS access key ID.",
+			Description:  "The AWS access key ID. (Can be set with env AWS_ACCESS_KEY_ID)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -94,7 +94,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"region": {
-			Description: "The AWS region.",
+			Description: "The AWS region. (Can be set with env AWS_DEFAULT_REGION)",
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
@@ -134,7 +134,7 @@ func resourceTaikunCloudCredentialAWSSchema() map[string]*schema.Schema {
 			),
 		},
 		"secret_access_key": {
-			Description:  "The AWS secret access key.",
+			Description:  "The AWS secret access key. (Can be set with env AWS_SECRET_ACCESS_KEY)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -217,11 +217,11 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsDashboardList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsList(context.TODO()).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		if len(response.GetAmazon()) != 1 {
+		if len(response.GetData()) != 1 {
 			if withRetries {
 				d.SetId(i32toa(id))
 				return diag.Errorf(notFoundAfterCreateOrUpdateError)
@@ -229,7 +229,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return nil
 		}
 
-		rawCloudCredentialAWS := response.GetAmazon()[0]
+		rawCloudCredentialAWS := response.GetData()[0]
 
 		err = setResourceDataFromMap(d, flattenTaikunCloudCredentialAWS(&rawCloudCredentialAWS))
 		if err != nil {

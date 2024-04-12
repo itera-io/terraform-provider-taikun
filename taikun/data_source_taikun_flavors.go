@@ -2,12 +2,11 @@ package taikun
 
 import (
 	"context"
-	tk "github.com/itera-io/taikungoclient"
-	tkcore "github.com/itera-io/taikungoclient/client"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
 )
 
 func dataSourceTaikunFlavors() *schema.Resource {
@@ -96,12 +95,12 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	var startRAM float64
 	var endRAM float64
 
-	if cloudType != cloudTypeGCP {
-		startRAM = float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
-		endRAM = float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
-	} else {
+	if cloudType == string(tkcore.CLOUDTYPE_GOOGLE) || cloudType == string(tkcore.CLOUDTYPE_PROXMOX) {
 		startRAM = float64(gibiByteToByte(d.Get("min_ram").(int)))
 		endRAM = float64(gibiByteToByte(d.Get("max_ram").(int)))
+	} else {
+		startRAM = float64(gibiByteToMebiByte(int32(d.Get("min_ram").(int))))
+		endRAM = float64(gibiByteToMebiByte(int32(d.Get("max_ram").(int))))
 	}
 
 	sortBy := "name"
@@ -152,6 +151,8 @@ func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSour
 		return flattenDataSourceTaikunFlavorsAzureItem
 	case string(tkcore.CLOUDTYPE_OPENSTACK):
 		return flattenDataSourceTaikunFlavorsOpenStackItem
+	case string(tkcore.CLOUDTYPE_PROXMOX):
+		return flattenDataSourceTaikunFlavorsProxmoxItem
 	default: // GCP
 		return flattenDataSourceTaikunFlavorsGCPItem
 	}
@@ -178,6 +179,14 @@ func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *tkcore.FlavorsListDt
 		"cpu":  flavorDTO.GetCpu(),
 		"name": flavorDTO.GetName(),
 		"ram":  mebiByteToGibiByte(flavorDTO.GetRam()),
+	}
+}
+
+func flattenDataSourceTaikunFlavorsProxmoxItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
+	return map[string]interface{}{
+		"cpu":  flavorDTO.GetCpu(),
+		"name": flavorDTO.GetName(),
+		"ram":  byteToGibiByte(flavorDTO.GetRam()),
 	}
 }
 

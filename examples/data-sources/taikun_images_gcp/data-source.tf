@@ -11,3 +11,14 @@ data "taikun_images_gcp" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_gcp.foo.id
   type                = "windows"
 }
+
+locals {
+  images = [for image in data.taikun_images_gcp.foo.images : image.name] // GCP uses image names, not image ids.
+}
+
+resource "taikun_project" "foo" {
+  name                = "mock-project"
+  cloud_credential_id = resource.taikun_cloud_credential_gcp.foo.id
+  flavors             = local.flavors
+  images              = local.images
+}

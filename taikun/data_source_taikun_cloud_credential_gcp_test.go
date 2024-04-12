@@ -40,6 +40,7 @@ func TestAccDataSourceTaikunCloudCredentialGCP(t *testing.T) {
 					map[string]struct{}{
 						"config_file":    {},
 						"import_project": {},
+						"az_count":       {},
 					},
 				),
 			},
