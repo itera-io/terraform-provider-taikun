@@ -97,7 +97,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 			continue
 		}
 
-		organizationId, billingRuleId, err := organization.parseOrganizationBillingRuleAttachmentId(rs.Primary.ID)
+		organizationId, billingRuleId, err := organization.ParseOrganizationBillingRuleAttachmentId(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -132,7 +132,7 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentDestroy(state *terraform
 			continue
 		}
 
-		organizationId, billingRuleId, err := organization.parseOrganizationBillingRuleAttachmentId(rs.Primary.ID)
+		organizationId, billingRuleId, err := organization.ParseOrganizationBillingRuleAttachmentId(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

@@ -208,7 +208,7 @@ func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
 		}
 
 		id, _ := utils.Atoi32(rs.Primary.ID)
-		resource, err := policy_profile.resourceTaikunPolicyProfileFind(id, client)
+		resource, err := policy_profile.ResourceTaikunPolicyProfileFind(id, client)
 		if err != nil || resource == nil {
 			return fmt.Errorf("policy profile doesn't exist (id = %s)", rs.Primary.ID)
 		}
@@ -227,7 +227,7 @@ func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
 
 		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
-			policyProfile, err := policy_profile.resourceTaikunPolicyProfileFind(id, client)
+			policyProfile, err := policy_profile.ResourceTaikunPolicyProfileFind(id, client)
 			if err != nil {
 				return retry.NonRetryableError(err)
 			}

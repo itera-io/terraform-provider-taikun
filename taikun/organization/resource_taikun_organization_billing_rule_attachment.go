@@ -101,7 +101,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 
 		id := d.Id()
 		d.SetId("")
-		organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(id)
+		organizationId, billingRuleId, err := ParseOrganizationBillingRuleAttachmentId(id)
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_organization_billing_rule_attachment : %s", err)
 		}
@@ -151,7 +151,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
-	organizationId, billingRuleId, err := parseOrganizationBillingRuleAttachmentId(d.Id())
+	organizationId, billingRuleId, err := ParseOrganizationBillingRuleAttachmentId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
 	}
@@ -194,7 +194,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 	return nil
 }
 
-func parseOrganizationBillingRuleAttachmentId(id string) (int32, int32, error) {
+func ParseOrganizationBillingRuleAttachmentId(id string) (int32, int32, error) {
 	list := strings.Split(id, "/")
 	if len(list) != 2 {
 		return 0, 0, fmt.Errorf("unable to determine taikun_organization_billing_rule_attachment ID")

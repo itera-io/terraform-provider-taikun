@@ -155,7 +155,7 @@ func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		rawBillingCredential, err := resourceTaikunBillingCredentialFind(id, apiClient)
+		rawBillingCredential, err := ResourceTaikunBillingCredentialFind(id, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -238,7 +238,7 @@ func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *tk.Clie
 }
 
 // Returns the Billing Credential with the given ID or nil if it wasn't found
-func resourceTaikunBillingCredentialFind(id int32, apiClient *tk.Client) (*tkcore.OperationCredentialsListDto, error) {
+func ResourceTaikunBillingCredentialFind(id int32, apiClient *tk.Client) (*tkcore.OperationCredentialsListDto, error) {
 	params := apiClient.Client.OperationCredentialsAPI.OpscredentialsList(context.TODO())
 	var offset int32 = 0
 

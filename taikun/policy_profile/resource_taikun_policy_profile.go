@@ -202,7 +202,7 @@ func generateResourceTaikunPolicyProfileRead(isAfterUpdateOrCreate bool) schema.
 			return diag.FromErr(err)
 		}
 
-		rawPolicyProfile, err := resourceTaikunPolicyProfileFind(id, apiClient)
+		rawPolicyProfile, err := ResourceTaikunPolicyProfileFind(id, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -317,7 +317,7 @@ func flattenTaikunPolicyProfile(rawPolicyProfile *tkcore.OpaProfileListDto) map[
 	}
 }
 
-func resourceTaikunPolicyProfileFind(id int32, apiClient *tk.Client) (*tkcore.OpaProfileListDto, error) {
+func ResourceTaikunPolicyProfileFind(id int32, apiClient *tk.Client) (*tkcore.OpaProfileListDto, error) {
 	params := apiClient.Client.OpaProfilesAPI.OpaprofilesList(context.TODO())
 	var offset int32 = 0
 
