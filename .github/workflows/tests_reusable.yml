@@ -217,7 +217,7 @@ jobs:
         env:
           GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
         run: |
-          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
+          echo "$GCP_CONFIG_FILE" > ./taikun/provider_tests/gcp.json
       - name: TF acceptance tests
         run: |
           date
