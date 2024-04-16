@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
-	"github.com/itera-io/terraform-provider-taikun/taikun/project"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 )
 
@@ -86,10 +85,6 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	}
 
 	apiClient := meta.(*tk.Client)
-	cloudType, err := project.ResourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	startCPU := int32(d.Get("min_cpu").(int))
 	endCPU := int32(d.Get("max_cpu").(int))
@@ -120,7 +115,7 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 		offset = int32(len(flavorDTOs))
 	}
 
-	flavors := flattenDataSourceTaikunFlavors(cloudType, flavorDTOs)
+	flavors := flattenDataSourceTaikunFlavors(flavorDTOs)
 	if err := d.Set("flavors", flavors); err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,75 +124,16 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func flattenDataSourceTaikunFlavors(cloudType string, flavorDTOs []tkcore.FlavorsListDto) []map[string]interface{} {
+func flattenDataSourceTaikunFlavors(flavorDTOs []tkcore.FlavorsListDto) []map[string]interface{} {
 	flavors := make([]map[string]interface{}, len(flavorDTOs))
-	flattenFunc := getFlattenDataSourceTaikunFlavorsItemFunc(cloudType)
+	flattenFunc := flattenDataSourceTaikunFlavorsGenericItem
 	for i, flavorDTO := range flavorDTOs {
 		flavors[i] = flattenFunc(&flavorDTO)
 	}
 	return flavors
 }
 
-type flattenDataSourceTaikunFlavorsItemFunc func(flavorDTO *tkcore.FlavorsListDto) map[string]interface{}
-
-func getFlattenDataSourceTaikunFlavorsItemFunc(cloudType string) flattenDataSourceTaikunFlavorsItemFunc {
-	switch cloudType {
-	case string(tkcore.CLOUDTYPE_AWS):
-		return flattenDataSourceTaikunFlavorsAWSItem
-	case string(tkcore.CLOUDTYPE_AZURE):
-		return flattenDataSourceTaikunFlavorsAzureItem
-	case string(tkcore.CLOUDTYPE_OPENSTACK):
-		return flattenDataSourceTaikunFlavorsOpenStackItem
-	case string(tkcore.CLOUDTYPE_PROXMOX):
-		return flattenDataSourceTaikunFlavorsProxmoxItem
-	case string(tkcore.CLOUDTYPE_VSPHERE):
-		return flattenDataSourceTaikunFlavorsVsphereItem
-	default: // GCP
-		return flattenDataSourceTaikunFlavorsGCPItem
-	}
-}
-
-func flattenDataSourceTaikunFlavorsAWSItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"cpu":  flavorDTO.GetCpu(),
-		"name": flavorDTO.GetName(),
-		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
-	}
-}
-
-func flattenDataSourceTaikunFlavorsAzureItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"cpu":  flavorDTO.GetCpu(),
-		"name": flavorDTO.GetName(),
-		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
-	}
-}
-
-func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"cpu":  flavorDTO.GetCpu(),
-		"name": flavorDTO.GetName(),
-		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
-	}
-}
-
-func flattenDataSourceTaikunFlavorsProxmoxItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"cpu":  flavorDTO.GetCpu(),
-		"name": flavorDTO.GetName(),
-		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
-	}
-}
-
-func flattenDataSourceTaikunFlavorsVsphereItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"cpu":  flavorDTO.GetCpu(),
-		"name": flavorDTO.GetName(),
-		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
-	}
-}
-
-func flattenDataSourceTaikunFlavorsGCPItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
+func flattenDataSourceTaikunFlavorsGenericItem(flavorDTO *tkcore.FlavorsListDto) map[string]interface{} {
 	return map[string]interface{}{
 		"cpu":  flavorDTO.GetCpu(),
 		"name": flavorDTO.GetName(),
