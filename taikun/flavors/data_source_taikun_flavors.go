@@ -50,14 +50,14 @@ func DataSourceTaikunFlavors() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      36,
-				ValidateFunc: validation.IntBetween(2, 36),
+				ValidateFunc: validation.IntBetween(2, 1000),
 			},
 			"max_ram": {
 				Description:  "Maximal RAM size in GB.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      500,
-				ValidateFunc: validation.IntBetween(2, 500),
+				ValidateFunc: validation.IntBetween(2, 2199),
 			},
 			"min_cpu": {
 				Description:  "Minimal CPU count.",

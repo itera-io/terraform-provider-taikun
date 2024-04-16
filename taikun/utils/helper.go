@@ -52,8 +52,8 @@ func I32toa(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
 }
 
-func GibiByteToByte(x int) float64 {
-	return float64(1073741824 * x)
+func GibiByteToByte(gibiBytes int) float64 {
+	return float64(1073741824) * float64(gibiBytes)
 }
 
 func ByteToGibiByte(x float64) int {
