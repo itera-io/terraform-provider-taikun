@@ -1,4 +1,4 @@
-package cc_gcp_tests
+package provider_tests
 
 import (
 	"context"

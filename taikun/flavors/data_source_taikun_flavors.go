@@ -97,8 +97,8 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	var startRAM float64
 	var endRAM float64
 
-	startRAM = utils.GibiByteToByte(d.Get("min_ram").(int))
-	endRAM = utils.GibiByteToByte(d.Get("max_ram").(int))
+	startRAM = utils.GibiByteToByte(d.Get("min_ram").(int)) - 100000 // 0.1 promile of a GibiByte. Correcting rounding errors from type conversion.
+	endRAM = utils.GibiByteToByte(d.Get("max_ram").(int)) + 100000   // 0.1 promile of a GibiByte. Correcting rounding errors from type conversion.
 
 	sortBy := "name"
 	sortDir := "asc"
