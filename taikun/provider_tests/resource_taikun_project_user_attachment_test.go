@@ -74,7 +74,7 @@ func testAccCheckTaikunProjectUserAttachmentExists(state *terraform.State) error
 			continue
 		}
 
-		projectId, userId, err := project.parseProjectUserAttachmentId(rs.Primary.ID)
+		projectId, userId, err := project.ParseProjectUserAttachmentId(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func testAccCheckTaikunProjectUserAttachmentDestroy(state *terraform.State) erro
 			continue
 		}
 
-		projectId, userId, err := project.parseProjectUserAttachmentId(rs.Primary.ID)
+		projectId, userId, err := project.ParseProjectUserAttachmentId(rs.Primary.ID)
 		if err != nil {
 			return err
 		}

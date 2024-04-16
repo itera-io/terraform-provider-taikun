@@ -525,7 +525,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		body.SetAutoscalingFlavor(autoscalerFlavor.(string))
 		body.SetMinSize(int32(autoscalerMin.(int)))
 		body.SetMaxSize(int32(autoscalerMax.(int)))
-		body.SetDiskSize(float64(utils.GibiByteToByte(autoscalerDisk.(int))))
+		body.SetDiskSize(utils.GibiByteToByte(autoscalerDisk.(int)))
 		body.SetAutoscalingEnabled(true)
 
 		if autoscalerSpotIsSet {
@@ -1140,7 +1140,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *tk.Clien
 	}
 
 	if vmVolume, ok := d.GetOk("quota_vm_volume_size"); ok {
-		body.SetVmVolumeSize(int64(vmVolume.(int))) // No conversion needed, API takes GBs
+		body.SetVmVolumeSize(float64(vmVolume.(int))) // No conversion needed, API takes GBs
 	}
 
 	_, err = apiClient.Client.ProjectQuotasAPI.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
@@ -1204,7 +1204,7 @@ func flattenTaikunProject(
 		"autoscaler_flavor":       projectDetailsDTO.GetFlavor(),
 		"autoscaler_min_size":     projectDetailsDTO.GetMinSize(),
 		"autoscaler_max_size":     projectDetailsDTO.GetMaxSize(),
-		"autoscaler_disk_size":    utils.ByteToGibiByte(int64(projectDetailsDTO.GetDiskSize())),
+		"autoscaler_disk_size":    utils.ByteToGibiByte(projectDetailsDTO.GetDiskSize()),
 		"autoscaler_spot_enabled": projectDetailsDTO.GetIsAutoscalingSpotEnabled(),
 		"spot_full":               projectDetailsDTO.GetAllowFullSpotKubernetes(),
 		"spot_worker":             projectDetailsDTO.GetAllowSpotWorkers(),

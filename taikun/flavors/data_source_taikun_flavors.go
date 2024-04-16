@@ -97,13 +97,8 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	var startRAM float64
 	var endRAM float64
 
-	if cloudType == string(tkcore.CLOUDTYPE_GOOGLE) || cloudType == string(tkcore.CLOUDTYPE_PROXMOX) || cloudType == string(tkcore.CLOUDTYPE_VSPHERE) {
-		startRAM = float64(utils.GibiByteToByte(d.Get("min_ram").(int))) - 1000 // Rounding errors prevent recognising interval starting and ending in same numbers
-		endRAM = float64(utils.GibiByteToByte(d.Get("max_ram").(int))) + 1000   // Rounding errors prevent recognising interval starting and ending in same numbers
-	} else {
-		startRAM = float64(utils.GibiByteToMebiByte(int32(d.Get("min_ram").(int))))
-		endRAM = float64(utils.GibiByteToMebiByte(int32(d.Get("max_ram").(int))))
-	}
+	startRAM = utils.GibiByteToByte(d.Get("min_ram").(int))
+	endRAM = utils.GibiByteToByte(d.Get("max_ram").(int))
 
 	sortBy := "name"
 	sortDir := "asc"
@@ -166,7 +161,7 @@ func flattenDataSourceTaikunFlavorsAWSItem(flavorDTO *tkcore.FlavorsListDto) map
 	return map[string]interface{}{
 		"cpu":  flavorDTO.GetCpu(),
 		"name": flavorDTO.GetName(),
-		"ram":  utils.MebiByteToGibiByte(flavorDTO.GetRam()),
+		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
 	}
 }
 
@@ -174,7 +169,7 @@ func flattenDataSourceTaikunFlavorsAzureItem(flavorDTO *tkcore.FlavorsListDto) m
 	return map[string]interface{}{
 		"cpu":  flavorDTO.GetCpu(),
 		"name": flavorDTO.GetName(),
-		"ram":  flavorDTO.GetRam(),
+		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
 	}
 }
 
@@ -182,7 +177,7 @@ func flattenDataSourceTaikunFlavorsOpenStackItem(flavorDTO *tkcore.FlavorsListDt
 	return map[string]interface{}{
 		"cpu":  flavorDTO.GetCpu(),
 		"name": flavorDTO.GetName(),
-		"ram":  utils.MebiByteToGibiByte(flavorDTO.GetRam()),
+		"ram":  utils.ByteToGibiByte(flavorDTO.GetRam()),
 	}
 }
 

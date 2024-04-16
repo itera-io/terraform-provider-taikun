@@ -52,21 +52,12 @@ func I32toa(x int32) string {
 	return strconv.FormatInt(int64(x), 10)
 }
 
-func GibiByteToMebiByte(x int32) int32 {
-	return x * 1024
+func GibiByteToByte(x int) float64 {
+	return float64(1073741824 * x)
 }
 
-func MebiByteToGibiByte(x int64) int32 {
-	var kibi int64 = 1024
-	return int32(x / kibi)
-}
-
-func GibiByteToByte(x int) int64 {
-	return int64(1073741824 * x)
-}
-
-func ByteToGibiByte(x int64) int64 {
-	return x / 1073741824
+func ByteToGibiByte(x float64) int {
+	return int(x / 1073741824)
 }
 
 func StringIsInt(i interface{}, path cty.Path) diag.Diagnostics {

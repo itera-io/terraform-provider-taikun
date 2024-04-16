@@ -88,7 +88,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 
 		id := d.Id()
 		d.SetId("")
-		projectId, userId, err := parseProjectUserAttachmentId(id)
+		projectId, userId, err := ParseProjectUserAttachmentId(id)
 		if err != nil {
 			return diag.Errorf("Error while reading taikun_project_user_attachment : %s", err)
 		}
@@ -134,7 +134,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
-	projectId, userId, err := parseProjectUserAttachmentId(d.Id())
+	projectId, userId, err := ParseProjectUserAttachmentId(d.Id())
 	if err != nil {
 		return diag.Errorf("Error while deleting taikun_project_user_attachment : %s", err)
 	}
@@ -175,7 +175,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 	return nil
 }
 
-func parseProjectUserAttachmentId(id string) (int32, string, error) {
+func ParseProjectUserAttachmentId(id string) (int32, string, error) {
 	list := strings.Split(id, "/")
 	if len(list) != 2 {
 		return 0, "", fmt.Errorf("unable to determine taikun_project_user_attachment ID")
