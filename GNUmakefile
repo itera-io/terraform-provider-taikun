@@ -57,7 +57,7 @@ ACCEPTANCE_TESTS='(TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaik
 rtestacc:
 	date
 	go clean -testcache
-	TF_ACC=1 go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 120m
+	TF_ACC=1 go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 120m
 
 rtestacc1:
 	date

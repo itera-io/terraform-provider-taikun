@@ -217,7 +217,7 @@ jobs:
         env:
           GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
         run: |
-          echo "$GCP_CONFIG_FILE" > ./taikun/provider_tests/gcp.json
+          echo "$GCP_CONFIG_FILE" > ./taikun/cc_gcp/testing/gcp.json
       - name: TF acceptance tests
         run: |
           date
@@ -266,7 +266,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2b:
     name: 2b) Openstack VM, update IP
@@ -289,7 +289,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2c:
     name: 2c) Openstack VM, update flavor
@@ -312,7 +312,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2d:
     name: 2d) Openstack VM, volume type
@@ -335,7 +335,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3a:
     name: 3a) AWS VM, minimal
@@ -358,7 +358,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3b:
     name: 3b) AWS VM, update flavor
@@ -381,7 +381,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4a:
     name: 4a) Azure VM, minimal
@@ -404,7 +404,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4b:
     name: 4b) Azure VM, update flavor
@@ -427,7 +427,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4c:
     name: 4c) Azure VM, volume type
@@ -450,7 +450,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test6a:
     name: 6a) Proxmox VM, minimal
@@ -473,7 +473,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneProxmoxMinimal$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test5a:
     name: 5a) Openstack, k8s
@@ -496,7 +496,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
-          go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   slackWebhook:
     name: End) Send feedback to slack

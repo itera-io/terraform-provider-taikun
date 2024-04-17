@@ -6,7 +6,7 @@ attempt=1
 # While loop will run until the command succeeds or we've made 3 attempts
 while true; do
     # Run the command
-    go test . ./taikun/provider_tests -v -run ${ACCEPTANCE_TESTS} -timeout 30m -p 1
+    go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m -p 1
 
     # If the command was successful, break out of the loop
     if [ $? -eq 0 ]; then
