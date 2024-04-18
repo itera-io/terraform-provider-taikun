@@ -43,13 +43,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"auto_upgrade": {
-			Description: "If enabled, the Kubespray version will be automatically upgraded when a new version is available.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-			ForceNew:    true,
-		},
 		"backup_credential_id": {
 			Description:      "ID of the backup credential. If unspecified, backups are disabled.",
 			Type:             schema.TypeString,
@@ -421,9 +414,6 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		body.SetIsBackupEnabled(true)
 		backupCredential, _ := utils.Atoi32(backupCredentialID.(string))
 		body.SetS3CredentialId(backupCredential)
-	}
-	if enableAutoUpgrade, enableAutoUpgradeIsSet := d.GetOk("auto_upgrade"); enableAutoUpgradeIsSet {
-		body.SetIsAutoUpgrade(enableAutoUpgrade.(bool))
 	}
 	if enableMonitoring, enableMonitoringIsSet := d.GetOk("monitoring"); enableMonitoringIsSet {
 		body.SetIsMonitoringEnabled(enableMonitoring.(bool))
@@ -1182,7 +1172,6 @@ func flattenTaikunProject(
 		"access_profile_id":       utils.I32toa(projectDetailsDTO.GetAccessProfileId()),
 		"alerting_profile_name":   projectDetailsDTO.GetAlertingProfileName(),
 		"cloud_credential_id":     utils.I32toa(projectDetailsDTO.GetCloudId()),
-		"auto_upgrade":            projectDetailsDTO.GetIsAutoUpgrade(),
 		"monitoring":              projectDetailsDTO.GetIsMonitoringEnabled(),
 		"delete_on_expiration":    projectDeleteOnExpiration,
 		"expiration_date":         utils.Rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),

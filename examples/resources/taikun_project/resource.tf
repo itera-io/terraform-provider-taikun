@@ -45,7 +45,6 @@ resource "taikun_project" "foobar" {
   policy_profile_id     = resource.taikun_policy_profile.foo.id
 
   expiration_date = "21/12/2012"
-  auto_upgrade    = true
   monitoring      = true
 
   quota_cpu_units = 64

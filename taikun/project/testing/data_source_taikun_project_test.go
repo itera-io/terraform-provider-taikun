@@ -18,7 +18,6 @@ resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
 
-  auto_upgrade = %t
   monitoring = %t
   expiration_date = "%s"
 }
@@ -31,7 +30,6 @@ data "taikun_project" "foo" {
 func TestAccDataSourceTaikunProject(t *testing.T) {
 	cloudCredentialName := utils.RandomTestName()
 	projectName := utils.RandomTestName()
-	enableAutoUpgrade := true
 	enableMonitoring := false
 	expirationDate := "01/04/2999"
 
@@ -43,7 +41,6 @@ func TestAccDataSourceTaikunProject(t *testing.T) {
 				Config: fmt.Sprintf(testAccDataSourceTaikunProjectConfig,
 					cloudCredentialName,
 					projectName,
-					enableAutoUpgrade,
 					enableMonitoring,
 					expirationDate),
 				Check: utils_testing.CheckDataSourceStateMatchesResourceState(
