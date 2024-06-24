@@ -82,7 +82,6 @@ resource "taikun_project" "foobar" {
   policy_profile_id     = resource.taikun_policy_profile.foo.id
 
   expiration_date = "21/12/2012"
-  auto_upgrade    = true
   monitoring      = true
 
   quota_cpu_units = 64
@@ -159,7 +158,6 @@ resource "taikun_project" "foobar" {
 
 - `access_profile_id` (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
 - `alerting_profile_id` (String) ID of the project's alerting profile.
-- `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available. Defaults to `false`.
 - `autoscaler_disk_size` (Number) Disk size of autoscaler in GB (specify together with all other autoscaler parameters). Required with: `autoscaler_name`, `autoscaler_flavor`, `autoscaler_max_size`, `autoscaler_min_size`.
 - `autoscaler_flavor` (String) Flavor of workers created by autoscaler (specify together with all other autoscaler parameters). Required with: `autoscaler_name`, `autoscaler_disk_size`, `autoscaler_max_size`, `autoscaler_min_size`.
 - `autoscaler_max_size` (Number) Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters). Required with: `autoscaler_name`, `autoscaler_flavor`, `autoscaler_disk_size`, `autoscaler_min_size`.
