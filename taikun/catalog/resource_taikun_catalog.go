@@ -377,7 +377,7 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	return nil
 }
 
-// TODO
+// Unbind apps that should be unbound, bind apps that should be bound
 func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCatalogApplicationsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	oldApplications := oldCatalogApplicationsBound.(*schema.Set)
@@ -399,7 +399,6 @@ func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCata
 	// New applications that we should create
 	toAdd := newApplications.Difference(oldApplications)
 	for _, app := range toAdd.List() {
-		//panic(fmt.Errorf("Adding application\nRepo: %v\nPackageName: %v\nId: %v\n", app.(map[string]interface{})["repository"], app.(map[string]interface{})["name"], catalogId))
 		catalogAppToCreate := tkcore.CreateCatalogAppCommand{}
 		catalogAppToCreate.SetCatalogId(catalogId)
 		catalogAppToCreate.SetRepoName(app.(map[string]interface{})["repository"].(string))

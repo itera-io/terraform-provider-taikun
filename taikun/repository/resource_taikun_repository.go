@@ -228,8 +228,8 @@ func flattenTaikunRepository(rawRepository *tkcore.ArtifactRepositoryDto) map[st
 		"id":                rawRepository.GetRepositoryId(),
 		"name":              rawRepository.GetName(),
 		"organization_name": rawRepository.GetOrganizationName(),
-		"private":           !rawRepository.GetOfficial(), // #TODO Does official really mean private?
-		"url":               private_url_or_empty,         // Ignore changes for URL for public repository
+		"private":           !rawRepository.GetOfficial(),
+		"url":               private_url_or_empty, // Ignore changes for URL for public repository
 		"enabled":           rawRepository.GetIsBound(),
 	}
 }
