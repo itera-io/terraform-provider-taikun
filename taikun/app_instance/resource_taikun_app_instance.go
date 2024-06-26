@@ -63,7 +63,7 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: utils.StringIsInt,
 		},
 		"parameters_yaml": {
-			Description:      "A valid yaml file that includes the parameters for the application.",
+			Description:      "A path to a valid yaml file that includes the parameters for the application.",
 			Type:             schema.TypeString,
 			Optional:         true,
 			ValidateDiagFunc: utils.StringIsFilePath,

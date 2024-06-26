@@ -23,6 +23,9 @@ func NewNullableFloat64(s float64) tkcore.NullableFloat64 {
 
 // Read file contents, encode in base64 and return
 func FilePathToBase64String(filePath string) (string, error) {
+	if filePath == "" {
+		return "", nil
+	}
 	fileContents, err := os.ReadFile(filePath)
 	if err != nil {
 		return "", err
