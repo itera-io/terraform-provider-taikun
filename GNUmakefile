@@ -30,7 +30,7 @@ testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 # --- Radek's rigorous testing here ---
-ACCEPTANCE_TESTS='(TestAccDataSourceTaikunFlavorsOpenStack|TestAccDataSourceTaikunFlavorsAzure|TestAccDataSourceTaikunFlavorsAWS)'
+ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectMinimal|TestAccResourceTaikunRepository|TestAccDataSourceTaikunRepository|TestAccDataSourceTaikunCatalog|TestAccResourceTaikunCatalog)'
 
 # --- CI: Not creating resources ---
 # Acklowledgment testing ALPHA
