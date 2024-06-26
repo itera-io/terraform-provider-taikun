@@ -140,7 +140,7 @@ func resourceTaikunRepositoryCreate(ctx context.Context, d *schema.ResourceData,
 		body_private.SetUsername(username_private)
 		body_private.SetPassword(password_private)
 
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
