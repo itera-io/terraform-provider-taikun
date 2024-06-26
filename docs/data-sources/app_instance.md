@@ -29,7 +29,7 @@ data "taikun_app_instance" "foo" {
 - `catalog_app_id` (String) The ID of the catalog app from which we deploy the application.
 - `name` (String) The name of the application instance.
 - `namespace` (String) Namespace where the application will be deployed.
-- `parameters_yaml` (String) A valid yaml file that includes the parameters for the application.
+- `parameters_yaml` (String) A path to a valid yaml file that includes the parameters for the application.
 - `project_id` (String) The ID of the project where the application should be deployed.
 
 
