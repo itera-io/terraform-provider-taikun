@@ -166,6 +166,21 @@ func StringIsUUID(i interface{}, path cty.Path) diag.Diagnostics {
 	return nil
 }
 
+func StringLenBetween(min int, max int) schema.SchemaValidateDiagFunc {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
+		v, ok := i.(string)
+		if !ok {
+			return diag.FromErr(path.NewErrorf("expected type to be string"))
+		}
+
+		if len(v) < min || len(v) > max {
+			return diag.FromErr(fmt.Errorf("expected length of %d to be in the range (%d - %d), got %s", len(v), min, max, v))
+		}
+
+		return nil
+	}
+}
+
 func ResourceGetStringList(data interface{}) []string {
 	rawList := data.([]interface{})
 	result := make([]string, 0)

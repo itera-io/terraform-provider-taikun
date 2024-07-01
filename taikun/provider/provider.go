@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/itera-io/terraform-provider-taikun/taikun/access_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/alerting_profile"
+	"github.com/itera-io/terraform-provider-taikun/taikun/app_instance"
 	"github.com/itera-io/terraform-provider-taikun/taikun/backup_credential"
 	"github.com/itera-io/terraform-provider-taikun/taikun/backup_policy"
 	"github.com/itera-io/terraform-provider-taikun/taikun/billing"
+	"github.com/itera-io/terraform-provider-taikun/taikun/catalog"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_aws"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_azure"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_gcp"
@@ -20,6 +22,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/organization"
 	"github.com/itera-io/terraform-provider-taikun/taikun/policy_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/project"
+	"github.com/itera-io/terraform-provider-taikun/taikun/repository"
 	"github.com/itera-io/terraform-provider-taikun/taikun/showback"
 	"github.com/itera-io/terraform-provider-taikun/taikun/slack"
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
@@ -86,12 +89,16 @@ func Provider() *schema.Provider {
 			"taikun_access_profiles":             access_profile.DataSourceTaikunAccessProfiles(),
 			"taikun_alerting_profile":            alerting_profile.DataSourceTaikunAlertingProfile(),
 			"taikun_alerting_profiles":           alerting_profile.DataSourceTaikunAlertingProfiles(),
+			"taikun_app_instance":                app_instance.DataSourceTaikunAppInstance(),
+			"taikun_app_instances":               app_instance.DataSourceTaikunAppInstances(),
 			"taikun_backup_credential":           backup_credential.DataSourceTaikunBackupCredential(),
 			"taikun_backup_credentials":          backup_credential.DataSourceTaikunBackupCredentials(),
 			"taikun_billing_credential":          billing.DataSourceTaikunBillingCredential(),
 			"taikun_billing_credentials":         billing.DataSourceTaikunBillingCredentials(),
 			"taikun_billing_rule":                billing.DataSourceTaikunBillingRule(),
 			"taikun_billing_rules":               billing.DataSourceTaikunBillingRules(),
+			"taikun_catalog":                     catalog.DataSourceTaikunCatalog(),
+			"taikun_catalogs":                    catalog.DataSourceTaikunCatalogs(),
 			"taikun_cloud_credential_aws":        cc_aws.DataSourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":      cc_azure.DataSourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":        cc_gcp.DataSourceTaikunCloudCredentialGCP(),
@@ -121,6 +128,8 @@ func Provider() *schema.Provider {
 			"taikun_policy_profiles":             policy_profile.DataSourceTaikunPolicyProfiles(),
 			"taikun_project":                     project.DataSourceTaikunProject(),
 			"taikun_projects":                    project.DataSourceTaikunProjects(),
+			"taikun_repository":                  repository.DataSourceTaikunRespository(),
+			"taikun_repositories":                repository.DataSourceTaikunRepositories(),
 			"taikun_showback_credential":         showback.DataSourceTaikunShowbackCredential(),
 			"taikun_showback_credentials":        showback.DataSourceTaikunShowbackCredentials(),
 			"taikun_showback_rule":               showback.DataSourceTaikunShowbackRule(),
@@ -136,10 +145,12 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"taikun_access_profile":                       access_profile.ResourceTaikunAccessProfile(),
 			"taikun_alerting_profile":                     alerting_profile.ResourceTaikunAlertingProfile(),
+			"taikun_app_instance":                         app_instance.ResourceTaikunAppInstance(),
 			"taikun_backup_credential":                    backup_credential.ResourceTaikunBackupCredential(),
 			"taikun_backup_policy":                        backup_policy.ResourceTaikunBackupPolicy(),
 			"taikun_billing_credential":                   billing.ResourceTaikunBillingCredential(),
 			"taikun_billing_rule":                         billing.ResourceTaikunBillingRule(),
+			"taikun_catalog":                              catalog.ResourceTaikunCatalog(),
 			"taikun_cloud_credential_aws":                 cc_aws.ResourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":               cc_azure.ResourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":                 cc_gcp.ResourceTaikunCloudCredentialGCP(),
@@ -153,6 +164,7 @@ func Provider() *schema.Provider {
 			"taikun_policy_profile":                       policy_profile.ResourceTaikunPolicyProfile(),
 			"taikun_project":                              project.ResourceTaikunProject(),
 			"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(),
+			"taikun_repository":                           repository.ResourceTaikunRepository(),
 			"taikun_showback_credential":                  showback.ResourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        showback.ResourceTaikunShowbackRule(),
 			"taikun_slack_configuration":                  slack.ResourceTaikunSlackConfiguration(),

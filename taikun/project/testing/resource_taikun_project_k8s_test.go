@@ -453,6 +453,32 @@ resource "taikun_policy_profile" "foo" {
   unique_service_selector = %t
 
 }
+
+// Create a catalog, bind one app and the project above
+resource "taikun_catalog" "foo" {
+  name="tf-acc-catalog"
+  description="Created by terraform for test app deployment."
+  projects=[resource.taikun_project.foo.id]
+  
+  application {
+    name="apache"
+    repository="taikun-managed-apps"
+  }
+}
+
+// Finally create app instance
+resource "taikun_app_instance" "foo" {
+  name="tf-acc-apache"
+  namespace="apache-ns"
+  project_id=resource.taikun_project.foo.id // The project above
+  catalog_app_id=local.app_id     // The app selected below, from the catalog above
+}
+
+// Selecting the app (get id ofo app bound to the catalog from name and org)
+locals {
+  app_id = [for app in tolist(taikun_catalog.foo.application) :
+    app.id if app.name == "apache" && app.repository == "taikun-managed-apps" ][0]
+}
 `
 
 func TestAccResourceTaikunProjectMinimal(t *testing.T) {
@@ -505,6 +531,9 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "64"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "256"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "512"),
+					resource.TestCheckResourceAttr("taikun_app_instance.foo", "name", "tf-acc-apache"),
+					resource.TestCheckResourceAttr("taikun_app_instance.foo", "namespace", "apache-ns"),
+					resource.TestCheckResourceAttrSet("taikun_app_instance.foo", "id"),
 				),
 			},
 			{

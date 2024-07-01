@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** To use the `taikun_alerting_profile` resource, you need a Manager or Partner account.
+
+-> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
+
+## Persistent volume claims are left in cluster
+To preserve user data, we don't destroy the PVCs created by applications. This is expected behavior.
+If you create and destroy an app with Terraform with the same configuration, the app can fail because of binding to the old PVC.
+
+## Example Usage
+
+{{tffile "examples/resources/taikun_app_instance/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}

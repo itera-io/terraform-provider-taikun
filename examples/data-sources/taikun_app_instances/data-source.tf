@@ -1,0 +1,1 @@
+data "taikun_app_instances" "foo" {}
