@@ -289,7 +289,8 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 }
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
-	res, err := apiClient.Client.ProjectsAPI.ProjectsCommit(context.TODO(), projectID).Execute()
+	commitCommand := &tkcore.ProjectDeploymentCommitCommand{ProjectId: &projectID}
+	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(context.TODO()).ProjectDeploymentCommitCommand(*commitCommand).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -310,11 +311,11 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 	}
 
 	if len(serverIds) != 0 {
-		deleteServerBody := tkcore.DeleteServerCommand{}
+		deleteServerBody := tkcore.ProjectDeploymentDeleteServersCommand{}
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetServerIds(serverIds)
 
-		res, err := apiClient.Client.ServersAPI.ServersDelete(context.TODO()).DeleteServerCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -353,16 +354,81 @@ func resourceTaikunProjectUpdateToggleServices(ctx context.Context, d *schema.Re
 }
 
 func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client) error {
+	//if d.HasChange("monitoring") {
+	//	projectID, _ := utils.Atoi32(d.Id())
+	//	//body := tkcore.MonitoringOperationsCommand{}
+	//	//body.SetProjectId(projectID)
+	//	//res, err := apiClient.Client.ProjectsAPI.ProjectsMonitoring(ctx).MonitoringOperationsCommand(body).Execute()
+	//	body := tkcore.ApiProjectDeploymentEnableMonitoringRequest{}
+	//	body.SetProjectId(projectID)
+	//	res, err := apiClient.Client.ProjectsAPI.ProjectsMonitoring(ctx).MonitoringOperationsCommand(body).Execute()
+	//	if err != nil {
+	//		return tk.CreateError(res, err)
+	//	}
+	//
+	//	if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableMonitoring", "DisableMonitoring"}, apiClient, projectID); err != nil {
+	//		return err
+	//	}
+	//}
+	//return nil
 	if d.HasChange("monitoring") {
 		projectID, _ := utils.Atoi32(d.Id())
-		body := tkcore.MonitoringOperationsCommand{}
-		body.SetProjectId(projectID)
-		res, err := apiClient.Client.ProjectsAPI.ProjectsMonitoring(ctx).MonitoringOperationsCommand(body).Execute()
+
+		// Get the current state of monitoring. If its already disabled, skip disabling query.
+		data, response, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
 		if err != nil {
-			return tk.CreateError(res, err)
+			return tk.CreateError(response, err)
+		}
+		project := data.GetProject()
+		monitoringCurrentyEnabled := project.GetIsMonitoringEnabled()
+		if monitoringCurrentyEnabled {
+			disableBody := tkcore.DeploymentDisableMonitoringCommand{}
+			disableBody.SetProjectId(projectID)
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(context.TODO()).DeploymentDisableMonitoringCommand(disableBody).Execute()
+			if err != nil {
+				return tk.CreateError(res, err)
+			}
 		}
 
-		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableMonitoring", "DisableMonitoring"}, apiClient, projectID); err != nil {
+		_, newMonitoringIsSet := d.GetOk("monitoring")
+
+		if newMonitoringIsSet {
+			// Wait for the backup to be disabled
+			disableStateConf := &retry.StateChangeConf{
+				Pending: []string{
+					strconv.FormatBool(true),
+				},
+				Target: []string{
+					strconv.FormatBool(false),
+				},
+				Refresh: func() (interface{}, string, error) {
+					response, _, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
+					if err != nil {
+						return 0, "", err
+					}
+					project := response.GetProject()
+
+					return response, strconv.FormatBool(project.GetIsBackupEnabled()), nil
+				},
+				Timeout:                   5 * time.Minute,
+				Delay:                     2 * time.Second,
+				MinTimeout:                5 * time.Second,
+				ContinuousTargetOccurence: 1,
+			}
+			_, err := disableStateConf.WaitForStateContext(ctx)
+			if err != nil {
+				return fmt.Errorf("error waiting for project (%s) to enable monitoring: %s", d.Id(), err)
+			}
+
+			enableBody := tkcore.DeploymentEnableMonitoringCommand{}
+			enableBody.SetProjectId(projectID)
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(context.TODO()).DeploymentEnableMonitoringCommand(enableBody).Execute()
+			if err != nil {
+				return tk.CreateError(res, err)
+			}
+		}
+
+		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"EnableBackup", "DisableBackup"}, apiClient, projectID); err != nil {
 			return err
 		}
 	}
@@ -381,9 +447,9 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 		project := data.GetProject()
 		backupCurrentyEnabled := project.GetIsBackupEnabled()
 		if backupCurrentyEnabled {
-			disableBody := tkcore.DisableBackupCommand{}
+			disableBody := tkcore.DeploymentDisableBackupCommand{}
 			disableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.BackupPolicyAPI.BackupDisableBackup(ctx).DisableBackupCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(context.TODO()).DeploymentDisableBackupCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -422,11 +488,10 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 				return fmt.Errorf("error waiting for project (%s) to disable backup: %s", d.Id(), err)
 			}
 
-			enableBody := tkcore.EnableBackupCommand{}
+			enableBody := tkcore.DeploymentEnableBackupCommand{}
 			enableBody.SetProjectId(projectID)
 			enableBody.SetS3CredentialId(newCredentialID)
-
-			res, err := apiClient.Client.BackupPolicyAPI.BackupEnableBackup(ctx).EnableBackupCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(context.TODO()).DeploymentEnableBackupCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -446,10 +511,11 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 
 		if oldOPAProfile != "" {
 
-			disableBody := tkcore.DisableGatekeeperCommand{}
+			disableBody := tkcore.DeploymentDisableOpaCommand{}
 			disableBody.SetProjectId(projectID)
 
-			res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesDisableGatekeeper(ctx).DisableGatekeeperCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableOpa(ctx).DeploymentDisableOpaCommand(disableBody).Execute()
+
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -489,11 +555,11 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 				return fmt.Errorf("error waiting for project (%s) to disable OPA: %s", d.Id(), err)
 			}
 
-			enableBody := tkcore.EnableGatekeeperCommand{}
+			enableBody := tkcore.DeploymentOpaEnableCommand{}
 			enableBody.SetProjectId(projectID)
-			enableBody.SetOpaProfileId(newOPAProfilelID)
+			enableBody.SetOpaCredentialId(newOPAProfilelID)
 
-			res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesEnableGatekeeper(ctx).EnableGatekeeperCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableOpa(ctx).DeploymentOpaEnableCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}

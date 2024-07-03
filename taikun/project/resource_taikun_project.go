@@ -871,11 +871,11 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 					serverIds = append(serverIds, kubeWorkerId)
 				}
 
-				deleteServerBody := tkcore.DeleteServerCommand{}
+				deleteServerBody := tkcore.ProjectDeploymentDeleteServersCommand{}
 				deleteServerBody.SetProjectId(id)
 				deleteServerBody.SetServerIds(serverIds)
 
-				_, err = apiClient.Client.ServersAPI.ServersDelete(ctx).DeleteServerCommand(deleteServerBody).Execute()
+				_, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 				if err != nil {
 					return diag.FromErr(err)
 				}

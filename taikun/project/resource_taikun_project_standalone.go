@@ -375,11 +375,11 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if len(vmIds) != 0 {
-		deleteServerBody := tkcore.DeleteStandAloneVmCommand{}
+		deleteServerBody := tkcore.ProjectDeploymentDeleteVmsCommand{}
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetVmIds(vmIds)
 
-		res, err := apiClient.Client.StandaloneAPI.StandaloneDelete(ctx).DeleteStandAloneVmCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVms(ctx).ProjectDeploymentDeleteVmsCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -464,9 +464,10 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 		// Shouldn't happen
 	}
 	if repairNeeded {
-		body := tkcore.RepairStandAloneVmCommand{}
+		body := tkcore.ProjectDeploymentRepairVmCommand{}
 		body.SetProjectId(projectID)
-		res, err := apiClient.Client.StandaloneAPI.StandaloneRepair(ctx).RepairStandAloneVmCommand(body).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentRepairVm(ctx).ProjectDeploymentRepairVmCommand(body).Execute()
+
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -650,9 +651,9 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 }
 
 func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
-	body := tkcore.CommitStandAloneVmCommand{}
+	body := tkcore.DeploymentCommitVmCommand{}
 	body.SetProjectId(projectID)
-	res, err := apiClient.Client.StandaloneAPI.StandaloneCommit(context.TODO()).CommitStandAloneVmCommand(body).Execute()
+	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommitVm(context.TODO()).DeploymentCommitVmCommand(body).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -732,11 +733,12 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Clien
 	}
 
 	if len(vmIds) != 0 {
-		deleteServerBody := tkcore.DeleteStandAloneVmCommand{}
+		deleteServerBody := tkcore.ProjectDeploymentDeleteVmsCommand{}
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetVmIds(vmIds)
 
-		res, err := apiClient.Client.StandaloneAPI.StandaloneDelete(context.TODO()).DeleteStandAloneVmCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVms(context.TODO()).ProjectDeploymentDeleteVmsCommand(deleteServerBody).Execute()
+
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
