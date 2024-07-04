@@ -27,6 +27,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/slack"
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/user"
+	"github.com/itera-io/terraform-provider-taikun/taikun/virtual_cluster"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -170,6 +171,7 @@ func Provider() *schema.Provider {
 			"taikun_slack_configuration":                  slack.ResourceTaikunSlackConfiguration(),
 			"taikun_standalone_profile":                   standalone_profile.ResourceTaikunStandaloneProfile(),
 			"taikun_user":                                 user.ResourceTaikunUser(),
+			"taikun_virtual_cluster":                      virtual_cluster.ResourceTaikunVirtualCluster(),
 			//"taikun_cloud_credential":                     taikun.resourceTaikunCloudCredential(), // DEPRECATED
 
 		},
