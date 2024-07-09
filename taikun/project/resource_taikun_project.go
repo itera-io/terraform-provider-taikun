@@ -188,7 +188,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Maximum volume size in GBs for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      2000, // 2 TB
+			Default:      2048, // 2 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_ram_size": {

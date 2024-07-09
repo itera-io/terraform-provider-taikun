@@ -192,7 +192,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterName string, parentI
 
 			return data, foundMatch, nil
 		},
-		Timeout:    15 * time.Minute,
+		Timeout:    45 * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
