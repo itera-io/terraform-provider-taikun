@@ -133,7 +133,14 @@ func generateResourceTaikunVirtualClusterRead() schema.ReadContextFunc {
 			}
 		}
 		if !foundMatch {
-			return diag.FromErr(fmt.Errorf("Created Virtual project not found in Taikun response."))
+			// The Created virtual project was not found on the server. This probably means it got deleted from Taikun. It needs to be created again.
+			//return diag.FromErr(fmt.Errorf("Created Virtual project not found in Taikun response."))
+			d.SetId("")
+			_ = d.Set("name", "")
+			_ = d.Set("parent_id", "")
+			_ = d.Set("hostname", "")
+			_ = d.Set("hostname_generated", "")
+			return nil
 		}
 
 		// Load all the found data to the local object
