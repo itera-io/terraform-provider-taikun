@@ -314,6 +314,8 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 		deleteServerBody := tkcore.ProjectDeploymentDeleteServersCommand{}
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetServerIds(serverIds)
+		deleteServerBody.SetForceDeleteVClusters(true)
+		deleteServerBody.SetDeleteAutoscalingServers(true)
 
 		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 		if err != nil {
