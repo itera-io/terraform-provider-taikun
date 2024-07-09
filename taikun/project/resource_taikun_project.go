@@ -160,42 +160,42 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Maximum CPU units.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      1000000,
+			Default:      300,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_disk_size": {
 			Description:  "Maximum disk size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      102400, // 100 TB
+			Default:      2048, // 2048 GB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_ram_size": {
 			Description:  "Maximum RAM size in GBs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      102400, // 100 TB
+			Default:      500, // 500 GB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_cpu_units": {
 			Description:  "Maximum CPU units for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      1000000,
+			Default:      300,
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_volume_size": {
 			Description:  "Maximum volume size in GBs for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      102400, // 100 TB
+			Default:      2000, // 2 TB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"quota_vm_ram_size": {
 			Description:  "Maximum RAM size in GBs for standalone VMs.",
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Default:      102400, // 100 TB
+			Default:      500, // 500 GB
 			ValidateFunc: validation.IntAtLeast(0),
 		},
 		"router_id_end_range": {
@@ -490,7 +490,7 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	autoscalerDisk, autoscalerDiskIsSet := d.GetOk("autoscaler_disk_size")
 	autoscalerSpot, autoscalerSpotIsSet := d.GetOk("autoscaler_spot_enabled")
 
-	// If we would specify a flavor not bound to project, Taikun would bind it for us
+	// If we specified a flavor not bound to project, Taikun would bind it for us
 	// - terraform would be very confused by this since it did not bind the flavor.
 	// For that reason Taikun TF proivder forbids to specify autoscaler flavor outside of bound flavors.
 	if autoscalerFlavor != "" {
