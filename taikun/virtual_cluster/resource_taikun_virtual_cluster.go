@@ -100,38 +100,95 @@ func resourceTaikunVirtualClusterCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(tk.CreateError(response, err))
 	}
 
-	err = resourceTaikunVirtualClusterWaitForReady(name, parentId, ctx, meta)
+	// Get ID of newly created project
+	err = loadVirtualClusterId(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	virtualClusterId, err := utils.Atoi32(d.Get("id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	// Monitor project state with ID
+	err = resourceTaikunVirtualClusterWaitForReady(virtualClusterId, ctx, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Once project is ready, read all information about it.
 	return utils.ReadAfterCreateWithRetries(generateResourceTaikunVirtualClusterRead(), ctx, d, meta)
 }
 
+// From [Parent Project ID] and [Virtual Cluster Name] find the ID of the Virtual project and load it into schema (d)
+func loadVirtualClusterId(d *schema.ResourceData, meta interface{}) error {
+	apiClient := meta.(*tk.Client)
+	var offset int32 = 0
+	virtualClusterName := d.Get("name").(string)
+	parentId, err := utils.Atoi32(d.Get("parent_id").(string))
+	if err != nil {
+		return err
+	}
+
+	params := apiClient.Client.VirtualClusterAPI.VirtualClusterList(context.TODO(), parentId).Search(virtualClusterName)
+
+	var virtualClustersList []tkcore.VClusterListDto
+	for {
+		response, res, err := params.Offset(offset).Execute()
+		if err != nil {
+			return tk.CreateError(res, err)
+		}
+		virtualClustersList = append(virtualClustersList, response.GetData()...)
+		if len(virtualClustersList) == int(response.GetTotalCount()) {
+			break
+		}
+		offset = int32(len(virtualClustersList))
+	}
+	foundMatch := false
+	for _, virtualProject := range virtualClustersList {
+		if virtualProject.GetName() == virtualClusterName {
+			foundMatch = true
+			d.SetId(utils.I32toa(virtualProject.GetId()))
+			err = d.Set("id", utils.I32toa(virtualProject.GetId()))
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+	if !foundMatch {
+		return fmt.Errorf("Could not find virtual cluster by its ID in Taikun.")
+	}
+
+	return nil
+}
+
+// For this to work, [Parent Project ID] and [Virtual Project ID] muset be set in schema (d).
 func generateResourceTaikunVirtualClusterRead() schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 
-		virtualClusterName := d.Get("name").(string)
 		parentId, err := utils.Atoi32(d.Get("parent_id").(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		virtualClusterId, err := utils.Atoi32(d.Get("id").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-		data, response, err := apiClient.Client.VirtualClusterAPI.VirtualClusterList(ctx, parentId).Search(virtualClusterName).Execute()
+		data, response, err := apiClient.Client.VirtualClusterAPI.VirtualClusterList(ctx, parentId).Id(virtualClusterId).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
 
 		foundMatch := false
 		var rawVirtualProject tkcore.VClusterListDto
-		for _, virtualProject := range data.GetData() {
-			if virtualProject.GetName() == virtualClusterName {
-				foundMatch = true
-				rawVirtualProject = virtualProject
-				break
-			}
+		if data.GetTotalCount() == 1 {
+			foundMatch = true
+			rawVirtualProject = data.GetData()[0]
 		}
+
 		if !foundMatch {
 			// The Created virtual project was not found on the server. This probably means it got deleted from Taikun. It needs to be created again.
 			//return diag.FromErr(fmt.Errorf("Created Virtual project not found in Taikun response."))
@@ -164,33 +221,30 @@ func flattenTaikunVirtualCluster(rawVirtualProject *tkcore.VClusterListDto) map[
 }
 
 // After we create a virtual cluster, we wait. It takes some time (~60s).
-func resourceTaikunVirtualClusterWaitForReady(virtualClusterName string, parentId int32, ctx context.Context, meta interface{}) error {
+func resourceTaikunVirtualClusterWaitForReady(virtualClusterId int32, ctx context.Context, meta interface{}) error {
 	apiClient := meta.(*tk.Client)
 
 	pendingStates := []string{"pending"}
 	targetStates := []string{"finished"}
 
-	// Try to get the virtual project
+	// Get virtual project and look at its state.
 	createStateConf := &retry.StateChangeConf{
 		Pending: pendingStates,
 		Target:  targetStates,
 		Refresh: func() (interface{}, string, error) {
-			data, response, err := apiClient.Client.VirtualClusterAPI.VirtualClusterList(ctx, parentId).Search(virtualClusterName).Execute()
+			data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(virtualClusterId).Execute()
 			if err != nil {
 				return nil, "", tk.CreateError(response, err)
 			}
-
-			foundMatch := "pending"
-			for _, virtualProject := range data.GetData() {
-				if virtualProject.GetName() == virtualClusterName {
-					if virtualProject.GetStatus() == tkcore.PROJECTSTATUS_READY {
-						foundMatch = "finished"
-						break
-					}
-				}
+			if data.GetTotalCount() != 1 {
+				return nil, "", fmt.Errorf("Could not find virtual cluster by id.")
 			}
 
-			return data, foundMatch, nil
+			foundMatch := "pending"
+			if data.GetData()[0].GetStatus() == tkcore.PROJECTSTATUS_READY {
+				foundMatch = "finished"
+			}
+			return data, foundMatch, err
 		},
 		Timeout:    45 * time.Minute,
 		Delay:      10 * time.Second,
@@ -199,7 +253,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterName string, parentI
 
 	_, err := createStateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for virtual cluster (%s) to be read: %s", virtualClusterName, err)
+		return fmt.Errorf("error waiting for virtual cluster (%s) to be read: %s", virtualClusterId, err)
 	}
 
 	return nil

@@ -141,6 +141,8 @@ func Provider() *schema.Provider {
 			"taikun_standalone_profiles":         standalone_profile.DataSourceTaikunStandaloneProfiles(),
 			"taikun_user":                        user.DataSourceTaikunUser(),
 			"taikun_users":                       user.DataSourceTaikunUsers(),
+			"taikun_virtual_cluster":             virtual_cluster.DataSourceTaikunVirtualCluster(),
+			"taikun_virtual_clusters":            virtual_cluster.DataSourceTaikunVirtualClusters(),
 			//"taikun_images":                      taikun.dataSourceTaikunImages(), // DEPRECATED
 		},
 		ResourcesMap: map[string]*schema.Resource{
