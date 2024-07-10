@@ -38,7 +38,7 @@ func dataSourceTaikunVirtualClusterRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(tk.CreateError(response, err))
 	}
 	if data.GetTotalCount() != 1 {
-		return diag.Errorf("There should be one, but we found %d virtual projects with specified ID.", data.TotalCount)
+		return diag.Errorf("There should be one, but we found %d virtual projects with ID %d.", data.GetTotalCount(), virtualClusterId)
 	}
 	err = d.Set("parent_id", utils.I32toa(data.GetData()[0].GetParentProjectId()))
 	if err != nil {

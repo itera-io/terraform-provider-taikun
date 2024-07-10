@@ -46,6 +46,13 @@ func resourceTaikunVirtualClusterSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"status": {
+			Description: "Do not set. Used for tracking remote virtual cluster failures.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
+		},
 	}
 }
 
@@ -189,14 +196,19 @@ func generateResourceTaikunVirtualClusterRead() schema.ReadContextFunc {
 			rawVirtualProject = data.GetData()[0]
 		}
 
+		// The Created virtual project was not found on the server. This probably means it got deleted from Taikun.
+		// Do not delete, just create it again.
 		if !foundMatch {
-			// The Created virtual project was not found on the server. This probably means it got deleted from Taikun. It needs to be created again.
-			//return diag.FromErr(fmt.Errorf("Created Virtual project not found in Taikun response."))
 			d.SetId("")
-			_ = d.Set("name", "")
-			_ = d.Set("parent_id", "")
-			_ = d.Set("hostname", "")
-			_ = d.Set("hostname_generated", "")
+			return nil
+		}
+		// Project was found in Failed state.
+		// Delete project and create it again.
+		if foundMatch && rawVirtualProject.GetStatus() == tkcore.PROJECTSTATUS_FAILURE {
+			err = d.Set("status", "Failed")
+			if err != nil {
+				return diag.FromErr(err)
+			}
 			return nil
 		}
 
