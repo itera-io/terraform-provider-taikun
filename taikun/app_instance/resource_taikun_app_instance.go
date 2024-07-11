@@ -182,13 +182,11 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), appId).Execute()
+		data, _, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), appId).Execute()
 		if err != nil {
-			if withRetries {
-				d.SetId(utils.I32toa(appId))
-				return diag.Errorf(utils.NotFoundAfterCreateOrUpdateError)
-			}
-			return diag.FromErr(tk.CreateError(response, err))
+			// Already destroyed/create again
+			d.SetId("")
+			return nil
 		}
 
 		// Load all the found data to the local object
