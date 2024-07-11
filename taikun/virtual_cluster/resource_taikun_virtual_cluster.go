@@ -265,7 +265,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterId int32, ctx contex
 
 	_, err := createStateConf.WaitForStateContext(ctx)
 	if err != nil {
-		return fmt.Errorf("error waiting for virtual cluster (%s) to be read: %s", virtualClusterId, err)
+		return fmt.Errorf("error waiting for virtual cluster (%d) to be read: %s", virtualClusterId, err)
 	}
 
 	return nil

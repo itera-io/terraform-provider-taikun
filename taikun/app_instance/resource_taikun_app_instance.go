@@ -75,6 +75,13 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 				}
 				return paramsEncoded
 			},
+			ConflictsWith: []string{"parameters_base64"},
+		},
+		"parameters_base64": {
+			Description:   "A base64 encoded file containing parameters for the application.",
+			Type:          schema.TypeString,
+			Optional:      true,
+			ConflictsWith: []string{"parameters_yaml"},
 		},
 		"autosync": {
 			Description: "Indicates whether enable or disable autosyc.",
@@ -108,9 +115,15 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	extraValues, err := utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	extraValues := ""
+	params64, paramsSpecifiedAsBase64String := d.GetOk("parameters_yaml")
+	if paramsSpecifiedAsBase64String {
+		extraValues = params64.(string)
+	} else {
+		extraValues, err = utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// Send install
@@ -179,9 +192,19 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 		}
 
 		// Load all the found data to the local object
-		err = utils.SetResourceDataFromMap(d, flattenTaikunAppInstance(data))
-		if err != nil {
-			return diag.FromErr(err)
+		_, paramsSpecifiedAsFile := d.GetOk("parameters_yaml")
+		if paramsSpecifiedAsFile {
+			// File parameters were used
+			err = utils.SetResourceDataFromMap(d, flattenTaikunAppInstance(true, data))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			// Base64 parameters were used
+			err = utils.SetResourceDataFromMap(d, flattenTaikunAppInstance(false, data))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		// We need to tell provider that object was created
@@ -190,15 +213,19 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 	}
 }
 
-func flattenTaikunAppInstance(rawAppInstance *tkcore.ProjectAppDetailsDto) map[string]interface{} {
+func flattenTaikunAppInstance(paramsSpecifiedAsFile bool, rawAppInstance *tkcore.ProjectAppDetailsDto) map[string]interface{} {
+	paramsKey := "parameters_base64"
+	if paramsSpecifiedAsFile {
+		paramsKey = "parameters_yaml"
+	}
 	return map[string]interface{}{
-		"id":              utils.I32toa(rawAppInstance.GetId()),
-		"name":            rawAppInstance.GetName(),
-		"namespace":       rawAppInstance.GetNamespace(),
-		"project_id":      utils.I32toa(rawAppInstance.GetProjectId()),
-		"catalog_app_id":  utils.I32toa(rawAppInstance.GetCatalogAppId()),
-		"parameters_yaml": b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
-		"autosync":        rawAppInstance.GetAutoSync(),
+		"id":             utils.I32toa(rawAppInstance.GetId()),
+		"name":           rawAppInstance.GetName(),
+		"namespace":      rawAppInstance.GetNamespace(),
+		"project_id":     utils.I32toa(rawAppInstance.GetProjectId()),
+		"catalog_app_id": utils.I32toa(rawAppInstance.GetCatalogAppId()),
+		paramsKey:        b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
+		"autosync":       rawAppInstance.GetAutoSync(),
 	}
 }
 
@@ -221,31 +248,33 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	// Parameters update + sync
-	oldYamlParameters, newYamlParameters := d.GetChange("parameters_yaml")
-	if oldYamlParameters != newYamlParameters {
-		extraValues, err := utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		body := tkcore.EditProjectAppExtraValuesCommand{}
-		body.SetProjectAppId(appId)
-		body.SetExtraValues(extraValues)
-		response, errParams := apiClient.Client.ProjectAppsAPI.ProjectappUpdateExtraValues(context.TODO()).EditProjectAppExtraValuesCommand(body).Execute()
-		if errParams != nil {
-			return diag.FromErr(tk.CreateError(response, errParams))
-		}
-		bodySync := tkcore.SyncProjectAppCommand{}
-		bodySync.SetProjectAppId(appId)
-		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
-		if errSync != nil {
-			return diag.FromErr(tk.CreateError(response, err))
-		}
-		err = resourceTaikunAppInstanceWaitForReady(d, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	err = updateParams(appId, d, meta)
+	if err != nil {
+		return diag.FromErr(err)
 	}
+
+	//// Update parameters from file
+	//oldYamlParameters, newYamlParameters := d.GetChange("parameters_yaml")
+	//if oldYamlParameters != newYamlParameters {
+	//	extraValues, err := utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//	err = setParamsAndSyncTaikunAppInstance(appId, extraValues, d, meta)
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//}
+	//
+	//// Update parameters from base64 string
+	//oldYamlParameters, newYamlParameters = d.GetChange("parameters_base64")
+	//if oldYamlParameters != newYamlParameters {
+	//	err = setParamsAndSyncTaikunAppInstance(appId, newYamlParameters.(string), d, meta)
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//}
+
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunAppInstanceReadWithRetries(), ctx, d, meta)
 }
 
@@ -336,5 +365,78 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 		return fmt.Errorf("error waiting for application (%d) to be ready: %s", appId, err)
 	}
 
+	return nil
+}
+
+// Set new parameters, sync app, wait until ready
+func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schema.ResourceData, meta interface{}) error {
+	apiClient := meta.(*tk.Client)
+
+	body := tkcore.EditProjectAppExtraValuesCommand{}
+	body.SetProjectAppId(appId)
+	body.SetExtraValues(extraValues)
+	response, errParams := apiClient.Client.ProjectAppsAPI.ProjectappUpdateExtraValues(context.TODO()).EditProjectAppExtraValuesCommand(body).Execute()
+	if errParams != nil {
+		return tk.CreateError(response, errParams)
+	}
+
+	bodySync := tkcore.SyncProjectAppCommand{}
+	bodySync.SetProjectAppId(appId)
+	response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
+	if errSync != nil {
+		return tk.CreateError(response, errSync)
+	}
+	err := resourceTaikunAppInstanceWaitForReady(d, meta)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Update parameters of this app in correct order
+// Check if user specified file of base64 string. Then modify App instance in correct order.
+func updateParams(appId int32, d *schema.ResourceData, meta interface{}) (err error) {
+	var extraValues string
+	_, paramsSpecifiedAsFile := d.GetOk("parameters_yaml")
+	oldBase64Parameters, newBase64Parameters := d.GetChange("parameters_base64")
+	oldYamlParameters, newYamlParameters := d.GetChange("parameters_yaml")
+
+	if paramsSpecifiedAsFile {
+		//  Fist delete base64 params, then create params from file
+		if oldBase64Parameters != newBase64Parameters {
+			err = setParamsAndSyncTaikunAppInstance(appId, newBase64Parameters.(string), d, meta)
+			if err != nil {
+				return err
+			}
+		}
+		if oldYamlParameters != newYamlParameters {
+			extraValues, err = utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
+			if err != nil {
+				return err
+			}
+			err = setParamsAndSyncTaikunAppInstance(appId, extraValues, d, meta)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		//  Fist delete params from file, then create params from base64
+		if oldYamlParameters != newYamlParameters {
+			extraValues, err = utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
+			if err != nil {
+				return err
+			}
+			err = setParamsAndSyncTaikunAppInstance(appId, extraValues, d, meta)
+			if err != nil {
+				return err
+			}
+		}
+		if oldBase64Parameters != newBase64Parameters {
+			err = setParamsAndSyncTaikunAppInstance(appId, newYamlParameters.(string), d, meta)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
