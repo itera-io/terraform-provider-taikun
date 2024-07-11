@@ -175,12 +175,12 @@ resource "taikun_project" "foobar" {
 - `monitoring` (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - `organization_id` (String) ID of the organization which owns the project.
 - `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
-- `quota_cpu_units` (Number) Maximum CPU units. Defaults to `1000000`.
-- `quota_disk_size` (Number) Maximum disk size in GBs. Defaults to `102400`.
-- `quota_ram_size` (Number) Maximum RAM size in GBs. Defaults to `102400`.
-- `quota_vm_cpu_units` (Number) Maximum CPU units for standalone VMs. Defaults to `1000000`.
-- `quota_vm_ram_size` (Number) Maximum RAM size in GBs for standalone VMs. Defaults to `102400`.
-- `quota_vm_volume_size` (Number) Maximum volume size in GBs for standalone VMs. Defaults to `102400`.
+- `quota_cpu_units` (Number) Maximum CPU units. Defaults to `300`.
+- `quota_disk_size` (Number) Maximum disk size in GBs. Defaults to `2048`.
+- `quota_ram_size` (Number) Maximum RAM size in GBs. Defaults to `500`.
+- `quota_vm_cpu_units` (Number) Maximum CPU units for standalone VMs. Defaults to `300`.
+- `quota_vm_ram_size` (Number) Maximum RAM size in GBs for standalone VMs. Defaults to `500`.
+- `quota_vm_volume_size` (Number) Maximum volume size in GBs for standalone VMs. Defaults to `2048`.
 - `router_id_end_range` (Number) Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
 - `router_id_start_range` (Number) Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
 - `server_bastion` (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))

@@ -57,7 +57,8 @@ locals {
 ### Optional
 
 - `autosync` (Boolean) Indicates whether enable or disable autosyc. Defaults to `false`.
-- `parameters_yaml` (String) A path to a valid yaml file that includes the parameters for the application.
+- `parameters_base64` (String) A base64 encoded file containing parameters for the application. Conflicts with: `parameters_yaml`.
+- `parameters_yaml` (String) A path to a valid yaml file that includes the parameters for the application. Conflicts with: `parameters_base64`.
 
 ### Read-Only
 

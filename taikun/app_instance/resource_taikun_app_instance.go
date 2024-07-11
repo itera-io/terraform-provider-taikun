@@ -253,28 +253,6 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	//// Update parameters from file
-	//oldYamlParameters, newYamlParameters := d.GetChange("parameters_yaml")
-	//if oldYamlParameters != newYamlParameters {
-	//	extraValues, err := utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//	err = setParamsAndSyncTaikunAppInstance(appId, extraValues, d, meta)
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//}
-	//
-	//// Update parameters from base64 string
-	//oldYamlParameters, newYamlParameters = d.GetChange("parameters_base64")
-	//if oldYamlParameters != newYamlParameters {
-	//	err = setParamsAndSyncTaikunAppInstance(appId, newYamlParameters.(string), d, meta)
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//}
-
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunAppInstanceReadWithRetries(), ctx, d, meta)
 }
 

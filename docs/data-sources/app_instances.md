@@ -32,6 +32,7 @@ Read-Only:
 - `id` (String)
 - `name` (String)
 - `namespace` (String)
+- `parameters_base64` (String)
 - `parameters_yaml` (String)
 - `project_id` (String)
 
