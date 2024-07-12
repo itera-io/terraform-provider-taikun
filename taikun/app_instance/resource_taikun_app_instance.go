@@ -89,6 +89,13 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
+		"status": {
+			Description: "Do not set. Used for tracking application instance failures.",
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     "",
+		},
 	}
 }
 
@@ -116,14 +123,16 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	extraValues := ""
-	params64, paramsSpecifiedAsBase64String := d.GetOk("parameters_yaml")
-	if paramsSpecifiedAsBase64String {
-		extraValues = params64.(string)
-	} else {
+
+	paramsInFile := paramsSpecifiedAsFile(d)
+	if paramsInFile {
 		extraValues, err = utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	} else {
+		params64, _ := d.GetOk("parameters_yaml")
+		extraValues = params64.(string)
 	}
 
 	// Send install
@@ -189,9 +198,19 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 			return nil
 		}
 
+		// Application was found in Failed state.
+		// Delete application and create it again.
+		if data.GetStatus() == tkcore.EINSTANCESTATUS_FAILURE {
+			err = d.Set("status", "Failed")
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			return nil
+		}
+
 		// Load all the found data to the local object
-		_, paramsSpecifiedAsFile := d.GetOk("parameters_yaml")
-		if paramsSpecifiedAsFile {
+		paramsInFile := paramsSpecifiedAsFile(d)
+		if paramsInFile {
 			// File parameters were used
 			err = utils.SetResourceDataFromMap(d, flattenTaikunAppInstance(true, data))
 			if err != nil {
@@ -373,11 +392,13 @@ func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schem
 // Check if user specified file of base64 string. Then modify App instance in correct order.
 func updateParams(appId int32, d *schema.ResourceData, meta interface{}) (err error) {
 	var extraValues string
-	_, paramsSpecifiedAsFile := d.GetOk("parameters_yaml")
+
+	paramsInFile := paramsSpecifiedAsFile(d)
+
 	oldBase64Parameters, newBase64Parameters := d.GetChange("parameters_base64")
 	oldYamlParameters, newYamlParameters := d.GetChange("parameters_yaml")
 
-	if paramsSpecifiedAsFile {
+	if paramsInFile {
 		//  Fist delete base64 params, then create params from file
 		if oldBase64Parameters != newBase64Parameters {
 			err = setParamsAndSyncTaikunAppInstance(appId, newBase64Parameters.(string), d, meta)
@@ -408,11 +429,17 @@ func updateParams(appId int32, d *schema.ResourceData, meta interface{}) (err er
 			}
 		}
 		if oldBase64Parameters != newBase64Parameters {
-			err = setParamsAndSyncTaikunAppInstance(appId, newYamlParameters.(string), d, meta)
+			err = setParamsAndSyncTaikunAppInstance(appId, newBase64Parameters.(string), d, meta)
 			if err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+// Single function to answer in what format did the user specify the params
+func paramsSpecifiedAsFile(d *schema.ResourceData) bool {
+	parameters_yaml := d.Get("parameters_yaml")
+	return parameters_yaml != ""
 }
