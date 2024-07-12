@@ -123,7 +123,6 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 	extraValues := ""
-
 	paramsInFile := paramsSpecifiedAsFile(d)
 	if paramsInFile {
 		extraValues, err = utils.FilePathToBase64String(d.Get("parameters_yaml").(string))
@@ -131,8 +130,7 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 			return diag.FromErr(err)
 		}
 	} else {
-		params64, _ := d.GetOk("parameters_yaml")
-		extraValues = params64.(string)
+		extraValues = d.Get("parameters_base64").(string)
 	}
 
 	// Send install
@@ -231,18 +229,27 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 }
 
 func flattenTaikunAppInstance(paramsSpecifiedAsFile bool, rawAppInstance *tkcore.ProjectAppDetailsDto) map[string]interface{} {
-	paramsKey := "parameters_base64"
 	if paramsSpecifiedAsFile {
-		paramsKey = "parameters_yaml"
+		return map[string]interface{}{
+			"id":                utils.I32toa(rawAppInstance.GetId()),
+			"name":              rawAppInstance.GetName(),
+			"namespace":         rawAppInstance.GetNamespace(),
+			"project_id":        utils.I32toa(rawAppInstance.GetProjectId()),
+			"catalog_app_id":    utils.I32toa(rawAppInstance.GetCatalogAppId()),
+			"parameters_yaml":   b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
+			"parameters_base64": "",
+			"autosync":          rawAppInstance.GetAutoSync(),
+		}
 	}
 	return map[string]interface{}{
-		"id":             utils.I32toa(rawAppInstance.GetId()),
-		"name":           rawAppInstance.GetName(),
-		"namespace":      rawAppInstance.GetNamespace(),
-		"project_id":     utils.I32toa(rawAppInstance.GetProjectId()),
-		"catalog_app_id": utils.I32toa(rawAppInstance.GetCatalogAppId()),
-		paramsKey:        b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
-		"autosync":       rawAppInstance.GetAutoSync(),
+		"id":                utils.I32toa(rawAppInstance.GetId()),
+		"name":              rawAppInstance.GetName(),
+		"namespace":         rawAppInstance.GetNamespace(),
+		"project_id":        utils.I32toa(rawAppInstance.GetProjectId()),
+		"catalog_app_id":    utils.I32toa(rawAppInstance.GetCatalogAppId()),
+		"parameters_yaml":   "",
+		"parameters_base64": b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
+		"autosync":          rawAppInstance.GetAutoSync(),
 	}
 }
 
