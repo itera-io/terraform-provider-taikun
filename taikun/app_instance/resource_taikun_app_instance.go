@@ -229,27 +229,18 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 }
 
 func flattenTaikunAppInstance(paramsSpecifiedAsFile bool, rawAppInstance *tkcore.ProjectAppDetailsDto) map[string]interface{} {
+	paramsKey := "parameters_base64"
 	if paramsSpecifiedAsFile {
-		return map[string]interface{}{
-			"id":                utils.I32toa(rawAppInstance.GetId()),
-			"name":              rawAppInstance.GetName(),
-			"namespace":         rawAppInstance.GetNamespace(),
-			"project_id":        utils.I32toa(rawAppInstance.GetProjectId()),
-			"catalog_app_id":    utils.I32toa(rawAppInstance.GetCatalogAppId()),
-			"parameters_yaml":   b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
-			"parameters_base64": "",
-			"autosync":          rawAppInstance.GetAutoSync(),
-		}
+		paramsKey = "parameters_yaml"
 	}
 	return map[string]interface{}{
-		"id":                utils.I32toa(rawAppInstance.GetId()),
-		"name":              rawAppInstance.GetName(),
-		"namespace":         rawAppInstance.GetNamespace(),
-		"project_id":        utils.I32toa(rawAppInstance.GetProjectId()),
-		"catalog_app_id":    utils.I32toa(rawAppInstance.GetCatalogAppId()),
-		"parameters_yaml":   "",
-		"parameters_base64": b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
-		"autosync":          rawAppInstance.GetAutoSync(),
+		"id":             utils.I32toa(rawAppInstance.GetId()),
+		"name":           rawAppInstance.GetName(),
+		"namespace":      rawAppInstance.GetNamespace(),
+		"project_id":     utils.I32toa(rawAppInstance.GetProjectId()),
+		"catalog_app_id": utils.I32toa(rawAppInstance.GetCatalogAppId()),
+		paramsKey:        b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
+		"autosync":       rawAppInstance.GetAutoSync(),
 	}
 }
 
