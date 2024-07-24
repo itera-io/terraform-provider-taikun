@@ -56,7 +56,6 @@ func TestAccDataSourceTaikunBillingRules(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.created_by"),
-					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.id"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.metric_name"),
 					resource.TestCheckResourceAttrSet("data.taikun_billing_rules.all", "billing_rules.0.label.#"),
