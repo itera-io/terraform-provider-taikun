@@ -27,7 +27,7 @@ resource "taikun_billing_credential" "foo" {
 
 resource "taikun_billing_rule" "foo" {
   name            = "%s"
-  metric_name     =   "coredns_forward_request_duration_seconds"
+  metric_name     =   "alertmanager_alerts"
   price = 1
   type = "Sum"
   billing_credential_id = resource.taikun_billing_credential.foo.id
@@ -58,7 +58,7 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
 					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
@@ -94,7 +94,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
 					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
@@ -111,7 +111,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleNameNew),
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
 					resource.TestCheckResourceAttrSet("taikun_billing_rule.foo", "billing_credential_id"),
@@ -133,7 +133,7 @@ resource "taikun_billing_credential" "foo" {
 
 resource "taikun_billing_rule" "foo" {
   name            = "%s"
-  metric_name     =   "coredns_forward_request_duration_seconds"
+  metric_name     =   "alertmanager_alerts"
   price = 1
   type = "Sum"
   billing_credential_id = resource.taikun_billing_credential.foo.id
@@ -176,7 +176,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "label.#", "1"),
@@ -194,7 +194,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingRuleExists,
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
-					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "coredns_forward_request_duration_seconds"),
+					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "price", "1"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "label.#", "4"),

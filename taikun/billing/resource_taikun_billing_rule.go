@@ -37,11 +37,11 @@ func resourceTaikunBillingRuleSchema() map[string]*schema.Schema {
 			MinItems:    1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"id": {
-						Description: "ID of the label.",
-						Type:        schema.TypeString,
-						Computed:    true,
-					},
+					//"id": {
+					//	Description: "ID of the label.",
+					//	Type:        schema.TypeString,
+					//	Computed:    true,
+					//},
 					"key": {
 						Description: "Key of the label.",
 						Type:        schema.TypeString,
@@ -115,7 +115,7 @@ func resourceTaikunBillingRuleCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	body := tkcore.RuleCreateCommand{}
-	body.SetLabels(resourceTaikunBillingRuleLabelsToAdd(d))
+	body.SetLabels(resourceTaikunBillingRuleLabelsAll(d))
 	body.SetName(d.Get("name").(string))
 	body.SetMetricName(d.Get("metric_name").(string))
 	body.SetPrice(d.Get("price").(float64))
@@ -184,8 +184,10 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	body := tkcore.RuleForUpdateDto{}
-	body.SetLabelsToAdd(resourceTaikunBillingRuleLabelsToAdd(d))
-	body.SetLabelsToDelete(resourceTaikunBillingRuleLabelsToDelete(d))
+	//body.SetLabelsToAdd(resourceTaikunBillingRuleLabelsToAdd(d))
+	//body.SetLabelsToDelete(resourceTaikunBillingRuleLabelsToDelete(d))
+	//_, newLabelsData := d.GetChange("label")
+	body.SetLabels(resourceTaikunBillingRuleLabelsAll(d))
 	body.SetName(d.Get("name").(string))
 	body.SetMetricName(d.Get("metric_name").(string))
 	body.SetPrice(d.Get("price").(float64))
@@ -216,13 +218,11 @@ func resourceTaikunBillingRuleDelete(_ context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []tkcore.PrometheusLabelListDto {
-	oldLabelsData, newLabelsData := d.GetChange("label")
-	oldLabels := oldLabelsData.(*schema.Set)
-	newLabels := newLabelsData.(*schema.Set)
-	toAdd := newLabels.Difference(oldLabels).List()
-	labelsToAdd := make([]tkcore.PrometheusLabelListDto, len(toAdd))
-	for i, labelData := range toAdd {
+func resourceTaikunBillingRuleLabelsAll(d *schema.ResourceData) []tkcore.PrometheusLabelListDto {
+	_, newLabelsData := d.GetChange("label")
+	newLabels := newLabelsData.(*schema.Set).List()
+	labelsToAdd := make([]tkcore.PrometheusLabelListDto, len(newLabels))
+	for i, labelData := range newLabels {
 		label := labelData.(map[string]interface{})
 		labelsToAdd[i] = tkcore.PrometheusLabelListDto{}
 		labelsToAdd[i].SetLabel(label["key"].(string))
@@ -231,20 +231,20 @@ func resourceTaikunBillingRuleLabelsToAdd(d *schema.ResourceData) []tkcore.Prome
 	return labelsToAdd
 }
 
-func resourceTaikunBillingRuleLabelsToDelete(d *schema.ResourceData) []tkcore.PrometheusLabelDeleteDto {
-	oldLabelsData, newLabelsData := d.GetChange("label")
-	oldLabels := oldLabelsData.(*schema.Set)
-	newLabels := newLabelsData.(*schema.Set)
-	toDelete := oldLabels.Difference(newLabels).List()
-	labelsToDelete := make([]tkcore.PrometheusLabelDeleteDto, len(toDelete))
-	for i, oldLabelData := range toDelete {
-		oldLabel := oldLabelData.(map[string]interface{})
-		oldLabelID, _ := utils.Atoi32(oldLabel["id"].(string))
-		labelsToDelete[i] = tkcore.PrometheusLabelDeleteDto{}
-		labelsToDelete[i].SetId(oldLabelID)
-	}
-	return labelsToDelete
-}
+//func resourceTaikunBillingRuleLabelsToDelete(d *schema.ResourceData) []tkcore.PrometheusLabelDeleteDto {
+//	oldLabelsData, newLabelsData := d.GetChange("label")
+//	oldLabels := oldLabelsData.(*schema.Set)
+//	newLabels := newLabelsData.(*schema.Set)
+//	toDelete := oldLabels.Difference(newLabels).List()
+//	labelsToDelete := make([]tkcore.PrometheusLabelDeleteDto, len(toDelete))
+//	for i, oldLabelData := range toDelete {
+//		oldLabel := oldLabelData.(map[string]interface{})
+//		oldLabelID, _ := utils.Atoi32(oldLabel["id"].(string))
+//		labelsToDelete[i] = tkcore.PrometheusLabelDeleteDto{}
+//		labelsToDelete[i].SetId(oldLabelID)
+//	}
+//	return labelsToDelete
+//}
 
 func flattenTaikunBillingRule(rawBillingRule *tkcore.PrometheusRuleListDto) map[string]interface{} {
 
@@ -253,7 +253,8 @@ func flattenTaikunBillingRule(rawBillingRule *tkcore.PrometheusRuleListDto) map[
 		labels[i] = map[string]interface{}{
 			"key":   rawLabel.GetLabel(),
 			"value": rawLabel.GetValue(),
-			"id":    utils.I32toa(rawLabel.GetId()),
+			//"id":    utils.I32toa(rawLabel.GetId()),
+			//"id": utils.I32toa(hashStrings(rawLabel.GetLabel(), rawLabel.GetValue())),
 		}
 	}
 
@@ -270,3 +271,20 @@ func flattenTaikunBillingRule(rawBillingRule *tkcore.PrometheusRuleListDto) map[
 		"type":                  rawBillingRule.GetType(),
 	}
 }
+
+//func hashStrings(string1 string, string2 string) int32 {
+//	// Concatenate the strings
+//	combinedString := string1 + string2
+//	// Hash the combined string using SHA-256
+//	hashedString := sha256.Sum256([]byte(combinedString))
+//	// Convert first 4 bytes of the hash to a unique int32
+//	return int32(binaryToInt32(hashedString[:4]))
+//}
+//
+//func binaryToInt32(bytes []byte) int32 {
+//	result := int32(0)
+//	for i, b := range bytes {
+//		result |= int32(b) << (uint(i) * 8)
+//	}
+//	return result
+//}

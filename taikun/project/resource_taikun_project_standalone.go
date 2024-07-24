@@ -530,7 +530,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 			if hasChanges(old, new, "size") {
 				body := tkcore.UpdateStandaloneVmDiskSizeCommand{}
 				body.SetId(diskId)
-				body.SetSize(int64(new["size"].(int)))
+				body.SetSize(int32(new["size"].(int)))
 
 				res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksUpdateSize(ctx).UpdateStandaloneVmDiskSizeCommand(body).Execute()
 				if err != nil {
