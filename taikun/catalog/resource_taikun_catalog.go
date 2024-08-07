@@ -334,46 +334,65 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProjectsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
 	oldProjects := oldCatalogProjectsBound.(*schema.Set)
 	newProjects := newCatalogProjectsBound.(*schema.Set)
-	projetsToBindAndUnbind := []tkcore.UpdateCatalogDto{}
+	apiClient := meta.(*tk.Client)
 
 	// Old stuff that we should unbind - What was in old catalog, but is not new catalog.
-	toRemove := oldProjects.Difference(newProjects)
-	for _, proj := range toRemove.List() {
-		deletedProject := tkcore.UpdateCatalogDto{}
-		projNumber, err := utils.Atoi32(proj.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		deletedProject.SetProjectId(projNumber)
-		deletedProject.SetIsBound(false)
-		projetsToBindAndUnbind = append(projetsToBindAndUnbind, deletedProject)
-	}
-
-	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
-	toAdd := newProjects.Difference(oldProjects)
-	for _, proj := range toAdd.List() {
-		addedProject := tkcore.UpdateCatalogDto{}
-		projNumber, err := utils.Atoi32(proj.(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		addedProject.SetProjectId(projNumber)
-		addedProject.SetIsBound(true)
-		projetsToBindAndUnbind = append(projetsToBindAndUnbind, addedProject)
-	}
-
-	// Send query together
-	apiClient := meta.(*tk.Client)
-	bindProjectsCommand := &tkcore.BindProjectsToCatalogCommand{}
-	bindProjectsCommand.SetCatalogId(catalogId)
-	bindProjectsCommand.SetProjects(projetsToBindAndUnbind)
-	if len(projetsToBindAndUnbind) > 0 {
-
-		response, err := apiClient.Client.CatalogAPI.CatalogBindProject(context.TODO()).BindProjectsToCatalogCommand(*bindProjectsCommand).Execute()
+	toRemove := oldProjects.Difference(newProjects).List()
+	if len(toRemove) > 0 {
+		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
 	}
+
+	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
+	toAdd := newProjects.Difference(oldProjects).List()
+	if len(toAdd) > 0 {
+		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(response, err))
+		}
+	}
+
+	//projetsToBindAndUnbind := []tkcore.UpdateCatalogDto{}
+	//// Old stuff that we should unbind - What was in old catalog, but is not new catalog.
+	//toRemove := oldProjects.Difference(newProjects)
+	//for _, proj := range toRemove.List() {
+	//	deletedProject := tkcore.UpdateCatalogDto{}
+	//	projNumber, err := utils.Atoi32(proj.(string))
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//	deletedProject.SetProjectId(projNumber)
+	//	deletedProject.SetIsBound(false)
+	//	projetsToBindAndUnbind = append(projetsToBindAndUnbind, deletedProject)
+	//}
+	//
+	//// New stuff that we should bind - What was is in new catalog and was not in old catalog.
+	//toAdd := newProjects.Difference(oldProjects)
+	//for _, proj := range toAdd.List() {
+	//	addedProject := tkcore.UpdateCatalogDto{}
+	//	projNumber, err := utils.Atoi32(proj.(string))
+	//	if err != nil {
+	//		return diag.FromErr(err)
+	//	}
+	//	addedProject.SetProjectId(projNumber)
+	//	addedProject.SetIsBound(true)
+	//	projetsToBindAndUnbind = append(projetsToBindAndUnbind, addedProject)
+	//}
+	//
+	//// Send query together
+	////apiClient := meta.(*tk.Client)
+	//bindProjectsCommand := &tkcore.BindProjectsToCatalogCommand{}
+	//bindProjectsCommand.SetCatalogId(catalogId)
+	//bindProjectsCommand.SetProjects(projetsToBindAndUnbind)
+	//if len(projetsToBindAndUnbind) > 0 {
+	//
+	//	response, err := apiClient.Client.CatalogAPI.CatalogBindProject(context.TODO()).BindProjectsToCatalogCommand(*bindProjectsCommand).Execute()
+	//	if err != nil {
+	//		return diag.FromErr(tk.CreateError(response, err))
+	//	}
+	//}
 	return nil
 }
 
