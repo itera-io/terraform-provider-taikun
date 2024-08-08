@@ -61,19 +61,6 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
-	//body := tkcore.BindUsersCommand{
-	//	Users: []tkcore.UpdateProjectUserDto{
-	//		{
-	//			IsBound: utils.BoolPtr(true),
-	//			Id:      *tkcore.NewNullableString(&userId),
-	//		},
-	//	},
-	//	ProjectId: &projectId,
-	//}
-	//res, err := client.Client.UserProjectsAPI.UserprojectsBindUsers(ctx).BindUsersCommand(body).Execute()
-	//if err != nil {
-	//	return diag.FromErr(tk.CreateError(res, err))
-	//}
 
 	id := fmt.Sprintf("%d/%s", projectId, userId)
 	d.SetId(id)
@@ -166,20 +153,6 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
-
-	//body := tkcore.BindUsersCommand{
-	//	Users: []tkcore.UpdateProjectUserDto{
-	//		{
-	//			IsBound: utils.BoolPtr(false),
-	//			Id:      *tkcore.NewNullableString(&userId),
-	//		},
-	//	},
-	//	ProjectId: &projectId,
-	//}
-	//res, err = apiClient.Client.UserProjectsAPI.UserprojectsBindUsers(context.TODO()).BindUsersCommand(body).Execute()
-	//if err != nil {
-	//	return diag.FromErr(tk.CreateError(res, err))
-	//}
 
 	d.SetId("")
 	return nil

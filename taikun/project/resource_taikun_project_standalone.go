@@ -502,15 +502,14 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	}
 
 	if len(diskIds) != 0 {
-		deleteDiskBody := tkcore.DeleteStandAloneVmDiskCommand{}
-		deleteDiskBody.SetVmDiskIds(diskIds)
-		deleteDiskBody.SetStandaloneVmId(vmID)
-
-		res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksDelete(ctx).DeleteStandAloneVmDiskCommand(deleteDiskBody).Execute()
-		if err != nil {
-			return tk.CreateError(res, err)
+		body := tkcore.DeleteVmDiskCommand{
+			StandaloneVmId: &vmID,
+			VmDiskIds:      diskIds,
 		}
-
+		response, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVmDisks(context.TODO()).DeleteVmDiskCommand(body).Execute()
+		if err != nil {
+			return tk.CreateError(response, err)
+		}
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
 			return err
 		}

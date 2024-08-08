@@ -184,21 +184,6 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return diag.FromErr(tk.CreateError(response, err))
 	}
 
-	//body := tkcore.BindPrometheusOrganizationsCommand{
-	//	Organizations: []tkcore.BindOrganizationsToRuleDto{
-	//		{
-	//			IsBound:        tkcore.PtrBool(false),
-	//			OrganizationId: tkcore.PtrInt32(organizationId),
-	//		},
-	//	},
-	//	PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
-	//}
-	//
-	//res, err = apiClient.Client.PrometheusRulesAPI.PrometheusrulesBindOrganizations(context.TODO()).BindPrometheusOrganizationsCommand(body).Execute()
-	//if err != nil {
-	//	return diag.FromErr(tk.CreateError(res, err))
-	//}
-
 	d.SetId("")
 	return nil
 }
