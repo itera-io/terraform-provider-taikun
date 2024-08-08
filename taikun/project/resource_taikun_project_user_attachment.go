@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	tk "github.com/itera-io/taikungoclient"
-	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"strings"
 
@@ -57,19 +56,24 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 		return diag.Errorf("project_id isn't valid: %s", d.Get("project_id").(string))
 	}
 
-	body := tkcore.BindUsersCommand{
-		Users: []tkcore.UpdateProjectUserDto{
-			{
-				IsBound: utils.BoolPtr(true),
-				Id:      *tkcore.NewNullableString(&userId),
-			},
-		},
-		ProjectId: &projectId,
-	}
-	res, err := client.Client.UserProjectsAPI.UserprojectsBindUsers(ctx).BindUsersCommand(body).Execute()
+	body := []string{userId}
+	response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
 	if err != nil {
-		return diag.FromErr(tk.CreateError(res, err))
+		return diag.FromErr(tk.CreateError(response, err))
 	}
+	//body := tkcore.BindUsersCommand{
+	//	Users: []tkcore.UpdateProjectUserDto{
+	//		{
+	//			IsBound: utils.BoolPtr(true),
+	//			Id:      *tkcore.NewNullableString(&userId),
+	//		},
+	//	},
+	//	ProjectId: &projectId,
+	//}
+	//res, err := client.Client.UserProjectsAPI.UserprojectsBindUsers(ctx).BindUsersCommand(body).Execute()
+	//if err != nil {
+	//	return diag.FromErr(tk.CreateError(res, err))
+	//}
 
 	id := fmt.Sprintf("%d/%s", projectId, userId)
 	d.SetId(id)
@@ -157,19 +161,25 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		return nil
 	}
 
-	body := tkcore.BindUsersCommand{
-		Users: []tkcore.UpdateProjectUserDto{
-			{
-				IsBound: utils.BoolPtr(false),
-				Id:      *tkcore.NewNullableString(&userId),
-			},
-		},
-		ProjectId: &projectId,
-	}
-	res, err = apiClient.Client.UserProjectsAPI.UserprojectsBindUsers(context.TODO()).BindUsersCommand(body).Execute()
+	body := []string{userId}
+	response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
 	if err != nil {
-		return diag.FromErr(tk.CreateError(res, err))
+		return diag.FromErr(tk.CreateError(response, err))
 	}
+
+	//body := tkcore.BindUsersCommand{
+	//	Users: []tkcore.UpdateProjectUserDto{
+	//		{
+	//			IsBound: utils.BoolPtr(false),
+	//			Id:      *tkcore.NewNullableString(&userId),
+	//		},
+	//	},
+	//	ProjectId: &projectId,
+	//}
+	//res, err = apiClient.Client.UserProjectsAPI.UserprojectsBindUsers(context.TODO()).BindUsersCommand(body).Execute()
+	//if err != nil {
+	//	return diag.FromErr(tk.CreateError(res, err))
+	//}
 
 	d.SetId("")
 	return nil

@@ -56,7 +56,7 @@ func ResourceTaikunOrganizationBillingRuleAttachment() *schema.Resource {
 }
 
 func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*tk.Client)
+	apiClient := meta.(*tk.Client)
 
 	billingRuleId, err := utils.Atoi32(d.Get("billing_rule_id").(string))
 	if err != nil {
@@ -68,20 +68,18 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 		return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
 	}
 
-	body := tkcore.BindPrometheusOrganizationsCommand{
-		Organizations: []tkcore.BindOrganizationsToRuleDto{
-			{
-				IsBound:          tkcore.PtrBool(true),
-				OrganizationId:   tkcore.PtrInt32(organizationId),
-				RuleDiscountRate: utils.NewNullableFloat64(d.Get("discount_rate").(float64)),
-			},
+	discountRate := d.Get("discount_rate").(float64)
+
+	body := []tkcore.AddPrometheusRulesToOrganizationDto{
+		{
+			Id:           &billingRuleId,
+			DiscountRate: *tkcore.NewNullableFloat64(&discountRate),
 		},
-		PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
 	}
 
-	res, err := client.Client.PrometheusRulesAPI.PrometheusrulesBindOrganizations(ctx).BindPrometheusOrganizationsCommand(body).Execute()
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsAddPrometheusrules(context.TODO(), organizationId).AddPrometheusRulesToOrganizationDto(body).Execute()
 	if err != nil {
-		return diag.FromErr(tk.CreateError(res, err))
+		return diag.FromErr(tk.CreateError(response, err))
 	}
 
 	id := fmt.Sprintf("%d/%d", organizationId, billingRuleId)
@@ -175,20 +173,31 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return nil
 	}
 
-	body := tkcore.BindPrometheusOrganizationsCommand{
-		Organizations: []tkcore.BindOrganizationsToRuleDto{
-			{
-				IsBound:        tkcore.PtrBool(false),
-				OrganizationId: tkcore.PtrInt32(organizationId),
-			},
-		},
-		PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
+	binding_id, err := utils.Atoi32(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	res, err = apiClient.Client.PrometheusRulesAPI.PrometheusrulesBindOrganizations(context.TODO()).BindPrometheusOrganizationsCommand(body).Execute()
+	body := []int32{binding_id}
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(context.TODO(), billingRuleId).RequestBody(body).Execute()
 	if err != nil {
-		return diag.FromErr(tk.CreateError(res, err))
+		return diag.FromErr(tk.CreateError(response, err))
 	}
+
+	//body := tkcore.BindPrometheusOrganizationsCommand{
+	//	Organizations: []tkcore.BindOrganizationsToRuleDto{
+	//		{
+	//			IsBound:        tkcore.PtrBool(false),
+	//			OrganizationId: tkcore.PtrInt32(organizationId),
+	//		},
+	//	},
+	//	PrometheusRuleId: tkcore.PtrInt32(billingRuleId),
+	//}
+	//
+	//res, err = apiClient.Client.PrometheusRulesAPI.PrometheusrulesBindOrganizations(context.TODO()).BindPrometheusOrganizationsCommand(body).Execute()
+	//if err != nil {
+	//	return diag.FromErr(tk.CreateError(res, err))
+	//}
 
 	d.SetId("")
 	return nil
