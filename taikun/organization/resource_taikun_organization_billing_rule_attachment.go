@@ -173,13 +173,8 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return nil
 	}
 
-	binding_id, err := utils.Atoi32(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	body := []int32{binding_id}
-	response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(context.TODO(), billingRuleId).RequestBody(body).Execute()
+	body := []int32{billingRuleId}
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(context.TODO(), organizationId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
