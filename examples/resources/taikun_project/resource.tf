@@ -44,7 +44,7 @@ resource "taikun_project" "foobar" {
   kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
   policy_profile_id     = resource.taikun_policy_profile.foo.id
 
-  expiration_date = "21/12/2012"
+  expiration_date = "21/12/2032"
   monitoring      = true
 
   quota_cpu_units = 64
@@ -54,7 +54,7 @@ resource "taikun_project" "foobar" {
   # If setting the kubernetes_version, be sure to use the meta-argument
   # ignore_changes to ignore futures changes in case of kubernetes upgrade
   # https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes
-  kubernetes_version = "v1.21.5"
+  kubernetes_version = "v1.29.4"
   lifecycle {
     ignore_changes = [
       kubernetes_version,
