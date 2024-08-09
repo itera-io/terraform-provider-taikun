@@ -46,7 +46,6 @@ Read-Only:
 
 Read-Only:
 
-- `id` (String)
 - `key` (String)
 - `value` (String)
 

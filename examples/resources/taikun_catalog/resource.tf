@@ -1,5 +1,5 @@
 resource "taikun_catalog" "foo" {
-  name        = "new_catalog"
+  name        = "new-catalog"
   description = "Created by Terraform"
   projects    = ["37415"]
 

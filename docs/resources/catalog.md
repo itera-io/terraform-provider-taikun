@@ -8,15 +8,17 @@ description: |-   Catalog for Taikun Applications Configuration.
 
 Catalog for Taikun Applications Configuration.
 
-~> **Role Requirement** To use the `taikun_alerting_profile` resource, you need a Manager or Partner account.
+~> **Role Requirement** To use the `taikun_catalog` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
+
+-> **Default catalog** At one point, there can be only one default catalog. If you specify more default catalogs, then the last default catalog specified will become default.
 
 ## Example Usage
 
 ```terraform
 resource "taikun_catalog" "foo" {
-  name        = "new_catalog"
+  name        = "new-catalog"
   description = "Created by Terraform"
   projects    = ["37415"]
 
@@ -38,7 +40,7 @@ resource "taikun_catalog" "foo" {
 ### Optional
 
 - `application` (Block Set) Bound Applications. (see [below for nested schema](#nestedblock--application))
-- `default` (Boolean) Indicates whether to the catalog is the default catalog. Defaults to `false`.
+- `default` (Boolean) Indicates whether the catalog is the default catalog. Defaults to `false`.
 - `lock` (Boolean) Indicates whether to lock the catalog. Defaults to `false`.
 - `projects` (Set of String) List of projects bound to the catalog.
 

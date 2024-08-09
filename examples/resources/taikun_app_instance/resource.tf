@@ -1,5 +1,5 @@
 resource "taikun_catalog" "foo" {
-  name        = "new_catalog"
+  name        = "new-catalog"
   description = "Created by Terraform"
   projects    = ["37415"]
 
@@ -18,6 +18,5 @@ resource "taikun_app_instance" "foo" {
 
 
 locals {
-  app_id = [for app in tolist(taikun_catalog.cat01.application) :
-  app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
+  app_id = [for app in tolist(taikun_catalog.foo.application) : app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
 }

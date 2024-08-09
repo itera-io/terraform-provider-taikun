@@ -25,6 +25,9 @@ Retrieve all Virtual Clusters.
 
 Read-Only:
 
+- `alerting_profile_id` (String)
+- `delete_on_expiration` (Boolean)
+- `expiration_date` (String)
 - `hostname` (String)
 - `hostname_generated` (String)
 - `id` (String)

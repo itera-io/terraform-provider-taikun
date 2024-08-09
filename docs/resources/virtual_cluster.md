@@ -22,6 +22,9 @@ Virtual Cluster project in Taikun.
 
 ### Optional
 
+- `alerting_profile_id` (String) The id of the alerting profile that will be used for the virtual cluster.
+- `delete_on_expiration` (Boolean) If enabled, the virtual project will be deleted on the expiration date and it will not be possible to recover it. Defaults to `false`. Required with: `expiration_date`.
+- `expiration_date` (String) Virtual project's expiration date in the format: 'dd/mm/yyyy'.
 - `hostname` (String) The hostname that will be used for the virtual cluster. If left empty, you are assigned a hostname based on your IP an virtual cluster name. Defaults to ` `.
 - `status` (String) Do not set. Used for tracking remote virtual cluster failures. Defaults to ` `.
 

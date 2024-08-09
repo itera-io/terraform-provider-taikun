@@ -8,7 +8,7 @@ description: |-   Public Repository for Taikun Applications Configuration.
 
 Public Repository for Taikun Applications Configuration.
 
-~> **Role Requirement** To use the `taikun_alerting_profile` resource, you need a Manager or Partner account.
+~> **Role Requirement** To use the `taikun_repository` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
 

@@ -8,9 +8,11 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 {{ .Description | trimspace }}
 
-~> **Role Requirement** To use the `taikun_alerting_profile` resource, you need a Manager or Partner account.
+~> **Role Requirement** To use the `taikun_catalog` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
+
+-> **Default catalog** At one point, there can be only one default catalog. If you specify more default catalogs, then the last default catalog specified will become default.
 
 ## Example Usage
 

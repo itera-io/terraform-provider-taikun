@@ -8,7 +8,7 @@ description: |-   Taikun Application Instance Configuration.
 
 Taikun Application Instance Configuration.
 
-~> **Role Requirement** To use the `taikun_alerting_profile` resource, you need a Manager or Partner account.
+~> **Role Requirement** To use the `taikun_app_instance` resource, you need a Manager or Partner account.
 
 -> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
 
@@ -20,7 +20,7 @@ If you create and destroy an app with Terraform with the same configuration, the
 
 ```terraform
 resource "taikun_catalog" "foo" {
-  name        = "new_catalog"
+  name        = "new-catalog"
   description = "Created by Terraform"
   projects    = ["37415"]
 
@@ -39,8 +39,7 @@ resource "taikun_app_instance" "foo" {
 
 
 locals {
-  app_id = [for app in tolist(taikun_catalog.cat01.application) :
-  app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
+  app_id = [for app in tolist(taikun_catalog.foo.application) : app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
 }
 ```
 
@@ -59,6 +58,7 @@ locals {
 - `autosync` (Boolean) Indicates whether enable or disable autosyc. Defaults to `false`.
 - `parameters_base64` (String) A base64 encoded file containing parameters for the application. Conflicts with: `parameters_yaml`.
 - `parameters_yaml` (String) A path to a valid yaml file that includes the parameters for the application. Conflicts with: `parameters_base64`.
+- `status` (String) Do not set. Used for tracking application instance failures. Defaults to ` `.
 
 ### Read-Only
 

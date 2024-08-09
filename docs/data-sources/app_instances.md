@@ -35,4 +35,5 @@ Read-Only:
 - `parameters_base64` (String)
 - `parameters_yaml` (String)
 - `project_id` (String)
+- `status` (String)
 

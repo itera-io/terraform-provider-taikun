@@ -26,7 +26,7 @@ data "taikun_catalog" "foo" {
 ### Read-Only
 
 - `application` (Set of Object) Bound Applications. (see [below for nested schema](#nestedatt--application))
-- `default` (Boolean) Indicates whether to the catalog is the default catalog.
+- `default` (Boolean) Indicates whether the catalog is the default catalog.
 - `description` (String) The description of the catalog.
 - `id` (String) The ID of the catalog.
 - `lock` (Boolean) Indicates whether to lock the catalog.
