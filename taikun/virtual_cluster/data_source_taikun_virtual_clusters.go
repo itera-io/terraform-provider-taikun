@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 )
 
 func DataSourceTaikunVirtualClusters() *schema.Resource {
@@ -13,6 +14,12 @@ func DataSourceTaikunVirtualClusters() *schema.Resource {
 		Description: "Retrieve all Virtual Clusters.",
 		ReadContext: dataSourceTaikunVirtualClustersRead,
 		Schema: map[string]*schema.Schema{
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: utils.StringIsInt,
+			},
 			"virtual_clusters": {
 				Description: "List of retrieved Virtual Clusters.",
 				Type:        schema.TypeList,
@@ -31,6 +38,16 @@ func dataSourceTaikunVirtualClustersRead(ctx context.Context, d *schema.Resource
 	var offset int32 = 0
 	var virtualClustersList []tkcore.VClusterListDto
 	params := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO())
+
+	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
+	if organizationIDProvided {
+		dataSourceID = organizationIDData.(string)
+		organizationID, err := utils.Atoi32(dataSourceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		params = params.OrganizationId(organizationID)
+	}
 
 	// Iterate through all projects
 	for {
