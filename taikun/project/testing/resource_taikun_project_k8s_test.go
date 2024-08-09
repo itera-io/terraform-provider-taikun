@@ -340,21 +340,32 @@ resource "taikun_cloud_credential_openstack" "foo" {
   name = "%s"
 }
 
-data "taikun_flavors" "foo" {
+data "taikun_flavors" "small" {
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   min_cpu = 2
   max_cpu = 2
   min_ram = 4
+  max_ram = 4
+}
+
+data "taikun_flavors" "big" {
+  cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
+  min_cpu = 4
+  max_cpu = 4
+  min_ram = 8
   max_ram = 8
 }
+
 locals {
-  flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
+  flavors_small = [for flavor in data.taikun_flavors.small.flavors: flavor.name]
+  flavors_big   = [for flavor in data.taikun_flavors.big.flavors: flavor.name]
+  flavors_all   = concat(local.flavors_small, local.flavors_big)
 }
 
 resource "taikun_project" "foo" {
   name = "%s"
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
-  flavors = local.flavors
+  flavors = local.flavors_all
   backup_credential_id = resource.taikun_backup_credential.foo.id
   policy_profile_id = resource.taikun_policy_profile.foo.id
 
@@ -365,17 +376,17 @@ resource "taikun_project" "foo" {
   server_bastion {
      name = "b"
      disk_size = 30
-     flavor = local.flavors[0]
+     flavor = local.flavors_small[0]
   }
   server_kubeworker {
      name = "w"
      disk_size = 30
-     flavor = local.flavors[0]
+     flavor = local.flavors_big[0]
   }
   server_kubemaster {
      name = "m"
      disk_size = 30
-     flavor = local.flavors[0]
+     flavor = local.flavors_small[0]
   }
 }
 
