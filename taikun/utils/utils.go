@@ -34,3 +34,16 @@ func FilePathToBase64String(filePath string) (string, error) {
 	fileEncoded := b64.StdEncoding.EncodeToString(fileContents)
 	return fileEncoded, nil
 }
+
+// Slice of strings to slice of int32
+func SliceOfSTringsToSliceOfInt32(listOfStrings []interface{}) ([]int32, error) {
+	var sliceOfInt32 []int32
+	for _, elementString := range listOfStrings {
+		elementInt32, err := Atoi32(elementString.(string))
+		if err != nil {
+			return nil, err
+		}
+		sliceOfInt32 = append(sliceOfInt32, elementInt32)
+	}
+	return sliceOfInt32, nil
+}
