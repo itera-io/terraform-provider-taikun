@@ -77,7 +77,7 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 			Default:     false,
 		},
 		"default": {
-			Description: "Indicates whether to the catalog is the default catalog.",
+			Description: "Indicates whether the catalog is the default catalog.",
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
@@ -339,7 +339,11 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	// Old stuff that we should unbind - What was in old catalog, but is not new catalog.
 	toRemove := oldProjects.Difference(newProjects).List()
 	if len(toRemove) > 0 {
-		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).Execute()
+		body, err := utils.SliceOfSTringsToSliceOfInt32(toRemove)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -348,7 +352,11 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
 	toAdd := newProjects.Difference(oldProjects).List()
 	if len(toAdd) > 0 {
-		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).Execute()
+		body, err := utils.SliceOfSTringsToSliceOfInt32(toAdd)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
