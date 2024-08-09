@@ -456,7 +456,7 @@ resource "taikun_policy_profile" "foo" {
 
 // Create a catalog, bind one app and the project above
 resource "taikun_catalog" "foo" {
-  name="tf-acc-catalog"
+  name="%s"
   description="Created by terraform for test app deployment."
   projects=[resource.taikun_project.foo.id]
   
@@ -487,6 +487,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 	backupPolicyName := utils.RandomTestName()
 	projectName := utils.ShortRandomTestName()
 	OPAProfileName := utils.RandomTestName()
+	catalogName := utils.RandomTestName()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -511,6 +512,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					true,
 					false,
 					true,
+					catalogName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunProjectExists,
