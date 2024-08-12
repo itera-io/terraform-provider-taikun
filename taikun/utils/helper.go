@@ -388,6 +388,8 @@ func GetProxmoxStorageStringForServer(projectID int32, apiClient *tk.Client) (st
 		return "NFS", nil
 	case "OpenEBS":
 		return "STORAGE", nil
+	case "Longhorn":
+		return "STORAGE", nil
 	default:
 		return "", fmt.Errorf("Parsed an unrecognised Proxmox Storage type from Kubernetes Profile for this project.")
 	}
