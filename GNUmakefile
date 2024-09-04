@@ -30,7 +30,7 @@ testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 # --- Radek's rigorous testing here ---
-ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)'
+ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
 
 # --- CI: Not creating resources ---
 # Acklowledgment testing ALPHA
@@ -57,7 +57,7 @@ ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTa
 rtestacc:
 	date
 	go clean -testcache
-	TF_ACC=1 go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 120m
+	TF_ACC=1 go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 120m
 
 rtestacc1:
 	date

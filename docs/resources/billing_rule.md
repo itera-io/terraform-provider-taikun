@@ -62,10 +62,6 @@ Required:
 - `key` (String) Key of the label.
 - `value` (String) Value of the label.
 
-Read-Only:
-
-- `id` (String) ID of the label.
-
 ## Import
 
 Import is supported using the following syntax:

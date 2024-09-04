@@ -29,7 +29,6 @@ data "taikun_project" "foo" {
 - `access_profile_id` (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
 - `alerting_profile_id` (String) ID of the project's alerting profile.
 - `alerting_profile_name` (String) Name of the project's alerting profile.
-- `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available.
 - `autoscaler_disk_size` (Number) Disk size of autoscaler in GB (specify together with all other autoscaler parameters).
 - `autoscaler_flavor` (String) Flavor of workers created by autoscaler (specify together with all other autoscaler parameters).
 - `autoscaler_max_size` (Number) Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters).

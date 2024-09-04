@@ -1,0 +1,29 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** To use the `taikun_repository` resource, you need a Manager or Partner account.
+
+-> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
+
+## Public repositories
+When you use Terraform to create the public repository resource, the repository is searched in Taikun.
+The public repository is then enabled or disabled to ensure the state you defined in the configuration.
+When you delete this object from terraform, it is not disabled or in any way removed from Taikun.
+
+## Private repositories
+When you use Terraform to create a private repository, the repository is Imported into Taikun.
+The private repository is then enabled or disabled to ensure the state you defined in the configuration.
+When you delete this object from terraform, it is removed from Taikun.
+
+## Example Usage
+
+{{tffile "examples/resources/taikun_repository/resource.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
