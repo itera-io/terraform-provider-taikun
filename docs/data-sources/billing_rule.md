@@ -42,7 +42,6 @@ data "taikun_billing_rule" "foo" {
 
 Read-Only:
 
-- `id` (String)
 - `key` (String)
 - `value` (String)
 

@@ -39,7 +39,6 @@ Read-Only:
 - `access_profile_id` (String)
 - `alerting_profile_id` (String)
 - `alerting_profile_name` (String)
-- `auto_upgrade` (Boolean)
 - `autoscaler_disk_size` (Number)
 - `autoscaler_flavor` (String)
 - `autoscaler_max_size` (Number)

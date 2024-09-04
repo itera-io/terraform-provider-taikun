@@ -81,6 +81,32 @@ env:
   PROXMOX_PUBLIC_END_RANGE: ${{ secrets.PROXMOX_PUBLIC_END_RANGE }}
   PROXMOX_PUBLIC_BRIDGE: ${{ secrets.PROXMOX_PUBLIC_BRIDGE }}
 
+  VSPHERE_USERNAME: ${{ secrets.VSPHERE_USERNAME }}
+  VSPHERE_PASSWORD: ${{ secrets.VSPHERE_PASSWORD }}
+  VSPHERE_API_URL:  ${{ secrets.VSPHERE_API_URL }}
+  VSPHERE_DATACENTER: ${{ secrets.VSPHERE_DATACENTER }}
+  VSPHERE_RESOURCE_POOL: ${{ secrets.VSPHERE_RESOURCE_POOL }}
+  VSPHERE_DATA_STORE: ${{ secrets.VSPHERE_DATA_STORE }}
+  VSPHERE_DRS_ENABLED: ${{ secrets.VSPHERE_DRS_ENABLED }}
+  VSPHERE_HYPERVISOR: ${{ secrets.VSPHERE_HYPERVISOR }}
+  VSPHERE_HYPERVISOR2: ${{ secrets.VSPHERE_HYPERVISOR2 }}
+  VSPHERE_VM_TEMPLATE: ${{ secrets.VSPHERE_VM_TEMPLATE }}
+  VSPHERE_CONTINENT: ${{ secrets.VSPHERE_CONTINENT }}
+
+  VSPHERE_PUBLIC_NETWORK_NAME: ${{ secrets.VSPHERE_PUBLIC_NETWORK_NAME }}
+  VSPHERE_PUBLIC_NETWORK_ADDRESS: ${{ secrets.VSPHERE_PUBLIC_NETWORK_ADDRESS }}
+  VSPHERE_PUBLIC_NETMASK: ${{ secrets.VSPHERE_PUBLIC_NETMASK }}
+  VSPHERE_PUBLIC_GATEWAY: ${{ secrets.VSPHERE_PUBLIC_GATEWAY }}
+  VSPHERE_PUBLIC_BEGIN_RANGE: ${{ secrets.VSPHERE_PUBLIC_BEGIN_RANGE }}
+  VSPHERE_PUBLIC_END_RANGE: ${{ secrets.VSPHERE_PUBLIC_END_RANGE }}
+
+  VSPHERE_PRIVATE_NETWORK_NAME: ${{ secrets.VSPHERE_PRIVATE_NETWORK_NAME }}
+  VSPHERE_PRIVATE_NETWORK_ADDRESS: ${{ secrets.VSPHERE_PRIVATE_NETWORK_ADDRESS }}
+  VSPHERE_PRIVATE_NETMASK: ${{ secrets.VSPHERE_PRIVATE_NETMASK }}
+  VSPHERE_PRIVATE_GATEWAY: ${{ secrets.VSPHERE_PRIVATE_GATEWAY }}
+  VSPHERE_PRIVATE_BEGIN_RANGE: ${{ secrets.VSPHERE_PRIVATE_BEGIN_RANGE }}
+  VSPHERE_PRIVATE_END_RANGE: ${{ secrets.VSPHERE_PRIVATE_END_RANGE }}
+
   # Trying to avoid race conditions
   TERRAFORM_SKIP_VERIFY: true
 
@@ -168,7 +194,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          ACCEPTANCE_TESTS='(TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunRepository|TestAccDataSourceTaikunRepository|TestAccDataSourceTaikunCatalog|TestAccResourceTaikunCatalog|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
 
   test1c:
     name: 1c) Dry Test GCP
@@ -191,12 +217,33 @@ jobs:
         env:
           GCP_CONFIG_FILE: ${{ secrets.GCP_CONFIG_FILE }}
         run: |
-          echo "$GCP_CONFIG_FILE" > ./taikun/gcp.json
+          echo "$GCP_CONFIG_FILE" > ./taikun/cc_gcp/testing/gcp.json
       - name: TF acceptance tests
         run: |
           date
-          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
+
+#  test1d:
+#    name: 1d) Dry Test vSphere
+#    needs: [build,golangci]
+#    runs-on: self-hosted
+#    timeout-minutes: 30
+#    steps:
+#      - name: Set up Go
+#        uses: actions/setup-go@v5
+#        with:
+#          go-version: ${{ env.GO_VERSION }}
+#      - name: Check out code into the Go module directory
+#        uses: actions/checkout@v4
+#        with:
+#          ref: ${{ inputs.BRANCH }}
+#      - name: Get dependencies
+#        run: |
+#          go mod download
+#      - name: TF acceptance tests
+#        run: |
+#          date
+#          ACCEPTANCE_TESTS='(TestAccDataSourceTaikunImagesVsphere$$|TestAccDataSourceTaikunFlavorsVsphere$$|TestAccResourceTaikunCloudCredentialVsphereUpdate$$|TestAccResourceTaikunCloudCredentialVsphereLock$$|TestAccResourceTaikunCloudCredentialVsphere$$|TestAccDataSourceTaikunCloudCredentialVsphere$$|TestAccDataSourceTaikunCloudCredentialsVsphere$$|TestAccDataSourceTaikunCloudCredentialsVsphereWithFilter$$)' ./scripts/rerun_failed_tests.sh
 
   test2a:
     name: 2a) Openstack VM minimal
@@ -219,7 +266,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimal$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2b:
     name: 2b) Openstack VM, update IP
@@ -242,7 +289,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2c:
     name: 2c) Openstack VM, update flavor
@@ -265,7 +312,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test2d:
     name: 2d) Openstack VM, volume type
@@ -288,7 +335,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3a:
     name: 3a) AWS VM, minimal
@@ -311,7 +358,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimal$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test3b:
     name: 3b) AWS VM, update flavor
@@ -334,7 +381,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4a:
     name: 4a) Azure VM, minimal
@@ -357,7 +404,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimal$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4b:
     name: 4b) Azure VM, update flavor
@@ -380,7 +427,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test4c:
     name: 4c) Azure VM, volume type
@@ -403,7 +450,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test6a:
     name: 6a) Proxmox VM, minimal
@@ -426,7 +473,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectStandaloneProxmoxMinimal$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   test5a:
     name: 5a) Openstack, k8s
@@ -449,7 +496,7 @@ jobs:
         run: |
           date
           ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectMinimal$$)'
-          go test . ./taikun -v -run ${ACCEPTANCE_TESTS} -timeout 30m
+          go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 30m
 
   slackWebhook:
     name: End) Send feedback to slack

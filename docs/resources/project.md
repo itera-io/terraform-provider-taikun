@@ -81,8 +81,7 @@ resource "taikun_project" "foobar" {
   kubernetes_profile_id = resource.taikun_kubernetes_profile.foo.id
   policy_profile_id     = resource.taikun_policy_profile.foo.id
 
-  expiration_date = "21/12/2012"
-  auto_upgrade    = true
+  expiration_date = "21/12/2032"
   monitoring      = true
 
   quota_cpu_units = 64
@@ -92,7 +91,7 @@ resource "taikun_project" "foobar" {
   # If setting the kubernetes_version, be sure to use the meta-argument
   # ignore_changes to ignore futures changes in case of kubernetes upgrade
   # https://www.terraform.io/language/meta-arguments/lifecycle#ignore_changes
-  kubernetes_version = "v1.21.5"
+  kubernetes_version = "v1.29.4"
   lifecycle {
     ignore_changes = [
       kubernetes_version,
@@ -159,7 +158,6 @@ resource "taikun_project" "foobar" {
 
 - `access_profile_id` (String) ID of the project's access profile. Defaults to the default access profile of the project's organization.
 - `alerting_profile_id` (String) ID of the project's alerting profile.
-- `auto_upgrade` (Boolean) If enabled, the Kubespray version will be automatically upgraded when a new version is available. Defaults to `false`.
 - `autoscaler_disk_size` (Number) Disk size of autoscaler in GB (specify together with all other autoscaler parameters). Required with: `autoscaler_name`, `autoscaler_flavor`, `autoscaler_max_size`, `autoscaler_min_size`.
 - `autoscaler_flavor` (String) Flavor of workers created by autoscaler (specify together with all other autoscaler parameters). Required with: `autoscaler_name`, `autoscaler_disk_size`, `autoscaler_max_size`, `autoscaler_min_size`.
 - `autoscaler_max_size` (Number) Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters). Required with: `autoscaler_name`, `autoscaler_flavor`, `autoscaler_disk_size`, `autoscaler_min_size`.
@@ -177,12 +175,12 @@ resource "taikun_project" "foobar" {
 - `monitoring` (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
 - `organization_id` (String) ID of the organization which owns the project.
 - `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
-- `quota_cpu_units` (Number) Maximum CPU units. Defaults to `1000000`.
-- `quota_disk_size` (Number) Maximum disk size in GBs. Defaults to `102400`.
-- `quota_ram_size` (Number) Maximum RAM size in GBs. Defaults to `102400`.
-- `quota_vm_cpu_units` (Number) Maximum CPU units for standalone VMs. Defaults to `1000000`.
-- `quota_vm_ram_size` (Number) Maximum RAM size in GBs for standalone VMs. Defaults to `102400`.
-- `quota_vm_volume_size` (Number) Maximum volume size in GBs for standalone VMs. Defaults to `102400`.
+- `quota_cpu_units` (Number) Maximum CPU units. Defaults to `300`.
+- `quota_disk_size` (Number) Maximum disk size in GBs. Defaults to `2048`.
+- `quota_ram_size` (Number) Maximum RAM size in GBs. Defaults to `500`.
+- `quota_vm_cpu_units` (Number) Maximum CPU units for standalone VMs. Defaults to `300`.
+- `quota_vm_ram_size` (Number) Maximum RAM size in GBs for standalone VMs. Defaults to `500`.
+- `quota_vm_volume_size` (Number) Maximum volume size in GBs for standalone VMs. Defaults to `2048`.
 - `router_id_end_range` (Number) Router ID end range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_start_range`, `taikun_lb_flavor`.
 - `router_id_start_range` (Number) Router ID start range (specify only if using OpenStack cloud credentials with Taikun Load Balancer enabled). Required with: `router_id_end_range`, `taikun_lb_flavor`.
 - `server_bastion` (Block Set, Max: 1) Bastion server. Required with: `server_kubemaster`, `server_kubeworker`. (see [below for nested schema](#nestedblock--server_bastion))
@@ -213,7 +211,7 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
-- `hypervisor` (String) Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox). Defaults to ` `.
+- `hypervisor` (String) Hypervisor used for this server from Proxmox/vSphere Cloud credential (required for Proxmox, required for vSphere when DRS is disabled). Defaults to ` `.
 - `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
 - `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
 - `zone` (String) Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used. Defaults to ` `.
@@ -239,7 +237,7 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
-- `hypervisor` (String) Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox). Defaults to ` `.
+- `hypervisor` (String) Hypervisor used for this server from Proxmox/vSphere Cloud credential (required for Proxmox, required for vSphere when DRS is disabled). Defaults to ` `.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubemaster--kubernetes_node_label))
 - `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
 - `spot_server_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider.  If not specified, the current on-demand price is used.
@@ -276,7 +274,7 @@ Required:
 Optional:
 
 - `disk_size` (Number) The server's disk size in GBs. Defaults to `30`.
-- `hypervisor` (String) Hypervisor used for this server from Proxmox Cloud credential (required for Proxmox). Defaults to ` `.
+- `hypervisor` (String) Hypervisor used for this server from Proxmox/vSphere Cloud credential (required for Proxmox, required for vSphere when DRS is disabled). Defaults to ` `.
 - `kubernetes_node_label` (Block Set) Attach Kubernetes node labels. (see [below for nested schema](#nestedblock--server_kubeworker--kubernetes_node_label))
 - `proxmox_extra_disk_size` (Number) Specify the size of the Proxmox extra storage to enable proxmox storage. Proxmox storage type will be chosen automatically base on the Kubernetes profile used.
 - `spot_server` (Boolean) Enable if this to create kubernetes servers with spot instances Defaults to `false`.
@@ -327,7 +325,7 @@ Optional:
 
 - `cloud_init` (String) Cloud init (updating this field will recreate the VM). Defaults to ` `.
 - `disk` (Block List) Disks associated with the VM. (see [below for nested schema](#nestedblock--vm--disk))
-- `hypervisor` (String) Hypervisor used for this VM (required for Proxmox).
+- `hypervisor` (String) Hypervisor used for this VM (required for Proxmox, required for vSphere when DRS is disabled).
 - `public_ip` (Boolean) Whether a public IP will be available (updating this field will recreate the VM if the project isn't hosted on OpenStack). Defaults to `false`.
 - `spot_vm` (Boolean) Enable if this to create standalone VM on spot instances Defaults to `false`.
 - `spot_vm_max_price` (Number) The maximum price you are willing to pay for the spot instance (USD) - Any changes made to this attribute after project creation are ignored by terraform provider. If not specified, the current on-demand price is used.
