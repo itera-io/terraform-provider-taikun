@@ -18,7 +18,7 @@ func dataSourceTaikunCloudCredentialZadaraSchema() map[string]*schema.Schema {
 
 func DataSourceTaikunCloudCredentialZadara() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an AWS cloud credential by its ID.",
+		Description: "Get an Zadara cloud credential by its ID.",
 		ReadContext: dataSourceTaikunCloudCredentialZadaraRead,
 		Schema:      dataSourceTaikunCloudCredentialZadaraSchema(),
 	}
