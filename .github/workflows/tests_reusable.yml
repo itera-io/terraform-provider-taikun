@@ -197,7 +197,7 @@ jobs:
           ACCEPTANCE_TESTS='(TestAccResourceTaikunRepository|TestAccDataSourceTaikunRepository|TestAccDataSourceTaikunCatalog|TestAccResourceTaikunCatalog|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
 
   test1c:
-    name: 1c) Dry Test GCP
+    name: 1c) Dry Test GCP and Zadara
     needs: [build,golangci]
     runs-on: self-hosted
     timeout-minutes: 30
@@ -221,7 +221,7 @@ jobs:
       - name: TF acceptance tests
         run: |
           date
-          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
+          ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialsZadara|TestAccDataSourceTaikunImagesZadara$$|TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
 
 #  test1d:
 #    name: 1d) Dry Test vSphere

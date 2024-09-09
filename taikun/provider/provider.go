@@ -16,6 +16,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_openstack"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_proxmox"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_vsphere"
+	"github.com/itera-io/terraform-provider-taikun/taikun/cc_zadara"
 	"github.com/itera-io/terraform-provider-taikun/taikun/flavors"
 	"github.com/itera-io/terraform-provider-taikun/taikun/kubeconfig"
 	"github.com/itera-io/terraform-provider-taikun/taikun/kubernetes_profile"
@@ -106,12 +107,14 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_openstack":  cc_openstack.DataSourceTaikunCloudCredentialOpenStack(),
 			"taikun_cloud_credential_proxmox":    cc_proxmox.DataSourceTaikunCloudCredentialProxmox(),
 			"taikun_cloud_credential_vsphere":    cc_vsphere.DataSourceTaikunCloudCredentialVsphere(),
+			"taikun_cloud_credential_zadara":     cc_zadara.DataSourceTaikunCloudCredentialZadara(),
 			"taikun_cloud_credentials_aws":       cc_aws.DataSourceTaikunCloudCredentialsAWS(),
 			"taikun_cloud_credentials_azure":     cc_azure.DataSourceTaikunCloudCredentialsAzure(),
 			"taikun_cloud_credentials_gcp":       cc_gcp.DataSourceTaikunCloudCredentialsGCP(),
 			"taikun_cloud_credentials_openstack": cc_openstack.DataSourceTaikunCloudCredentialsOpenStack(),
 			"taikun_cloud_credentials_proxmox":   cc_proxmox.DataSourceTaikunCloudCredentialsProxmox(),
 			"taikun_cloud_credentials_vsphere":   cc_vsphere.DataSourceTaikunCloudCredentialsVsphere(),
+			"taikun_cloud_credentials_zadara":    cc_zadara.DataSourceTaikunCloudCredentialsZadara(),
 			"taikun_flavors":                     flavors.DataSourceTaikunFlavors(),
 			"taikun_images_aws":                  cc_aws.DataSourceTaikunImagesAWS(),
 			"taikun_images_azure":                cc_azure.DataSourceTaikunImagesAzure(),
@@ -119,6 +122,7 @@ func Provider() *schema.Provider {
 			"taikun_images_openstack":            cc_openstack.DataSourceTaikunImagesOpenStack(),
 			"taikun_images_proxmox":              cc_proxmox.DataSourceTaikunImagesProxmox(),
 			"taikun_images_vsphere":              cc_vsphere.DataSourceTaikunImagesVsphere(),
+			"taikun_images_zadara":               cc_zadara.DataSourceTaikunImagesZadara(),
 			"taikun_kubeconfig":                  kubeconfig.DataSourceTaikunKubeconfig(),
 			"taikun_kubeconfigs":                 kubeconfig.DataSourceTaikunKubeconfigs(),
 			"taikun_kubernetes_profile":          kubernetes_profile.DataSourceTaikunKubernetesProfile(),
@@ -160,6 +164,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_openstack":           cc_openstack.ResourceTaikunCloudCredentialOpenStack(),
 			"taikun_cloud_credential_proxmox":             cc_proxmox.ResourceTaikunCloudCredentialProxmox(),
 			"taikun_cloud_credential_vsphere":             cc_vsphere.ResourceTaikunCloudCredentialVsphere(),
+			"taikun_cloud_credential_zadara":              cc_zadara.ResourceTaikunCloudCredentialZadara(),
 			"taikun_kubeconfig":                           kubeconfig.ResourceTaikunKubeconfig(),
 			"taikun_kubernetes_profile":                   kubernetes_profile.ResourceTaikunKubernetesProfile(),
 			"taikun_organization_billing_rule_attachment": organization.ResourceTaikunOrganizationBillingRuleAttachment(),

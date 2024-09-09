@@ -44,8 +44,7 @@ func DataSourceTaikunImagesZadara() *schema.Resource {
 			"latest": {
 				Description: "Retrieve latest Zadara images.",
 				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
+				Required:    true,
 			},
 		},
 	}
@@ -59,8 +58,7 @@ func dataSourceTaikunImagesZadaraRead(_ context.Context, d *schema.ResourceData,
 
 	apiClient := meta.(*tk.Client)
 
-	params := apiClient.Client.ImagesAPI.ImagesZadaraImagesList(context.TODO(), cloudCredentialID)
-	params.Latest(d.Get("latest").(bool))
+	params := apiClient.Client.ImagesAPI.ImagesZadaraImagesList(context.TODO(), cloudCredentialID).Latest(d.Get("latest").(bool))
 
 	var offset int32 = 0
 	var imageList []map[string]interface{}

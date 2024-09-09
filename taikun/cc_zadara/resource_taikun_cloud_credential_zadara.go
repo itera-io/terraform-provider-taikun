@@ -31,11 +31,12 @@ func resourceTaikunCloudCredentialZadaraSchema() map[string]*schema.Schema {
 			},
 		},
 		"az_count": {
-			Description:  "The number of Zadara availability zone expected for the region.",
+			Description:  "The number of Zadara availability zone expected for the region. (Can be set with env ZADARA_AZ_COUNT)",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.IntBetween(1, 3),
+			DefaultFunc:  schema.EnvDefaultFunc("ZADARA_AZ_COUNT", nil),
 			Default:      1,
 		},
 		"created_by": {
@@ -68,6 +69,14 @@ func resourceTaikunCloudCredentialZadaraSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
+		},
+		"url": {
+			Description:  "The Zadara authentication URL. (Can be set with env ZADARA_AUTH_URL)",
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			DefaultFunc:  schema.EnvDefaultFunc("ZADARA_AUTH_URL", nil),
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"name": {
 			Description: "The name of the Zadara cloud credential.",
@@ -102,34 +111,7 @@ func resourceTaikunCloudCredentialZadaraSchema() map[string]*schema.Schema {
 			DefaultFunc: schema.EnvDefaultFunc("ZADARA_DEFAULT_REGION", nil),
 			ValidateFunc: validation.StringInSlice(
 				[]string{
-					"af-south-1",
-					"ap-east-1",
-					"ap-northeast-1",
-					"ap-northeast-2",
-					"ap-northeast-3",
-					"ap-south-1",
-					"ap-southeast-1",
-					"ap-southeast-2",
-					"ca-central-1",
-					"eu-central-1",
-					"eu-north-1",
-					"eu-south-1",
-					"eu-west-1",
-					"eu-west-2",
-					"eu-west-3",
-					"me-south-1",
-					"sa-east-1",
-					"us-east-1",
-					"us-east-2",
-					"us-west-1",
-					"us-west-2",
-					"cn-north-1",
-					"cn-northwest-1",
-					"us-gov-east-1",
-					"us-gov-west-1",
-					"us-iso-east-1",
-					"us-iso-west-1",
-					"us-isob-east-1",
+					"symphony",
 				},
 				false,
 			),
@@ -141,6 +123,27 @@ func resourceTaikunCloudCredentialZadaraSchema() map[string]*schema.Schema {
 			Sensitive:    true,
 			DefaultFunc:  schema.EnvDefaultFunc("ZADARA_SECRET_ACCESS_KEY", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"volume_type": {
+			Description: "The volume type for Zadara. (Can be set with env ZADARA_VOLUME_TYPE)",
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			DefaultFunc: schema.EnvDefaultFunc("ZADARA_VOLUME_TYPE", nil),
+			ValidateFunc: validation.StringInSlice(
+				[]string{
+					"io1",
+					"io2",
+					"gp2",
+					"gp3",
+					"sc1",
+					"st1",
+					"standard",
+					"sbp1",
+					"sbg1",
+				},
+				false,
+			),
 		},
 	}
 }
@@ -164,6 +167,8 @@ func resourceTaikunCloudCredentialZadaraCreate(ctx context.Context, d *schema.Re
 	body.SetZadaraAccessKeyId(d.Get("access_key_id").(string))
 	body.SetZadaraSecretAccessKey(d.Get("secret_access_key").(string))
 	body.SetZadaraRegion(d.Get("region").(string))
+	body.SetZadaraUrl(d.Get("url").(string))
+	body.SetZadaraVolumeType(d.Get("volume_type").(string))
 
 	/*
 		azCount, err := atoi32(d.Get("az_count").(string))
@@ -292,6 +297,8 @@ func flattenTaikunCloudCredentialZadara(rawZadaraCredential *tkcore.ZadaraCreden
 		"availability_zones": rawZadaraCredential.GetAvailabilityZones(),
 		"region":             rawZadaraCredential.GetRegion(),
 		"az_count":           rawZadaraCredential.GetAvailabilityZonesCount(),
+		"url":                rawZadaraCredential.GetZadaraApiUrl(),
+		"volume_type":        rawZadaraCredential.GetZadaraVolumeType(),
 	}
 }
 
