@@ -24,7 +24,7 @@ func TestAccDataSourceTaikunCloudCredentialsZadara(t *testing.T) {
 	cloudCredentialName := utils.RandomTestName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
+		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -77,7 +77,7 @@ func TestAccDataSourceTaikunCloudCredentialsZadaraWithFilter(t *testing.T) {
 	cloudCredentialName := utils.RandomTestName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
+		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		Steps: []resource.TestStep{
 			{

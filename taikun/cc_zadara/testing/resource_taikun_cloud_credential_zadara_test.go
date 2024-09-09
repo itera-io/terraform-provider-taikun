@@ -29,7 +29,7 @@ func TestAccResourceTaikunCloudCredentialZadara(t *testing.T) {
 	azCount, _ := utils.Atoi32(os.Getenv("ZADARA_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
+		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy,
 		Steps: []resource.TestStep{
@@ -61,7 +61,7 @@ func TestAccResourceTaikunCloudCredentialZadaraLock(t *testing.T) {
 	azCount, _ := utils.Atoi32(os.Getenv("ZADARA_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
+		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy,
 		Steps: []resource.TestStep{
@@ -113,7 +113,7 @@ func TestAccResourceTaikunCloudCredentialZadaraRename(t *testing.T) {
 	azCount, _ := utils.Atoi32(os.Getenv("ZADARA_AZ_COUNT"))
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
+		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy,
 		Steps: []resource.TestStep{
