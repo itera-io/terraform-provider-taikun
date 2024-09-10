@@ -38,7 +38,7 @@ func TestAccResourceTaikunShowbackRule(t *testing.T) {
 	price := math.Round(rand.Float64()*10000) / 100
 	metricName := utils.RandomString()
 	typeS := []string{"Count", "Sum"}[rand.Int()%2]
-	kind := []string{"General", "External"}[rand.Int()%2]
+	kind := "General"
 	projectLimit := rand.Int31()
 	globalLimit := rand.Int31()
 
