@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
 	github.com/hashicorp/terraform-plugin-testing v1.7.0
-	github.com/itera-io/taikungoclient v0.0.0-20240810000323-7838c996f2c0
+	github.com/itera-io/taikungoclient v0.0.0-20240910000338-e3f3e2ca3ea9
 	github.com/robfig/cron/v3 v3.0.1
 )
 
@@ -73,12 +73,12 @@ require (
 	github.com/yuin/goldmark-meta v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.14.3 // indirect
 	go.mongodb.org/mongo-driver v1.14.0 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
 	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240116215550-a9fa1716bcac // indirect

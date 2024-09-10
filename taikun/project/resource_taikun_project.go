@@ -220,7 +220,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			MaxItems:     1,
 			Optional:     true,
 			RequiredWith: []string{"server_kubemaster", "server_kubeworker"},
-			Set:          utils.HashAttributes("name", "disk_size", "flavor", "spot_server", "zone", "hypervisor"),
+			Set:          utils.HashAttributes("name", "disk_size", "flavor", "spot_server", "hypervisor"),
 			Elem: &schema.Resource{
 				Schema: taikunServerBasicSchema(),
 			},
@@ -240,7 +240,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Type:         schema.TypeSet,
 			Optional:     true,
 			RequiredWith: []string{"server_bastion", "server_kubemaster"},
-			Set:          utils.HashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "zone", "hypervisor", "proxmox_extra_disk_size"),
+			Set:          utils.HashAttributes("name", "disk_size", "flavor", "kubernetes_node_label", "spot_server", "wasm", "hypervisor", "proxmox_extra_disk_size"),
 			Elem: &schema.Resource{
 				Schema: taikunServerKubeworkerSchema(),
 			},
@@ -1219,7 +1219,6 @@ func flattenTaikunProject(
 			"status":                server.GetStatus(),
 			"spot_server":           server.GetSpotInstance(),
 			"spot_server_max_price": server.GetSpotPrice(),
-			"zone":                  utils.GetLastCharacter(server.GetAvailabilityZone()), // Get last character of the string
 			"hypervisor":            server.GetHypervisor(),
 		}
 
@@ -1227,14 +1226,18 @@ func flattenTaikunProject(
 		serverRole := server.GetRole()
 		if serverRole == tkcore.CLOUDROLE_KUBEWORKER {
 			serverMap["wasm"] = server.GetWasmEnabled()
-			serverMap["zone"] = utils.GetLastCharacter(server.GetAvailabilityZone())
 			serverMap["proxmox_extra_disk_size"] = server.GetProxmoxExtraDiskSize()
 		}
 		// Attributes only for Masters
 		if serverRole == tkcore.CLOUDROLE_KUBEMASTER {
 			serverMap["wasm"] = server.GetWasmEnabled()
-			serverMap["zone"] = utils.GetLastCharacter(server.GetAvailabilityZone())
+		}
 
+		// Flatten zones
+		if server.GetCloudType() == tkcore.CLOUDTYPE_ZADARA {
+			serverMap["zone"] = server.GetAvailabilityZone() // Zadara zones are a multicharacter string 'symphony'
+		} else {
+			serverMap["zone"] = utils.GetLastCharacter(server.GetAvailabilityZone()) // All other provider zones are one letter, the last
 		}
 
 		// Flatten flavor
@@ -1251,6 +1254,8 @@ func flattenTaikunProject(
 			serverMap["flavor"] = server.GetProxmoxFlavor()
 		case tkcore.CLOUDTYPE_VSPHERE, "vsphere":
 			serverMap["flavor"] = server.GetVsphereFlavor()
+		case tkcore.CLOUDTYPE_ZADARA, "zadara":
+			serverMap["flavor"] = server.GetAwsInstanceType()
 		}
 
 		if serverRole == tkcore.CLOUDROLE_BASTION {
@@ -1310,7 +1315,13 @@ func flattenTaikunProject(
 			"spot_vm":               vm.GetSpotInstance(),
 			"spot_vm_max_price":     vm.GetSpotPrice(),
 			"hypervisor":            vm.GetHypervisor(),
-			"zone":                  utils.GetLastCharacter(vm.GetAvailabilityZone()),
+		}
+
+		// Flatten zones
+		if projectDetailsDTO.GetCloudType() == tkcore.CLOUDTYPE_ZADARA {
+			vmMap["zone"] = vm.GetAvailabilityZone() // Zadara zones are a multicharacter string 'symphony'
+		} else {
+			vmMap["zone"] = utils.GetLastCharacter(vm.GetAvailabilityZone()) // All other provider zones are one letter, the last
 		}
 
 		tags := make([]map[string]interface{}, len(vm.GetStandAloneMetaDatas()))
@@ -1523,6 +1534,14 @@ func ResourceTaikunProjectGetCloudType(cloudCredentialID int32, apiClient *tk.Cl
 		return "", err
 	} else if responseVSPHERE.GetTotalCount() == 1 {
 		return string(tkcore.CLOUDTYPE_VSPHERE), nil
+	}
+
+	// Check if CC is Zadara
+	responseZADARA, _, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraList(context.TODO()).Id(cloudCredentialID).Execute()
+	if err != nil {
+		return "", err
+	} else if responseZADARA.GetTotalCount() == 1 {
+		return string(tkcore.CLOUDTYPE_ZADARA), nil
 	}
 
 	// Unknown CC type
