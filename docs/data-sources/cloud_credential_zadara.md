@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_cloud_credential_zadara Data Source - terraform-provider-taikun"
 subcategory: ""
-description: |-   Get an AWS cloud credential by its ID.
+description: |-   Get an Zadara cloud credential by its ID.
 ---
 
 # taikun_cloud_credential_zadara (Data Source)
 
-Get an AWS cloud credential by its ID.
+Get an Zadara cloud credential by its ID.
 
 ~> **Role Requirement** To use the `taikun_cloud_credential_zadara` data source, you need a Manager or Partner account.
 
