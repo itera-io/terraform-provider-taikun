@@ -64,8 +64,13 @@ func dataSourceTaikunRepositoriesRead(ctx context.Context, d *schema.ResourceDat
 	// Flatten together
 	repositories := make([]map[string]interface{}, len(repositoriesList))
 	for i, rawRepository := range repositoriesList {
-		repositories[i] = flattenTaikunRepository(&rawRepository)
+		if i < publicTotalGot {
+			repositories[i] = flattenTaikunRepository(&rawRepository, false)
+		} else {
+			repositories[i] = flattenTaikunRepository(&rawRepository, true)
+		}
 	}
+
 	if err := d.Set("repositories", repositories); err != nil {
 		return diag.FromErr(err)
 	}
