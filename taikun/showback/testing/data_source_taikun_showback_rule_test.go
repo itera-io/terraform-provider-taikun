@@ -2,16 +2,27 @@ package testing
 
 import (
 	"fmt"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 	"math"
 	"math/rand"
+	"os"
 	"testing"
+
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunShowbackRuleConfig = `
+resource "taikun_showback_credential" "foo" {
+  name            = "%s"
+
+  password = "%s"
+  url = "%s"
+  username = "%s"
+}
+
+
 resource "taikun_showback_rule" "foo" {
   name = "%s"
   price = %f
@@ -24,6 +35,7 @@ resource "taikun_showback_rule" "foo" {
   }
   project_alert_limit = %d
   global_alert_limit = %d
+  showback_credential_id = resource.taikun_showback_credential.foo.id
 }
 
 data "taikun_showback_rule" "foo" {
@@ -32,6 +44,7 @@ data "taikun_showback_rule" "foo" {
 `
 
 func TestAccDataSourceTaikunShowbackRule(t *testing.T) {
+	showbackCredentialName := utils.RandomTestName()
 	showbackRuleName := utils.RandomTestName()
 	price := math.Round(rand.Float64()*10000) / 100
 	metricName := utils.RandomString()
@@ -46,6 +59,10 @@ func TestAccDataSourceTaikunShowbackRule(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackRuleConfig,
+					showbackCredentialName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
 					showbackRuleName,
 					price,
 					metricName,

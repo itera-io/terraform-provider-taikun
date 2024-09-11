@@ -58,6 +58,19 @@ func TestAccPreCheckAWS(t *testing.T) {
 	checkEnvVariables(requiredEnvSlice, t)
 }
 
+func TestAccPreCheckZadara(t *testing.T) {
+	// What enviroment variables do we require to be set
+	requiredEnvSlice := []string{
+		"ZADARA_ACCESS_KEY_ID",
+		"ZADARA_SECRET_ACCESS_KEY",
+		"ZADARA_DEFAULT_REGION",
+		"ZADARA_AZ_COUNT",
+	}
+
+	// Check if all are set
+	checkEnvVariables(requiredEnvSlice, t)
+}
+
 func TestAccPreCheckGCP(t *testing.T) {
 	// What enviroment variables do we require to be set
 	requiredEnvSlice := []string{
