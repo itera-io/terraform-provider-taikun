@@ -2,16 +2,28 @@ package testing
 
 import (
 	"fmt"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 	"math"
 	"math/rand"
+	"os"
 	"testing"
+
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 const testAccDataSourceTaikunShowbackRulesConfig = `
+
+resource "taikun_showback_credential" "foo" {
+  name            = "%s"
+
+  password = "%s"
+  url = "%s"
+  username = "%s"
+}
+
+
 resource "taikun_showback_rule" "foo" {
   name = "%s"
   price = %f
@@ -24,6 +36,7 @@ resource "taikun_showback_rule" "foo" {
   }
   project_alert_limit = %d
   global_alert_limit = %d
+  showback_credential_id = resource.taikun_showback_credential.foo.id
 }
 
 data "taikun_showback_rules" "all" {
@@ -33,6 +46,7 @@ data "taikun_showback_rules" "all" {
 }`
 
 func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
+	showbackCredentialName := utils.RandomTestName()
 	showbackRuleName := utils.RandomTestName()
 	price := math.Round(rand.Float64()*10000) / 100
 	metricName := utils.RandomString()
@@ -47,6 +61,10 @@ func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackRulesConfig,
+					showbackCredentialName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
 					showbackRuleName,
 					price,
 					metricName,
@@ -72,6 +90,17 @@ func TestAccDataSourceTaikunShowbackRules(t *testing.T) {
 }
 
 const testAccDataSourceTaikunShowbackRulesWithFilterConfig = `
+
+resource "taikun_showback_credential" "foo" {
+  name            = "%s"
+
+  password = "%s"
+  url = "%s"
+  username = "%s"
+}
+
+
+
 resource "taikun_organization" "foo" {
   name = "%s"
   full_name = "%s"
@@ -90,11 +119,12 @@ resource "taikun_showback_rule" "foo" {
   }
   project_alert_limit = %d
   global_alert_limit = %d
-  //organization_id = resource.taikun_organization.foo.id
+  organization_id = resource.taikun_organization.foo.id
+  showback_credential_id = resource.taikun_showback_credential.foo.id
 }
 
 data "taikun_showback_rules" "all" {
-  //organization_id = resource.taikun_organization.foo.id
+  organization_id = resource.taikun_organization.foo.id
 
   depends_on = [
     taikun_showback_rule.foo
@@ -102,6 +132,7 @@ data "taikun_showback_rules" "all" {
 }`
 
 func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
+	showbackCredentialName := utils.RandomTestName()
 	organizationName := utils.RandomTestName()
 	organizationFullName := utils.RandomTestName()
 	showbackRuleName := utils.RandomTestName()
@@ -118,6 +149,10 @@ func TestAccDataSourceTaikunShowbackRulesWithFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunShowbackRulesWithFilterConfig,
+					showbackCredentialName,
+					os.Getenv("PROMETHEUS_PASSWORD"),
+					os.Getenv("PROMETHEUS_URL"),
+					os.Getenv("PROMETHEUS_USERNAME"),
 					organizationName,
 					organizationFullName,
 					showbackRuleName,

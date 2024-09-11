@@ -146,11 +146,12 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 			Optional:    true,
 		},
 		"zone": {
-			Description: "Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
-			Type:        schema.TypeString,
-			Optional:    true,
-			ForceNew:    true,
-			Default:     "",
+			Description:      "Availability zone for this server (only for AWS, Azure and GCP). If not specified, the first valid zone is used.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: utils.IgnoreChangeFromEmpty,
+			Default:          "",
 		},
 		"hypervisor": {
 			Description: "Hypervisor used for this server from Proxmox/vSphere Cloud credential (required for Proxmox, required for vSphere when DRS is disabled).",
