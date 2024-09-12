@@ -181,7 +181,7 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 		repositoryName := d.Get("name").(string)
 		organizationName := d.Get("organization_name").(string)
 		private := d.Get("private").(bool)
-		data, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(context.TODO()).IsPrivate(private).Search(repositoryName).Execute()
+		data, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(context.TODO()).IsPrivate(private).Search(repositoryName).IsPrivate(private).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -190,7 +190,7 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 		foundMatch := false
 		var rawRepository tkcore.ArtifactRepositoryDto
 		for _, repo := range data.GetData() {
-			if (repo.GetName() == repositoryName) && (repo.GetOrganizationName() == organizationName) && (!repo.GetOfficial() == private) {
+			if (repo.GetName() == repositoryName) && (repo.GetOrganizationName() == organizationName) {
 				foundMatch = true
 				rawRepository = repo
 				break
@@ -206,7 +206,7 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 		}
 
 		// Load all the found data to the local object
-		err = utils.SetResourceDataFromMap(d, flattenTaikunRepository(&rawRepository))
+		err = utils.SetResourceDataFromMap(d, flattenTaikunRepository(&rawRepository, private))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,10 +217,10 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 	}
 }
 
-func flattenTaikunRepository(rawRepository *tkcore.ArtifactRepositoryDto) map[string]interface{} {
+func flattenTaikunRepository(rawRepository *tkcore.ArtifactRepositoryDto, isPrivate bool) map[string]interface{} {
 	// Ignore changes for URL for public repository
 	private_url_or_empty := ""
-	if !rawRepository.GetOfficial() {
+	if isPrivate {
 		private_url_or_empty = rawRepository.GetUrl()
 	}
 
@@ -228,7 +228,7 @@ func flattenTaikunRepository(rawRepository *tkcore.ArtifactRepositoryDto) map[st
 		"id":                rawRepository.GetRepositoryId(),
 		"name":              rawRepository.GetName(),
 		"organization_name": rawRepository.GetOrganizationName(),
-		"private":           !rawRepository.GetOfficial(),
+		"private":           isPrivate,
 		"url":               private_url_or_empty, // Ignore changes for URL for public repository
 		"enabled":           rawRepository.GetIsBound(),
 	}
