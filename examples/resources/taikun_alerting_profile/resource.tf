@@ -15,7 +15,7 @@ resource "taikun_alerting_profile" "foo" {
 
   lock = false
 
-  slack_configuration_id = resource.taikun_slack_configuration.foo.id
+  slack_configuration_id = taikun_slack_configuration.foo.id
 
   organization_id = "42"
 
