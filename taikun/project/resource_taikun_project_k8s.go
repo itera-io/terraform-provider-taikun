@@ -640,7 +640,7 @@ func resourceTaikunProjectRecreateAutoscaler(ctx context.Context, d *schema.Reso
 	if err != nil {
 		return tk.CreateError(response, err)
 	}
-	if *data.GetProject().IsAutoscalingEnabled {
+	if data.GetProject().IsAutoscalingEnabled {
 		// Autoscaler was enabled -> Disable autoscaler
 		err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient)
 		if err != nil {
