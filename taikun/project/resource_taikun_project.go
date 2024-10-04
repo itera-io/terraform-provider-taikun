@@ -1241,22 +1241,7 @@ func flattenTaikunProject(
 		}
 
 		// Flatten flavor
-		switch server.GetCloudType() {
-		case tkcore.CLOUDTYPE_AWS:
-			serverMap["flavor"] = server.GetAwsInstanceType()
-		case tkcore.CLOUDTYPE_AZURE:
-			serverMap["flavor"] = server.GetAzureVmSize()
-		case tkcore.CLOUDTYPE_OPENSTACK:
-			serverMap["flavor"] = server.GetOpenstackFlavor()
-		case tkcore.CLOUDTYPE_GOOGLE, "google":
-			serverMap["flavor"] = server.GetGoogleMachineType()
-		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
-			serverMap["flavor"] = server.GetProxmoxFlavor()
-		case tkcore.CLOUDTYPE_VSPHERE, "vsphere":
-			serverMap["flavor"] = server.GetVsphereFlavor()
-		case tkcore.CLOUDTYPE_ZADARA, "zadara":
-			serverMap["flavor"] = server.GetAwsInstanceType()
-		}
+		serverMap["flavor"] = server.GetFlavor()
 
 		if serverRole == tkcore.CLOUDROLE_BASTION {
 			// Flatten bastion

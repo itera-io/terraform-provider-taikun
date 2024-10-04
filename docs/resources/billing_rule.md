@@ -26,7 +26,7 @@ resource "taikun_billing_rule" "foo" {
   price       = 1
   type        = "Sum"
 
-  billing_credential_id = resource.taikun_billing_credential.foo.id
+  billing_credential_id = taikun_billing_credential.foo.id
 
   label {
     key   = "label"
