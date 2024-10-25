@@ -622,14 +622,14 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		serverList := response.Data
 		vmList := responseVM.Data
 
-		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.GetProjectId(), apiClient)
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		var boundImageDTOs []tkcore.BoundImagesForProjectsListDto
 
-		boundImageDTOs, err = resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.GetProjectId(), apiClient)
+		boundImageDTOs, err = resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -646,7 +646,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectDetailsDTO.GetProjectId(), apiClient)
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectDetailsDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1177,11 +1177,11 @@ func flattenTaikunProject(
 		"expiration_date":         utils.Rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
 		"flavors":                 flavors,
 		"images":                  images,
-		"id":                      utils.I32toa(projectDetailsDTO.GetProjectId()),
+		"id":                      utils.I32toa(projectDetailsDTO.GetId()),
 		"kubernetes_profile_id":   utils.I32toa(projectDetailsDTO.GetKubernetesProfileId()),
-		"kubernetes_version":      projectDetailsDTO.GetKubernetesCurrentVersion(),
+		"kubernetes_version":      projectDetailsDTO.GetKubernetesVersion(),
 		"lock":                    projectDetailsDTO.GetIsLocked(),
-		"name":                    projectDetailsDTO.GetProjectName(),
+		"name":                    projectDetailsDTO.GetName(),
 		"organization_id":         utils.I32toa(projectDetailsDTO.GetOrganizationId()),
 		"quota_cpu_units":         projectQuotaDTO.GetServerCpu(),
 		"quota_ram_size":          utils.ByteToGibiByte(projectQuotaDTO.GetServerRam()),
@@ -1417,7 +1417,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 			}
 
 			project := resp.GetProject()
-			status := project.GetProjectStatus()
+			status := project.GetStatus()
 
 			return resp, string(status), nil
 		},
