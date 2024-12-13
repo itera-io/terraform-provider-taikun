@@ -21,6 +21,11 @@ func resourceTaikunRepositorySchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"id_apprepo": {
+			Description: "The ID of the application repository.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"name": {
 			Description:  "The name of the repository.",
 			Type:         schema.TypeString,
@@ -97,7 +102,11 @@ func resourceTaikunRepositoryDelete(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		deleteCommand := tkcore.DeleteRepositoryCommand{}
-		deleteCommand.SetRepoName(d.Get("name").(string))
+		apprepoId, err := utils.Atoi32(d.Get("id_apprepo").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		deleteCommand.SetAppRepoId(apprepoId)
 		response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(context.TODO()).DeleteRepositoryCommand(deleteCommand).Execute()
 		if err2 != nil {
 			return diag.FromErr(tk.CreateError(response, err2))
@@ -226,6 +235,7 @@ func flattenTaikunRepository(rawRepository *tkcore.ArtifactRepositoryDto, isPriv
 
 	return map[string]interface{}{
 		"id":                rawRepository.GetRepositoryId(),
+		"id_apprepo":        fmt.Sprint(rawRepository.GetAppRepoId()),
 		"name":              rawRepository.GetName(),
 		"organization_name": rawRepository.GetOrganizationName(),
 		"private":           isPrivate,
