@@ -1053,8 +1053,6 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	for ; i < autoscalerData.GetTotalCount(); i++ {
 		serversToPurge = append(serversToPurge, map[string]interface{}{"id": fmt.Sprint(autoscalerData.GetData()[0].GetId())})
 	}
-	// errstring := fmt.Sprint(serversToPurge)
-	// tflog.Error(ctx, errstring)
 
 	if len(serversToPurge) != 0 {
 		err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
