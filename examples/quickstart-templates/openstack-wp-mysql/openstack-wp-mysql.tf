@@ -85,10 +85,10 @@ resource "taikun_app_instance" "wordpress01" {
 // App ID selectors
 locals {
   wp_app_id = [for app in tolist(taikun_catalog.cat01.application) :
-    app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
+  app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
 
   mysql_app_id = [for app in tolist(taikun_catalog.cat01.application) :
-    app.id if app.name == "mysql" && app.repository == "taikun-managed-apps"][0]
+  app.id if app.name == "mysql" && app.repository == "taikun-managed-apps"][0]
 }
 
 // Flavors configuration. Filtering data sources
