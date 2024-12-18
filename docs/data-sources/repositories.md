@@ -29,6 +29,7 @@ Read-Only:
 
 - `enabled` (Boolean)
 - `id` (String)
+- `id_apprepo` (String)
 - `name` (String)
 - `organization_name` (String)
 - `password` (String)
