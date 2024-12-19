@@ -10,7 +10,7 @@ resource "taikun_cloud_credential_gcp" "foo" {
 }
 
 data "taikun_images_gcp" "foo" {
-  cloud_credential_id = resource.taikun_cloud_credential_gcp.foo.id
+  cloud_credential_id = taikun_cloud_credential_gcp.foo.id
   type                = "ubuntu"
   latest              = true
 }
@@ -22,6 +22,6 @@ locals {
 
 resource "taikun_project" "foo" {
   name                = "mock-project"
-  cloud_credential_id = resource.taikun_cloud_credential_gcp.foo.id
+  cloud_credential_id = taikun_cloud_credential_gcp.foo.id
   images              = local.images
 }

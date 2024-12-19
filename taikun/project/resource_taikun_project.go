@@ -622,14 +622,14 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 		serverList := response.Data
 		vmList := responseVM.Data
 
-		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.GetProjectId(), apiClient)
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectDetailsDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		var boundImageDTOs []tkcore.BoundImagesForProjectsListDto
 
-		boundImageDTOs, err = resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.GetProjectId(), apiClient)
+		boundImageDTOs, err = resourceTaikunProjectGetBoundImageDTOs(projectDetailsDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -646,7 +646,7 @@ func generateResourceTaikunProjectRead(withRetries bool) schema.ReadContextFunc 
 			return nil
 		}
 
-		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectDetailsDTO.GetProjectId(), apiClient)
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectDetailsDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1053,8 +1053,6 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	for ; i < autoscalerData.GetTotalCount(); i++ {
 		serversToPurge = append(serversToPurge, map[string]interface{}{"id": fmt.Sprint(autoscalerData.GetData()[0].GetId())})
 	}
-	// errstring := fmt.Sprint(serversToPurge)
-	// tflog.Error(ctx, errstring)
 
 	if len(serversToPurge) != 0 {
 		err = resourceTaikunProjectPurgeServers(serversToPurge, apiClient, id)
@@ -1177,11 +1175,11 @@ func flattenTaikunProject(
 		"expiration_date":         utils.Rfc3339DateTimeToDate(projectDetailsDTO.GetExpiredAt()),
 		"flavors":                 flavors,
 		"images":                  images,
-		"id":                      utils.I32toa(projectDetailsDTO.GetProjectId()),
+		"id":                      utils.I32toa(projectDetailsDTO.GetId()),
 		"kubernetes_profile_id":   utils.I32toa(projectDetailsDTO.GetKubernetesProfileId()),
-		"kubernetes_version":      projectDetailsDTO.GetKubernetesCurrentVersion(),
+		"kubernetes_version":      projectDetailsDTO.GetKubernetesVersion(),
 		"lock":                    projectDetailsDTO.GetIsLocked(),
-		"name":                    projectDetailsDTO.GetProjectName(),
+		"name":                    projectDetailsDTO.GetName(),
 		"organization_id":         utils.I32toa(projectDetailsDTO.GetOrganizationId()),
 		"quota_cpu_units":         projectQuotaDTO.GetServerCpu(),
 		"quota_ram_size":          utils.ByteToGibiByte(projectQuotaDTO.GetServerRam()),
@@ -1241,22 +1239,7 @@ func flattenTaikunProject(
 		}
 
 		// Flatten flavor
-		switch server.GetCloudType() {
-		case tkcore.CLOUDTYPE_AWS:
-			serverMap["flavor"] = server.GetAwsInstanceType()
-		case tkcore.CLOUDTYPE_AZURE:
-			serverMap["flavor"] = server.GetAzureVmSize()
-		case tkcore.CLOUDTYPE_OPENSTACK:
-			serverMap["flavor"] = server.GetOpenstackFlavor()
-		case tkcore.CLOUDTYPE_GOOGLE, "google":
-			serverMap["flavor"] = server.GetGoogleMachineType()
-		case tkcore.CLOUDTYPE_PROXMOX, "proxmox":
-			serverMap["flavor"] = server.GetProxmoxFlavor()
-		case tkcore.CLOUDTYPE_VSPHERE, "vsphere":
-			serverMap["flavor"] = server.GetVsphereFlavor()
-		case tkcore.CLOUDTYPE_ZADARA, "zadara":
-			serverMap["flavor"] = server.GetAwsInstanceType()
-		}
+		serverMap["flavor"] = server.GetFlavor()
 
 		if serverRole == tkcore.CLOUDROLE_BASTION {
 			// Flatten bastion
@@ -1432,7 +1415,7 @@ func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string
 			}
 
 			project := resp.GetProject()
-			status := project.GetProjectStatus()
+			status := project.GetStatus()
 
 			return resp, string(status), nil
 		},

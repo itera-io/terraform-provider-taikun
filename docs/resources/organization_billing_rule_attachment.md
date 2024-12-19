@@ -26,7 +26,7 @@ resource "taikun_billing_rule" "foo" {
   price       = 1
   type        = "Sum"
 
-  billing_credential_id = resource.taikun_billing_credential.foo.id
+  billing_credential_id = taikun_billing_credential.foo.id
 
   label {
     key   = "key"
@@ -41,8 +41,8 @@ resource "taikun_organization" "foo" {
 }
 
 resource "taikun_organization_billing_rule_attachment" "foo" {
-  billing_rule_id = resource.taikun_billing_rule.foo.id
-  organization_id = resource.taikun_organization.foo.id
+  billing_rule_id = taikun_billing_rule.foo.id
+  organization_id = taikun_organization.foo.id
 
   discount_rate = 100
 }

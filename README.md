@@ -12,6 +12,10 @@
 ### Requirements
 -	[Terraform](https://www.terraform.io/downloads.html) >= 0.14.x
 
+### QuickStart templates
+Quickstart templates for creating VMs, K8s, Applications, Virtual clusters and more
+are available in this repository at path [examples/quickstart-templates](https://github.com/itera-io/terraform-provider-taikun/tree/dev/examples/quickstart-templates)
+
 ### Documentation
 The provider's documentation is available on the [Terraform registry](https://registry.terraform.io/providers/itera-io/taikun/latest/docs).
 See the section titled *USE PROVIDER* to start using it.

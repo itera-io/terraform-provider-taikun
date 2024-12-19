@@ -62,3 +62,4 @@ resource "taikun_repository" "bar" {
 ### Read-Only
 
 - `id` (String) The ID of the repository.
+- `id_apprepo` (String) The ID of the application repository.
