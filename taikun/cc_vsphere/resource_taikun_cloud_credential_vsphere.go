@@ -444,22 +444,22 @@ func flattenTaikunCloudCredentialVsphere(rawVsphereCredential *tkcore.VsphereLis
 		if !network.GetIsPrivate() {
 			publicNetwork = map[string]interface{}{
 				"public_name":                   network.Name.Get(),
-				"public_ip_address":             network.IpAddress.Get(),
+				"public_ip_address":             network.IpAddress,
 				"public_net_mask":               network.NetMask,
-				"public_gateway":                network.Gateway.Get(),
-				"public_begin_allocation_range": network.BeginAllocationRange.Get(),
-				"public_end_allocation_range":   network.EndAllocationRange.Get(),
+				"public_gateway":                network.Gateway,
+				"public_begin_allocation_range": network.BeginAllocationRange,
+				"public_end_allocation_range":   network.EndAllocationRange,
 			}
 		}
 		// Get private network
 		if network.GetIsPrivate() {
 			privateNetwork = map[string]interface{}{
 				"private_name":                   network.Name.Get(),
-				"private_ip_address":             network.IpAddress.Get(),
+				"private_ip_address":             network.IpAddress,
 				"private_net_mask":               network.NetMask,
-				"private_gateway":                network.Gateway.Get(),
-				"private_begin_allocation_range": network.BeginAllocationRange.Get(),
-				"private_end_allocation_range":   network.EndAllocationRange.Get(),
+				"private_gateway":                network.Gateway,
+				"private_begin_allocation_range": network.BeginAllocationRange,
+				"private_end_allocation_range":   network.EndAllocationRange,
 			}
 		}
 	}

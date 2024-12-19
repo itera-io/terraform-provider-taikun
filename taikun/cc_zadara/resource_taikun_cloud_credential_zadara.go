@@ -169,15 +169,6 @@ func resourceTaikunCloudCredentialZadaraCreate(ctx context.Context, d *schema.Re
 	body.SetZadaraRegion(d.Get("region").(string))
 	body.SetZadaraUrl(d.Get("url").(string))
 	body.SetZadaraVolumeType(d.Get("volume_type").(string))
-
-	/*
-		azCount, err := atoi32(d.Get("az_count").(string))
-		if err != nil {
-			return diag.FromErr(err)
-		} else if azCount < 1 || azCount > 3 {
-			return diag.Errorf("The az_count value must be between 1 and 3 inclusive.")
-		}
-	*/
 	body.SetAzCount(int32(d.Get("az_count").(int)))
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")

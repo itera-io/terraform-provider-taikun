@@ -31,6 +31,7 @@ data "taikun_repository" "foo" {
 
 - `enabled` (Boolean) Indicates whether the repository is enabled.
 - `id` (String) The ID of the repository.
+- `id_apprepo` (String) The ID of the application repository.
 - `password` (String, Sensitive) The registry password. (Can be set with env REGISTRY_PASSWORD)
 - `url` (String) The URL of the repository.
 - `username` (String, Sensitive) The registry username. (Can be set with env REGISTRY_USERNAME)

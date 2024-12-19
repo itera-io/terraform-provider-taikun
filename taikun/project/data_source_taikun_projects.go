@@ -75,7 +75,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 		}
 
 		project := response.GetProject()
-		quotaResponse, res, err := apiClient.Client.ProjectQuotasAPI.ProjectquotasList(context.TODO()).Id(project.GetProjectId()).Execute()
+		quotaResponse, res, err := apiClient.Client.ProjectQuotasAPI.ProjectquotasList(context.TODO()).Id(project.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

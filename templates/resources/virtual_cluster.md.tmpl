@@ -16,6 +16,8 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 {{tffile "examples/resources/taikun_virtual_cluster/resource.tf"}}
 
+Take a look at the **quickstart template** that deploys a new k8s cluster with virtual cluster inside - available in the [quickstart examples](https://github.com/itera-io/terraform-provider-taikun/tree/dev/examples/quickstart-templates) folder.
+
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import

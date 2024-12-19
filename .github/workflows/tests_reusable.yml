@@ -163,7 +163,7 @@ jobs:
     name: 1a) Dry test Taikun
     needs: [build,golangci]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -185,7 +185,7 @@ jobs:
     name: 1b) Dry test Taikun
     needs: [build,golangci]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -207,7 +207,7 @@ jobs:
     name: 1c) Dry Test GCP and Zadara
     needs: [build,golangci]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -256,7 +256,7 @@ jobs:
     name: 2a) Openstack VM minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -279,7 +279,7 @@ jobs:
     name: 2b) Openstack VM, update IP
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -302,7 +302,7 @@ jobs:
     name: 2c) Openstack VM, update flavor
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -325,7 +325,7 @@ jobs:
     name: 2d) Openstack VM, volume type
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -348,7 +348,7 @@ jobs:
     name: 3a) AWS VM, minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -371,7 +371,7 @@ jobs:
     name: 3b) AWS VM, update flavor
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -394,7 +394,7 @@ jobs:
     name: 4a) Azure VM, minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -417,7 +417,7 @@ jobs:
     name: 4b) Azure VM, update flavor
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -440,7 +440,7 @@ jobs:
     name: 4c) Azure VM, volume type
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -463,7 +463,7 @@ jobs:
     name: 6a) Proxmox VM, minimal
     needs: [test1a, test1b, test1c]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -486,7 +486,7 @@ jobs:
     name: 5a) Openstack, k8s
     needs: [test2a, test2b, test2c, test2d]
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5

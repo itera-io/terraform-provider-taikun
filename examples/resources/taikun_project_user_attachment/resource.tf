@@ -10,10 +10,10 @@ resource "taikun_cloud_credential_aws" "foo" {
 
 resource "taikun_project" "foo" {
   name                = "foo"
-  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
+  cloud_credential_id = taikun_cloud_credential_aws.foo.id
 }
 
 resource "taikun_project_user_attachment" "foo" {
-  project_id = resource.taikun_project.foo.id
-  user_id    = resource.taikun_user.foo.id
+  project_id = taikun_project.foo.id
+  user_id    = taikun_user.foo.id
 }

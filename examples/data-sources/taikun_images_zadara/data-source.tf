@@ -12,6 +12,6 @@ resource "taikun_cloud_credential_zadara" "foo" {
 }
 
 data "taikun_images_zadara" "foo" {
-  cloud_credential_id = resource.taikun_cloud_credential_zadara.foo.id
+  cloud_credential_id = taikun_cloud_credential_zadara.foo.id
   latest              = false
 }
