@@ -95,7 +95,7 @@ func resourceTaikunBackupPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	body.SetProjectId(projectId)
 	body.SetRetentionPeriod(d.Get("retention_period").(string))
 
-	res, err := apiClient.Client.BackupPolicyAPI.BackupCreate(ctx).CreateBackupPolicyCommand(body).Execute()
+	_, res, err := apiClient.Client.BackupPolicyAPI.BackupCreate(ctx).CreateBackupPolicyCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -160,7 +160,7 @@ func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData,
 	deleteBody.SetName(backupPolicyName)
 	deleteBody.SetProjectId(projectId)
 
-	res, err := apiClient.Client.BackupPolicyAPI.BackupDeleteSchedule(context.TODO()).DeleteScheduleCommand(deleteBody).Execute()
+	_, res, err := apiClient.Client.BackupPolicyAPI.BackupDeleteSchedule(context.TODO()).DeleteScheduleCommand(deleteBody).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

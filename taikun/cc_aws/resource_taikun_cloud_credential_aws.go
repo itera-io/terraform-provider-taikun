@@ -263,7 +263,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 		updateBody.SetAwsAccessKeyId(d.Get("access_key_id").(string))
 		updateBody.SetAwsSecretAccessKey(d.Get("secret_access_key").(string))
 
-		res, err := apiClient.Client.AWSCloudCredentialAPI.AwsUpdate(context.TODO()).UpdateAwsCommand(updateBody).Execute()
+		_, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsUpdate(context.TODO()).UpdateAwsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -300,6 +300,6 @@ func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	_, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

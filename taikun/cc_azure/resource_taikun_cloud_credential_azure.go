@@ -247,7 +247,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 		updateBody.SetAzureClientId(d.Get("client_id").(string))
 		updateBody.SetAzureClientSecret(d.Get("client_secret").(string))
 
-		res, err := apiClient.Client.AzureCloudCredentialAPI.AzureUpdate(context.TODO()).UpdateAzureCommand(updateBody).Execute()
+		_, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureUpdate(context.TODO()).UpdateAzureCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -286,6 +286,6 @@ func resourceTaikunCloudCredentialAzureLock(id int32, lock bool, apiClient *tk.C
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	_, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

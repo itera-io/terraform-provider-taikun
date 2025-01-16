@@ -291,7 +291,7 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
 	commitCommand := &tkcore.ProjectDeploymentCommitCommand{ProjectId: &projectID}
-	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(context.TODO()).ProjectDeploymentCommitCommand(*commitCommand).Execute()
+	_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(context.TODO()).ProjectDeploymentCommitCommand(*commitCommand).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -318,7 +318,7 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 		deleteServerBody.SetForceDeleteVClusters(true)
 		deleteServerBody.SetDeleteAutoscalingServers(true)
 
-		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+		_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -387,7 +387,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 		if monitoringCurrentyEnabled {
 			disableBody := tkcore.DeploymentDisableMonitoringCommand{}
 			disableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(context.TODO()).DeploymentDisableMonitoringCommand(disableBody).Execute()
+			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(context.TODO()).DeploymentDisableMonitoringCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -425,7 +425,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 
 			enableBody := tkcore.DeploymentEnableMonitoringCommand{}
 			enableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(context.TODO()).DeploymentEnableMonitoringCommand(enableBody).Execute()
+			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(context.TODO()).DeploymentEnableMonitoringCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -452,7 +452,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 		if backupCurrentyEnabled {
 			disableBody := tkcore.DeploymentDisableBackupCommand{}
 			disableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(context.TODO()).DeploymentDisableBackupCommand(disableBody).Execute()
+			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(context.TODO()).DeploymentDisableBackupCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -494,7 +494,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 			enableBody := tkcore.DeploymentEnableBackupCommand{}
 			enableBody.SetProjectId(projectID)
 			enableBody.SetS3CredentialId(newCredentialID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(context.TODO()).DeploymentEnableBackupCommand(enableBody).Execute()
+			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(context.TODO()).DeploymentEnableBackupCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -517,7 +517,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			disableBody := tkcore.DeploymentDisableOpaCommand{}
 			disableBody.SetProjectId(projectID)
 
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableOpa(ctx).DeploymentDisableOpaCommand(disableBody).Execute()
+			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableOpa(ctx).DeploymentDisableOpaCommand(disableBody).Execute()
 
 			if err != nil {
 				return tk.CreateError(res, err)
@@ -562,7 +562,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			enableBody.SetProjectId(projectID)
 			enableBody.SetOpaCredentialId(newOPAProfilelID)
 
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableOpa(ctx).DeploymentOpaEnableCommand(enableBody).Execute()
+			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableOpa(ctx).DeploymentOpaEnableCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -594,7 +594,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		}
 		unbindBody := tkcore.UnbindFlavorFromProjectCommand{}
 		unbindBody.SetIds(flavorBindingsToUndo)
-		res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
+		_, res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -607,7 +607,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		bindBody := tkcore.BindFlavorToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetFlavors(flavorsToBindNames)
-		res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
+		_, res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -622,7 +622,7 @@ func resourceTaikunProjectUpdateAutoscaler(ctx context.Context, d *schema.Resour
 	body.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
 	body.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
 
-	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
+	_, res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -662,7 +662,7 @@ func resourceTaikunProjectDisableAutoscaler(ctx context.Context, d *schema.Resou
 	projectID, _ := utils.Atoi32(d.Id())
 	bodyDisable := tkcore.DisableAutoscalingCommand{}
 	bodyDisable.SetProjectId(projectID)
-	res, err := apiClient.Client.AutoscalingAPI.AutoscalingDisable(ctx).DisableAutoscalingCommand(bodyDisable).Execute()
+	_, res, err := apiClient.Client.AutoscalingAPI.AutoscalingDisable(ctx).DisableAutoscalingCommand(bodyDisable).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -683,7 +683,7 @@ func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.Resour
 	bodyEnable.SetDiskSize(float64(utils.GibiByteToByte(d.Get("autoscaler_disk_size").(int))))
 	bodyEnable.SetSpotEnabled(d.Get("autoscaler_spot_enabled").(bool))
 
-	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
+	_, res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -705,7 +705,7 @@ func resourceTaikunProjectToggleFullSpot(ctx context.Context, d *schema.Resource
 		bodyToggle.SetMode("disable")
 	}
 
-	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleFullSpot(ctx).FullSpotOperationCommand(bodyToggle).Execute()
+	_, res, err := apiClient.Client.ProjectsAPI.ProjectsToggleFullSpot(ctx).FullSpotOperationCommand(bodyToggle).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -723,7 +723,7 @@ func resourceTaikunProjectToggleWorkerSpot(ctx context.Context, d *schema.Resour
 		bodyToggle.SetMode("disable")
 	}
 
-	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotWorkers(ctx).SpotWorkerOperationCommand(bodyToggle).Execute()
+	_, res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotWorkers(ctx).SpotWorkerOperationCommand(bodyToggle).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}

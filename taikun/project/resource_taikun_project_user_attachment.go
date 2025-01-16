@@ -57,7 +57,7 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 	}
 
 	body := []string{userId}
-	response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
+	_, response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -149,7 +149,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 	}
 
 	body := []string{userId}
-	response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
+	_, response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}

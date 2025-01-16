@@ -233,7 +233,7 @@ func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *tk.Clie
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsLockManager(context.TODO()).OperationCredentialLockManagerCommand(body).Execute()
+	_, res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsLockManager(context.TODO()).OperationCredentialLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
 

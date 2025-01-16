@@ -326,7 +326,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChange("emails") {
 		alertEmails := getEmailDTOsFromAlertingProfileResourceData(d)
-		res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAssignEmail(ctx, id).AlertingEmailDto(alertEmails).Execute()
+		_, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAssignEmail(ctx, id).AlertingEmailDto(alertEmails).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -334,7 +334,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 
 	if d.HasChange("webhook") {
 		webhooks := getWebhookDTOsFromAlertingProfileResourceData(d)
-		res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAssignWebhooks(ctx, id).AlertingWebhookDto(webhooks).Execute()
+		_, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAssignWebhooks(ctx, id).AlertingWebhookDto(webhooks).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -513,6 +513,6 @@ func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *tk.Client
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesLockManager(context.TODO()).AlertingProfilesLockManagerCommand(body).Execute()
+	_, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesLockManager(context.TODO()).AlertingProfilesLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

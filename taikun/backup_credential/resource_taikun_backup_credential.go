@@ -203,7 +203,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 		body.SetS3AccessKeyId(d.Get("s3_access_key_id").(string))
 		body.SetS3Name(d.Get("name").(string))
 
-		res, err := apiClient.Client.S3CredentialsAPI.S3credentialsUpdate(ctx).BackupCredentialsUpdateCommand(body).Execute()
+		_, res, err := apiClient.Client.S3CredentialsAPI.S3credentialsUpdate(ctx).BackupCredentialsUpdateCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -256,6 +256,6 @@ func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *tk.Clien
 	body := tkcore.BackupLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
-	res, err := apiClient.Client.S3CredentialsAPI.S3credentialsLockManagement(context.TODO()).BackupLockManagerCommand(body).Execute()
+	_, res, err := apiClient.Client.S3CredentialsAPI.S3credentialsLockManagement(context.TODO()).BackupLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

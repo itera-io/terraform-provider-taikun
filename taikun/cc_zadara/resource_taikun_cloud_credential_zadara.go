@@ -259,7 +259,7 @@ func resourceTaikunCloudCredentialZadaraUpdate(ctx context.Context, d *schema.Re
 		updateBody.SetZadaraAccessKeyId(d.Get("access_key_id").(string))
 		updateBody.SetZadaraSecretAccessKey(d.Get("secret_access_key").(string))
 
-		res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraUpdate(context.TODO()).UpdateZadaraCommand(updateBody).Execute()
+		_, res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraUpdate(context.TODO()).UpdateZadaraCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -298,6 +298,6 @@ func resourceTaikunCloudCredentialZadaraLock(id int32, lock bool, apiClient *tk.
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	_, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

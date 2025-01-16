@@ -194,7 +194,7 @@ func resourceTaikunBillingRuleUpdate(ctx context.Context, d *schema.ResourceData
 	body.SetOperationCredentialId(billingCredentialId)
 	body.SetType(utils.GetPrometheusType(d.Get("type").(string)))
 
-	res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesUpdate(context.TODO(), id).RuleForUpdateDto(body).Execute()
+	_, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesUpdate(context.TODO(), id).RuleForUpdateDto(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
