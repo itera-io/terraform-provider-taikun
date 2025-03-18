@@ -1155,7 +1155,7 @@ func flattenTaikunProject(
 	images := make([]string, len(boundImageDTOs))
 	cloudType := projectDetailsDTO.GetCloudType()
 	for i, boundImageDTO := range boundImageDTOs {
-		if cloudType == tkcore.CLOUDTYPE_GOOGLE {
+		if cloudType == tkcore.ECLOUDCREDENTIALTYPE_GOOGLE {
 			// If GCP - Google uses image.name instead of image.id
 			images[i] = boundImageDTO.GetName()
 		} else {
@@ -1301,7 +1301,7 @@ func flattenTaikunProject(
 		}
 
 		// Flatten zones
-		if projectDetailsDTO.GetCloudType() == tkcore.CLOUDTYPE_ZADARA {
+		if projectDetailsDTO.GetCloudType() == tkcore.ECLOUDCREDENTIALTYPE_ZADARA {
 			vmMap["zone"] = vm.GetAvailabilityZone() // Zadara zones are a multicharacter string 'symphony'
 		} else {
 			vmMap["zone"] = utils.GetLastCharacter(vm.GetAvailabilityZone()) // All other provider zones are one letter, the last

@@ -125,7 +125,7 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 	body := &tkcore.CreateCatalogCommand{}
 	body.SetName(d.Get("name").(string))
 	body.SetDescription(d.Get("description").(string))
-	_, response, err := apiClient.Client.CatalogAPI.CatalogCreate(context.TODO()).CreateCatalogCommand(*body).Execute()
+	response, err := apiClient.Client.CatalogAPI.CatalogCreate(context.TODO()).CreateCatalogCommand(*body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -280,7 +280,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 	updatedCatalog.SetId(catalogId)
 	updatedCatalog.SetName(newName.(string))
 	updatedCatalog.SetDescription(newDescription.(string))
-	_, response, err := apiClient.Client.CatalogAPI.CatalogEdit(context.TODO()).EditCatalogCommand(updatedCatalog).Execute()
+	response, err := apiClient.Client.CatalogAPI.CatalogEdit(context.TODO()).EditCatalogCommand(updatedCatalog).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -291,7 +291,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 		updateLock := tkcore.CatalogLockManagementCommand{}
 		updateLock.SetId(catalogId)
 		updateLock.SetMode(utils.GetLockMode(newCatalogLocked.(bool)))
-		_, response, err = apiClient.Client.CatalogAPI.CatalogLock(context.TODO()).CatalogLockManagementCommand(updateLock).Execute()
+		response, err = apiClient.Client.CatalogAPI.CatalogLock(context.TODO()).CatalogLockManagementCommand(updateLock).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -303,7 +303,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 		if newDefault.(bool) {
 			updateDefault := tkcore.CatalogMakeDefaultCommand{}
 			updateDefault.SetId(catalogId)
-			_, response, err = apiClient.Client.CatalogAPI.CatalogMakeDefault(context.TODO()).CatalogMakeDefaultCommand(updateDefault).Execute()
+			response, err = apiClient.Client.CatalogAPI.CatalogMakeDefault(context.TODO()).CatalogMakeDefaultCommand(updateDefault).Execute()
 			if err != nil {
 				return diag.FromErr(tk.CreateError(response, err))
 			}
@@ -343,7 +343,7 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -356,7 +356,7 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}

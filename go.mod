@@ -1,6 +1,6 @@
 module github.com/itera-io/terraform-provider-taikun
 
-go 1.21
+go 1.23
 
 require (
 	github.com/go-openapi/strfmt v0.23.0
@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
 	github.com/hashicorp/terraform-plugin-testing v1.7.0
-	github.com/itera-io/taikungoclient v0.0.0-20250116000358-bd7599c81071
+	github.com/itera-io/taikungoclient v0.0.0-20250317000431-360fe4450526
 	github.com/robfig/cron/v3 v3.0.1
 )
 

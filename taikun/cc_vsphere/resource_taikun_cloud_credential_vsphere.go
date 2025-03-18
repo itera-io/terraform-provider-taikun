@@ -402,7 +402,7 @@ func resourceTaikunCloudCredentialVsphereUpdate(ctx context.Context, d *schema.R
 		updateBody.SetUsername(d.Get("username").(string))
 		updateBody.SetPassword(d.Get("password").(string))
 
-		_, res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdate(context.TODO()).UpdateVsphereCommand(updateBody).Execute()
+		res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdate(context.TODO()).UpdateVsphereCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -413,7 +413,7 @@ func resourceTaikunCloudCredentialVsphereUpdate(ctx context.Context, d *schema.R
 		updateBody.SetId(id)
 		updateBody.SetHypervisors(utils.ResourceGetStringList(d.Get("hypervisors")))
 
-		_, res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdateVsphereHypervisors(context.TODO()).UpdateVsphereHypervisorsCommand(updateBody).Execute()
+		res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdateVsphereHypervisors(context.TODO()).UpdateVsphereHypervisorsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -505,7 +505,7 @@ func resourceTaikunCloudCredentialVsphereLock(id int32, lock bool, apiClient *tk
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	_, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
 

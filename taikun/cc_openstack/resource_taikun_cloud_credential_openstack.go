@@ -296,7 +296,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 		updateBody.SetOpenStackPassword(d.Get("password").(string))
 		updateBody.SetOpenStackUser(d.Get("user").(string))
 
-		_, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
+		res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -341,6 +341,6 @@ func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	_, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

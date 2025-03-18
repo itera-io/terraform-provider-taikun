@@ -594,7 +594,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		}
 		unbindBody := tkcore.UnbindFlavorFromProjectCommand{}
 		unbindBody.SetIds(flavorBindingsToUndo)
-		_, res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
+		res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -607,7 +607,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		bindBody := tkcore.BindFlavorToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetFlavors(flavorsToBindNames)
-		_, res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
+		res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -622,7 +622,7 @@ func resourceTaikunProjectUpdateAutoscaler(ctx context.Context, d *schema.Resour
 	body.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
 	body.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
 
-	_, res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEdit(ctx).EditAutoscalingCommand(body).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -662,7 +662,7 @@ func resourceTaikunProjectDisableAutoscaler(ctx context.Context, d *schema.Resou
 	projectID, _ := utils.Atoi32(d.Id())
 	bodyDisable := tkcore.DisableAutoscalingCommand{}
 	bodyDisable.SetProjectId(projectID)
-	_, res, err := apiClient.Client.AutoscalingAPI.AutoscalingDisable(ctx).DisableAutoscalingCommand(bodyDisable).Execute()
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingDisable(ctx).DisableAutoscalingCommand(bodyDisable).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -683,7 +683,7 @@ func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.Resour
 	bodyEnable.SetDiskSize(float64(utils.GibiByteToByte(d.Get("autoscaler_disk_size").(int))))
 	bodyEnable.SetSpotEnabled(d.Get("autoscaler_spot_enabled").(bool))
 
-	_, res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
+	res, err := apiClient.Client.AutoscalingAPI.AutoscalingEnable(ctx).EnableAutoscalingCommand(bodyEnable).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}

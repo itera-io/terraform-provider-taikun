@@ -362,7 +362,7 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 		updateBody.SetTokenId(d.Get("client_id").(string))
 		updateBody.SetTokenSecret(d.Get("client_secret").(string))
 
-		_, res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdate(context.TODO()).UpdateProxmoxCommand(updateBody).Execute()
+		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdate(context.TODO()).UpdateProxmoxCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -373,7 +373,7 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 		updateBody.SetId(id)
 		updateBody.SetHypervisors(utils.ResourceGetStringList(d.Get("hypervisors")))
 
-		_, res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdateHypervisors(context.TODO()).UpdateHypervisorsCommand(updateBody).Execute()
+		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdateHypervisors(context.TODO()).UpdateHypervisorsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -460,6 +460,6 @@ func resourceTaikunCloudCredentialProxmoxLock(id int32, lock bool, apiClient *tk
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	_, res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

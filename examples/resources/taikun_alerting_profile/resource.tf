@@ -1,7 +1,7 @@
 resource "taikun_slack_configuration" "foo" {
   name    = "foo"
-  channel = "ci"
-  url     = "https://hooks.myapp.example/ci"
+  channel = "cia"
+  url     = "https://hooks.myapp.example/cia"
   type    = "Alert"
 
   organization_id = "42"

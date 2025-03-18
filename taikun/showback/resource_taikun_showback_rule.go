@@ -261,7 +261,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
+	_, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}

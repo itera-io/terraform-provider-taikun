@@ -272,6 +272,6 @@ func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	_, _, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	_, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
 	return err
 }

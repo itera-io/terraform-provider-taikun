@@ -30,8 +30,6 @@ resource "taikun_organization" "foo" {
   city = "%s"
   country = "%s"
 
-  lock = %t
-
   managers_can_change_subscription = %t
 }
 `
@@ -47,7 +45,6 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 	address := "10 Downing Street"
 	city := "London"
 	country := "United Kingdom of Great Britain and Northern Ireland"
-	isLocked := rand.Int()%2 == 0
 	letManagersChangeSubscription := rand.Int()%2 == 0
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -67,7 +64,6 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					address,
 					city,
 					country,
-					isLocked,
 					letManagersChangeSubscription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
@@ -81,7 +77,7 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(address)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(city)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(country)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(false)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "managers_can_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
@@ -115,8 +111,6 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 	newCity := "Washington, D.C"
 	country := "United Kingdom of Great Britain and Northern Ireland"
 	newCountry := "United States of America"
-	isLocked := rand.Int()%2 == 0
-	newIsLocked := !isLocked
 	letManagersChangeSubscription := rand.Int()%2 == 0
 	newLetManagersChangeSubscription := !letManagersChangeSubscription
 
@@ -137,7 +131,6 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					address,
 					city,
 					country,
-					isLocked,
 					letManagersChangeSubscription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
@@ -151,7 +144,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(address)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(city)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(country)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(isLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(false)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "managers_can_change_subscription", fmt.Sprint(letManagersChangeSubscription)),
 				),
 			},
@@ -167,7 +160,6 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					newAddress,
 					newCity,
 					newCountry,
-					newIsLocked,
 					newLetManagersChangeSubscription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
@@ -181,7 +173,7 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_organization.foo", "address", fmt.Sprint(newAddress)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "city", fmt.Sprint(newCity)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "country", fmt.Sprint(newCountry)),
-					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(newIsLocked)),
+					resource.TestCheckResourceAttr("taikun_organization.foo", "lock", fmt.Sprint(true)),
 					resource.TestCheckResourceAttr("taikun_organization.foo", "managers_can_change_subscription", fmt.Sprint(newLetManagersChangeSubscription)),
 				),
 			},

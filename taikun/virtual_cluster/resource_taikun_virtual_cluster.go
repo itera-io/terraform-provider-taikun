@@ -171,7 +171,7 @@ func resourceTaikunVirtualClusterCreate(ctx context.Context, d *schema.ResourceD
 		bodyCreate.SetAlertingProfileId(alertingProfileIdInt32)
 	}
 
-	_, response, err := apiClient.Client.VirtualClusterAPI.VirtualClusterCreate(ctx).CreateVirtualClusterCommand(*bodyCreate).Execute()
+	response, err := apiClient.Client.VirtualClusterAPI.VirtualClusterCreate(ctx).CreateVirtualClusterCommand(*bodyCreate).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
