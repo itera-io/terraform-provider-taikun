@@ -31,6 +31,8 @@ resource "taikun_organization" "foo" {
   country = "%s"
 
   managers_can_change_subscription = %t
+
+  %s
 }
 `
 
@@ -64,7 +66,8 @@ func TestAccResourceTaikunOrganization(t *testing.T) {
 					address,
 					city,
 					country,
-					letManagersChangeSubscription),
+					letManagersChangeSubscription,
+					""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
 					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(name)),
@@ -131,7 +134,8 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					address,
 					city,
 					country,
-					letManagersChangeSubscription),
+					letManagersChangeSubscription,
+					""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
 					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(name)),
@@ -160,7 +164,8 @@ func TestAccResourceTaikunOrganizationUpdate(t *testing.T) {
 					newAddress,
 					newCity,
 					newCountry,
-					newLetManagersChangeSubscription),
+					newLetManagersChangeSubscription,
+					"lock = true"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunOrganizationExists,
 					resource.TestCheckResourceAttr("taikun_organization.foo", "name", fmt.Sprint(newName)),
