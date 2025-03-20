@@ -697,7 +697,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 		}
 		unbindBody := tkcore.DeleteImageFromProjectCommand{}
 		unbindBody.SetIds(imageBindingsToUndo)
-		_, res, err := apiClient.Client.ImagesAPI.ImagesUnbindImagesFromProject(context.TODO()).DeleteImageFromProjectCommand(unbindBody).Execute()
+		res, err := apiClient.Client.ImagesAPI.ImagesUnbindImagesFromProject(context.TODO()).DeleteImageFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -710,7 +710,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 		bindBody := tkcore.BindImageToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetImages(imagesToBindNames)
-		_, res, err := apiClient.Client.ImagesAPI.ImagesBindImagesToProject(context.TODO()).BindImageToProjectCommand(bindBody).Execute()
+		res, err := apiClient.Client.ImagesAPI.ImagesBindImagesToProject(context.TODO()).BindImageToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
