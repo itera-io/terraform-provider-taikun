@@ -103,6 +103,25 @@ func TestAccResourceTaikunCloudCredentialZadaraLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_zadara.foo", "is_default"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialZadaraConfig,
+					cloudCredentialName,
+					azCount,
+					false,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialZadaraExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", cloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "az_count", os.Getenv("ZADARA_AZ_COUNT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "region", os.Getenv("ZADARA_DEFAULT_REGION")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_zadara.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_zadara.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_zadara.foo", "is_default"),
+				),
+			},
 		},
 	})
 }

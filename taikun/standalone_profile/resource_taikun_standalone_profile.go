@@ -241,7 +241,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		body.SetId(id)
 		body.SetName(d.Get("name").(string))
 
-		_, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
+		_, _, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -302,7 +302,7 @@ func resourceTaikunStandaloneProfileDelete(ctx context.Context, d *schema.Resour
 	body := tkcore.DeleteStandAloneProfileCommand{}
 	body.SetId(id)
 
-	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
+	_, res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -345,6 +345,6 @@ func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *tk.Clie
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileLockManagement(context.TODO()).StandAloneProfileLockManagementCommand(body).Execute()
+	_, res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileLockManagement(context.TODO()).StandAloneProfileLockManagementCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
