@@ -39,6 +39,8 @@ make dockerinstall
 ```
 ### Documenting the provider
 
+To generate or update documentation, run `go generate`.
+
 We use [tfplugindocs](https://github.com/hashicorp/terraform-plugin-docs) to generate documentation for the provider.
 
 To generate or update documentation, run `go generate` locally or run the [generate documentation](https://github.com/itera-io/terraform-provider-taikun/actions/workflows/generate_documentation.yml) workflow with your target branch as an input.
@@ -124,6 +126,18 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 
 ```sh
 $ make testacc
+```
+
+### Running the locally built provider
+To tell Terraform to retrieve the provider locally instead of fetching it from the registry, use the following terraform configuration block.
+```tf
+terraform {
+  required_providers {
+    taikun = {
+      source  = "itera-io/dev/taikun"
+    }
+  }
+}
 ```
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
