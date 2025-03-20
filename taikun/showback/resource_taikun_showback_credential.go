@@ -230,6 +230,6 @@ func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	resp, err := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsLockManagement(context.TODO()).ShowbackCredentialLockCommand(body).Execute()
+	_, resp, err := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsLockManagement(context.TODO()).ShowbackCredentialLockCommand(body).Execute()
 	return tk.CreateError(resp, err)
 }

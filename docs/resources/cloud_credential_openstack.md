@@ -46,22 +46,23 @@ resource "taikun_cloud_credential_openstack" "foo" {
 
 ### Required
 
-- `domain` (String) The OpenStack domain. (Can be set with env OS_USER_DOMAIN_NAME)
 - `name` (String) The name of the OpenStack cloud credential.
-- `password` (String, Sensitive) The OpenStack password. (Can be set with env OS_PASSWORD)
+- `password` (String, Sensitive) The OpenStack password or Application Credential secret. (Can be set with env OS_PASSWORD)
 - `project_name` (String) The OpenStack project name. (Can be set with env OS_PROJECT_NAME)
 - `public_network_name` (String) The name of the public OpenStack network to use. (Can be set with env OS_INTERFACE)
 - `region` (String) The OpenStack region. (Can be set with env OS_REGION_NAME)
 - `url` (String) The OpenStack authentication URL. (Can be set with env OS_AUTH_URL)
-- `user` (String) The OpenStack user. (Can be set with env OS_USERNAME)
+- `user` (String) The OpenStack user or Application credential Id. (Can be set with env OS_USERNAME)
 
 ### Optional
 
 - `availability_zone` (String) The OpenStack availability zone.
 - `continent` (String) The OpenStack continent (`Asia`, `Europe` or `America`). Defaults to `Europe`.
+- `domain` (String) The OpenStack domain. Required if you authenticate with username + password. (Can be set with env OS_USER_DOMAIN_NAME)
 - `imported_network_subnet_id` (String) The OpenStack network subnet ID to import a network.
 - `lock` (Boolean) Indicates whether to lock the OpenStack cloud credential. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the OpenStack cloud credential.
+- `using_application_credentials` (Boolean) Indicate whether you are specifying OpenStack application credential [id + secret] or [Username + Password + Domain] (default). Defaults to `false`.
 - `volume_type_name` (String) The OpenStack type of volume.
 
 ### Read-Only

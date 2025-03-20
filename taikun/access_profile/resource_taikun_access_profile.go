@@ -454,7 +454,7 @@ func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessP
 	for _, rawOldDnsServer := range oldDnsServers {
 		oldDnsServer := rawOldDnsServer.(map[string]interface{})
 		id, _ := utils.Atoi32(oldDnsServer["id"].(string))
-		if res, err2 := apiClient.Client.DnsServersAPI.DnsserversDelete(context.TODO(), id).Execute(); err != nil {
+		if res, err2 := apiClient.Client.DnsServersAPI.DnsserversDelete(context.TODO(), id).Execute(); err2 != nil {
 			err = tk.CreateError(res, err2)
 			return err
 		}

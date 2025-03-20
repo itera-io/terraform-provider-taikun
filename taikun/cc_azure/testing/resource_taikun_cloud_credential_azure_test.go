@@ -113,6 +113,28 @@ func TestAccResourceTaikunCloudCredentialAzureLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "is_default"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAzureConfig,
+					cloudCredentialName,
+					azCount,
+					os.Getenv("AZURE_LOCATION"),
+					false,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialAzureExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "name", cloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_id", os.Getenv("AZURE_CLIENT_ID")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "client_secret", os.Getenv("AZURE_SECRET")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "tenant_id", os.Getenv("AZURE_TENANT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "subscription_id", os.Getenv("AZURE_SUBSCRIPTION")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "az_count", os.Getenv("AZURE_AZ_COUNT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "location", os.Getenv("AZURE_LOCATION")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_azure.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_azure.foo", "is_default"),
+				),
+			},
 		},
 	})
 }

@@ -25,7 +25,6 @@ resource "taikun_organization" "foo" {
   address                          = "Foo 42"
   city                             = "Praha"
   country                          = "Czechia"
-  lock                             = false
   managers_can_change_subscription = true
 }
 ```

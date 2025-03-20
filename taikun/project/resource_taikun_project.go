@@ -763,14 +763,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("alerting_profile_id") {
 		body := tkcore.AttachDetachAlertingProfileCommand{}
 		body.SetProjectId(id)
-		bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+		_, bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
 		if newErr != nil {
 			return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 		}
 		if newAlertingProfileIDData, newAlertingProfileIDProvided := d.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
 			newAlertingProfileID, _ := utils.Atoi32(newAlertingProfileIDData.(string))
 			body.SetAlertingProfileId(newAlertingProfileID)
-			bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+			_, bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
 			if newErr != nil {
 				return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 			}
@@ -796,7 +796,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		_, _, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -875,7 +875,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				deleteServerBody.SetProjectId(id)
 				deleteServerBody.SetServerIds(serverIds)
 
-				_, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+				_, _, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -1131,7 +1131,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *tk.Clien
 		body.SetVmVolumeSize(float64(vmVolume.(int))) // No conversion needed, API takes GBs
 	}
 
-	_, err = apiClient.Client.ProjectQuotasAPI.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
+	_, _, err = apiClient.Client.ProjectQuotasAPI.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
 	return
 }
 
@@ -1155,7 +1155,7 @@ func flattenTaikunProject(
 	images := make([]string, len(boundImageDTOs))
 	cloudType := projectDetailsDTO.GetCloudType()
 	for i, boundImageDTO := range boundImageDTOs {
-		if cloudType == tkcore.CLOUDTYPE_GOOGLE {
+		if cloudType == tkcore.ECLOUDCREDENTIALTYPE_GOOGLE {
 			// If GCP - Google uses image.name instead of image.id
 			images[i] = boundImageDTO.GetName()
 		} else {
@@ -1301,7 +1301,7 @@ func flattenTaikunProject(
 		}
 
 		// Flatten zones
-		if projectDetailsDTO.GetCloudType() == tkcore.CLOUDTYPE_ZADARA {
+		if projectDetailsDTO.GetCloudType() == tkcore.ECLOUDCREDENTIALTYPE_ZADARA {
 			vmMap["zone"] = vm.GetAvailabilityZone() // Zadara zones are a multicharacter string 'symphony'
 		} else {
 			vmMap["zone"] = utils.GetLastCharacter(vm.GetAvailabilityZone()) // All other provider zones are one letter, the last
@@ -1535,7 +1535,7 @@ func resourceTaikunProjectLock(id int32, lock bool, apiClient *tk.Client) error 
 	body := tkcore.ProjectLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
-	_, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
+	_, _, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
 	return err
 }
 

@@ -103,6 +103,25 @@ func TestAccResourceTaikunCloudCredentialAWSLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialAWSConfig,
+					cloudCredentialName,
+					azCount,
+					false,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunCloudCredentialAWSExists,
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "name", cloudCredentialName),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "access_key_id", os.Getenv("AWS_ACCESS_KEY_ID")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "secret_access_key", os.Getenv("AWS_SECRET_ACCESS_KEY")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "az_count", os.Getenv("AWS_AZ_COUNT")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "region", os.Getenv("AWS_DEFAULT_REGION")),
+					resource.TestCheckResourceAttr("taikun_cloud_credential_aws.foo", "lock", "false"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "organization_name"),
+					resource.TestCheckResourceAttrSet("taikun_cloud_credential_aws.foo", "is_default"),
+				),
+			},
 		},
 	})
 }

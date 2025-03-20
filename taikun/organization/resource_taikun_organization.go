@@ -171,7 +171,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 		updateLockBody.SetPhone(body.GetPhone())
 		updateLockBody.SetVatNumber(body.GetVatNumber())
 
-		res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(ctx).UpdateOrganizationCommand(updateLockBody).Execute()
+		_, res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(ctx).UpdateOrganizationCommand(updateLockBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -241,7 +241,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	body.SetPhone(d.Get("phone").(string))
 	body.SetVatNumber(d.Get("vat_number").(string))
 
-	res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
+	_, res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

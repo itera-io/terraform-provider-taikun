@@ -45,10 +45,10 @@ github.com/go-git/go-billy/v5 v5.5.0 h1:yEY4yhzCDuMGSv83oGxiBotRzhwhNr8VZyphhiu+
 github.com/go-git/go-billy/v5 v5.5.0/go.mod h1:hmexnoNsr2SJU1Ju67OaNz5ASJY3+sHgFRpCtpDCKow=
 github.com/go-git/go-git/v5 v5.11.0 h1:XIZc1p+8YzypNr34itUfSvYJcv+eYdTnTvOZ2vD3cA4=
 github.com/go-git/go-git/v5 v5.11.0/go.mod h1:6GFcX2P3NM7FPBfpePbpLd21XxsgdAt+lKqXmCUiUCY=
-github.com/go-openapi/errors v0.21.1 h1:rVisxQPdETctjlYntm0Ek4dKf68nAQocCloCT50vWuI=
-github.com/go-openapi/errors v0.21.1/go.mod h1:LyiY9bgc7AVVh6wtVvMYEyoj3KJYNoRw92mmvnMWgj8=
-github.com/go-openapi/strfmt v0.22.2 h1:DPYOrm6gexCfZZfXUaXFS4+Jw6HAaIIG0SZ5630f8yw=
-github.com/go-openapi/strfmt v0.22.2/go.mod h1:HB/b7TCm91rno75Dembc1dFW/0FPLk5CEXsoF9ReNc4=
+github.com/go-openapi/errors v0.22.0 h1:c4xY/OLxUBSTiepAg3j/MHuAv5mJhnf53LLMWFB+u/w=
+github.com/go-openapi/errors v0.22.0/go.mod h1:J3DmZScxCDufmIMsdOuDHxJbdOGC0xtUynjIx092vXE=
+github.com/go-openapi/strfmt v0.23.0 h1:nlUS6BCqcnAk0pyhi9Y+kdDVZdZMHfEKQiS4HaMgO/c=
+github.com/go-openapi/strfmt v0.23.0/go.mod h1:NrtIpfKtWIygRkKVsxh7XQMDQW5HKQl6S5ik2elW+K4=
 github.com/go-test/deep v1.0.3 h1:ZrJSEWsXzPOxaZnFteGEfooLba+ju3FYIbOrS+rQd68=
 github.com/go-test/deep v1.0.3/go.mod h1:wGDj63lr65AM2AQyKZd/NYHGb0R+1RLqB8NKt3aSFNA=
 github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da h1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=
@@ -120,8 +120,8 @@ github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
 github.com/imdario/mergo v0.3.15 h1:M8XP7IuFNsqUx6VPK2P9OSmsYsI/YFaGil0uD21V3dM=
 github.com/imdario/mergo v0.3.15/go.mod h1:WBLT9ZmE3lPoWsEzCh9LPo3TiwVN+ZKEjmz+hD27ysY=
-github.com/itera-io/taikungoclient v0.0.0-20241218002010-59bfe2381b46 h1:zzNhQo3aQu5lIiiLq/rmvLjE6FaYnjL6Xru0SAQNQvw=
-github.com/itera-io/taikungoclient v0.0.0-20241218002010-59bfe2381b46/go.mod h1:h92Xj2Nb3q/uBTVnIK+EzBuUuTfqaq5d0tGHo/Y54ew=
+github.com/itera-io/taikungoclient v0.0.0-20250320002011-c869819e5ca8 h1:U6nvFl2W/a20nj/OQabSU1Mmw+I3kpJutLzT52O0oOo=
+github.com/itera-io/taikungoclient v0.0.0-20250320002011-c869819e5ca8/go.mod h1:h92Xj2Nb3q/uBTVnIK+EzBuUuTfqaq5d0tGHo/Y54ew=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jhump/protoreflect v1.15.1 h1:HUMERORf3I3ZdX05WaQ6MIpd/NJ434hTp5YiKgfCL6c=

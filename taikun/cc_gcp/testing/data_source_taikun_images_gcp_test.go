@@ -16,7 +16,7 @@ resource "taikun_cloud_credential_gcp" "foo" {
   config_file = "./gcp.json"
   import_project = true
   region = "%s"
-  lock = true
+  lock = false
 }
 
 data "taikun_images_gcp" "foo" {
