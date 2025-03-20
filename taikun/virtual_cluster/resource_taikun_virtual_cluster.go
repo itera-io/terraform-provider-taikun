@@ -112,7 +112,7 @@ func resourceTaikunVirtualClusterUpdate(ctx context.Context, d *schema.ResourceD
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		_, _, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -129,7 +129,7 @@ func resourceTaikunVirtualClusterDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 	deleteCommand.SetProjectId(virtualClusterId)
-	response, err2 := apiClient.Client.VirtualClusterAPI.VirtualClusterDelete(ctx).DeleteVirtualClusterCommand(deleteCommand).Execute()
+	_, response, err2 := apiClient.Client.VirtualClusterAPI.VirtualClusterDelete(ctx).DeleteVirtualClusterCommand(deleteCommand).Execute()
 	if err2 != nil {
 		return diag.FromErr(tk.CreateError(response, err2))
 	}

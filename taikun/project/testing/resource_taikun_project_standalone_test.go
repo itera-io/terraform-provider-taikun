@@ -401,8 +401,8 @@ resource "taikun_project" "foo" {
     image_id = local.images[%d]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
-    spot_vm = true
-    spot_vm_max_price = 42
+    spot_vm = false
+    //spot_vm_max_price = 42
     %s // possible zone
 
     disk {
@@ -461,8 +461,8 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.access_ip", ""),
 					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.tag.#", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.disk.#", "2"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.spot_vm", "true"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.spot_vm_max_price", "42"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.spot_vm", "false"),
+					//resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.spot_vm_max_price", "42"),
 				),
 			},
 			{

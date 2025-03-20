@@ -55,6 +55,7 @@ Read-Only:
 - `public_network_name` (String)
 - `region` (String)
 - `user` (String)
+- `using_application_credentials` (Boolean)
 - `volume_type_name` (String)
 
 
