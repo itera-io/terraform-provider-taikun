@@ -28,7 +28,7 @@ data "taikun_cloud_credential_openstack" "foo" {
 ### Read-Only
 
 - `availability_zone` (String) The OpenStack availability zone.
-- `continent` (String) The OpenStack continent (`Asia`, `Europe` or `America`).
+- `continent` (String) The OpenStack continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).
 - `created_by` (String) The creator of the OpenStack cloud credential.
 - `domain` (String) The OpenStack domain. Required if you authenticate with username + password. (Can be set with env OS_USER_DOMAIN_NAME)
 - `imported_network_subnet_id` (String) The OpenStack network subnet ID to import a network.

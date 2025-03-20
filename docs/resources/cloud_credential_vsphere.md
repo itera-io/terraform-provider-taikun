@@ -72,7 +72,7 @@ resource "taikun_cloud_credential_vsphere" "foo" {
 
 ### Optional
 
-- `continent` (String) The vSphere continent (`Asia`, `Europe` or `America`). Defaults to `Europe`.
+- `continent` (String) The OpenStack continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`). Defaults to `Europe`.
 - `drs_enabled` (Boolean) Do you wish to enable vSphere Distributed Resource Scheduler? (Can be set with env VSPHERE_DRS_ENABLED)
 - `hypervisors` (List of String) The vSphere hypervisors string array.
 - `lock` (Boolean) Indicates whether to lock the vSphere cloud credential. Defaults to `false`.
