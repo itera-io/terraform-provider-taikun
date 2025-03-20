@@ -30,7 +30,7 @@ data "taikun_cloud_credential_openstack" "foo" {
 - `availability_zone` (String) The OpenStack availability zone.
 - `continent` (String) The OpenStack continent (`Asia`, `Europe` or `America`).
 - `created_by` (String) The creator of the OpenStack cloud credential.
-- `domain` (String) The OpenStack domain. (Can be set with env OS_USER_DOMAIN_NAME)
+- `domain` (String) The OpenStack domain. Required if you authenticate with username + password. (Can be set with env OS_USER_DOMAIN_NAME)
 - `imported_network_subnet_id` (String) The OpenStack network subnet ID to import a network.
 - `is_default` (Boolean) Indicates whether the OpenStack cloud credential is the default one.
 - `last_modified` (String) Time and date of last modification.
@@ -43,7 +43,8 @@ data "taikun_cloud_credential_openstack" "foo" {
 - `project_name` (String) The OpenStack project name. (Can be set with env OS_PROJECT_NAME)
 - `public_network_name` (String) The name of the public OpenStack network to use. (Can be set with env OS_INTERFACE)
 - `region` (String) The OpenStack region. (Can be set with env OS_REGION_NAME)
-- `user` (String) The OpenStack user. (Can be set with env OS_USERNAME)
+- `user` (String) The OpenStack user or Application credential Id. (Can be set with env OS_USERNAME)
+- `using_application_credentials` (Boolean) Indicate whether you are specifying OpenStack application credential [id + secret] or [Username + Password + Domain] (default).
 - `volume_type_name` (String) The OpenStack type of volume.
 
 

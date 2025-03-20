@@ -2,14 +2,13 @@ package cc_openstack
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"regexp"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
@@ -38,12 +37,12 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"domain": {
-			Description:  "The OpenStack domain. (Can be set with env OS_USER_DOMAIN_NAME)",
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			DefaultFunc:  schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", nil),
-			ValidateFunc: validation.StringIsNotEmpty,
+			Description:      "The OpenStack domain. Required if you authenticate with username + password. (Can be set with env OS_USER_DOMAIN_NAME)",
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: utils.IgnoreChangeFromEmpty,
+			DefaultFunc:      schema.EnvDefaultFunc("OS_USER_DOMAIN_NAME", nil),
+			ValidateFunc:     validation.StringIsNotEmpty,
 		},
 		"id": {
 			Description: "The ID of the OpenStack cloud credential.",
@@ -103,7 +102,7 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"password": {
-			Description:  "The OpenStack password. (Can be set with env OS_PASSWORD)",
+			Description:  "The OpenStack password or Application Credential secret. (Can be set with env OS_PASSWORD)",
 			Type:         schema.TypeString,
 			Required:     true,
 			Sensitive:    true,
@@ -148,11 +147,18 @@ func resourceTaikunCloudCredentialOpenStackSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"user": {
-			Description:  "The OpenStack user. (Can be set with env OS_USERNAME)",
+			Description:  "The OpenStack user or Application credential Id. (Can be set with env OS_USERNAME)",
 			Type:         schema.TypeString,
 			Required:     true,
 			DefaultFunc:  schema.EnvDefaultFunc("OS_USERNAME", nil),
 			ValidateFunc: validation.StringIsNotEmpty,
+		},
+		"using_application_credentials": {
+			Description: "Indicate whether you are specifying OpenStack application credential [id + secret] or [Username + Password + Domain] (default).",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
 		},
 		"volume_type_name": {
 			Description: "The OpenStack type of volume.",
@@ -179,13 +185,27 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 
 	body := tkcore.CreateOpenstackCloudCommand{}
 	body.SetName(d.Get("name").(string))
-	body.SetOpenStackUser(d.Get("user").(string))
-	body.SetOpenStackPassword(d.Get("password").(string))
 	body.SetOpenStackUrl(d.Get("url").(string))
 	body.SetOpenStackProject(d.Get("project_name").(string))
 	body.SetOpenStackPublicNetwork(d.Get("public_network_name").(string))
-	body.SetOpenStackDomain(d.Get("domain").(string))
 	body.SetOpenStackRegion(d.Get("region").(string))
+
+	username := d.Get("user").(string)
+	password := d.Get("password").(string)
+	domain := d.Get("domain").(string)
+	appCredEnabledBool := d.Get("using_application_credentials").(bool)
+	//appcredenabled := d.Get("application_credential_enabled").(bool)
+
+	if appCredEnabledBool {
+		body.SetOpenStackUser(username)
+		body.SetOpenStackPassword(password)
+		body.SetApplicationCredEnabled(true)
+	} else {
+		body.SetOpenStackUser(username)
+		body.SetOpenStackPassword(password)
+		body.SetOpenStackDomain(domain)
+		body.SetApplicationCredEnabled(false)
+	}
 
 	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
 	if organizationIDIsSet {
@@ -293,8 +313,18 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 		updateBody := tkcore.UpdateOpenStackCommand{}
 		updateBody.SetId(id)
 		updateBody.SetName(d.Get("name").(string))
-		updateBody.SetOpenStackPassword(d.Get("password").(string))
-		updateBody.SetOpenStackUser(d.Get("user").(string))
+
+		username := d.Get("user").(string)
+		password := d.Get("password").(string)
+		appcredenabled := d.Get("using_application_credentials").(bool)
+
+		if appcredenabled {
+			updateBody.SetOpenStackUser(username)
+			updateBody.SetOpenStackPassword(password)
+		} else {
+			updateBody.SetOpenStackUser(username)
+			updateBody.SetOpenStackPassword(password)
+		}
 
 		res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
 		if err != nil {
@@ -312,27 +342,27 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 }
 
 func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *tkcore.OpenstackCredentialsListDto) map[string]interface{} {
-
 	return map[string]interface{}{
-		"created_by":                 rawOpenStackCredential.GetCreatedBy(),
-		"id":                         utils.I32toa(rawOpenStackCredential.GetId()),
-		"lock":                       rawOpenStackCredential.GetIsLocked(),
-		"is_default":                 rawOpenStackCredential.GetIsDefault(),
-		"last_modified":              rawOpenStackCredential.GetLastModified(),
-		"last_modified_by":           rawOpenStackCredential.GetLastModifiedBy(),
-		"name":                       rawOpenStackCredential.GetName(),
-		"user":                       rawOpenStackCredential.GetUser(),
-		"project_name":               rawOpenStackCredential.GetProject(),
-		"project_id":                 rawOpenStackCredential.GetTenantId(),
-		"organization_id":            utils.I32toa(rawOpenStackCredential.GetOrganizationId()),
-		"organization_name":          rawOpenStackCredential.GetOrganizationName(),
-		"public_network_name":        rawOpenStackCredential.GetPublicNetwork(),
-		"availability_zone":          rawOpenStackCredential.GetAvailabilityZone(),
-		"domain":                     rawOpenStackCredential.GetDomain(),
-		"region":                     rawOpenStackCredential.GetRegion(),
-		"continent":                  rawOpenStackCredential.GetContinentName(),
-		"volume_type_name":           rawOpenStackCredential.GetVolumeType(),
-		"imported_network_subnet_id": rawOpenStackCredential.GetInternalSubnetId(),
+		"using_application_credentials": rawOpenStackCredential.GetApplicationCredEnabled(),
+		"created_by":                    rawOpenStackCredential.GetCreatedBy(),
+		"id":                            utils.I32toa(rawOpenStackCredential.GetId()),
+		"lock":                          rawOpenStackCredential.GetIsLocked(),
+		"is_default":                    rawOpenStackCredential.GetIsDefault(),
+		"last_modified":                 rawOpenStackCredential.GetLastModified(),
+		"last_modified_by":              rawOpenStackCredential.GetLastModifiedBy(),
+		"name":                          rawOpenStackCredential.GetName(),
+		"user":                          rawOpenStackCredential.GetUser(),
+		"project_name":                  rawOpenStackCredential.GetProject(),
+		"project_id":                    rawOpenStackCredential.GetTenantId(),
+		"organization_id":               utils.I32toa(rawOpenStackCredential.GetOrganizationId()),
+		"organization_name":             rawOpenStackCredential.GetOrganizationName(),
+		"public_network_name":           rawOpenStackCredential.GetPublicNetwork(),
+		"availability_zone":             rawOpenStackCredential.GetAvailabilityZone(),
+		"domain":                        rawOpenStackCredential.GetDomain(),
+		"region":                        rawOpenStackCredential.GetRegion(),
+		"continent":                     rawOpenStackCredential.GetContinentName(),
+		"volume_type_name":              rawOpenStackCredential.GetVolumeType(),
+		"imported_network_subnet_id":    rawOpenStackCredential.GetInternalSubnetId(),
 	}
 }
 
