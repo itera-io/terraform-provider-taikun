@@ -23,10 +23,10 @@ resource "taikun_repository" "foo" {
 `
 
 func TestAccResourceTaikunRepository(t *testing.T) {
-	repositoryName := "argo"
-	repositoryOrgName := "argoproj"
+	repositoryName := "taikun-managed-apps"
+	repositoryOrgName := "taikun"
 	repositoryEnabled := "true"
-	repositoryDisabled := "false"
+	//repositoryDisabled := "false"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
@@ -47,20 +47,21 @@ func TestAccResourceTaikunRepository(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_repository.foo", "enabled", repositoryEnabled),
 				),
 			},
-			{
-				Config: fmt.Sprintf(testAccResourceTaikunRepositoryConfig,
-					repositoryName,
-					repositoryOrgName,
-					repositoryDisabled,
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunRepositoryExists,
-					resource.TestCheckResourceAttr("taikun_repository.foo", "name", repositoryName),
-					resource.TestCheckResourceAttr("taikun_repository.foo", "organization_name", repositoryOrgName),
-					resource.TestCheckResourceAttr("taikun_repository.foo", "private", "false"),
-					resource.TestCheckResourceAttr("taikun_repository.foo", "enabled", repositoryDisabled),
-				),
-			},
+			// We cannot guarantee that argoproj project will be present in staging and dev and we cannot gurantee that taikun-managed-apps will be disableable.
+			//{
+			//	Config: fmt.Sprintf(testAccResourceTaikunRepositoryConfig,
+			//		repositoryName,
+			//		repositoryOrgName,
+			//		repositoryDisabled,
+			//	),
+			//	Check: resource.ComposeAggregateTestCheckFunc(
+			//		testAccCheckTaikunRepositoryExists,
+			//		resource.TestCheckResourceAttr("taikun_repository.foo", "name", repositoryName),
+			//		resource.TestCheckResourceAttr("taikun_repository.foo", "organization_name", repositoryOrgName),
+			//		resource.TestCheckResourceAttr("taikun_repository.foo", "private", "false"),
+			//		resource.TestCheckResourceAttr("taikun_repository.foo", "enabled", repositoryDisabled),
+			//	),
+			//},
 		},
 	})
 }
