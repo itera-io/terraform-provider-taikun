@@ -10,6 +10,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/backup_policy"
 	"github.com/itera-io/terraform-provider-taikun/taikun/billing"
 	"github.com/itera-io/terraform-provider-taikun/taikun/catalog"
+	"github.com/itera-io/terraform-provider-taikun/taikun/catalog_project_binding"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_aws"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_azure"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_gcp"
@@ -29,6 +30,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/user"
 	"github.com/itera-io/terraform-provider-taikun/taikun/virtual_cluster"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -39,6 +41,8 @@ import (
 )
 
 func init() {
+	log.SetPrefix("[ERROR] ")
+
 	// Set descriptions to support markdown syntax, this will be used in document generation
 	// and the language server.
 	schema.DescriptionKind = schema.StringMarkdown
@@ -101,6 +105,7 @@ func Provider() *schema.Provider {
 			"taikun_billing_rules":               billing.DataSourceTaikunBillingRules(),
 			"taikun_catalog":                     catalog.DataSourceTaikunCatalog(),
 			"taikun_catalogs":                    catalog.DataSourceTaikunCatalogs(),
+			"taikun_catalog_project_binding":     catalog_project_binding.DataSourceTaikunCatalogProjectBinding(),
 			"taikun_cloud_credential_aws":        cc_aws.DataSourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":      cc_azure.DataSourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":        cc_gcp.DataSourceTaikunCloudCredentialGCP(),
@@ -158,6 +163,7 @@ func Provider() *schema.Provider {
 			"taikun_billing_credential":                   billing.ResourceTaikunBillingCredential(),
 			"taikun_billing_rule":                         billing.ResourceTaikunBillingRule(),
 			"taikun_catalog":                              catalog.ResourceTaikunCatalog(),
+			"taikun_catalog_project_binding":              catalog_project_binding.ResourceTaikunCatalogProjectBinding(),
 			"taikun_cloud_credential_aws":                 cc_aws.ResourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":               cc_azure.ResourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":                 cc_gcp.ResourceTaikunCloudCredentialGCP(),

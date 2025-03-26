@@ -82,17 +82,12 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
-		"projects": {
-			Description: "List of projects bound to the catalog.",
-			Type:        schema.TypeSet,
-			Optional:    true,
-			DefaultFunc: func() (interface{}, error) {
-				return []interface{}{}, nil
-			},
-			Elem: &schema.Schema{
-				Type:         schema.TypeString,
-				ValidateFunc: validation.StringIsNotEmpty,
-			},
+		"organization_id": {
+			Description:      "The ID of the organization which owns the catalog.",
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: utils.StringIsInt,
 		},
 		"application": {
 			Description: "Bound Applications.",
@@ -118,13 +113,20 @@ func ResourceTaikunCatalog() *schema.Resource {
 
 func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
-	projectsWhichShouldBeBound := d.Get("projects").(*schema.Set)
 	applicationsWhichShouldBeBound := d.Get("application").(*schema.Set)
 
 	// Create catalog
 	body := &tkcore.CreateCatalogCommand{}
 	body.SetName(d.Get("name").(string))
 	body.SetDescription(d.Get("description").(string))
+	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
+		orgId, err := utils.Atoi32(organizationIDData.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		body.SetOrganizationId(orgId)
+	}
+
 	response, err := apiClient.Client.CatalogAPI.CatalogCreate(context.TODO()).CreateCatalogCommand(*body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
@@ -138,13 +140,6 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 	catalogId, err := utils.Atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	// Bind Projects
-	emptyBoundProjects := schema.Set{}
-	errDiag = reconcileProjectsBound(&emptyBoundProjects, projectsWhichShouldBeBound, catalogId, meta)
-	if errDiag != nil {
-		return errDiag
 	}
 
 	// Bind applications
@@ -164,16 +159,9 @@ func resourceTaikunCatalogDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	// Unbind all projects
-	emptyBoundProjects := schema.Set{}
-	errDiag := reconcileProjectsBound(d.Get("projects"), &emptyBoundProjects, catalogId, meta)
-	if errDiag != nil {
-		return errDiag
-	}
-
 	// Unbind all applications
 	emptyBoundApplications := schema.Set{}
-	errDiag = reconcileApplicationsBound(d.Get("application"), &emptyBoundApplications, catalogId, meta)
+	errDiag := reconcileApplicationsBound(d.Get("application"), &emptyBoundApplications, catalogId, meta)
 	if errDiag != nil {
 		return errDiag
 	}
@@ -198,8 +186,17 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		catalogName := d.Get("name").(string)
+		listQuery := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName)
 
-		data, response, err := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName).Execute()
+		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
+			orgId, err := utils.Atoi32(organizationIDData.(string))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			listQuery = listQuery.OrganizationId(orgId)
+		}
+
+		data, response, err := listQuery.Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -218,7 +215,7 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 		if !foundMatch {
 			if withRetries {
 				d.SetId(d.Get("id").(string)) // We need to tell provider that object was created
-				return diag.FromErr(fmt.Errorf("Could not find the specified catalog (name: %s).", catalogName))
+				return diag.FromErr(fmt.Errorf("could not find the specified catalog (name: %s)", catalogName))
 			}
 			return nil
 		}
@@ -236,12 +233,6 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 }
 
 func flattenTaikunCatalog(rawCatalog *tkcore.CatalogListDto) map[string]interface{} {
-	// Flatten bound projects
-	boundProjects := rawCatalog.GetBoundProjects()
-	projects := make([]string, len(boundProjects))
-	for i, proj := range boundProjects {
-		projects[i] = utils.I32toa(proj.GetId())
-	}
 
 	// Flatten bound applications
 	applicationsBound := rawCatalog.GetBoundApplications()
@@ -261,7 +252,6 @@ func flattenTaikunCatalog(rawCatalog *tkcore.CatalogListDto) map[string]interfac
 		"description": rawCatalog.GetDescription(),
 		"lock":        rawCatalog.GetIsLocked(),
 		"default":     rawCatalog.GetIsDefault(),
-		"projects":    projects,
 		"application": applications,
 	}
 }
@@ -313,56 +303,14 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	// Binding projects
-	oldCatalogProjectsBound, newCatalogProjectsBound := d.GetChange("projects")
-	errReconcile := reconcileProjectsBound(oldCatalogProjectsBound, newCatalogProjectsBound, catalogId, meta)
-	if errReconcile != nil {
-		return errReconcile
-	}
-
 	// Binding applications
 	oldCatalogApplicationsBound, newCatalogApplicationsBound := d.GetChange("application")
-	errReconcile = reconcileApplicationsBound(oldCatalogApplicationsBound, newCatalogApplicationsBound, catalogId, meta)
+	errReconcile := reconcileApplicationsBound(oldCatalogApplicationsBound, newCatalogApplicationsBound, catalogId, meta)
 	if errReconcile != nil {
 		return errReconcile
 	}
 
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunCatalogReadWithRetries(), ctx, d, meta)
-}
-
-// Ensure the catalog has only all the projects in newCatalogProjectsBound bound
-func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProjectsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
-	oldProjects := oldCatalogProjectsBound.(*schema.Set)
-	newProjects := newCatalogProjectsBound.(*schema.Set)
-	apiClient := meta.(*tk.Client)
-
-	// Old stuff that we should unbind - What was in old catalog, but is not new catalog.
-	toRemove := oldProjects.Difference(newProjects).List()
-	if len(toRemove) > 0 {
-		body, err := utils.SliceOfSTringsToSliceOfInt32(toRemove)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
-		if err != nil {
-			return diag.FromErr(tk.CreateError(response, err))
-		}
-	}
-
-	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
-	toAdd := newProjects.Difference(oldProjects).List()
-	if len(toAdd) > 0 {
-		body, err := utils.SliceOfSTringsToSliceOfInt32(toAdd)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
-		if err != nil {
-			return diag.FromErr(tk.CreateError(response, err))
-		}
-	}
-
-	return nil
 }
 
 // Unbind apps that should be unbound, bind apps that should be bound
