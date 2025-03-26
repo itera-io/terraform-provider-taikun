@@ -233,7 +233,7 @@ func loadVirtualClusterId(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if !foundMatch {
-		return fmt.Errorf("Could not find virtual cluster by its ID in Taikun.")
+		return fmt.Errorf("could not find virtual cluster by its ID in Taikun")
 	}
 
 	return nil
@@ -329,7 +329,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterId int32, ctx contex
 				return nil, "", tk.CreateError(response, err)
 			}
 			if data.GetTotalCount() != 1 {
-				return nil, "", fmt.Errorf("Could not find virtual cluster by id.")
+				return nil, "", fmt.Errorf("could not find virtual cluster by id")
 			}
 
 			foundMatch := "pending"

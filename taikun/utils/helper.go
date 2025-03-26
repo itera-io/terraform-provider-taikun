@@ -6,6 +6,7 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
+	"log"
 	"math/rand"
 	"net/mail"
 	"os"
@@ -41,6 +42,7 @@ func SetResourceDataFromMap(d *schema.ResourceData, m map[string]interface{}) er
 }
 
 func Atoi32(str string) (int32, error) {
+	log.Printf("ATOI for %s", str)
 	res, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
 		return 0, err
@@ -271,9 +273,10 @@ func GetLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string 
 }
 
 func ParseLoadBalancingSolution(loadBalancingSolution string) (octaviaEnabled bool, taikunLBEnabled bool) {
-	if loadBalancingSolution == loadBalancerOctavia {
+	switch loadBalancingSolution {
+	case loadBalancerOctavia:
 		return true, false
-	} else if loadBalancingSolution == LoadBalancerTaikun {
+	case LoadBalancerTaikun:
 		return false, true
 	}
 	return false, false
@@ -391,6 +394,6 @@ func GetProxmoxStorageStringForServer(projectID int32, apiClient *tk.Client) (st
 	case "Longhorn":
 		return "STORAGE", nil
 	default:
-		return "", fmt.Errorf("Parsed an unrecognised Proxmox Storage type from Kubernetes Profile for this project.")
+		return "", fmt.Errorf("parsed an unrecognised Proxmox Storage type from Kubernetes Profile for this project")
 	}
 }

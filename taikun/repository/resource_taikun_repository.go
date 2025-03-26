@@ -209,7 +209,7 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 		if !foundMatch {
 			if withRetries {
 				d.SetId(d.Get("id").(string)) // We need to tell provider that object was created
-				return diag.FromErr(fmt.Errorf("Could not find the specified repository (name: %s, organization: %s, private: %t).", repositoryName, organizationName, private))
+				return diag.FromErr(fmt.Errorf("could not find the specified repository (name: %s, organization: %s, private: %t)", repositoryName, organizationName, private))
 			}
 			return nil
 		}
@@ -256,7 +256,7 @@ func checkOrganization(d *schema.ResourceData, meta interface{}) (bool, error) {
 	if data.Data.GetOrganizationName() == d.Get("organization_name").(string) {
 		return true, nil
 	}
-	return false, fmt.Errorf("Specified organization (%s) does not match user's organization (%s). You cannot create private repositories outside of your default organization.", orgnameDeclared, orgnameDefault)
+	return false, fmt.Errorf("specified organization (%s) does not match user's organization (%s). You cannot create private repositories outside of your default organization", orgnameDeclared, orgnameDefault)
 }
 
 // Ensure the state of this repository matches the desired state provided
@@ -290,7 +290,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 	// Update to latest changes - Download the details of the repository into our resource
 	err := utils.ReadAfterCreateWithRetries(generateResourceTaikunRepositoryReadWithRetries(), context.TODO(), d, meta)
 	if err != nil {
-		return fmt.Errorf("Update after enable/disable failed.")
+		return fmt.Errorf("update after enable/disable failed")
 	}
 	return nil
 }

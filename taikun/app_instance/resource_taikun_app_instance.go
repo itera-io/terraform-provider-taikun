@@ -71,7 +71,7 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 				// Read file contents, encode in base64 and save to state
 				paramsEncoded, err := utils.FilePathToBase64String(filePath.(string))
 				if err != nil {
-					panic(fmt.Errorf("Error reading file %s\nError: %s\n", filePath, err.Error()))
+					panic(fmt.Errorf("error reading file %s\nError: %s", filePath, err.Error()))
 				}
 				return paramsEncoded
 			},
