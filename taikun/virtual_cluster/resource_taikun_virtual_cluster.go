@@ -28,11 +28,11 @@ func resourceTaikunVirtualClusterSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"parent_id": {
-			Description:  "The ID of the parent of the virtual cluster.",
-			Type:         schema.TypeString,
-			ValidateFunc: validation.StringLenBetween(3, 30),
-			Required:     true,
-			ForceNew:     true,
+			Description:      "The ID of the parent of the virtual cluster.",
+			Type:             schema.TypeString,
+			ValidateDiagFunc: utils.StringIsInt,
+			Required:         true,
+			ForceNew:         true,
 		},
 		"hostname": {
 			Description: "The hostname that will be used for the virtual cluster. If left empty, you are assigned a hostname based on your IP an virtual cluster name.",
