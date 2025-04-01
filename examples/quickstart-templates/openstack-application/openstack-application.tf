@@ -1,8 +1,7 @@
 terraform {
   required_providers {
     taikun = {
-      source  = "itera-io/taikun"
-      version = "1.9.1" // Use the latest version
+      source = "itera-io/taikun"
     }
   }
 }

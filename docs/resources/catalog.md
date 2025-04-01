@@ -44,7 +44,7 @@ Take a look at the **quickstart template** that deploys a new k8s cluster, a cat
 - `application` (Block Set) Bound Applications. (see [below for nested schema](#nestedblock--application))
 - `default` (Boolean) Indicates whether the catalog is the default catalog. Defaults to `false`.
 - `lock` (Boolean) Indicates whether to lock the catalog. Defaults to `false`.
-- `projects` (Set of String) List of projects bound to the catalog.
+- `organization_id` (String) The ID of the organization which owns the catalog.
 
 ### Read-Only
 

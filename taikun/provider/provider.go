@@ -106,6 +106,7 @@ func Provider() *schema.Provider {
 			"taikun_catalog":                     catalog.DataSourceTaikunCatalog(),
 			"taikun_catalogs":                    catalog.DataSourceTaikunCatalogs(),
 			"taikun_catalog_project_binding":     catalog_project_binding.DataSourceTaikunCatalogProjectBinding(),
+			"taikun_catalog_project_bindings":    catalog_project_binding.DataSourceTaikunCatalogProjectBindings(),
 			"taikun_cloud_credential_aws":        cc_aws.DataSourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":      cc_azure.DataSourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":        cc_gcp.DataSourceTaikunCloudCredentialGCP(),

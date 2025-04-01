@@ -86,10 +86,6 @@ func resourceTaikunCatalogProjectBindingCreate(ctx context.Context, d *schema.Re
 
 func resourceTaikunCatalogProjectBindingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
-	//organizationId, err := utils.Atoi32(d.Get("organization_id").(string))
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
 	var orgId int32
 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationIDDataConverted, err := utils.Atoi32(organizationIDData.(string))
@@ -193,10 +189,6 @@ func flattenTaikunCatalogProjectBinding(catalogHasProjectBound bool, projectId, 
 func resourceTaikunCatalogProjectBindingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
-	//organizationId, err := utils.Atoi32(d.Get("organization_id").(string))
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
 	var orgId int32
 	if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 		organizationIDDataConverted, err := utils.Atoi32(organizationIDData.(string))
@@ -273,21 +265,14 @@ func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName st
 }
 
 func findCatalogByName(apiClient *tk.Client, organizationId int32, catalogName string) (rawCatalog tkcore.CatalogListDto, err error) {
-	log.Printf("Start find catalog by name")
-
 	query := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName)
 	if organizationId != 0 {
-		log.Printf("Setting org find catalog by name")
 		query = query.OrganizationId(organizationId)
 	}
-	log.Printf("Executing find catalog by name")
 	data, response, err := query.Execute()
 	if err != nil {
-		log.Printf("Failed find catalog by name")
 		return rawCatalog, tk.CreateError(response, err)
 	}
-	log.Printf("Success find catalog by name")
-
 	// Iterate through data to find the correct Catalog
 	foundMatch := false
 	for _, catalog := range data.GetData() {
@@ -305,6 +290,5 @@ func findCatalogByName(apiClient *tk.Client, organizationId int32, catalogName s
 		return rawCatalog, fmt.Errorf("catalog '%s' not found in default organization", catalogName)
 	}
 
-	log.Printf("Finished find catalog by name")
 	return rawCatalog, nil
 }

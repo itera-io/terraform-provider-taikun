@@ -30,7 +30,7 @@ data "taikun_catalog" "foo" {
 - `description` (String) The description of the catalog.
 - `id` (String) The ID of the catalog.
 - `lock` (Boolean) Indicates whether to lock the catalog.
-- `projects` (Set of String) List of projects bound to the catalog.
+- `organization_id` (String) The ID of the organization which owns the catalog.
 
 <a id="nestedatt--application"></a>
 ### Nested Schema for `application`

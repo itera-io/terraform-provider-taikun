@@ -33,7 +33,7 @@ Read-Only:
 - `id` (String)
 - `lock` (Boolean)
 - `name` (String)
-- `projects` (Set of String)
+- `organization_id` (String)
 
 <a id="nestedobjatt--catalogs--application"></a>
 ### Nested Schema for `catalogs.application`
