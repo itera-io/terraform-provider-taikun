@@ -226,6 +226,12 @@ func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName st
 	if err != nil {
 		return tk.CreateError(response, err)
 	}
+	if data.GetTotalCount() != 1 {
+		if organizationId != 0 {
+			return fmt.Errorf("project '%d' could not be found in org %d", projectId, organizationId)
+		}
+		return fmt.Errorf("project '%d' could not be found in default org", projectId)
+	}
 	if data.Data[0].Status != tkcore.PROJECTSTATUS_READY {
 		return fmt.Errorf("project '%d' is not ready", projectId)
 	}

@@ -45,6 +45,7 @@ Take a look at the **quickstart template** that deploys a new k8s cluster, a cat
 - `default` (Boolean) Indicates whether the catalog is the default catalog. Defaults to `false`.
 - `lock` (Boolean) Indicates whether to lock the catalog. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the catalog.
+- `projects` (Set of String, Deprecated) DEPRECATED: List of projects bound to the catalog. Please use the resource taikun_catalog_project_binding to bind projects to the catalog.
 
 ### Read-Only
 

@@ -97,6 +97,19 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 				Schema: taikunApplicationSchema(),
 			},
 		},
+		"projects": {
+			Description: "DEPRECATED: List of projects bound to the catalog.",
+			Type:        schema.TypeSet,
+			Deprecated:  "Please use the resource taikun_catalog_project_binding to bind projects to the catalog.",
+			Optional:    true,
+			//DefaultFunc: func() (interface{}, error) {
+			//	return []interface{}{}, nil
+			//},
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+		},
 	}
 }
 
@@ -114,6 +127,12 @@ func ResourceTaikunCatalog() *schema.Resource {
 func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	applicationsWhichShouldBeBound := d.Get("application").(*schema.Set)
+	// TODO - Legacy bind projects
+	projects := d.Get("projects")
+	if projects == nil {
+		projects = schema.NewSet(schema.HashString, []interface{}{})
+	}
+	legacyProjectsWhichShouldBeBound := projects.(*schema.Set)
 
 	// Create catalog
 	body := &tkcore.CreateCatalogCommand{}
@@ -142,6 +161,13 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	// Bind Legacy projects
+	emptyBoundProjects := schema.Set{}
+	errDiag = reconcileProjectsBound(&emptyBoundProjects, legacyProjectsWhichShouldBeBound, catalogId, meta)
+	if errDiag != nil {
+		return errDiag
+	}
+
 	// Bind applications
 	emptyBoundApplications := schema.Set{}
 	errDiag = reconcileApplicationsBound(&emptyBoundApplications, applicationsWhichShouldBeBound, catalogId, meta)
@@ -159,9 +185,21 @@ func resourceTaikunCatalogDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	// Unbind all projects
+	emptyBoundProjects := schema.Set{}
+	projects := d.Get("projects")
+	if projects == nil {
+		projects = schema.NewSet(schema.HashString, []interface{}{})
+	}
+	legacyProjectsWhichShouldBeUnbound := projects.(*schema.Set)
+	errDiag := reconcileProjectsBound(legacyProjectsWhichShouldBeUnbound, &emptyBoundProjects, catalogId, meta)
+	if errDiag != nil {
+		return errDiag
+	}
+
 	// Unbind all applications
 	emptyBoundApplications := schema.Set{}
-	errDiag := reconcileApplicationsBound(d.Get("application"), &emptyBoundApplications, catalogId, meta)
+	errDiag = reconcileApplicationsBound(d.Get("application"), &emptyBoundApplications, catalogId, meta)
 	if errDiag != nil {
 		return errDiag
 	}
@@ -246,12 +284,20 @@ func flattenTaikunCatalog(rawCatalog *tkcore.CatalogListDto) map[string]interfac
 		applications = append(applications, appMap)
 	}
 
+	// Flatten bound projects
+	boundProjects := rawCatalog.GetBoundProjects()
+	projects := make([]string, len(boundProjects))
+	for i, proj := range boundProjects {
+		projects[i] = utils.I32toa(proj.GetId())
+	}
+
 	return map[string]interface{}{
 		"id":          utils.I32toa(rawCatalog.GetId()),
 		"name":        rawCatalog.GetName(),
 		"description": rawCatalog.GetDescription(),
 		"lock":        rawCatalog.GetIsLocked(),
 		"default":     rawCatalog.GetIsDefault(),
+		"projects":    projects,
 		"application": applications,
 	}
 }
@@ -341,6 +387,41 @@ func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCata
 		catalogAppToCreate.SetPackageName(app.(map[string]interface{})["name"].(string))
 		catalogAppToCreate.SetParameters([]tkcore.CatalogAppParamsDto{})
 		_, response, err := apiClient.Client.CatalogAppAPI.CatalogAppCreate(context.TODO()).CreateCatalogAppCommand(catalogAppToCreate).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(response, err))
+		}
+	}
+
+	return nil
+}
+
+// Ensure the catalog has only all the projects in newCatalogProjectsBound bound
+func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProjectsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
+	oldProjects := oldCatalogProjectsBound.(*schema.Set)
+	newProjects := newCatalogProjectsBound.(*schema.Set)
+	apiClient := meta.(*tk.Client)
+
+	// Old stuff that we should unbind - What was in old catalog, but is not new catalog.
+	toRemove := oldProjects.Difference(newProjects).List()
+	if len(toRemove) > 0 {
+		body, err := utils.SliceOfSTringsToSliceOfInt32(toRemove)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(response, err))
+		}
+	}
+
+	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
+	toAdd := newProjects.Difference(oldProjects).List()
+	if len(toAdd) > 0 {
+		body, err := utils.SliceOfSTringsToSliceOfInt32(toAdd)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
