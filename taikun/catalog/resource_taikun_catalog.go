@@ -9,6 +9,7 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"log"
 	"regexp"
 )
 
@@ -102,9 +103,15 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 			Type:        schema.TypeSet,
 			Deprecated:  "Please use the resource taikun_catalog_project_binding to bind projects to the catalog.",
 			Optional:    true,
-			//DefaultFunc: func() (interface{}, error) {
-			//	return []interface{}{}, nil
-			//},
+			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				// Suppress diff if the user omitted 'projects' from config
+				// Detect omission by checking if both old and new are empty, but the field wasn't set
+				if _, isSet := d.GetOk("projects"); !isSet {
+					log.Printf("[DEBUG] Suppressing diff for 'projects': field was omitted in config")
+					return true
+				}
+				return false
+			},
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringIsNotEmpty,
@@ -129,6 +136,7 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 	applicationsWhichShouldBeBound := d.Get("application").(*schema.Set)
 	// TODO - Legacy bind projects
 	projects := d.Get("projects")
+	log.Printf("We wish to bind: %s", projects)
 	if projects == nil {
 		projects = schema.NewSet(schema.HashString, []interface{}{})
 	}
@@ -185,7 +193,7 @@ func resourceTaikunCatalogDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	// Unbind all projects
+	// Unbind all projects left in this
 	emptyBoundProjects := schema.Set{}
 	projects := d.Get("projects")
 	if projects == nil {
@@ -256,6 +264,12 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 				return diag.FromErr(fmt.Errorf("could not find the specified catalog (name: %s)", catalogName))
 			}
 			return nil
+		}
+
+		// If we have set the legacy parameter projects, use it. Otherwise, ignore all projects bound.
+		if _, isSet := d.GetOk("projects"); !isSet {
+			rawCatalog.BoundProjects = nil
+			log.Printf("[DEBUG] Skipping setting 'projects' from API because field was omitted in config")
 		}
 
 		// Load all the found data to the local object
@@ -395,7 +409,7 @@ func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCata
 	return nil
 }
 
-// Ensure the catalog has only all the projects in newCatalogProjectsBound bound
+// Ensure the catalog has only all the projects in newCatalogProjectsBound bound - ignore error if the project does not exist
 func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProjectsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
 	oldProjects := oldCatalogProjectsBound.(*schema.Set)
 	newProjects := newCatalogProjectsBound.(*schema.Set)
@@ -406,11 +420,11 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	if len(toRemove) > 0 {
 		body, err := utils.SliceOfSTringsToSliceOfInt32(toRemove)
 		if err != nil {
-			return diag.FromErr(err)
+			//return diag.FromErr(err)
 		}
-		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		_, err = apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
-			return diag.FromErr(tk.CreateError(response, err))
+			//return diag.FromErr(tk.CreateError(response, err))
 		}
 	}
 
@@ -419,11 +433,11 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	if len(toAdd) > 0 {
 		body, err := utils.SliceOfSTringsToSliceOfInt32(toAdd)
 		if err != nil {
-			return diag.FromErr(err)
+			//return diag.FromErr(err)
 		}
-		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		_, err = apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
 		if err != nil {
-			return diag.FromErr(tk.CreateError(response, err))
+			//return diag.FromErr(tk.CreateError(response, err))
 		}
 	}
 
