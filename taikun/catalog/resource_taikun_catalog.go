@@ -26,7 +26,7 @@ func taikunApplicationSchema() map[string]*schema.Schema {
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-z0-9-]+$"),
-					"Application name must contain only alpha numeric characters or non alpha numeric (-)",
+					"Application name must contain only lowercase alpha numeric characters or non alpha numeric (-)",
 				),
 			),
 			Required: true,
@@ -39,7 +39,7 @@ func taikunApplicationSchema() map[string]*schema.Schema {
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-z0-9-]+$"),
-					"Application name must contain only alpha numeric characters or non alpha numeric (-)",
+					"Application name must contain only lowercase alpha numeric characters or non alpha numeric (-)",
 				),
 			),
 		},
@@ -60,7 +60,7 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-z0-9-]+$"),
-					"Catalog name must contain only alpha numeric characters or non alpha numeric (-)",
+					"Catalog name must contain only lowercase alpha numeric characters or non alpha numeric (-)",
 				),
 			),
 			Required: true,

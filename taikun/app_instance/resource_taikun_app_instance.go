@@ -29,7 +29,7 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-z0-9-]+$"),
-					"Application Instance name must contain only alpha numeric characters or non alpha numeric (-)",
+					"Application Instance name must contain only lowercase alpha numeric characters or non alpha numeric (-)",
 				),
 			),
 			Required: true,
@@ -42,7 +42,7 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-z0-9-]+$"),
-					"Application instance name must contain only alpha numeric characters or non alpha numeric (-)",
+					"Application instance name must contain only lowercase alpha numeric characters or non alpha numeric (-)",
 				),
 			),
 			Required: true,
