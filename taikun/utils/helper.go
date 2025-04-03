@@ -6,7 +6,6 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
-	"log"
 	"math/rand"
 	"net/mail"
 	"os"
@@ -42,7 +41,6 @@ func SetResourceDataFromMap(d *schema.ResourceData, m map[string]interface{}) er
 }
 
 func Atoi32(str string) (int32, error) {
-	log.Printf("ATOI for %s", str)
 	res, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
 		return 0, err
