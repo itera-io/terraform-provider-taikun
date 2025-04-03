@@ -54,12 +54,18 @@ resource "taikun_project" "proj1" {
 resource "taikun_catalog" "cat01" {
   name        = "oneclick-catalog"
   description = "Created by terraform for oneclick deployment."
-  projects    = [taikun_project.proj1.id]
 
   application {
     name       = "wordpress"
     repository = "taikun-managed-apps"
   }
+}
+
+// Bind the created project to the created catalog
+resource "taikun_catalog_project_binding" "bind01" {
+  catalog_name = taikun_catalog.cat01.name
+  project_id   = taikun_project.proj1.id
+  is_bound     = true
 }
 
 // Finally create app instance

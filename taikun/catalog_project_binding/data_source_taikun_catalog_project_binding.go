@@ -21,7 +21,7 @@ func dataSourceTaikunCatalogProjectBindingSchema() map[string]*schema.Schema {
 
 func DataSourceTaikunCatalogProjectBinding() *schema.Resource {
 	return &schema.Resource{
-		Description: "Get an Catalog Project Binding by the catalog name.",
+		Description: "Find out if Catalog has specific Project Bound",
 		ReadContext: dataSourceTaikunCatalogProjectBindingRead,
 		Schema:      dataSourceTaikunCatalogProjectBindingSchema(),
 	}

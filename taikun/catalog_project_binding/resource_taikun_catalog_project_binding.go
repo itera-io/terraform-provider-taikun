@@ -47,7 +47,7 @@ func resourceTaikunCatalogProjectBindingSchema() map[string]*schema.Schema {
 
 func ResourceTaikunCatalogProjectBinding() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Catalog for Taikun Applications Configuration.",
+		Description:   "Binding between a catalog and a project.",
 		CreateContext: resourceTaikunCatalogProjectBindingCreate,
 		ReadContext:   generateResourceTaikunCatalogProjectBindingReadWithoutRetries(),
 		UpdateContext: resourceTaikunCatalogProjectBindingUpdate,
