@@ -88,6 +88,7 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ForceNew:         true,
+			DiffSuppressFunc: utils.IgnoreChangeFromEmpty,
 			ValidateDiagFunc: utils.StringIsInt,
 		},
 		"application": {
@@ -306,13 +307,14 @@ func flattenTaikunCatalog(rawCatalog *tkcore.CatalogListDto) map[string]interfac
 	}
 
 	return map[string]interface{}{
-		"id":          utils.I32toa(rawCatalog.GetId()),
-		"name":        rawCatalog.GetName(),
-		"description": rawCatalog.GetDescription(),
-		"lock":        rawCatalog.GetIsLocked(),
-		"default":     rawCatalog.GetIsDefault(),
-		"projects":    projects,
-		"application": applications,
+		"id":              utils.I32toa(rawCatalog.GetId()),
+		"name":            rawCatalog.GetName(),
+		"description":     rawCatalog.GetDescription(),
+		"lock":            rawCatalog.GetIsLocked(),
+		"default":         rawCatalog.GetIsDefault(),
+		"projects":        projects,
+		"application":     applications,
+		"organization_id": utils.I32toa(rawCatalog.GetOrganizationId()),
 	}
 }
 

@@ -13,6 +13,8 @@ func dataSourceTaikunRepositorySchema() map[string]*schema.Schema {
 	utils.SetValidateDiagFuncToSchema(dsSchema, "name", utils.StringLenBetween(3, 30))
 	utils.AddRequiredFieldsToSchema(dsSchema, "organization_name")
 	utils.SetValidateDiagFuncToSchema(dsSchema, "organization_name", utils.StringLenBetween(3, 30))
+	utils.AddOptionalFieldsToSchema(dsSchema, "organization_id")
+	utils.SetValidateDiagFuncToSchema(dsSchema, "organization_id", utils.StringIsInt)
 	utils.AddRequiredFieldsToSchema(dsSchema, "private")
 	dsSchema["private"].Type = schema.TypeBool
 	return dsSchema
