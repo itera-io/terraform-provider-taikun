@@ -422,12 +422,9 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	if len(toRemove) > 0 {
 		body, err := utils.SliceOfSTringsToSliceOfInt32(toRemove)
 		if err != nil {
-			//return diag.FromErr(err)
+			return diag.FromErr(err)
 		}
-		_, err = apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
-		if err != nil {
-			//return diag.FromErr(tk.CreateError(response, err))
-		}
+		_, _ = apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
 	}
 
 	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
@@ -435,12 +432,9 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 	if len(toAdd) > 0 {
 		body, err := utils.SliceOfSTringsToSliceOfInt32(toAdd)
 		if err != nil {
-			//return diag.FromErr(err)
+			return diag.FromErr(err)
 		}
-		_, err = apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
-		if err != nil {
-			//return diag.FromErr(tk.CreateError(response, err))
-		}
+		_, _ = apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
 	}
 
 	return nil
