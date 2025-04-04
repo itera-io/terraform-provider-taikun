@@ -44,7 +44,7 @@ func resourceTaikunRepositorySchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ForceNew:         true,
-			DiffSuppressFunc: utils.IgnoreChangeFromEmpty,
+			Computed:         true,
 			ValidateDiagFunc: utils.StringIsInt,
 		},
 		"private": {
@@ -256,21 +256,6 @@ func flattenTaikunRepository(orgid int32, rawRepository *tkcore.ArtifactReposito
 		"enabled":           rawRepository.GetIsBound(),
 	}
 }
-
-// Taikun cannot create private repositories outside the default organization of the logged-in user.
-//func checkOrganization(d *schema.ResourceData, meta interface{}) (bool, error) {
-//	apiClient := meta.(*tk.Client)
-//	data, response, err := apiClient.Client.UsersAPI.UsersUserInfo(context.TODO()).Execute()
-//	if err != nil {
-//		return false, tk.CreateError(response, err)
-//	}
-//	orgnameDefault := data.Data.GetOrganizationName()
-//	orgnameDeclared := d.Get("organization_name").(string)
-//	if data.Data.GetOrganizationName() == d.Get("organization_name").(string) {
-//		return true, nil
-//	}
-//	return false, fmt.Errorf("specified organization (%s) does not match user's organization (%s). You cannot create private repositories outside of your default organization", orgnameDeclared, orgnameDefault)
-//}
 
 // Get the users default organization
 func getSpecifiedOrDefaultOrganizationId(d *schema.ResourceData, meta interface{}) (int32, error) {

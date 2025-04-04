@@ -88,7 +88,7 @@ func resourceTaikunCatalogSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Optional:         true,
 			ForceNew:         true,
-			DiffSuppressFunc: utils.IgnoreChangeFromEmpty,
+			Computed:         true,
 			ValidateDiagFunc: utils.StringIsInt,
 		},
 		"application": {
