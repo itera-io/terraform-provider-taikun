@@ -96,6 +96,13 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Default:     "",
 		},
+		"timeout": {
+			Description:  "The timeout in minutes for the application installation.",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      10,
+			ValidateFunc: validation.IntBetween(10, 200),
+		},
 	}
 }
 
@@ -141,6 +148,7 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 	body.SetNamespace(d.Get("namespace").(string))
 	body.SetExtraValues(extraValues)
 	body.SetAutoSync(d.Get("autosync").(bool))
+	body.SetTimeout(int32(d.Get("timeout").(int)))
 	data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappInstall(context.TODO()).CreateProjectAppCommand(*body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
@@ -282,6 +290,11 @@ func resourceTaikunAppInstanceWaitForReady(d *schema.ResourceData, meta interfac
 	pendingStates := []string{string(tkcore.EINSTANCESTATUS_NONE), string(tkcore.EINSTANCESTATUS_NOT_READY), string(tkcore.EINSTANCESTATUS_INSTALLING), string(tkcore.EINSTANCESTATUS_UNINSTALLING)}
 	targetStates := []string{string(tkcore.EINSTANCESTATUS_READY)}
 
+	timeoutMinutes := d.Get("timeout").(int)
+	if timeoutMinutes <= 10 {
+		timeoutMinutes = 10
+	}
+
 	// Try to get the instance until timeout - If apps are listable, repository is ready
 	createStateConf := &retry.StateChangeConf{
 		Pending: pendingStates,
@@ -294,7 +307,7 @@ func resourceTaikunAppInstanceWaitForReady(d *schema.ResourceData, meta interfac
 
 			return data, string(data.GetStatus()), nil
 		},
-		Timeout:    10 * time.Minute,
+		Timeout:    time.Duration(timeoutMinutes) * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -317,6 +330,10 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 
 	pendingStates := []string{"present"}
 	targetStates := []string{"gone"}
+	timeoutMinutes := d.Get("timeout").(int)
+	if timeoutMinutes <= 10 {
+		timeoutMinutes = 10
+	}
 
 	// Try to get the instance until timeout - If app is not present, it was deleted.
 	// If uninstall fails during deletion, use your second chance to send uninstall again - usually it can get us unstuck.
@@ -348,7 +365,7 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 
 			return data, foundMatch, nil
 		},
-		Timeout:    10 * time.Minute,
+		Timeout:    time.Duration(timeoutMinutes) * time.Minute,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
@@ -375,6 +392,7 @@ func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schem
 
 	bodySync := tkcore.SyncProjectAppCommand{}
 	bodySync.SetProjectAppId(appId)
+	bodySync.SetTimeout(int32(d.Get("timeout").(int)))
 	response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
 	if errSync != nil {
 		return tk.CreateError(response, errSync)

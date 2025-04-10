@@ -36,4 +36,5 @@ Read-Only:
 - `parameters_yaml` (String)
 - `project_id` (String)
 - `status` (String)
+- `timeout` (Number)
 
