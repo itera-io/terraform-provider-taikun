@@ -257,7 +257,7 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 		body := tkcore.AutoSyncManagementCommand{}
 		body.SetId(appId)
 		body.SetMode(autosyncNew.(string))
-		_, response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappAutosync(context.TODO()).AutoSyncManagementCommand(body).Execute()
+		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappAutosync(context.TODO()).AutoSyncManagementCommand(body).Execute()
 		if errSync != nil {
 			return diag.FromErr(tk.CreateError(response, errSync))
 		}
@@ -375,7 +375,7 @@ func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schem
 
 	bodySync := tkcore.SyncProjectAppCommand{}
 	bodySync.SetProjectAppId(appId)
-	_, response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
+	response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
 	if errSync != nil {
 		return tk.CreateError(response, errSync)
 	}
