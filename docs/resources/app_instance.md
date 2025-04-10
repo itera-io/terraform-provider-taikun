@@ -61,6 +61,7 @@ Take a look at the **quickstart template** that deploys a new k8s cluster, a cat
 - `parameters_base64` (String) A base64 encoded file containing parameters for the application. Conflicts with: `parameters_yaml`.
 - `parameters_yaml` (String) A path to a valid yaml file that includes the parameters for the application. Conflicts with: `parameters_base64`.
 - `status` (String) Do not set. Used for tracking application instance failures. Defaults to ` `.
+- `timeout` (Number) The timeout in minutes for the application installation. Defaults to `10`.
 
 ### Read-Only
 
