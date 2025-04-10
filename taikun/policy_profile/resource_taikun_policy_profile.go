@@ -254,7 +254,7 @@ func resourceTaikunPolicyProfileUpdate(ctx context.Context, d *schema.ResourceDa
 		body.SetUniqueServiceSelector(d.Get("unique_service_selector").(bool))
 		body.SetId(id)
 
-		_, res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesUpdate(context.TODO()).OpaProfileUpdateCommand(body).Execute()
+		res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesUpdate(context.TODO()).OpaProfileUpdateCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -292,7 +292,7 @@ func resourceTaikunPolicyProfileLock(id int32, lock bool, apiClient *tk.Client) 
 	lockBody.SetId(id)
 	lockBody.SetMode(utils.GetLockMode(lock))
 
-	_, res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesLockManager(context.TODO()).OpaProfileLockManagerCommand(lockBody).Execute()
+	res, err := apiClient.Client.OpaProfilesAPI.OpaprofilesLockManager(context.TODO()).OpaProfileLockManagerCommand(lockBody).Execute()
 
 	return tk.CreateError(res, err)
 }
