@@ -1,13 +1,12 @@
 terraform {
   required_providers {
     taikun = {
-      source  = "itera-io/taikun"
-      version = "1.9.1" // Use the latest version
+      source = "itera-io/taikun"
     }
   }
 }
 
-// Define connection to Taikun
+// Define connection to Taikun, you can load from ENV variables with TAIKUN_EMAIL, TAIKUN_PASSWORD...
 provider "taikun" {
   email    = "example@taikun.cloud"
   password = "your-password"
@@ -28,7 +27,7 @@ resource "taikun_cloud_credential_openstack" "wordpress_credentials" {
 // Create a kubernetes cluster
 resource "taikun_project" "proj1" {
   name                = "tf-acc-oneclick"
-  cloud_credential_id = taikun_cloud_credential_openstack.foo.id
+  cloud_credential_id = taikun_cloud_credential_openstack.wordpress_credentials.id
   flavors             = concat(local.flavors_small, local.flavors_big)
 
   server_bastion {
@@ -76,7 +75,7 @@ resource "taikun_app_instance" "mysql01" {
   namespace      = "wordpress-ns"
   project_id     = taikun_project.proj1.id
   catalog_app_id = local.mysql_app_id
-  depends_on     = [taikun_project.proj1]
+  depends_on     = [taikun_project.proj1, taikun_catalog_project_binding.bind01]
 }
 
 // Create WordPress instance with MySQL connection
@@ -99,14 +98,14 @@ locals {
 
 // Flavors configuration. Filtering data sources
 data "taikun_flavors" "small" {
-  cloud_credential_id = taikun_cloud_credential_openstack.foo.id
+  cloud_credential_id = taikun_cloud_credential_openstack.wordpress_credentials.id
   min_cpu             = 2
   max_cpu             = 2
   min_ram             = 4
   max_ram             = 4
 }
 data "taikun_flavors" "big" {
-  cloud_credential_id = taikun_cloud_credential_openstack.foo.id
+  cloud_credential_id = taikun_cloud_credential_openstack.wordpress_credentials.id
   min_cpu             = 4
   max_cpu             = 4
   min_ram             = 8

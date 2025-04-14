@@ -6,7 +6,7 @@ terraform {
   }
 }
 
-// Define connection to Taikun
+// Define connection to Taikun, you can load from ENV variables with TAIKUN_EMAIL, TAIKUN_PASSWORD...
 provider "taikun" {
   email    = "test@example.com"
   password = "asdfghjkl"
@@ -50,6 +50,14 @@ resource "taikun_project" "proj1" {
   }
 }
 
+// Make sure the taikun-managed-apps repository is enabled
+resource "taikun_repository" "bar" {
+  name              = "taikun-managed-apps"
+  organization_name = "taikun"
+  private           = false
+  enabled           = true
+}
+
 // Create a catalog, bind one app and the project above
 resource "taikun_catalog" "cat01" {
   name        = "oneclick-catalog"
@@ -74,6 +82,9 @@ resource "taikun_app_instance" "app01" {
   namespace      = "wordpress-ns"
   project_id     = taikun_project.proj1.id // The project above
   catalog_app_id = local.wp_app_id         // The app selected below, from the catalog above
+  depends_on = [
+    taikun_catalog_project_binding.bind01
+  ]
 }
 
 // Selecting the app (get id ofo app bound to the catalog from name and org)
