@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	tk "github.com/itera-io/taikungoclient"
@@ -11,6 +12,8 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"log"
 	"regexp"
+	"strings"
+	"time"
 )
 
 func taikunApplicationSchema() map[string]*schema.Schema {
@@ -188,7 +191,6 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTaikunCatalogDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	apiClient := meta.(*tk.Client)
 	catalogId, err := utils.Atoi32(d.Get("id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -214,10 +216,11 @@ func resourceTaikunCatalogDelete(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Delete catalog
-	response, err := apiClient.Client.CatalogAPI.CatalogDelete(context.TODO(), catalogId).Execute()
+	err = resourceTaikunCatalogWaitForDeletionReady(catalogId, ctx, meta)
 	if err != nil {
-		return diag.FromErr(tk.CreateError(response, err))
+		return diag.FromErr(err)
 	}
+
 	d.SetId("")
 	return nil
 }
@@ -234,15 +237,18 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 		apiClient := meta.(*tk.Client)
 		catalogName := d.Get("name").(string)
 		listQuery := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName)
+		log.Printf("We are reading catalog with name: %s", catalogName)
 
 		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 			orgId, err := utils.Atoi32(organizationIDData.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			log.Printf("We are reading catalog organization with id: %d", orgId)
 			listQuery = listQuery.OrganizationId(orgId)
 		}
 
+		log.Printf("We are listing the catalog")
 		data, response, err := listQuery.Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
@@ -260,12 +266,11 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 		}
 
 		if !foundMatch {
-			if withRetries {
-				d.SetId(d.Get("id").(string)) // We need to tell provider that object was created
-				return diag.FromErr(fmt.Errorf("could not find the specified catalog (name: %s)", catalogName))
-			}
+			//log.Printf("Did not find catalog")
+			d.SetId("")
 			return nil
 		}
+		//log.Printf("Found catalog")
 
 		// If we have set the legacy parameter projects, use it. Otherwise, ignore all projects bound.
 		if _, isSet := d.GetOk("projects"); !isSet {
@@ -435,6 +440,49 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 			return diag.FromErr(err)
 		}
 		_, _ = apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
+	}
+
+	return nil
+}
+
+func resourceTaikunCatalogWaitForDeletionReady(catalogId int32, ctx context.Context, meta interface{}) error {
+	apiClient := meta.(*tk.Client)
+
+	deleteStateConf := &retry.StateChangeConf{
+		Pending: []string{"retry"},
+		Target:  []string{"deleted"},
+		Refresh: func() (interface{}, string, error) {
+			data, response, err := apiClient.Client.CatalogAPI.CatalogList(ctx).Id(catalogId).Execute()
+			if err != nil {
+				return nil, "", err
+			}
+			if data.GetTotalCount() == 0 {
+				return nil, "deleted", nil
+			}
+
+			response, err = apiClient.Client.CatalogAPI.CatalogDelete(ctx, catalogId).Execute()
+			if err != nil {
+				tkErr := tk.CreateError(response, err)
+				// Check for the specific case where a project is still bound
+				if strings.Contains(tkErr.Error(), "Catalog is using by project") || strings.Contains(tkErr.Error(), "Catalog is being used by project") {
+					// Still not ready, keep retrying
+					return nil, "retry", nil
+				}
+				// Other errors should stop the retry
+				return nil, "", tkErr
+			}
+
+			// Successfully deleted
+			return nil, "deleted", nil
+		},
+		Timeout:    3 * time.Minute,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	_, err := deleteStateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return fmt.Errorf("error deleting catalog (%d): %s", catalogId, err)
 	}
 
 	return nil
