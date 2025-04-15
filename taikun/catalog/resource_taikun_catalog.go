@@ -12,7 +12,6 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"log"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -448,40 +447,46 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 func resourceTaikunCatalogWaitForDeletionReady(catalogId int32, ctx context.Context, meta interface{}) error {
 	apiClient := meta.(*tk.Client)
 
+	var lastErr error
+	dummyResult := struct{}{}
+
 	deleteStateConf := &retry.StateChangeConf{
 		Pending: []string{"retry"},
 		Target:  []string{"deleted"},
+
 		Refresh: func() (interface{}, string, error) {
 			data, response, err := apiClient.Client.CatalogAPI.CatalogList(ctx).Id(catalogId).Execute()
 			if err != nil {
-				return nil, "", err
+				lastErr = tk.CreateError(response, err)
+				return dummyResult, "", lastErr
 			}
+
 			if data.GetTotalCount() == 0 {
-				return nil, "deleted", nil
+				return dummyResult, "deleted", nil
 			}
 
 			response, err = apiClient.Client.CatalogAPI.CatalogDelete(ctx, catalogId).Execute()
 			if err != nil {
-				tkErr := tk.CreateError(response, err)
-				// Check for the specific case where a project is still bound
-				if strings.Contains(tkErr.Error(), "Catalog is using by project") || strings.Contains(tkErr.Error(), "Catalog is being used by project") {
-					// Still not ready, keep retrying
-					return nil, "retry", nil
-				}
-				// Other errors should stop the retry
-				return nil, "", tkErr
+				lastErr = tk.CreateError(response, err)
+
+				// Retry as long as we can; return "retry" state
+				return dummyResult, "retry", nil
 			}
 
-			// Successfully deleted
-			return nil, "deleted", nil
+			// Success
+			return dummyResult, "deleted", nil
 		},
-		Timeout:    3 * time.Minute,
-		Delay:      10 * time.Second,
-		MinTimeout: 10 * time.Second,
+		Timeout:    1 * time.Minute,
+		Delay:      5 * time.Second,
+		MinTimeout: 5 * time.Second,
 	}
 
 	_, err := deleteStateConf.WaitForStateContext(ctx)
 	if err != nil {
+		// Return the last encountered error if available
+		if lastErr != nil {
+			return fmt.Errorf("error deleting catalog (%d): %w", catalogId, lastErr)
+		}
 		return fmt.Errorf("error deleting catalog (%d): %s", catalogId, err)
 	}
 
