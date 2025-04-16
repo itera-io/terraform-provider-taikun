@@ -22,4 +22,6 @@ If you create and destroy an app with Terraform with the same configuration, the
 
 Take a look at the **quickstart template** that deploys a new k8s cluster, a catalog and an app instance - available in the [quickstart examples](https://github.com/itera-io/terraform-provider-taikun/tree/dev/examples/quickstart-templates) folder.
 
+If you change the application parameters, TF will automatically trigger the synch of the app instance (even if you do not have autosynch).
+
 {{ .SchemaMarkdown | trimspace }}
