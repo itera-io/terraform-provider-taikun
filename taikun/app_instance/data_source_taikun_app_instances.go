@@ -69,9 +69,7 @@ func dataSourceTaikunAppInstancesRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(tk.CreateError(response, err))
 		}
 
-		// Base64 parameters were used
-		//appInstances[i] = flattenTaikunAppInstanceList(data)
-
+		// We have no idea if the user originally set with file or base64 literal, so we just display base64 either way
 		appInstances[i] = flattenTaikunAppInstance(false, data)
 	}
 	if err := d.Set("application_instances", appInstances); err != nil {

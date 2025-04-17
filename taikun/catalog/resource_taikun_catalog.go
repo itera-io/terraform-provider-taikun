@@ -139,7 +139,6 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 	applicationsWhichShouldBeBound := d.Get("application").(*schema.Set)
 	// TODO - Legacy bind projects
 	projects := d.Get("projects")
-	log.Printf("We wish to bind: %s", projects)
 	if projects == nil {
 		projects = schema.NewSet(schema.HashString, []interface{}{})
 	}
@@ -236,18 +235,15 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 		apiClient := meta.(*tk.Client)
 		catalogName := d.Get("name").(string)
 		listQuery := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName)
-		log.Printf("We are reading catalog with name: %s", catalogName)
 
 		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 			orgId, err := utils.Atoi32(organizationIDData.(string))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			log.Printf("We are reading catalog organization with id: %d", orgId)
 			listQuery = listQuery.OrganizationId(orgId)
 		}
 
-		log.Printf("We are listing the catalog")
 		data, response, err := listQuery.Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))

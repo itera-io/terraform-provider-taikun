@@ -11,7 +11,6 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"log"
 	"regexp"
 	"time"
 )
@@ -184,7 +183,6 @@ func resourceTaikunAppInstanceDelete(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Printf("Starting delete app, id %d", appInstanceId)
 	response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appInstanceId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
@@ -270,7 +268,6 @@ func flattenTaikunAppInstance(paramsSpecifiedAsFile bool, rawAppInstance *tkcore
 }
 
 func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Printf("Starting update")
 	apiClient := meta.(*tk.Client)
 	appId, err := utils.Atoi32(d.Id())
 	if err != nil {
@@ -278,10 +275,8 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Autosync
-	log.Printf("Starting autosync update")
 	autosyncOld, autosyncNew := d.GetChange("autosync")
 	if autosyncOld != autosyncNew {
-		log.Printf("Starting autosync update")
 
 		// Convert bool to string
 		var mode string
@@ -302,13 +297,11 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	log.Printf("Starting update params")
 	err = updateParams(appId, d, meta, !autosyncNew.(bool)) // If autosync is enabled, it will trigger sync automatically. If not we need to sync manually.
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	log.Printf("Starting read")
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunAppInstanceReadWithRetries(), ctx, d, meta)
 }
 
@@ -375,7 +368,6 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 		Pending: pendingStates,
 		Target:  targetStates,
 		Refresh: func() (interface{}, string, error) {
-			log.Printf("Project app list")
 			data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappList(context.TODO()).Id(appId).Execute()
 			if err != nil {
 				return nil, "", tk.CreateError(response, err)
@@ -390,7 +382,6 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 			if data.GetTotalCount() == 1 {
 				if (data.GetData()[0].GetStatus() == tkcore.EINSTANCESTATUS_FAILURE) && secondChance {
 					secondChance = false
-					log.Printf("Starting app delete")
 					response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appId).Execute()
 					if err != nil {
 						return nil, "", tk.CreateError(response, err)

@@ -3,8 +3,7 @@
 terraform {
   required_providers {
     taikun = {
-      # source = "itera-io/taikun"
-      source = "itera-io/dev/taikun"
+      source = "itera-io/taikun"
     }
   }
 }

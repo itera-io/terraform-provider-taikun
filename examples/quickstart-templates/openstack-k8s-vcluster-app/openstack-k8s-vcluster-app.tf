@@ -1,13 +1,12 @@
 terraform {
   required_providers {
     taikun = {
-      # source = "itera-io/taikun"
-      source = "itera-io/dev/taikun"
+      source = "itera-io/taikun"
     }
   }
 }
 
-// Define connection to Taikun
+// Define connection to Taikun, you can load from ENV variables with TAIKUN_EMAIL, TAIKUN_PASSWORD...
 provider "taikun" {
   # email    = "test@example.com"
   # password = "asdfghjkl"

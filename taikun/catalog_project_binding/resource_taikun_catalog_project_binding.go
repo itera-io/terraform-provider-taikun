@@ -214,7 +214,6 @@ func resourceTaikunCatalogProjectBindingUpdate(ctx context.Context, d *schema.Re
 }
 
 func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName string, projectId int32, shouldBeBound bool) error {
-	log.Printf("Start reconcile binding")
 	query := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(projectId)
 
 	if organizationId != 0 {

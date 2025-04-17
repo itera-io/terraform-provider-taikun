@@ -59,7 +59,6 @@ func dataSourceTaikunCatalogProjectBindingsRead(ctx context.Context, d *schema.R
 	boundProjects := make([]map[string]interface{}, len(rawCatalog.BoundProjects))
 
 	for i, value := range rawCatalog.BoundProjects {
-		log.Printf("bound project nr %d: %s", i, utils.I32toa(value.GetId()))
 		boundProjects[i] = flattenTaikunCatalogProjectBinding(true, utils.I32toa(value.GetId()), rawCatalog.GetName())
 	}
 
