@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"log"
 )
 
 func DataSourceTaikunCatalogProjectBindings() *schema.Resource {
