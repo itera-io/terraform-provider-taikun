@@ -24,6 +24,5 @@ func DataSourceTaikunAppInstance() *schema.Resource {
 
 func dataSourceTaikunAppInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId(d.Get("id").(string))
-
 	return generateResourceTaikunAppInstanceReadWithoutRetries()(ctx, d, meta)
 }

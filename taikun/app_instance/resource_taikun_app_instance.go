@@ -90,6 +90,18 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Default:     false,
 		},
+		"taikun_link": {
+			Description: "Turn Taikun link on or off.",
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
+		"taikun_link_url": {
+			Description: "The taikun link URL assigned to this application.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"status": {
 			Description: "Do not set. Used for tracking application instance failures.",
 			Type:        schema.TypeString,
@@ -149,6 +161,7 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 	body.SetNamespace(d.Get("namespace").(string))
 	body.SetExtraValues(extraValues)
 	body.SetAutoSync(d.Get("autosync").(bool))
+	body.SetTaikunLinkEnabled(d.Get("taikun_link").(bool))
 	body.SetTimeout(int32(d.Get("timeout").(int)))
 	data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappInstall(context.TODO()).CreateProjectAppCommand(*body).Execute()
 	if err != nil {
@@ -244,13 +257,15 @@ func flattenTaikunAppInstance(paramsSpecifiedAsFile bool, rawAppInstance *tkcore
 		paramsKey = "parameters_yaml"
 	}
 	return map[string]interface{}{
-		"id":             utils.I32toa(rawAppInstance.GetId()),
-		"name":           rawAppInstance.GetName(),
-		"namespace":      rawAppInstance.GetNamespace(),
-		"project_id":     utils.I32toa(rawAppInstance.GetProjectId()),
-		"catalog_app_id": utils.I32toa(rawAppInstance.GetCatalogAppId()),
-		paramsKey:        b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
-		"autosync":       rawAppInstance.GetAutoSync(),
+		"id":              utils.I32toa(rawAppInstance.GetId()),
+		"name":            rawAppInstance.GetName(),
+		"namespace":       rawAppInstance.GetNamespace(),
+		"project_id":      utils.I32toa(rawAppInstance.GetProjectId()),
+		"catalog_app_id":  utils.I32toa(rawAppInstance.GetCatalogAppId()),
+		paramsKey:         b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
+		"autosync":        rawAppInstance.GetAutoSync(),
+		"taikun_link":     rawAppInstance.GetTaikunLinkEnabled(),
+		"taikun_link_url": rawAppInstance.GetTaikunLinkUrl(),
 	}
 }
 

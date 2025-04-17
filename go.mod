@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/hashicorp/terraform-plugin-testing v1.7.0
-	github.com/itera-io/taikungoclient v0.0.0-20250413004627-16fa5d9ece0c
+	github.com/itera-io/taikungoclient v0.0.0-20250417002106-6e254afb0cd8
 	github.com/robfig/cron/v3 v3.0.1
 )
 
