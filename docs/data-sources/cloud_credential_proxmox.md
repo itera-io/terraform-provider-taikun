@@ -23,7 +23,7 @@ Get an Proxmox cloud credential by its ID.
 
 - `api_host` (String) The Proxmox authentication URL. (Can be set with env PROXMOX_API_HOST)
 - `client_id` (String) The Proxmox Client ID. (Can be set with env PROXMOX_CLIENT_ID)
-- `continent` (String) The OpenStack continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).
+- `continent` (String) The Proxmox continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).
 - `created_by` (String) The creator of the Proxmox cloud credential.
 - `hypervisors` (List of String) The Proxmox hypervisors string array.
 - `is_default` (Boolean) Indicates whether the Proxmox cloud credential is the default one.

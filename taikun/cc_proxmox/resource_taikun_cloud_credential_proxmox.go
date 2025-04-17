@@ -73,7 +73,7 @@ func resourceTaikunCloudCredentialProxmoxSchema() map[string]*schema.Schema {
 		},
 		"continent": {
 			Type:        schema.TypeString,
-			Description: "The OpenStack continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).",
+			Description: "The Proxmox continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).",
 			Optional:    true,
 			Default:     "Europe",
 			ForceNew:    true,

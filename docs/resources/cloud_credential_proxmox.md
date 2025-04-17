@@ -72,7 +72,7 @@ resource "taikun_cloud_credential_proxmox" "foo" {
 
 ### Optional
 
-- `continent` (String) The OpenStack continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`). Defaults to `Europe`.
+- `continent` (String) The Proxmox continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`). Defaults to `Europe`.
 - `lock` (Boolean) Indicates whether to lock the Proxmox cloud credential. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the Proxmox cloud credential.
 
