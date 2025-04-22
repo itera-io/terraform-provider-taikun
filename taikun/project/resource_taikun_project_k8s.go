@@ -275,7 +275,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 // Kubernetes server spots
 func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serverCreateBody tkcore.ServerForCreateDto) (tkcore.ServerForCreateDto, error) {
 	if (serverMap["spot_server_max_price"].(float64) != 0) && (!serverMap["spot_server"].(bool)) {
-		return serverCreateBody, fmt.Errorf("Spot server max price is set, but the server does not have spot enabled.")
+		return serverCreateBody, fmt.Errorf("spot server max price is set, but the server does not have spot enabled")
 	}
 	if serverMap["spot_server"] != nil {
 		spotForThisVm := serverMap["spot_server"].(bool)

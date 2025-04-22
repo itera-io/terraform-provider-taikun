@@ -33,5 +33,8 @@ data "taikun_app_instance" "foo" {
 - `parameters_yaml` (String) A path to a valid yaml file that includes the parameters for the application.
 - `project_id` (String) The ID of the project where the application should be deployed.
 - `status` (String) Do not set. Used for tracking application instance failures.
+- `taikun_link` (Boolean) Turn Taikun link on or off.
+- `taikun_link_url` (String) The taikun link URL assigned to this application.
+- `timeout` (Number) The timeout in minutes for the application installation.
 
 

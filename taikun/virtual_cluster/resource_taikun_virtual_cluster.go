@@ -28,11 +28,11 @@ func resourceTaikunVirtualClusterSchema() map[string]*schema.Schema {
 			ForceNew:     true,
 		},
 		"parent_id": {
-			Description:  "The ID of the parent of the virtual cluster.",
-			Type:         schema.TypeString,
-			ValidateFunc: validation.StringLenBetween(3, 30),
-			Required:     true,
-			ForceNew:     true,
+			Description:      "The ID of the parent of the virtual cluster.",
+			Type:             schema.TypeString,
+			ValidateDiagFunc: utils.StringIsInt,
+			Required:         true,
+			ForceNew:         true,
 		},
 		"hostname": {
 			Description: "The hostname that will be used for the virtual cluster. If left empty, you are assigned a hostname based on your IP an virtual cluster name.",
@@ -233,7 +233,7 @@ func loadVirtualClusterId(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if !foundMatch {
-		return fmt.Errorf("Could not find virtual cluster by its ID in Taikun.")
+		return fmt.Errorf("could not find virtual cluster by its ID in Taikun")
 	}
 
 	return nil
@@ -329,7 +329,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterId int32, ctx contex
 				return nil, "", tk.CreateError(response, err)
 			}
 			if data.GetTotalCount() != 1 {
-				return nil, "", fmt.Errorf("Could not find virtual cluster by id.")
+				return nil, "", fmt.Errorf("could not find virtual cluster by id")
 			}
 
 			foundMatch := "pending"

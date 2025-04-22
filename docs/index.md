@@ -25,8 +25,10 @@ Take a look at the **quickstart templates** available in the [quickstart example
 
 ### Optional
 
-- `api_host` (String) Custom Taikun API host.
-- `email` (String) Taikun email. Conflicts with: `keycloak_email`. Required with: `password`.
-- `keycloak_email` (String) Taikun Keycloak email. Conflicts with: `email`. Required with: `keycloak_password`.
-- `keycloak_password` (String, Sensitive) Taikun Keycloak password. Conflicts with: `password`. Required with: `keycloak_email`.
-- `password` (String, Sensitive) Taikun password. Conflicts with: `keycloak_password`. Required with: `email`.
+- `access_key` (String) Taikun access key. Can be set with TAIKUN_ACCESS_KEY. Conflicts with: `email`, `keycloak_email`. Required with: `secret_key`.
+- `api_host` (String) Custom Taikun API host. Can be set with TAIKUN_API_HOST.
+- `email` (String) Taikun email. Can be set with TAIKUN_EMAIL Conflicts with: `keycloak_email`, `access_key`. Required with: `password`.
+- `keycloak_email` (String) Taikun Keycloak email. Can be set with TAIKUN_KEYCLOAK_EMAIL. Conflicts with: `email`, `access_key`. Required with: `keycloak_password`.
+- `keycloak_password` (String, Sensitive) Taikun Keycloak password. Can be set with TAIKUN_KEYCLOAK_PASSWORD. Conflicts with: `email`, `access_key`. Required with: `keycloak_email`.
+- `password` (String, Sensitive) Taikun password. Can be set with TAIKUN_PASSWORD. Conflicts with: `keycloak_password`, `access_key`. Required with: `email`.
+- `secret_key` (String, Sensitive) Taikun secret key. Can be set with TAIKUN_SECRET_KEY. Conflicts with: `email`, `keycloak_email`. Required with: `access_key`.

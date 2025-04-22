@@ -24,8 +24,12 @@ data "taikun_repository" "foo" {
 ### Required
 
 - `name` (String) The name of the repository.
-- `organization_name` (String) The name of the organization which owns the public repository.
+- `organization_name` (String) The name specified as the 'organization' for this public repository. This is NOT CloudWorks organization.
 - `private` (Boolean) Indicates whether the repository is private or public.
+
+### Optional
+
+- `organization_id` (String) The ID of the organization which owns the catalog. This is CloudWorks organization.
 
 ### Read-Only
 

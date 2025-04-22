@@ -271,9 +271,10 @@ func GetLoadBalancingSolution(octaviaEnabled bool, taikunLBEnabled bool) string 
 }
 
 func ParseLoadBalancingSolution(loadBalancingSolution string) (octaviaEnabled bool, taikunLBEnabled bool) {
-	if loadBalancingSolution == loadBalancerOctavia {
+	switch loadBalancingSolution {
+	case loadBalancerOctavia:
 		return true, false
-	} else if loadBalancingSolution == LoadBalancerTaikun {
+	case LoadBalancerTaikun:
 		return false, true
 	}
 	return false, false
@@ -391,6 +392,6 @@ func GetProxmoxStorageStringForServer(projectID int32, apiClient *tk.Client) (st
 	case "Longhorn":
 		return "STORAGE", nil
 	default:
-		return "", fmt.Errorf("Parsed an unrecognised Proxmox Storage type from Kubernetes Profile for this project.")
+		return "", fmt.Errorf("parsed an unrecognised Proxmox Storage type from Kubernetes Profile for this project")
 	}
 }

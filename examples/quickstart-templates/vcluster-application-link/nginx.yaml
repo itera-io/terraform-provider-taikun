@@ -1,0 +1,19 @@
+ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    nginx.ingress.kubernetes.io/auth-tls-secret: default/cloudflare-tls-secret
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+  enabled: true
+  hostname: {{taikun_link_host}}
+  ingressClassName: taikun
+  extraTls:
+    - hosts:
+        - "{{taikun_link_host}}"
+      secretName: "{{taikun_link_host}}-tls"
+  secrets:
+    - name: "{{taikun_link_host}}-tls"
+      certificate: |
+        {{taikun_link_certificate}}
+      key: |
+        {{taikun_link_key}}
