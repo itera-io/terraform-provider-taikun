@@ -1,0 +1,21 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Role Requirement** To use the `taikun_catalog_project_binding` resource, you need a Manager or Partner account.
+
+-> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
+
+## Example Usage
+
+{{tffile "examples/resources/taikun_catalog_project_binding/resource.tf"}}
+
+Take a look at the **quickstart template** that deploys a new k8s cluster, a catalog and an app instance - available in the [quickstart examples](https://github.com/itera-io/terraform-provider-taikun/tree/dev/examples/quickstart-templates) folder.
+
+{{ .SchemaMarkdown | trimspace }}

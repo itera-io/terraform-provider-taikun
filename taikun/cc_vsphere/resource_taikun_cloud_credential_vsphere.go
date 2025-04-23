@@ -146,15 +146,18 @@ func resourceTaikunCloudCredentialVsphereSchema() map[string]*schema.Schema {
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 		"continent": {
-			Description: "The vSphere continent (`Asia`, `Europe` or `America`).",
 			Type:        schema.TypeString,
+			Description: "The vSphere continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).",
 			Optional:    true,
-			ForceNew:    true,
 			Default:     "Europe",
+			ForceNew:    true,
 			ValidateFunc: validation.StringInSlice([]string{
+				"Africa",
 				"Asia",
 				"Europe",
-				"America",
+				"North America",
+				"Oceania",
+				"South America",
 			}, false),
 		},
 		"public_name": {
@@ -532,5 +535,5 @@ func getDatacenterId(datacenterName string, url string, username string, passwor
 	}
 
 	// Not found
-	return "", fmt.Errorf("Could not find Datacenter ID for the specified Datacenter Name.")
+	return "", fmt.Errorf("could not find Datacenter ID for the specified Datacenter Name")
 }

@@ -33,6 +33,7 @@ Read-Only:
 - `id` (String)
 - `lock` (Boolean)
 - `name` (String)
+- `organization_id` (String)
 - `projects` (Set of String)
 
 <a id="nestedobjatt--catalogs--application"></a>

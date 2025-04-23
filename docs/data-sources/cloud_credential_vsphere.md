@@ -22,7 +22,7 @@ Get an Vsphere cloud credential by its ID.
 ### Read-Only
 
 - `api_host` (String) The vSphere authentication URL. (Can be set with env VSPHERE_API_URL)
-- `continent` (String) The vSphere continent (`Asia`, `Europe` or `America`).
+- `continent` (String) The vSphere continent (e.g., `Africa`, `Asia`, `Europe`, `North America`, `Oceania`, or `South America`).
 - `created_by` (String) The creator of the vSphere cloud credential.
 - `data_store` (String) The chosen vSphere datastore. (Can be set with env VSPHERE_DATA_STORE)
 - `datacenter` (String) The chosen vSphere datacenter name. (Can be set with env VSPHERE_DATACENTER)

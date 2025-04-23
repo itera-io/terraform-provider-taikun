@@ -10,8 +10,6 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 
 ~> **Role Requirement** To use the `taikun_repository` resource, you need a Manager or Partner account.
 
--> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
-
 ## Public repositories
 When you use Terraform to create the public repository resource, the repository is searched in Taikun.
 The public repository is then enabled or disabled to ensure the state you defined in the configuration.

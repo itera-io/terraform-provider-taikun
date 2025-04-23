@@ -469,12 +469,18 @@ resource "taikun_policy_profile" "foo" {
 resource "taikun_catalog" "foo" {
   name="%s"
   description="Created by terraform for test app deployment."
-  projects=[resource.taikun_project.foo.id]
   
   application {
     name="apache"
     repository="taikun-managed-apps"
   }
+}
+
+// Bind the created project to the created catalog
+resource "taikun_catalog_project_binding" "bind01" {
+  catalog_name = taikun_catalog.foo.name
+  project_id   = resource.taikun_project.foo.id
+  is_bound     = true
 }
 
 // Finally create app instance
@@ -483,6 +489,9 @@ resource "taikun_app_instance" "foo" {
   namespace="apache-ns"
   project_id=resource.taikun_project.foo.id // The project above
   catalog_app_id=local.app_id     // The app selected below, from the catalog above
+  depends_on = [
+    taikun_catalog_project_binding.bind01
+  ]
 }
 
 // Selecting the app (get id ofo app bound to the catalog from name and org)

@@ -11,6 +11,8 @@ func dataSourceTaikunCatalogSchema() map[string]*schema.Schema {
 	dsSchema := utils.DataSourceSchemaFromResourceSchema(resourceTaikunCatalogSchema())
 	utils.AddRequiredFieldsToSchema(dsSchema, "name")
 	utils.SetValidateDiagFuncToSchema(dsSchema, "name", utils.StringLenBetween(3, 30))
+	utils.AddOptionalFieldsToSchema(dsSchema, "organization_id")
+	utils.SetValidateDiagFuncToSchema(dsSchema, "organization_id", utils.StringIsInt)
 	return dsSchema
 }
 

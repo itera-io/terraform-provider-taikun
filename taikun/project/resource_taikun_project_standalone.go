@@ -613,7 +613,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 
 	// Standalone VM spots
 	if (vmMap["spot_vm_max_price"].(float64) != 0) && (!vmMap["spot_vm"].(bool)) {
-		return "", nil, fmt.Errorf("Spot VM max price is set, but the VM does not have spot enabled.")
+		return "", nil, fmt.Errorf("spot VM max price is set, but the VM does not have spot enabled")
 	}
 	if vmMap["spot_vm"] != nil {
 		spotForThisVm := vmMap["spot_vm"].(bool)

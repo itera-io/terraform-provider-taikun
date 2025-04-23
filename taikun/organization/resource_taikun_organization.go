@@ -87,7 +87,7 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 				validation.StringLenBetween(3, 30),
 				validation.StringMatch(
 					regexp.MustCompile("^[a-z0-9-_.]+$"),
-					"expected only alpha numeric characters or non alpha numeric (_-.)",
+					"expected only lowercase alpha numeric characters or non alpha numeric (_-.)",
 				),
 			),
 		},
