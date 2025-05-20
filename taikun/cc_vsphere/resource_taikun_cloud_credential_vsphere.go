@@ -532,5 +532,5 @@ func getDatacenterId(datacenterName string, url string, username string, passwor
 	}
 
 	// Not found
-	return "", fmt.Errorf("Could not find Datacenter ID for the specified Datacenter Name.")
+	return "", fmt.Errorf("could not find Datacenter ID for the specified Datacenter Name")
 }

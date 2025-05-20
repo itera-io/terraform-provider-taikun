@@ -218,7 +218,7 @@ func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc 
 		if !foundMatch {
 			if withRetries {
 				d.SetId(d.Get("id").(string)) // We need to tell provider that object was created
-				return diag.FromErr(fmt.Errorf("Could not find the specified catalog (name: %s).", catalogName))
+				return diag.FromErr(fmt.Errorf("could not find the specified catalog (name: %s)", catalogName))
 			}
 			return nil
 		}

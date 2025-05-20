@@ -149,7 +149,7 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 	}
 
 	body := []string{userId}
-	_, response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
+	response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}

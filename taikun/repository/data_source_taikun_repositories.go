@@ -44,7 +44,7 @@ func dataSourceTaikunRepositoriesRead(ctx context.Context, d *schema.ResourceDat
 		}
 		offsetPublic = int32(len(repositoriesList))
 	}
-	var publicTotalGot int = len(repositoriesList)
+	var publicTotalGot = len(repositoriesList)
 
 	// Private
 	var offsetPrivate int32 = 0

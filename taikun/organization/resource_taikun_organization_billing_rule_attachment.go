@@ -77,7 +77,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 		},
 	}
 
-	_, response, err := apiClient.Client.OrganizationsAPI.OrganizationsAddPrometheusrules(context.TODO(), organizationId).AddPrometheusRulesToOrganizationDto(body).Execute()
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsAddPrometheusrules(context.TODO(), organizationId).AddPrometheusRulesToOrganizationDto(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -174,7 +174,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 	}
 
 	body := []int32{billingRuleId}
-	_, response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(context.TODO(), organizationId).RequestBody(body).Execute()
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(context.TODO(), organizationId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
