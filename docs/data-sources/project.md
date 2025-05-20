@@ -46,7 +46,6 @@ data "taikun_project" "foo" {
 - `lock` (Boolean) Indicates whether to lock the project.
 - `monitoring` (Boolean) Kubernetes cluster monitoring.
 - `name` (String) Project name.
-- `organization_id` (String) ID of the organization which owns the project.
 - `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
 - `quota_cpu_units` (Number) Maximum CPU units.
 - `quota_disk_size` (Number) Maximum disk size in GBs.

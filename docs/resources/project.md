@@ -175,7 +175,6 @@ Take a look at the **quickstart templates** that deploy a project with a k8s clu
 - `kubernetes_version` (String) Kubernetes Version at project creation. Use the meta-argument `ignore_changes` to ignore future upgrades.
 - `lock` (Boolean) Indicates whether to lock the project. Defaults to `false`.
 - `monitoring` (Boolean) Kubernetes cluster monitoring. Defaults to `false`.
-- `organization_id` (String) ID of the organization which owns the project.
 - `policy_profile_id` (String) ID of the Policy profile. If unspecified, Gatekeeper is disabled.
 - `quota_cpu_units` (Number) Maximum CPU units. Defaults to `300`.
 - `quota_disk_size` (Number) Maximum disk size in GBs. Defaults to `2048`.

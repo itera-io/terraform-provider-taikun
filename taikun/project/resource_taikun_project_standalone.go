@@ -756,7 +756,7 @@ func resourceTaikunProjectToggleVmsSpot(ctx context.Context, d *schema.ResourceD
 		bodyToggle.SetMode("disable")
 	}
 
-	_, res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotVms(ctx).SpotVmOperationCommand(bodyToggle).Execute()
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotVms(ctx).SpotVmOperationCommand(bodyToggle).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}

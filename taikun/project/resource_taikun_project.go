@@ -142,14 +142,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			),
 			ForceNew: true,
 		},
-		"organization_id": {
-			Description:      "ID of the organization which owns the project.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ValidateDiagFunc: utils.StringIsInt,
-			ForceNew:         true,
-		},
 		"policy_profile_id": {
 			Description:      "ID of the Policy profile. If unspecified, Gatekeeper is disabled.",
 			Type:             schema.TypeString,
@@ -430,11 +422,6 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	if PolicyProfileID, PolicyProfileIDIsSet := d.GetOk("policy_profile_id"); PolicyProfileIDIsSet {
 		opaProfileID, _ := utils.Atoi32(PolicyProfileID.(string))
 		body.SetOpaProfileId(opaProfileID)
-	}
-
-	if organizationID, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-		projectOrganizationID, _ := utils.Atoi32(organizationID.(string))
-		body.SetOrganizationId(projectOrganizationID)
 	}
 
 	if taikunLBFlavor, taikunLBFlavorIsSet := d.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
@@ -796,7 +783,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, _, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1180,7 +1167,6 @@ func flattenTaikunProject(
 		"kubernetes_version":      projectDetailsDTO.GetKubernetesVersion(),
 		"lock":                    projectDetailsDTO.GetIsLocked(),
 		"name":                    projectDetailsDTO.GetName(),
-		"organization_id":         utils.I32toa(projectDetailsDTO.GetOrganizationId()),
 		"quota_cpu_units":         projectQuotaDTO.GetServerCpu(),
 		"quota_ram_size":          utils.ByteToGibiByte(projectQuotaDTO.GetServerRam()),
 		"quota_disk_size":         utils.ByteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
@@ -1535,7 +1521,7 @@ func resourceTaikunProjectLock(id int32, lock bool, apiClient *tk.Client) error 
 	body := tkcore.ProjectLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
-	_, _, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
+	_, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
 	return err
 }
 

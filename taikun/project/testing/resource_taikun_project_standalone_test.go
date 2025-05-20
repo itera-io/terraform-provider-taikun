@@ -36,7 +36,6 @@ func TestAccResourceTaikunProjectModifyImages(t *testing.T) {
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-		resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 		resource.TestCheckResourceAttrPair("taikun_project.foo", "images.#", "data.taikun_images_openstack.foo", "images.#"),
 	)
 
@@ -152,7 +151,6 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.volume_size", "60"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "vm.0.public_ip", "false"),

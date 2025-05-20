@@ -705,7 +705,7 @@ func resourceTaikunProjectToggleFullSpot(ctx context.Context, d *schema.Resource
 		bodyToggle.SetMode("disable")
 	}
 
-	_, res, err := apiClient.Client.ProjectsAPI.ProjectsToggleFullSpot(ctx).FullSpotOperationCommand(bodyToggle).Execute()
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleFullSpot(ctx).FullSpotOperationCommand(bodyToggle).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -723,7 +723,7 @@ func resourceTaikunProjectToggleWorkerSpot(ctx context.Context, d *schema.Resour
 		bodyToggle.SetMode("disable")
 	}
 
-	_, res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotWorkers(ctx).SpotWorkerOperationCommand(bodyToggle).Execute()
+	res, err := apiClient.Client.ProjectsAPI.ProjectsToggleSpotWorkers(ctx).SpotWorkerOperationCommand(bodyToggle).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
