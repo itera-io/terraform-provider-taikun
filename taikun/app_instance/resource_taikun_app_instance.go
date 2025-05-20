@@ -71,7 +71,7 @@ func resourceTaikunAppInstanceSchema() map[string]*schema.Schema {
 				// Read file contents, encode in base64 and save to state
 				paramsEncoded, err := utils.FilePathToBase64String(filePath.(string))
 				if err != nil {
-					panic(fmt.Errorf("Error reading file %s\nError: %s\n", filePath, err.Error()))
+					panic(fmt.Errorf("error reading file %s\nError: %s", filePath, err.Error()))
 				}
 				return paramsEncoded
 			},
@@ -170,7 +170,7 @@ func resourceTaikunAppInstanceDelete(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appInstanceId).Execute()
+	_, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appInstanceId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -356,7 +356,7 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 			if data.GetTotalCount() == 1 {
 				if (data.GetData()[0].GetStatus() == tkcore.EINSTANCESTATUS_FAILURE) && secondChance {
 					secondChance = false
-					response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appId).Execute()
+					_, response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appId).Execute()
 					if err != nil {
 						return nil, "", tk.CreateError(response, err)
 					}

@@ -107,7 +107,7 @@ func resourceTaikunRepositoryDelete(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		deleteCommand.SetAppRepoId(apprepoId)
-		_, response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(context.TODO()).DeleteRepositoryCommand(deleteCommand).Execute()
+		response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(context.TODO()).DeleteRepositoryCommand(deleteCommand).Execute()
 		if err2 != nil {
 			return diag.FromErr(tk.CreateError(response, err2))
 		}
@@ -149,7 +149,7 @@ func resourceTaikunRepositoryCreate(ctx context.Context, d *schema.ResourceData,
 		body_private.SetUsername(username_private)
 		body_private.SetPassword(password_private)
 
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -209,7 +209,7 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 		if !foundMatch {
 			if withRetries {
 				d.SetId(d.Get("id").(string)) // We need to tell provider that object was created
-				return diag.FromErr(fmt.Errorf("Could not find the specified repository (name: %s, organization: %s, private: %t).", repositoryName, organizationName, private))
+				return diag.FromErr(fmt.Errorf("could not find the specified repository (name: %s, organization: %s, private: %t)", repositoryName, organizationName, private))
 			}
 			return nil
 		}
@@ -256,7 +256,7 @@ func checkOrganization(d *schema.ResourceData, meta interface{}) (bool, error) {
 	if data.Data.GetOrganizationName() == d.Get("organization_name").(string) {
 		return true, nil
 	}
-	return false, fmt.Errorf("Specified organization (%s) does not match user's organization (%s). You cannot create private repositories outside of your default organization.", orgnameDeclared, orgnameDefault)
+	return false, fmt.Errorf("specified organization (%s) does not match user's organization (%s). You cannot create private repositories outside of your default organization", orgnameDeclared, orgnameDefault)
 }
 
 // Ensure the state of this repository matches the desired state provided
@@ -266,7 +266,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 	if enabledCurrent && !enabledNew {
 		body := &tkcore.UnbindAppRepositoryCommand{}
 		body.SetIds([]string{d.Get("id").(string)})
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryUnbind(context.TODO()).UnbindAppRepositoryCommand(*body).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryUnbind(context.TODO()).UnbindAppRepositoryCommand(*body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -278,7 +278,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 		unbind_filter[0].SetName(d.Get("name").(string))
 		unbind_filter[0].SetOrganizationName(d.Get("organization_name").(string))
 		body.SetFilteringElements(unbind_filter)
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryBind(context.TODO()).BindAppRepositoryCommand(*body).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryBind(context.TODO()).BindAppRepositoryCommand(*body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -290,7 +290,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 	// Update to latest changes - Download the details of the repository into our resource
 	err := utils.ReadAfterCreateWithRetries(generateResourceTaikunRepositoryReadWithRetries(), context.TODO(), d, meta)
 	if err != nil {
-		return fmt.Errorf("Update after enable/disable failed.")
+		return fmt.Errorf("update after enable/disable failed")
 	}
 	return nil
 }
