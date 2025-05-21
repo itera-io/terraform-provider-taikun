@@ -57,7 +57,7 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 	}
 
 	body := []string{userId}
-	_, response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
+	response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}

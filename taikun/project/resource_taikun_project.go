@@ -750,14 +750,14 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("alerting_profile_id") {
 		body := tkcore.AttachDetachAlertingProfileCommand{}
 		body.SetProjectId(id)
-		_, bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+		bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDetach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
 		if newErr != nil {
 			return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 		}
 		if newAlertingProfileIDData, newAlertingProfileIDProvided := d.GetOk("alerting_profile_id"); newAlertingProfileIDProvided {
 			newAlertingProfileID, _ := utils.Atoi32(newAlertingProfileIDData.(string))
 			body.SetAlertingProfileId(newAlertingProfileID)
-			_, bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
+			bodyResponse, newErr := apiClient.Client.AlertingProfilesAPI.AlertingprofilesAttach(context.TODO()).AttachDetachAlertingProfileCommand(body).Execute()
 			if newErr != nil {
 				return diag.FromErr(tk.CreateError(bodyResponse, newErr))
 			}
@@ -862,7 +862,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				deleteServerBody.SetProjectId(id)
 				deleteServerBody.SetServerIds(serverIds)
 
-				_, _, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+				_, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -1118,7 +1118,7 @@ func resourceTaikunProjectEditQuotas(d *schema.ResourceData, apiClient *tk.Clien
 		body.SetVmVolumeSize(float64(vmVolume.(int))) // No conversion needed, API takes GBs
 	}
 
-	_, _, err = apiClient.Client.ProjectQuotasAPI.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
+	_, err = apiClient.Client.ProjectQuotasAPI.ProjectquotasUpdate(context.TODO()).UpdateQuotaCommand(body).Execute()
 	return
 }
 

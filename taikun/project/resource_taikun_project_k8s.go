@@ -291,7 +291,7 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 
 func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
 	commitCommand := &tkcore.ProjectDeploymentCommitCommand{ProjectId: &projectID}
-	_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(context.TODO()).ProjectDeploymentCommitCommand(*commitCommand).Execute()
+	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(context.TODO()).ProjectDeploymentCommitCommand(*commitCommand).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -318,7 +318,7 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 		deleteServerBody.SetForceDeleteVClusters(true)
 		deleteServerBody.SetDeleteAutoscalingServers(true)
 
-		_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -387,7 +387,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 		if monitoringCurrentyEnabled {
 			disableBody := tkcore.DeploymentDisableMonitoringCommand{}
 			disableBody.SetProjectId(projectID)
-			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(context.TODO()).DeploymentDisableMonitoringCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(context.TODO()).DeploymentDisableMonitoringCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -425,7 +425,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 
 			enableBody := tkcore.DeploymentEnableMonitoringCommand{}
 			enableBody.SetProjectId(projectID)
-			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(context.TODO()).DeploymentEnableMonitoringCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(context.TODO()).DeploymentEnableMonitoringCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -452,7 +452,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 		if backupCurrentyEnabled {
 			disableBody := tkcore.DeploymentDisableBackupCommand{}
 			disableBody.SetProjectId(projectID)
-			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(context.TODO()).DeploymentDisableBackupCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(context.TODO()).DeploymentDisableBackupCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -494,7 +494,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 			enableBody := tkcore.DeploymentEnableBackupCommand{}
 			enableBody.SetProjectId(projectID)
 			enableBody.SetS3CredentialId(newCredentialID)
-			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(context.TODO()).DeploymentEnableBackupCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(context.TODO()).DeploymentEnableBackupCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -517,7 +517,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			disableBody := tkcore.DeploymentDisableOpaCommand{}
 			disableBody.SetProjectId(projectID)
 
-			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableOpa(ctx).DeploymentDisableOpaCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableOpa(ctx).DeploymentDisableOpaCommand(disableBody).Execute()
 
 			if err != nil {
 				return tk.CreateError(res, err)
@@ -562,7 +562,7 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 			enableBody.SetProjectId(projectID)
 			enableBody.SetOpaCredentialId(newOPAProfilelID)
 
-			_, res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableOpa(ctx).DeploymentOpaEnableCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableOpa(ctx).DeploymentOpaEnableCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}

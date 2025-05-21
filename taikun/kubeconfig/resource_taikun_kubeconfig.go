@@ -196,7 +196,7 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 	body := tkcore.DeleteKubeConfigCommand{}
 	body.SetId(id)
 
-	_, res, err := apiClient.Client.KubeConfigAPI.KubeconfigDelete(context.TODO()).DeleteKubeConfigCommand(body).Execute()
+	res, err := apiClient.Client.KubeConfigAPI.KubeconfigDelete(context.TODO()).DeleteKubeConfigCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
