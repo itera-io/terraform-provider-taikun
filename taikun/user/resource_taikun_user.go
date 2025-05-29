@@ -185,7 +185,7 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	body.SetRole(tkcore.UserRole(d.Get("role").(string)))
 	body.SetIsApprovedByPartner(true)
 
-	_, res, err := apiClient.Client.UsersAPI.UsersUpdateUser(context.TODO()).UpdateUserCommand(body).Execute()
+	res, err := apiClient.Client.UsersAPI.UsersUpdateUser(context.TODO()).UpdateUserCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))

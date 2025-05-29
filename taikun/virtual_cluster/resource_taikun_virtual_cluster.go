@@ -129,7 +129,7 @@ func resourceTaikunVirtualClusterDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 	deleteCommand.SetProjectId(virtualClusterId)
-	_, response, err2 := apiClient.Client.VirtualClusterAPI.VirtualClusterDelete(ctx).DeleteVirtualClusterCommand(deleteCommand).Execute()
+	response, err2 := apiClient.Client.VirtualClusterAPI.VirtualClusterDelete(ctx).DeleteVirtualClusterCommand(deleteCommand).Execute()
 	if err2 != nil {
 		return diag.FromErr(tk.CreateError(response, err2))
 	}

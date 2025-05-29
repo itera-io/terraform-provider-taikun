@@ -435,7 +435,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				body.SetId(vmId)
 				body.SetMode(mode)
 
-				_, res, err := apiClient.Client.StandaloneAPI.StandaloneIpManagement(ctx).StandAloneVmIpManagementCommand(body).Execute()
+				res, err := apiClient.Client.StandaloneAPI.StandaloneIpManagement(ctx).StandAloneVmIpManagementCommand(body).Execute()
 				if err != nil {
 					return tk.CreateError(res, err)
 				}
@@ -446,7 +446,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 				body.SetId(vmId)
 				body.SetFlavor(new["flavor"].(string))
 
-				_, res, err := apiClient.Client.StandaloneAPI.StandaloneUpdateFlavor(ctx).UpdateStandAloneVmFlavorCommand(body).Execute()
+				res, err := apiClient.Client.StandaloneAPI.StandaloneUpdateFlavor(ctx).UpdateStandAloneVmFlavorCommand(body).Execute()
 				if err != nil {
 					return tk.CreateError(res, err)
 				}
@@ -531,7 +531,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 				body.SetId(diskId)
 				body.SetSize(int32(new["size"].(int)))
 
-				_, res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksUpdateSize(ctx).UpdateStandaloneVmDiskSizeCommand(body).Execute()
+				res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksUpdateSize(ctx).UpdateStandaloneVmDiskSizeCommand(body).Execute()
 				if err != nil {
 					return tk.CreateError(res, err)
 				}
