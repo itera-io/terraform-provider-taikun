@@ -302,8 +302,8 @@ func resourceTaikunStandaloneProfileDelete(ctx context.Context, d *schema.Resour
 	body := tkcore.DeleteStandAloneProfileCommand{}
 	body.SetId(id)
 
+	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
 	if err != nil {
-		res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileDelete(ctx).DeleteStandAloneProfileCommand(body).Execute()
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 
