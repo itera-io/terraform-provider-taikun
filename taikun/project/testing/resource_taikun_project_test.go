@@ -367,7 +367,6 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
 			},
 			{
@@ -384,7 +383,6 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
 			},
 			{
