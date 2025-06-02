@@ -389,7 +389,8 @@ resource "taikun_project" "foo" {
 
   vm {
     name = "tf-acc-vm"
-    flavor = local.flavors[%d]
+    //flavor = local.flavors[%d]
+	flavor = "c5.large" // Sometimes we could get an ARM instance that was not compatible with x86 images. API makes it unable to filter.
     image_id = local.images[%d]
     standalone_profile_id =  resource.taikun_standalone_profile.foo.id
     volume_size = 60
