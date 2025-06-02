@@ -2,9 +2,11 @@ package standalone_profile
 
 import (
 	"context"
+	"fmt"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"hash/fnv"
 	"regexp"
 	"strings"
 
@@ -12,6 +14,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+func securityGroupHash(v interface{}) int {
+	m := v.(map[string]interface{})
+	key := fmt.Sprintf("%s-%s-%v-%v-%s",
+		m["name"], m["cidr"], m["from_port"], m["to_port"], m["ip_protocol"],
+	)
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(key)) // Intentionally ignore error, as FNV Write never fails.
+	return int(h.Sum32())
+}
 
 func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -60,7 +72,7 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 		},
 		"security_group": {
 			Description: "List of security groups.",
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -107,6 +119,7 @@ func resourceTaikunStandaloneProfileSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+			Set: securityGroupHash,
 		},
 	}
 }
@@ -133,7 +146,7 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 	body.SetPublicKey(d.Get("public_key").(string))
 
 	if securityGroups, isSecurityGroupsSet := d.GetOk("security_group"); isSecurityGroupsSet {
-		rawSecurityGroupList := securityGroups.([]interface{})
+		rawSecurityGroupList := securityGroups.(*schema.Set).List()
 		securityGroupList := make([]tkcore.StandAloneProfileSecurityGroupDto, len(rawSecurityGroupList))
 		for i, e := range rawSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
@@ -254,10 +267,10 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("security_group") {
-		old, new := d.GetChange("security_group")
+		oldSecGroups, newSecGroups := d.GetChange("security_group")
 
 		// Delete
-		oldSecurityGroupList := old.([]interface{})
+		oldSecurityGroupList := oldSecGroups.(*schema.Set).List()
 		for _, e := range oldSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
 			secId, err := utils.Atoi32(rawSecurityGroup["id"].(string))
@@ -271,7 +284,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		}
 
 		// Add
-		newSecurityGroupList := new.([]interface{})
+		newSecurityGroupList := newSecGroups.(*schema.Set).List()
 		for _, e := range newSecurityGroupList {
 			rawSecurityGroup := e.(map[string]interface{})
 			body := tkcore.CreateSecurityGroupCommand{}
