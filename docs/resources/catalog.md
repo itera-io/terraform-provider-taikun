@@ -10,8 +10,6 @@ Catalog for Taikun Applications Configuration.
 
 ~> **Role Requirement** To use the `taikun_catalog` resource, you need a Manager or Partner account.
 
--> **Organization ID** `organization_id` cannot be specified. It defaults to the user's organization.
-
 -> **Default catalog** At one point, there can be only one default catalog. If you specify more default catalogs, then the last default catalog specified will become default.
 
 ## Example Usage
@@ -44,7 +42,8 @@ Take a look at the **quickstart template** that deploys a new k8s cluster, a cat
 - `application` (Block Set) Bound Applications. (see [below for nested schema](#nestedblock--application))
 - `default` (Boolean) Indicates whether the catalog is the default catalog. Defaults to `false`.
 - `lock` (Boolean) Indicates whether to lock the catalog. Defaults to `false`.
-- `projects` (Set of String) List of projects bound to the catalog.
+- `organization_id` (String) The ID of the organization which owns the catalog.
+- `projects` (Set of String, Deprecated) DEPRECATED: List of projects bound to the catalog. Please use the resource taikun_catalog_project_binding to bind projects to the catalog.
 
 ### Read-Only
 

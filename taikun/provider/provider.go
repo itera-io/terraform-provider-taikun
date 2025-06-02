@@ -10,6 +10,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/backup_policy"
 	"github.com/itera-io/terraform-provider-taikun/taikun/billing"
 	"github.com/itera-io/terraform-provider-taikun/taikun/catalog"
+	"github.com/itera-io/terraform-provider-taikun/taikun/catalog_project_binding"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_aws"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_azure"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_gcp"
@@ -29,6 +30,7 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/user"
 	"github.com/itera-io/terraform-provider-taikun/taikun/virtual_cluster"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -39,6 +41,8 @@ import (
 )
 
 func init() {
+	log.SetPrefix("[ERROR] ")
+
 	// Set descriptions to support markdown syntax, this will be used in document generation
 	// and the language server.
 	schema.DescriptionKind = schema.StringMarkdown
@@ -101,6 +105,8 @@ func Provider() *schema.Provider {
 			"taikun_billing_rules":               billing.DataSourceTaikunBillingRules(),
 			"taikun_catalog":                     catalog.DataSourceTaikunCatalog(),
 			"taikun_catalogs":                    catalog.DataSourceTaikunCatalogs(),
+			"taikun_catalog_project_binding":     catalog_project_binding.DataSourceTaikunCatalogProjectBinding(),
+			"taikun_catalog_project_bindings":    catalog_project_binding.DataSourceTaikunCatalogProjectBindings(),
 			"taikun_cloud_credential_aws":        cc_aws.DataSourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":      cc_azure.DataSourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":        cc_gcp.DataSourceTaikunCloudCredentialGCP(),
@@ -158,6 +164,7 @@ func Provider() *schema.Provider {
 			"taikun_billing_credential":                   billing.ResourceTaikunBillingCredential(),
 			"taikun_billing_rule":                         billing.ResourceTaikunBillingRule(),
 			"taikun_catalog":                              catalog.ResourceTaikunCatalog(),
+			"taikun_catalog_project_binding":              catalog_project_binding.ResourceTaikunCatalogProjectBinding(),
 			"taikun_cloud_credential_aws":                 cc_aws.ResourceTaikunCloudCredentialAWS(),
 			"taikun_cloud_credential_azure":               cc_azure.ResourceTaikunCloudCredentialAzure(),
 			"taikun_cloud_credential_gcp":                 cc_gcp.ResourceTaikunCloudCredentialGCP(),
@@ -185,47 +192,66 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"api_host": {
 				Type:         schema.TypeString,
-				Description:  "Custom Taikun API host.",
+				Description:  "Custom Taikun API host. Can be set with TAIKUN_API_HOST.",
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_API_HOST", "api.taikun.cloud"),
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"email": {
 				Type:          schema.TypeString,
-				Description:   "Taikun email.",
+				Description:   "Taikun email. Can be set with TAIKUN_EMAIL",
 				Optional:      true,
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_EMAIL", nil),
-				ConflictsWith: []string{"keycloak_email"},
+				ConflictsWith: []string{"keycloak_email", "access_key"},
 				RequiredWith:  []string{"password"},
+				ValidateFunc:  validation.StringIsNotEmpty,
+			},
+			"password": {
+				Type:          schema.TypeString,
+				Description:   "Taikun password. Can be set with TAIKUN_PASSWORD.",
+				Optional:      true,
+				Sensitive:     true,
+				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_PASSWORD", nil),
+				ConflictsWith: []string{"keycloak_password", "access_key"},
+				RequiredWith:  []string{"email"},
+				ValidateFunc:  validation.StringIsNotEmpty,
+			},
+			"access_key": {
+				Type:          schema.TypeString,
+				Description:   "Taikun access key. Can be set with TAIKUN_ACCESS_KEY.",
+				Optional:      true,
+				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_ACCESS_KEY", nil),
+				ConflictsWith: []string{"email", "keycloak_email"},
+				RequiredWith:  []string{"secret_key"},
+				ValidateFunc:  validation.StringIsNotEmpty,
+			},
+			"secret_key": {
+				Type:          schema.TypeString,
+				Description:   "Taikun secret key. Can be set with TAIKUN_SECRET_KEY.",
+				Optional:      true,
+				Sensitive:     true,
+				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_SECRET_KEY", nil),
+				ConflictsWith: []string{"email", "keycloak_email"},
+				RequiredWith:  []string{"access_key"},
 				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 			"keycloak_email": {
 				Type:          schema.TypeString,
-				Description:   "Taikun Keycloak email.",
+				Description:   "Taikun Keycloak email. Can be set with TAIKUN_KEYCLOAK_EMAIL.",
 				Optional:      true,
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_KEYCLOAK_EMAIL", nil),
-				ConflictsWith: []string{"email"},
+				ConflictsWith: []string{"email", "access_key"},
 				RequiredWith:  []string{"keycloak_password"},
 				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 			"keycloak_password": {
 				Type:          schema.TypeString,
-				Description:   "Taikun Keycloak password.",
+				Description:   "Taikun Keycloak password. Can be set with TAIKUN_KEYCLOAK_PASSWORD.",
 				Optional:      true,
 				Sensitive:     true,
 				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_KEYCLOAK_PASSWORD", nil),
-				ConflictsWith: []string{"password"},
+				ConflictsWith: []string{"email", "access_key"},
 				RequiredWith:  []string{"keycloak_email"},
-				ValidateFunc:  validation.StringIsNotEmpty,
-			},
-			"password": {
-				Type:          schema.TypeString,
-				Description:   "Taikun password.",
-				Optional:      true,
-				Sensitive:     true,
-				DefaultFunc:   schema.EnvDefaultFunc("TAIKUN_PASSWORD", nil),
-				ConflictsWith: []string{"keycloak_password"},
-				RequiredWith:  []string{"email"},
 				ValidateFunc:  validation.StringIsNotEmpty,
 			},
 		},
@@ -234,24 +260,38 @@ func Provider() *schema.Provider {
 }
 
 func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	var (
+		email     string
+		password  string
+		accessKey string
+		secretKey string
+		authMode  string
+	)
 
-	rawEmail, keycloakEnabled := d.GetOk("keycloak_email")
-	rawPassword := d.Get("keycloak_password")
-
-	if !keycloakEnabled {
-		rawEmail = d.Get("email")
-		rawPassword = d.Get("password")
-	}
-
-	email, _ := rawEmail.(string)
-	password, _ := rawPassword.(string)
-
-	if email == "" || password == "" {
-		return nil, diag.Errorf("You must define an email and a password")
+	// 1. Try Keycloak
+	if rawEmail, ok := d.GetOk("keycloak_email"); ok {
+		email, _ = rawEmail.(string)
+		rawPassword := d.Get("keycloak_password")
+		password, _ = rawPassword.(string)
+		authMode = "keycloak"
+	} else if rawEmail, ok := d.GetOk("email"); ok {
+		// 2. Try Username/Password
+		email, _ = rawEmail.(string)
+		rawPassword := d.Get("password")
+		password, _ = rawPassword.(string)
+		authMode = ""
+	} else if rawAccessKey, ok := d.GetOk("access_key"); ok {
+		// 3. Try Access Key mode
+		accessKey, _ = rawAccessKey.(string)
+		rawSecretKey := d.Get("secret_key")
+		secretKey, _ = rawSecretKey.(string)
+		authMode = "token"
+	} else {
+		return nil, diag.Errorf("You must define credentials using either keycloak_email, email/password, or access_key/secret_key")
 	}
 
 	apiHost, _ := d.Get("api_host").(string)
 
-	client := tk.NewClientFromCredentials(email, password, "", "", "", apiHost)
-	return client, diag.FromErr(nil)
+	client := tk.NewClientFromCredentials(email, password, accessKey, secretKey, authMode, apiHost)
+	return client, nil
 }

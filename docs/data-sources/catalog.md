@@ -23,6 +23,10 @@ data "taikun_catalog" "foo" {
 
 - `name` (String) The name of the catalog.
 
+### Optional
+
+- `organization_id` (String) The ID of the organization which owns the catalog.
+
 ### Read-Only
 
 - `application` (Set of Object) Bound Applications. (see [below for nested schema](#nestedatt--application))
@@ -30,7 +34,7 @@ data "taikun_catalog" "foo" {
 - `description` (String) The description of the catalog.
 - `id` (String) The ID of the catalog.
 - `lock` (Boolean) Indicates whether to lock the catalog.
-- `projects` (Set of String) List of projects bound to the catalog.
+- `projects` (Set of String) DEPRECATED: List of projects bound to the catalog.
 
 <a id="nestedatt--application"></a>
 ### Nested Schema for `application`

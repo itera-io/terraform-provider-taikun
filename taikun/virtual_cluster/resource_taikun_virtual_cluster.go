@@ -112,7 +112,7 @@ func resourceTaikunVirtualClusterUpdate(ctx context.Context, d *schema.ResourceD
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, _, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -129,7 +129,7 @@ func resourceTaikunVirtualClusterDelete(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 	deleteCommand.SetProjectId(virtualClusterId)
-	_, response, err2 := apiClient.Client.VirtualClusterAPI.VirtualClusterDelete(ctx).DeleteVirtualClusterCommand(deleteCommand).Execute()
+	response, err2 := apiClient.Client.VirtualClusterAPI.VirtualClusterDelete(ctx).DeleteVirtualClusterCommand(deleteCommand).Execute()
 	if err2 != nil {
 		return diag.FromErr(tk.CreateError(response, err2))
 	}
@@ -233,7 +233,7 @@ func loadVirtualClusterId(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if !foundMatch {
-		return fmt.Errorf("Could not find virtual cluster by its ID in Taikun.")
+		return fmt.Errorf("could not find virtual cluster by its ID in Taikun")
 	}
 
 	return nil
@@ -329,7 +329,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterId int32, ctx contex
 				return nil, "", tk.CreateError(response, err)
 			}
 			if data.GetTotalCount() != 1 {
-				return nil, "", fmt.Errorf("Could not find virtual cluster by id.")
+				return nil, "", fmt.Errorf("could not find virtual cluster by id")
 			}
 
 			foundMatch := "pending"

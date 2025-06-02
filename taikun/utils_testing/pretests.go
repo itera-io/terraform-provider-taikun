@@ -9,8 +9,8 @@ import (
 func TestAccPreCheck(t *testing.T) {
 	// What enviroment variables do we require to be set
 	requiredEnvSlice := []string{
-		"TAIKUN_EMAIL",
-		"TAIKUN_PASSWORD",
+		"TAIKUN_ACCESS_KEY",
+		"TAIKUN_SECRET_KEY",
 	}
 
 	// Check if all are set

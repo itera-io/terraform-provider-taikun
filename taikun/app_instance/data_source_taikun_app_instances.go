@@ -2,7 +2,6 @@ package app_instance
 
 import (
 	"context"
-	b64 "encoding/base64"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tk "github.com/itera-io/taikungoclient"
@@ -23,6 +22,12 @@ func DataSourceTaikunAppInstances() *schema.Resource {
 					Schema: dataSourceTaikunAppInstanceSchema(),
 				},
 			},
+			"organization_id": {
+				Description:      "Organization ID filter.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: utils.StringIsInt,
+			},
 		},
 	}
 }
@@ -32,8 +37,16 @@ func dataSourceTaikunAppInstancesRead(ctx context.Context, d *schema.ResourceDat
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	//params := apiClient.Client.CatalogAPI.CatalogList(context.TODO())
 	params := apiClient.Client.ProjectAppsAPI.ProjectappList(context.TODO())
+
+	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
+		dataSourceID = organizationIDData.(string)
+		organizationID, err := utils.Atoi32(dataSourceID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		params = params.OrganizationId(organizationID)
+	}
 
 	var appInstancesList []tkcore.InstanceAppListDto
 	for {
@@ -50,13 +63,14 @@ func dataSourceTaikunAppInstancesRead(ctx context.Context, d *schema.ResourceDat
 
 	appInstances := make([]map[string]interface{}, len(appInstancesList))
 	for i, rawAppInstance := range appInstancesList {
-		appInstances[i] = flattenTaikunAppInstanceList(&rawAppInstance)
-		// Get params for this app
-		data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), rawAppInstance.GetId()).Execute()
+
+		data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(ctx, rawAppInstance.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
-		appInstances[i]["parameters_yaml"] = b64.URLEncoding.EncodeToString([]byte(data.GetValues()))
+
+		// We have no idea if the user originally set with file or base64 literal, so we just display base64 either way
+		appInstances[i] = flattenTaikunAppInstance(false, data)
 	}
 	if err := d.Set("application_instances", appInstances); err != nil {
 		return diag.FromErr(err)
@@ -65,16 +79,4 @@ func dataSourceTaikunAppInstancesRead(ctx context.Context, d *schema.ResourceDat
 	d.SetId(dataSourceID)
 
 	return nil
-}
-
-func flattenTaikunAppInstanceList(rawAppInstance *tkcore.InstanceAppListDto) map[string]interface{} {
-	return map[string]interface{}{
-		"id":             utils.I32toa(rawAppInstance.GetId()),
-		"name":           rawAppInstance.GetName(),
-		"namespace":      rawAppInstance.GetNamespace(),
-		"project_id":     utils.I32toa(rawAppInstance.GetProjectId()),
-		"catalog_app_id": utils.I32toa(rawAppInstance.GetCatalogAppId()),
-		//"parameters_yaml": b64.URLEncoding.EncodeToString([]byte(rawAppInstance.GetValues())),
-		"autosync": rawAppInstance.GetAutoSync(),
-	}
 }

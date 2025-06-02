@@ -7,6 +7,7 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"net/http"
 	"regexp"
 	"time"
 
@@ -141,14 +142,6 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 				),
 			),
 			ForceNew: true,
-		},
-		"organization_id": {
-			Description:      "ID of the organization which owns the project.",
-			Type:             schema.TypeString,
-			Optional:         true,
-			Computed:         true,
-			ValidateDiagFunc: utils.StringIsInt,
-			ForceNew:         true,
 		},
 		"policy_profile_id": {
 			Description:      "ID of the Policy profile. If unspecified, Gatekeeper is disabled.",
@@ -430,11 +423,6 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	if PolicyProfileID, PolicyProfileIDIsSet := d.GetOk("policy_profile_id"); PolicyProfileIDIsSet {
 		opaProfileID, _ := utils.Atoi32(PolicyProfileID.(string))
 		body.SetOpaProfileId(opaProfileID)
-	}
-
-	if organizationID, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-		projectOrganizationID, _ := utils.Atoi32(organizationID.(string))
-		body.SetOrganizationId(projectOrganizationID)
 	}
 
 	if taikunLBFlavor, taikunLBFlavorIsSet := d.GetOk("taikun_lb_flavor"); taikunLBFlavorIsSet {
@@ -796,7 +784,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, _, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1180,7 +1168,6 @@ func flattenTaikunProject(
 		"kubernetes_version":      projectDetailsDTO.GetKubernetesVersion(),
 		"lock":                    projectDetailsDTO.GetIsLocked(),
 		"name":                    projectDetailsDTO.GetName(),
-		"organization_id":         utils.I32toa(projectDetailsDTO.GetOrganizationId()),
 		"quota_cpu_units":         projectQuotaDTO.GetServerCpu(),
 		"quota_ram_size":          utils.ByteToGibiByte(projectQuotaDTO.GetServerRam()),
 		"quota_disk_size":         utils.ByteToGibiByte(projectQuotaDTO.GetServerDiskSize()),
@@ -1404,19 +1391,35 @@ func resourceTaikunProjectFlattenServersData(bastionsData interface{}, kubeMaste
 	return servers
 }
 
+// Helper to check for 401 Unauthorized error.
+// Adjust this as needed based on your API client's error format.
+func isUnauthorizedHTTPError(httpResp *http.Response, err error) bool {
+	if httpResp != nil && httpResp.StatusCode == 401 {
+		return true
+	}
+	// Optionally handle custom error types here, if needed.
+	return false
+}
+
 func resourceTaikunProjectWaitForStatus(ctx context.Context, targetList []string, pendingList []string, apiClient *tk.Client, projectID int32) error {
 	createStateConf := &retry.StateChangeConf{
 		Pending: pendingList,
 		Target:  targetList,
 		Refresh: func() (interface{}, string, error) {
-			resp, _, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
+			resp, httpResp, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
 			if err != nil {
+				// Check for HTTP 401 Unauthorized and treat it as a retryable error
+				if isUnauthorizedHTTPError(httpResp, err) {
+					// log.Printf("[INFO] Received 401 Unauthorized during wait-for-status, will retry...")
+					// Returning nil, "", nil signals a retry (no fatal error)
+					return nil, "", nil
+				}
+				// For all other errors, fail as usual
 				return nil, "", err
 			}
 
 			project := resp.GetProject()
 			status := project.GetStatus()
-
 			return resp, string(status), nil
 		},
 		Timeout:                   80 * time.Minute,
@@ -1535,7 +1538,7 @@ func resourceTaikunProjectLock(id int32, lock bool, apiClient *tk.Client) error 
 	body := tkcore.ProjectLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
-	_, _, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
+	_, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
 	return err
 }
 

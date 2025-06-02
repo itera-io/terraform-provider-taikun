@@ -16,8 +16,8 @@ data "taikun_repository" "foo" {
 `
 
 func TestAccDataSourceTaikunRepository(t *testing.T) {
-	repositoryName := "argo"
-	repositoryOrgName := "argoproj"
+	repositoryName := "taikun-managed-apps"
+	repositoryOrgName := "taikun"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },

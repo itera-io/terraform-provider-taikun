@@ -1,13 +1,12 @@
 terraform {
   required_providers {
     taikun = {
-      source  = "itera-io/taikun"
-      version = "1.9.1" // Use the latest version
+      source = "itera-io/taikun"
     }
   }
 }
 
-// Define connection to Taikun
+// Define connection to Taikun, you can load from ENV variables with TAIKUN_EMAIL, TAIKUN_PASSWORD...
 provider "taikun" {
   email    = "test@example.com"
   password = "asdfghjkl"
@@ -27,54 +26,32 @@ resource "taikun_cloud_credential_openstack" "foo" {
   lock                = false
 }
 
-
 // Create a BMW ccluster
-resource "taikun_project" "proj1" {
-  name                = "tf-acc-oneclick"
+resource "taikun_project" "proj" {
+  name                = "tf-openstack-vc"
   cloud_credential_id = taikun_cloud_credential_openstack.foo.id
   flavors             = concat(local.flavors_small, local.flavors_big)
 
   server_bastion {
-    name      = "tf-acc-bastion"
+    name      = "tf-bastion"
     disk_size = 30
     flavor    = local.flavors_small[0]
   }
   server_kubemaster {
-    name      = "tf-acc-master"
+    name      = "tf-master"
     disk_size = 30
     flavor    = local.flavors_small[0]
   }
   server_kubeworker {
-    name      = "tf-acc-worker"
+    name      = "tf-worker"
     disk_size = 100
     flavor    = local.flavors_big[0]
   }
 }
 
-// Create a catalog, bind one app and the project above
-resource "taikun_catalog" "cat01" {
-  name        = "oneclick-catalog"
-  description = "Created by terraform for oneclick deployment."
-  projects    = [taikun_project.proj1.id]
-
-  application {
-    name       = "wordpress"
-    repository = "taikun-managed-apps"
-  }
-}
-
-// Finally create app instance
-resource "taikun_app_instance" "app01" {
-  name           = "terraform-wp01"
-  namespace      = "wordpress-ns"
-  project_id     = taikun_project.proj1.id // The project above
-  catalog_app_id = local.wp_app_id         // The app selected below, from the catalog above
-}
-
-// Selecting the app (get id ofo app bound to the catalog from name and org)
-locals {
-  wp_app_id = [for app in tolist(taikun_catalog.cat01.application) :
-  app.id if app.name == "wordpress" && app.repository == "taikun-managed-apps"][0]
+resource "taikun_virtual_cluster" "foo" {
+  name      = "terraform-vc01"
+  parent_id = taikun_project.proj.id
 }
 
 // Flavors configuration. Filtering data sources
