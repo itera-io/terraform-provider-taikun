@@ -183,7 +183,7 @@ func resourceTaikunAppInstanceDelete(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appInstanceId).Execute()
+	_, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appInstanceId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -290,7 +290,7 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 		body.SetId(appId)
 		body.SetMode(mode)
 
-		_, response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappAutosync(context.TODO()).AutoSyncManagementCommand(body).Execute()
+		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappAutosync(context.TODO()).AutoSyncManagementCommand(body).Execute()
 
 		if errSync != nil {
 			return diag.FromErr(tk.CreateError(response, errSync))
@@ -382,7 +382,7 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 			if data.GetTotalCount() == 1 {
 				if (data.GetData()[0].GetStatus() == tkcore.EINSTANCESTATUS_FAILURE) && secondChance {
 					secondChance = false
-					response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appId).Execute()
+					_, response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appId).Execute()
 					if err != nil {
 						return nil, "", tk.CreateError(response, err)
 					}
@@ -420,7 +420,7 @@ func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schem
 		bodySync := tkcore.SyncProjectAppCommand{}
 		bodySync.SetProjectAppId(appId)
 		bodySync.SetTimeout(int32(d.Get("timeout").(int)))
-		_, response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
+		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
 		if errSync != nil {
 			return tk.CreateError(response, errSync)
 		}

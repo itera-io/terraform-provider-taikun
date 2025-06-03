@@ -169,7 +169,7 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationID)
 	}
 
-	if _, res, err := apiClient.Client.SlackAPI.SlackUpdate(context.TODO(), id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
+	if res, err := apiClient.Client.SlackAPI.SlackUpdate(context.TODO(), id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 
@@ -185,7 +185,7 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.Resourc
 	}
 
 	body := tkcore.DeleteSlackConfigCommand{Ids: []int32{id}}
-	_, res, err := apiClient.Client.SlackAPI.SlackDeleteMultiple(context.TODO()).DeleteSlackConfigCommand(body).Execute()
+	res, err := apiClient.Client.SlackAPI.SlackDeleteMultiple(context.TODO()).DeleteSlackConfigCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))

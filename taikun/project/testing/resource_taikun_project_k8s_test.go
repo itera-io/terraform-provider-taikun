@@ -36,7 +36,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
 			},
 			{
@@ -53,7 +52,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
 			},
 			{
@@ -70,7 +68,6 @@ func TestAccResourceTaikunProjectToggleMonitoring(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 				),
 			},
 		},
@@ -138,7 +135,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttrPair("taikun_project.foo", "backup_credential_id", "taikun_backup_credential.foo", "id"),
 				),
 			},
@@ -161,7 +157,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttrPair("taikun_project.foo", "backup_credential_id", "taikun_backup_credential.foo2", "id"),
 				),
 			},
@@ -184,7 +179,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "backup_credential_id", ""),
 				),
 			},
@@ -207,7 +201,6 @@ func TestAccResourceTaikunProjectToggleBackup(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttrPair("taikun_project.foo", "backup_credential_id", "taikun_backup_credential.foo", "id"),
 				),
 			},
@@ -223,6 +216,8 @@ data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   min_cpu = %d
   max_cpu = %d
+  min_ram = %d
+  max_ram = %d
 }
 locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
@@ -237,15 +232,14 @@ resource "taikun_project" "foo" {
 func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 	cloudCredentialName := utils.RandomTestName()
 	projectName := utils.RandomTestName()
-	cpuCount := 2
-	newCpuCount := 8
+	Count := 2
+	newCount := 4
 	checkFunc := resource.ComposeAggregateTestCheckFunc(
 		testAccCheckTaikunProjectExists,
 		resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-		resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 		resource.TestCheckResourceAttrPair("taikun_project.foo", "flavors.#", "data.taikun_flavors.foo", "flavors.#"),
 	)
 
@@ -257,14 +251,14 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
 					cloudCredentialName,
-					cpuCount, cpuCount,
+					Count, Count, Count, Count,
 					projectName),
 				Check: checkFunc,
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
 					cloudCredentialName,
-					newCpuCount, newCpuCount,
+					newCount, newCount, newCount, newCount,
 					projectName),
 				Check: checkFunc,
 			},
@@ -320,7 +314,6 @@ func TestAccResourceTaikunProjectWasm(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttrPair("taikun_project.foo", "flavors.#", "data.taikun_flavors.foo", "flavors.#"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "wasm", "true"),
@@ -541,7 +534,6 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "monitoring"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttrSet("taikun_project.foo", "organization_id"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_bastion.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubeworker.#", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "server_kubemaster.#", "1"),
