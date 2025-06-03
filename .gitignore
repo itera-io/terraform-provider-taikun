@@ -36,4 +36,3 @@ website/vendor
 
 # Files needed for acceptance tests
 gcp.json
-test.sh

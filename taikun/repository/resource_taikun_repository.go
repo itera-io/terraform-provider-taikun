@@ -113,7 +113,7 @@ func resourceTaikunRepositoryDelete(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		deleteCommand.SetAppRepoId(apprepoId)
-		_, response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(context.TODO()).DeleteRepositoryCommand(deleteCommand).Execute()
+		response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(context.TODO()).DeleteRepositoryCommand(deleteCommand).Execute()
 		if err2 != nil {
 			return diag.FromErr(tk.CreateError(response, err2))
 		}
@@ -156,7 +156,7 @@ func resourceTaikunRepositoryCreate(ctx context.Context, d *schema.ResourceData,
 		body_private.SetPassword(password_private)
 		body_private.SetOrganizationId(orgId)
 
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -292,7 +292,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 		body := &tkcore.UnbindAppRepositoryCommand{}
 		body.SetIds([]string{d.Get("id").(string)})
 		body.SetOrganizationId(orgId)
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryUnbind(context.TODO()).UnbindAppRepositoryCommand(*body).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryUnbind(context.TODO()).UnbindAppRepositoryCommand(*body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -305,7 +305,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 		unbind_filter[0].SetOrganizationName(d.Get("organization_name").(string))
 		body.SetFilteringElements(unbind_filter)
 		body.SetOrganizationId(orgId)
-		_, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryBind(context.TODO()).BindAppRepositoryCommand(*body).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryBind(context.TODO()).BindAppRepositoryCommand(*body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}

@@ -72,7 +72,6 @@ resource "taikun_project" "foo" {
   count = %d
   name = "%s-${count.index}"
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
-  organization_id = resource.taikun_organization.foo.id
 }
 
 data "taikun_projects" "foo" {
