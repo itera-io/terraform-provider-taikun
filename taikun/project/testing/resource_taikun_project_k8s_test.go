@@ -216,6 +216,8 @@ data "taikun_flavors" "foo" {
   cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
   min_cpu = %d
   max_cpu = %d
+  min_ram = %d
+  max_ram = %d
 }
 locals {
   flavors = [for flavor in data.taikun_flavors.foo.flavors: flavor.name]
@@ -230,8 +232,8 @@ resource "taikun_project" "foo" {
 func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 	cloudCredentialName := utils.RandomTestName()
 	projectName := utils.RandomTestName()
-	cpuCount := 2
-	newCpuCount := 8
+	Count := 2
+	newCount := 4
 	checkFunc := resource.ComposeAggregateTestCheckFunc(
 		testAccCheckTaikunProjectExists,
 		resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
@@ -249,14 +251,14 @@ func TestAccResourceTaikunProjectModifyFlavors(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
 					cloudCredentialName,
-					cpuCount, cpuCount,
+					Count, Count, Count, Count,
 					projectName),
 				Check: checkFunc,
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithFlavors,
 					cloudCredentialName,
-					newCpuCount, newCpuCount,
+					newCount, newCount, newCount, newCount,
 					projectName),
 				Check: checkFunc,
 			},
