@@ -882,7 +882,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 					serverCreateBody := tkcore.ServerForCreateDto{}
 					serverCreateBody.SetCount(1)
-					serverCreateBody.SetDiskSize(utils.GibiByteToByte(kubeWorkerMap["disk_size"].(int)))
+					serverCreateBody.SetDiskSize(utils.GibiByteToByte64(kubeWorkerMap["disk_size"].(int)))
 					serverCreateBody.SetFlavor(kubeWorkerMap["flavor"].(string))
 					serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
 					serverCreateBody.SetName(kubeWorkerMap["name"].(string))

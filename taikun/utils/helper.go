@@ -56,6 +56,10 @@ func GibiByteToByte(gibiBytes int) float64 {
 	return float64(1073741824) * float64(gibiBytes)
 }
 
+func GibiByteToByte64(gibiBytes int) int64 {
+	return int64(1073741824) * int64(gibiBytes)
+}
+
 func ByteToGibiByte(x float64) int {
 	return int(x / 1073741824)
 }
