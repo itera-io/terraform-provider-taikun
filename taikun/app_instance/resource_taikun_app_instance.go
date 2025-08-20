@@ -219,7 +219,7 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 
 		// Application was found in Failed state.
 		// Delete application and create it again.
-		if data.GetStatus() == tkcore.EINSTANCESTATUS_FAILURE {
+		if data.GetStatus() == tkcore.EINSTANCESTATUS_FAILURE || data.GetStatus() == tkcore.EINSTANCESTATUS_NONE {
 			err = d.Set("status", "Failed")
 			if err != nil {
 				return diag.FromErr(err)
