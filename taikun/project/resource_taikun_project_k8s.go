@@ -3,13 +3,14 @@ package project
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strconv"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"regexp"
-	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -173,7 +174,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	bastion := bastions.(*schema.Set).List()[0].(map[string]interface{})
 	serverCreateBody := tkcore.ServerForCreateDto{}
 	serverCreateBody.SetCount(1)
-	serverCreateBody.SetDiskSize(utils.GibiByteToByte(bastion["disk_size"].(int)))
+	serverCreateBody.SetDiskSize(utils.GibiByteToByteInt64(bastion["disk_size"].(int)))
 	serverCreateBody.SetFlavor(bastion["flavor"].(string))
 	serverCreateBody.SetName(bastion["name"].(string))
 	serverCreateBody.SetAvailabilityZone(bastion["zone"].(string))
@@ -200,7 +201,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		kubeMasterMap := kubeMaster.(map[string]interface{})
 		serverCreateBody = tkcore.ServerForCreateDto{}
 		serverCreateBody.SetCount(1)
-		serverCreateBody.SetDiskSize(utils.GibiByteToByte(kubeMasterMap["disk_size"].(int)))
+		serverCreateBody.SetDiskSize(utils.GibiByteToByteInt64(kubeMasterMap["disk_size"].(int)))
 		serverCreateBody.SetFlavor(kubeMasterMap["flavor"].(string))
 		serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeMasterMap))
 		serverCreateBody.SetName(kubeMasterMap["name"].(string))
@@ -229,7 +230,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 	for _, kubeWorker := range kubeWorkersList {
 		kubeWorkerMap := kubeWorker.(map[string]interface{})
 		serverCreateBody.SetCount(1)
-		serverCreateBody.SetDiskSize(utils.GibiByteToByte(kubeWorkerMap["disk_size"].(int)))
+		serverCreateBody.SetDiskSize(utils.GibiByteToByteInt64(kubeWorkerMap["disk_size"].(int)))
 		serverCreateBody.SetFlavor(kubeWorkerMap["flavor"].(string))
 		//serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
 		serverCreateBody.SetName(kubeWorkerMap["name"].(string))

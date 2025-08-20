@@ -3,13 +3,14 @@ package project
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"regexp"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"net/http"
-	"regexp"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -882,7 +883,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 					serverCreateBody := tkcore.ServerForCreateDto{}
 					serverCreateBody.SetCount(1)
-					serverCreateBody.SetDiskSize(utils.GibiByteToByte(kubeWorkerMap["disk_size"].(int)))
+					serverCreateBody.SetDiskSize(utils.GibiByteToByteInt64(kubeWorkerMap["disk_size"].(int)))
 					serverCreateBody.SetFlavor(kubeWorkerMap["flavor"].(string))
 					serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
 					serverCreateBody.SetName(kubeWorkerMap["name"].(string))
