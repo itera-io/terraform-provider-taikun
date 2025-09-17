@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/policy_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -120,6 +121,31 @@ func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "true"),
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_http_ingress", "true"),
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "require_probe", "true"),
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "unique_ingress", "true"),
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "unique_service_selector", "true"),
+					resource.TestCheckResourceAttrSet("taikun_policy_profile.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_policy_profile.foo", "organization_name"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(
+					testAccResourceTaikunPolicyProfileConfig,
+					firstName,
+					false,
+					true,
+					true,
+					true,
+					true,
+					true,
+					"",
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunPolicyProfileExists,
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_http_ingress", "true"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "require_probe", "true"),
