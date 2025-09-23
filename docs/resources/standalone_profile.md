@@ -63,7 +63,7 @@ resource "taikun_standalone_profile" "foo" {
 
 - `lock` (Boolean) Indicates whether to lock the standalone profile. Defaults to `false`.
 - `organization_id` (String) The ID of the organization which owns the standalone profile.
-- `security_group` (Block List) List of security groups. (see [below for nested schema](#nestedblock--security_group))
+- `security_group` (Block Set) List of security groups. (see [below for nested schema](#nestedblock--security_group))
 
 ### Read-Only
 
