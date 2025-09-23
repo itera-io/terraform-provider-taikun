@@ -3,13 +3,14 @@ package project
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strconv"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"regexp"
-	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -676,7 +677,6 @@ func resourceTaikunProjectEnableAutoscaler(ctx context.Context, d *schema.Resour
 	projectID, _ := utils.Atoi32(d.Id())
 	bodyEnable := tkcore.EnableAutoscalingCommand{}
 	bodyEnable.SetId(projectID)
-	bodyEnable.SetAutoscalingGroupName(d.Get("autoscaler_name").(string))
 	bodyEnable.SetFlavor(d.Get("autoscaler_flavor").(string))
 	bodyEnable.SetMaxSize(int32(d.Get("autoscaler_max_size").(int)))
 	bodyEnable.SetMinSize(int32(d.Get("autoscaler_min_size").(int)))
