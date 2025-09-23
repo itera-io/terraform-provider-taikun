@@ -259,6 +259,7 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			Description:  "Autoscaler group name - DEPRECATED.",
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.StringLenBetween(3, 10),
 			Deprecated:   "Autoscaler name is deprecated and not used in any way. Autoscaler Node Group name is always taikunca",
 		},
