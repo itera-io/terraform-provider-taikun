@@ -38,7 +38,7 @@ testacc:
 # 1C
 #ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialsZadara|TestAccDataSourceTaikunImagesZadara$$|TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
 
-ACCEPTANCE_TESTS='(TestAccResourceTaikunAutoscalerOpenstackProject)'
+ACCEPTANCE_TESTS='(TestAccResourceTaikunProjectWasm)'
 
 # --- CI: Not creating resources ---
 # Acklowledgment testing ALPHA
