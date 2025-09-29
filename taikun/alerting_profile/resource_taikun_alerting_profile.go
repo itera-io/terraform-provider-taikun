@@ -2,6 +2,9 @@ package alerting_profile
 
 import (
 	"context"
+	"fmt"
+	"sort"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
@@ -10,6 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+func hashIntegration(v interface{}) int {
+	m := v.(map[string]interface{})
+	// Create a stable hash from the integration type and URL
+	s := fmt.Sprintf("%s-%s", m["type"].(string), m["url"].(string))
+	return schema.HashString(s)
+}
 
 func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
@@ -31,8 +41,8 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"integration": {
-			Description: "List of alerting integrations.",
-			Type:        schema.TypeList,
+			Description: "Set of alerting integrations.",
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -66,6 +76,7 @@ func resourceTaikunAlertingProfileSchema() map[string]*schema.Schema {
 					},
 				},
 			},
+			Set: hashIntegration,
 		},
 		"last_modified": {
 			Description: "The time and date of last modification.",
@@ -360,7 +371,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 
 	// Remove old integrations
 	oldIntegrationsData, _ := d.GetChange("integration")
-	oldIntegrations := oldIntegrationsData.([]interface{})
+	oldIntegrations := oldIntegrationsData.(*schema.Set).List()
 	for _, oldIntegrationData := range oldIntegrations {
 		oldIntegration := oldIntegrationData.(map[string]interface{})
 		oldIntegrationID, _ := utils.Atoi32(oldIntegration["id"].(string))
@@ -434,6 +445,14 @@ func getAlertingProfileWebhookResourceFromWebhookDTOs(webhookDTOs []tkcore.Alert
 }
 
 func getAlertingProfileIntegrationsResourceFromIntegrationDTOs(integrationDTOs []tkcore.AlertingIntegrationsListDto) []map[string]interface{} {
+	// Sort integrations read from the API to ensure a stable order in the state
+	sort.Slice(integrationDTOs, func(i, j int) bool {
+		if integrationDTOs[i].GetAlertingIntegrationType() != integrationDTOs[j].GetAlertingIntegrationType() {
+			return integrationDTOs[i].GetAlertingIntegrationType() < integrationDTOs[j].GetAlertingIntegrationType()
+		}
+		return integrationDTOs[i].GetUrl() < integrationDTOs[j].GetUrl()
+	})
+
 	integrations := make([]map[string]interface{}, len(integrationDTOs))
 	for i, integrationDTO := range integrationDTOs {
 		integrations[i] = map[string]interface{}{
@@ -477,7 +496,7 @@ func getWebhookDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []tkc
 }
 
 func getIntegrationDTOsFromAlertingProfileResourceData(d *schema.ResourceData) []tkcore.AlertingIntegrationDto {
-	integrations := d.Get("integration").([]interface{})
+	integrations := d.Get("integration").(*schema.Set).List()
 	alertingIntegrationDTOs := make([]tkcore.AlertingIntegrationDto, len(integrations))
 	for i, integrationData := range integrations {
 		integration := integrationData.(map[string]interface{})
@@ -486,6 +505,15 @@ func getIntegrationDTOsFromAlertingProfileResourceData(d *schema.ResourceData) [
 		alertingIntegrationDTOs[i].SetToken(integration["token"].(string))
 		alertingIntegrationDTOs[i].SetUrl(integration["url"].(string))
 	}
+
+	// Sort integrations read from the config for predictable create/update order
+	sort.Slice(alertingIntegrationDTOs, func(i, j int) bool {
+		if alertingIntegrationDTOs[i].GetAlertingIntegrationType() != alertingIntegrationDTOs[j].GetAlertingIntegrationType() {
+			return alertingIntegrationDTOs[i].GetAlertingIntegrationType() < alertingIntegrationDTOs[j].GetAlertingIntegrationType()
+		}
+		return alertingIntegrationDTOs[i].GetUrl() < alertingIntegrationDTOs[j].GetUrl()
+	})
+
 	return alertingIntegrationDTOs
 }
 

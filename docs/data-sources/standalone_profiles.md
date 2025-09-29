@@ -43,7 +43,7 @@ Read-Only:
 - `organization_id` (String)
 - `organization_name` (String)
 - `public_key` (String)
-- `security_group` (List of Object) (see [below for nested schema](#nestedobjatt--standalone_profiles--security_group))
+- `security_group` (Set of Object) (see [below for nested schema](#nestedobjatt--standalone_profiles--security_group))
 
 <a id="nestedobjatt--standalone_profiles--security_group"></a>
 ### Nested Schema for `standalone_profiles.security_group`

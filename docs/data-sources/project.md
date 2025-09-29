@@ -33,7 +33,7 @@ data "taikun_project" "foo" {
 - `autoscaler_flavor` (String) Flavor of workers created by autoscaler (specify together with all other autoscaler parameters).
 - `autoscaler_max_size` (Number) Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters).
 - `autoscaler_min_size` (Number) Minimum number of workers created by autoscaler (specify together with all other autoscaler parameters).
-- `autoscaler_name` (String) Autoscaler group name (specify together with all other autoscaler parameters).
+- `autoscaler_name` (String) Autoscaler group name - DEPRECATED.
 - `autoscaler_spot_enabled` (Boolean) When enabled, autoscaler will use spot flavors for autoscaled workers (be sure to enable spot flavors for this project). If not specified, defaults to false.
 - `backup_credential_id` (String) ID of the backup credential. If unspecified, backups are disabled.
 - `cloud_credential_id` (String) ID of the cloud credential used to create the project's servers.

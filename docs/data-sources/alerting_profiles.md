@@ -40,7 +40,7 @@ Read-Only:
 - `created_by` (String)
 - `emails` (List of String)
 - `id` (String)
-- `integration` (List of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--integration))
+- `integration` (Set of Object) (see [below for nested schema](#nestedobjatt--alerting_profiles--integration))
 - `last_modified` (String)
 - `last_modified_by` (String)
 - `lock` (Boolean)

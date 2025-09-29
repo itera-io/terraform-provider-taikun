@@ -29,7 +29,7 @@ data "taikun_alerting_profile" "foo" {
 
 - `created_by` (String) The creator of the alerting profile.
 - `emails` (List of String) The list of emails to notify.
-- `integration` (List of Object) List of alerting integrations. (see [below for nested schema](#nestedatt--integration))
+- `integration` (Set of Object) Set of alerting integrations. (see [below for nested schema](#nestedatt--integration))
 - `last_modified` (String) The time and date of last modification.
 - `last_modified_by` (String) The last user to have modified the profile.
 - `lock` (Boolean) Indicates whether to lock the profile.
