@@ -88,7 +88,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, firstName, true, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
+				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, firstName, false, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
