@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/billing"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
-	"os"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -81,6 +82,17 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 					testAccCheckTaikunBillingCredentialExists,
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "true"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
+					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, firstName, true, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckTaikunBillingCredentialExists,
+					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
+					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_url"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "prometheus_username"),
