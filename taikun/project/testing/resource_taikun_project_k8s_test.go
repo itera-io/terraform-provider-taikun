@@ -477,7 +477,7 @@ resource "taikun_catalog_project_binding" "bind01" {
 
 // Finally create app instance
 resource "taikun_app_instance" "foo" {
-  name="tf-acc-apache"
+  name="tf-acc-nginx"
   namespace="ingress-nginx-ns"
   project_id=resource.taikun_project.foo.id // The project above
   catalog_app_id=local.app_id     // The app selected below, from the catalog above
@@ -544,8 +544,8 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "64"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "256"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "512"),
-					resource.TestCheckResourceAttr("taikun_app_instance.foo", "name", "tf-acc-apache"),
-					resource.TestCheckResourceAttr("taikun_app_instance.foo", "namespace", "apache-ns"),
+					resource.TestCheckResourceAttr("taikun_app_instance.foo", "name", "tf-acc-nginx"),
+					resource.TestCheckResourceAttr("taikun_app_instance.foo", "namespace", "ingress-nginx-ns"),
 					resource.TestCheckResourceAttrSet("taikun_app_instance.foo", "id"),
 				),
 			},
