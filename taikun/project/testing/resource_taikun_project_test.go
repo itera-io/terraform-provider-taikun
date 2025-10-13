@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -477,7 +478,6 @@ resource "taikun_project" "foo" {
   flavors = local.flavors
   cloud_credential_id = resource.taikun_cloud_credential_openstack.foo.id
   
-  autoscaler_name = "scaler"
   autoscaler_flavor = local.flavors[0]
   autoscaler_min_size = 1
   autoscaler_max_size = 2
@@ -504,7 +504,7 @@ func TestAccResourceTaikunAutoscalerOpenstackProject(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "taikunca"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "30"),
@@ -541,7 +541,6 @@ resource "taikun_project" "foo" {
  flavors = local.flavors
  cloud_credential_id = resource.taikun_cloud_credential_aws.foo.id
 
- autoscaler_name = "scaler"
  autoscaler_flavor = local.flavors[0]
  autoscaler_min_size = "%d"
  autoscaler_max_size = "%d"
@@ -580,7 +579,7 @@ func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "taikunca"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "3"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "31"),
@@ -608,7 +607,7 @@ func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "kubernetes_profile_id"),
-					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "scaler"),
+					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_name", "taikunca"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_min_size", "1"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_max_size", "2"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "autoscaler_disk_size", "31"),

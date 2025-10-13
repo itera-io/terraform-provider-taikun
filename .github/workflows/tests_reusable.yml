@@ -11,7 +11,7 @@ on:
 env:
   GO_VERSION: "1.24"
   TF_ACC: "1"
-  TF_ACC_TERRAFORM_VERSION: "1.1.0"
+  TF_ACC_TERRAFORM_VERSION: "1.13.3"
 
   # Endpoint and login, set by parent workflow. Beware staging.
   TAIKUN_API_HOST: ${{ (inputs.endpoint == 'staging') && secrets.TAIKUN_STAGING_API_HOST || secrets.TAIKUN_API_HOST }}
@@ -126,11 +126,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -147,11 +147,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Lint (golangci-lint)
@@ -167,11 +167,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -189,11 +189,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -211,11 +211,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -241,11 +241,11 @@ jobs:
 #    timeout-minutes: 30
 #    steps:
 #      - name: Set up Go
-#        uses: actions/setup-go@v5
+#        uses: actions/setup-go@v6
 #        with:
 #          go-version: ${{ env.GO_VERSION }}
 #      - name: Check out code into the Go module directory
-#        uses: actions/checkout@v4
+#        uses: actions/checkout@v5
 #        with:
 #          ref: ${{ inputs.BRANCH }}
 #      - name: Get dependencies
@@ -263,11 +263,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -286,11 +286,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -309,11 +309,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -332,11 +332,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -355,11 +355,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -378,11 +378,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -401,11 +401,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -424,11 +424,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -447,11 +447,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -470,11 +470,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies
@@ -493,11 +493,11 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.BRANCH }}
       - name: Get dependencies

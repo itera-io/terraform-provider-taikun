@@ -2,10 +2,11 @@ package testing
 
 import (
 	"fmt"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 	"os"
 	"testing"
+
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -464,7 +465,7 @@ resource "taikun_catalog" "foo" {
   description="Created by terraform for test app deployment."
   
   application {
-    name="apache"
+    name="ingress-nginx"
     repository="taikun-managed-apps"
   }
 }
@@ -478,8 +479,8 @@ resource "taikun_catalog_project_binding" "bind01" {
 
 // Finally create app instance
 resource "taikun_app_instance" "foo" {
-  name="tf-acc-apache"
-  namespace="apache-ns"
+  name="tf-acc-nginx"
+  namespace="ingress-nginx-ns"
   project_id=resource.taikun_project.foo.id // The project above
   catalog_app_id=local.app_id     // The app selected below, from the catalog above
   depends_on = [
@@ -487,10 +488,10 @@ resource "taikun_app_instance" "foo" {
   ]
 }
 
-// Selecting the app (get id ofo app bound to the catalog from name and org)
+// Selecting the app (get id of app bound to the catalog from name and org)
 locals {
   app_id = [for app in tolist(taikun_catalog.foo.application) :
-    app.id if app.name == "apache" && app.repository == "taikun-managed-apps" ][0]
+    app.id if app.name == "ingress-nginx" && app.repository == "taikun-managed-apps" ][0]
 }
 `
 
@@ -522,7 +523,7 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					OPAProfileName,
 					true,
 					false,
-					true,
+					false,
 					false,
 					true,
 					catalogName,
@@ -545,8 +546,8 @@ func TestAccResourceTaikunProjectMinimal(t *testing.T) {
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_cpu_units", "64"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_ram_size", "256"),
 					resource.TestCheckResourceAttr("taikun_project.foo", "quota_disk_size", "512"),
-					resource.TestCheckResourceAttr("taikun_app_instance.foo", "name", "tf-acc-apache"),
-					resource.TestCheckResourceAttr("taikun_app_instance.foo", "namespace", "apache-ns"),
+					resource.TestCheckResourceAttr("taikun_app_instance.foo", "name", "tf-acc-nginx"),
+					resource.TestCheckResourceAttr("taikun_app_instance.foo", "namespace", "ingress-nginx-ns"),
 					resource.TestCheckResourceAttrSet("taikun_app_instance.foo", "id"),
 				),
 			},
