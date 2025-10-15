@@ -17,5 +17,6 @@ description: |- {{ .Description | plainmarkdown | trimspace | prefixlines "  " }
 {{tffile "examples/resources/taikun_catalog_project_binding/resource.tf"}}
 
 Take a look at the **quickstart template** that deploys a new k8s cluster, a catalog and an app instance - available in the [quickstart examples](https://github.com/itera-io/terraform-provider-taikun/tree/dev/examples/quickstart-templates) folder.
+If you destroy the binding, Terraform will try to unbind, but ignores if the unbind fails. This is useful in case there are other apps present in the project, but not in terraform state.
 
 {{ .SchemaMarkdown | trimspace }}
