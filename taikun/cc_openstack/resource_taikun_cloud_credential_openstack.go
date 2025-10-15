@@ -199,6 +199,10 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 	appCredEnabledBool := d.Get("using_application_credentials").(bool)
 	//appcredenabled := d.Get("application_credential_enabled").(bool)
 
+	if appCredEnabledBool && domain != "" {
+		return diag.Errorf("do not specify openstack domain (OS_USER_DOMAIN_NAME) when using application credentials")
+	}
+
 	if appCredEnabledBool {
 		body.SetOpenStackUser(username)
 		body.SetOpenStackPassword(password)
