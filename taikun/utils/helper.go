@@ -3,16 +3,15 @@ package utils
 import (
 	"context"
 	"fmt"
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
+	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 	"math/rand"
 	"net/mail"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	tk "github.com/itera-io/taikungoclient"
-	tkcore "github.com/itera-io/taikungoclient/client"
-	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/robfig/cron/v3"
@@ -57,7 +56,7 @@ func GibiByteToByte(gibiBytes int) float64 {
 	return float64(1073741824) * float64(gibiBytes)
 }
 
-func GibiByteToByteInt64(gibiBytes int) int64 {
+func GibiByteToByte64(gibiBytes int) int64 {
 	return int64(1073741824) * int64(gibiBytes)
 }
 

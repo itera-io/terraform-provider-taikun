@@ -50,6 +50,7 @@ Read-Only:
 - `organization_id` (String)
 - `organization_name` (String)
 - `ssh_user` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--ssh_user))
+- `trusted_registry` (List of Object) (see [below for nested schema](#nestedobjatt--access_profiles--trusted_registry))
 
 <a id="nestedobjatt--access_profiles--allowed_host"></a>
 ### Nested Schema for `access_profiles.allowed_host`
@@ -88,5 +89,14 @@ Read-Only:
 - `id` (String)
 - `name` (String)
 - `public_key` (String)
+
+
+<a id="nestedobjatt--access_profiles--trusted_registry"></a>
+### Nested Schema for `access_profiles.trusted_registry`
+
+Read-Only:
+
+- `id` (String)
+- `registry` (String)
 
 

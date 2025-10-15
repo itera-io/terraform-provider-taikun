@@ -256,46 +256,47 @@ func resourceTaikunProjectSchema() map[string]*schema.Schema {
 			},
 		},
 		"autoscaler_name": {
-			Description:  "Autoscaler group name (specify together with all other autoscaler parameters).",
+			Description:  "Autoscaler group name - DEPRECATED.",
 			Type:         schema.TypeString,
 			Optional:     true,
+			Computed:     true,
 			ValidateFunc: validation.StringLenBetween(3, 10),
-			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+			Deprecated:   "Autoscaler name is deprecated and not used in any way. Autoscaler Node Group name is always taikunca",
 		},
 		"autoscaler_flavor": {
 			Description:  "Flavor of workers created by autoscaler (specify together with all other autoscaler parameters).",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
-			RequiredWith: []string{"autoscaler_name", "autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
+			RequiredWith: []string{"autoscaler_disk_size", "autoscaler_max_size", "autoscaler_min_size"},
 		},
 		"autoscaler_disk_size": {
 			Description:  "Disk size of autoscaler in GB (specify together with all other autoscaler parameters).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(30),
-			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_max_size", "autoscaler_min_size"},
+			RequiredWith: []string{"autoscaler_flavor", "autoscaler_max_size", "autoscaler_min_size"},
 		},
 		"autoscaler_min_size": {
 			Description:  "Minimum number of workers created by autoscaler (specify together with all other autoscaler parameters).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(1),
-			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size"},
+			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_max_size"},
 		},
 		"autoscaler_max_size": {
 			Description:  "Maximum number of workers created by autoscaler (specify together with all other autoscaler parameters).",
 			Type:         schema.TypeInt,
 			Optional:     true,
 			ValidateFunc: validation.IntAtLeast(1),
-			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
+			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size"},
 		},
 		"autoscaler_spot_enabled": {
 			Description:  "When enabled, autoscaler will use spot flavors for autoscaled workers (be sure to enable spot flavors for this project). If not specified, defaults to false.",
 			Type:         schema.TypeBool,
 			Optional:     true,
 			Default:      false,
-			RequiredWith: []string{"autoscaler_name", "autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size", "autoscaler_max_size"},
+			RequiredWith: []string{"autoscaler_flavor", "autoscaler_disk_size", "autoscaler_min_size", "autoscaler_max_size"},
 		},
 		"spot_full": {
 			Description:   "When enabled, project will support full spot Kubernetes (controlplane + workers)",
@@ -472,7 +473,6 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	// Autoscaler
-	autoscalerName, autoscalerNameIsSet := d.GetOk("autoscaler_name")
 	autoscalerFlavor, autoscalerFlavorIsSet := d.GetOk("autoscaler_flavor")
 	autoscalerMin, autoscalerMinIsSet := d.GetOk("autoscaler_min_size")
 	autoscalerMax, autoscalerMaxIsSet := d.GetOk("autoscaler_max_size")
@@ -494,13 +494,11 @@ func resourceTaikunProjectCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	if autoscalerNameIsSet &&
-		autoscalerFlavorIsSet &&
+	if autoscalerFlavorIsSet &&
 		autoscalerDiskIsSet &&
 		autoscalerMinIsSet &&
 		autoscalerMaxIsSet {
 
-		body.SetAutoscalingGroupName(autoscalerName.(string))
 		body.SetAutoscalingFlavor(autoscalerFlavor.(string))
 		body.SetMinSize(int32(autoscalerMin.(int)))
 		body.SetMaxSize(int32(autoscalerMax.(int)))
@@ -883,7 +881,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 					serverCreateBody := tkcore.ServerForCreateDto{}
 					serverCreateBody.SetCount(1)
-					serverCreateBody.SetDiskSize(utils.GibiByteToByteInt64(kubeWorkerMap["disk_size"].(int)))
+					serverCreateBody.SetDiskSize(utils.GibiByteToByte64(kubeWorkerMap["disk_size"].(int)))
 					serverCreateBody.SetFlavor(kubeWorkerMap["flavor"].(string))
 					serverCreateBody.SetKubernetesNodeLabels(resourceTaikunProjectServerKubernetesLabels(kubeWorkerMap))
 					serverCreateBody.SetName(kubeWorkerMap["name"].(string))
@@ -972,9 +970,9 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	// Autoscaler disable and enable with different flavor and autoscaling group name
 	// Precedence: high, first we check if we must recreate the whole autoscaler
-	iWishToDisable := d.Get("autoscaler_name") == "" || d.Get("autoscaler_flavor") == "" || d.Get("autoscaler_disk_size") == "0"
+	iWishToDisable := d.Get("autoscaler_flavor") == "" || d.Get("autoscaler_disk_size") == "0"
 	iJustRecreated := false
-	if d.HasChange("autoscaler_name") || d.HasChange("autoscaler_flavor") || d.HasChange("autoscaler_disk_size") || d.HasChange("autoscaler_spot_enabled") {
+	if d.HasChange("autoscaler_flavor") || d.HasChange("autoscaler_disk_size") || d.HasChange("autoscaler_spot_enabled") {
 		if iWishToDisable {
 			// Disable autoscaler
 			if err := resourceTaikunProjectDisableAutoscaler(ctx, d, apiClient); err != nil {

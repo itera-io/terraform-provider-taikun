@@ -2,10 +2,11 @@ package access_profile
 
 import (
 	"context"
+	"regexp"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -170,6 +171,26 @@ func resourceTaikunAccessProfileSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"trusted_registry": {
+			Description: "List of trusted registries.",
+			Type:        schema.TypeList,
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"registry": {
+						Description:  "Address of the trusted registry (e.g. docker.io or https://registry.acme.com).",
+						Type:         schema.TypeString,
+						Required:     true,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
+					"id": {
+						Description: "ID of the trusted registry.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -205,6 +226,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	resourceTaikunAccessProfileCreateDnsServers(d, body)
 	resourceTaikunAccessProfileCreateNtpServers(d, body)
 	resourceTaikunAccessProfileCreateSshUsers(d, body)
+	resourceTaikunAccessProfileCreateTrustedRegistries(d, body)
 
 	response, res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesCreate(context.TODO()).CreateAccessProfileCommand(*body).Execute()
 	if err != nil {
@@ -274,6 +296,19 @@ func resourceTaikunAccessProfileCreateSshUsers(d *schema.ResourceData, body *tkc
 			body.SshUsers[i] = tkcore.SshUserCreateDto{}
 			body.SshUsers[i].SetName(sshUser["name"].(string))
 			body.SshUsers[i].SetSshPublicKey(sshUser["public_key"].(string))
+		}
+	}
+}
+
+// set trusted registries in create request's body
+func resourceTaikunAccessProfileCreateTrustedRegistries(d *schema.ResourceData, body *tkcore.CreateAccessProfileCommand) {
+	if trustedRegistryData, trustedRegistryIsSet := d.GetOk("trusted_registry"); trustedRegistryIsSet {
+		trustedRegistries := trustedRegistryData.([]interface{})
+		body.TrustedRegistries = make([]tkcore.TrustedRegisteredCreateDto, len(trustedRegistries))
+		for i, rawTrustedRegistry := range trustedRegistries {
+			trustedRegistry := rawTrustedRegistry.(map[string]interface{})
+			body.TrustedRegistries[i] = tkcore.TrustedRegisteredCreateDto{}
+			body.TrustedRegistries[i].SetRegistry(trustedRegistry["registry"].(string))
 		}
 	}
 }
@@ -373,6 +408,10 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if err := resourceTaikunAccessProfileUpdateSshUsers(d, id, apiClient); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := resourceTaikunAccessProfileUpdateTrustedRegistries(d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -547,6 +586,40 @@ func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessPro
 	return
 }
 
+// Update the access profile's trusted registries
+func resourceTaikunAccessProfileUpdateTrustedRegistries(d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
+	if !d.HasChange("trusted_registry") {
+		return
+	}
+
+	// Delete old registries
+	oldTrustedRegistryData, newTrustedRegistryData := d.GetChange("trusted_registry")
+	oldTrustedRegistries := oldTrustedRegistryData.([]interface{})
+	for _, rawOldTrustedRegistry := range oldTrustedRegistries {
+		oldTrustedRegistry := rawOldTrustedRegistry.(map[string]interface{})
+		id, _ := utils.Atoi32(oldTrustedRegistry["id"].(string))
+		if res, err2 := apiClient.Client.TrustedRegistriesAPI.TrustedregistriesDelete(context.TODO(), id).Execute(); err2 != nil {
+			err = tk.CreateError(res, err2)
+			return err
+		}
+	}
+
+	// Add new registries
+	newTrustedRegistries := newTrustedRegistryData.([]interface{})
+	for _, rawNewTrustedRegistry := range newTrustedRegistries {
+		newTrustedRegistry := rawNewTrustedRegistry.(map[string]interface{})
+		body := tkcore.CreateTrustedRegistriesCommand{}
+		body.SetAccessProfileId(accessProfileId)
+		body.SetRegistry(newTrustedRegistry["registry"].(string))
+		if _, res, err2 := apiClient.Client.TrustedRegistriesAPI.TrustedregistriesCreate(context.TODO()).CreateTrustedRegistriesCommand(body).Execute(); err2 != nil {
+			err = tk.CreateError(res, err2)
+			return err
+		}
+	}
+
+	return
+}
+
 func resourceTaikunAccessProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	id, err := utils.Atoi32(d.Id())
@@ -599,6 +672,16 @@ func flattenTaikunAccessProfile(rawAccessProfile *tkcore.AccessProfilesListDto, 
 		}
 	}
 
+	// Flatten Trusted Registries
+	TrustedRegistries := make([]map[string]interface{}, len(rawAccessProfile.TrustedRegistries))
+	for i, rawTrustedRegistry := range rawAccessProfile.TrustedRegistries {
+		// NOTE: Assuming the list DTO has a GetId() method for the ID
+		TrustedRegistries[i] = map[string]interface{}{
+			"registry": rawTrustedRegistry.GetRegistry(),
+			"id":       utils.I32toa(rawTrustedRegistry.GetId()),
+		}
+	}
+
 	return map[string]interface{}{
 		"allowed_host":      AllowedHosts,
 		"created_by":        rawAccessProfile.GetCreatedBy(),
@@ -613,6 +696,7 @@ func flattenTaikunAccessProfile(rawAccessProfile *tkcore.AccessProfilesListDto, 
 		"organization_id":   utils.I32toa(rawAccessProfile.GetOrganizationId()),
 		"organization_name": rawAccessProfile.GetOrganizationName(),
 		"ssh_user":          SSHUsers,
+		"trusted_registry":  TrustedRegistries,
 	}
 }
 
