@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -270,6 +271,56 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 		},
 	})
 }
+
+//// TestAccResourceTaikunAccessProfileTrustedRegistries checks the new trusted_registry feature. - enable after hotfix
+//const testAccResourceTaikunAccessProfileTrustedRegistriesConfig = `
+//resource "taikun_access_profile" "bar" {
+//  name            = "%s"
+//  lock       = false
+//
+//  trusted_registry {
+//    registry = "ghcr.io"
+//  }
+//
+//  trusted_registry {
+//    registry = "quay.io"
+//  }
+//}
+//`
+//
+//func TestAccResourceTaikunAccessProfileTrustedRegistries(t *testing.T) {
+//	name := utils.RandomTestName()
+//
+//	resource.ParallelTest(t, resource.TestCase{
+//		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
+//		ProviderFactories: utils_testing.TestAccProviderFactories,
+//		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
+//		Steps: []resource.TestStep{
+//			{
+//				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileTrustedRegistriesConfig, name),
+//				Check: resource.ComposeAggregateTestCheckFunc(
+//					testAccCheckTaikunAccessProfileExists,
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "name", name),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "lock", "false"),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "trusted_registry.#", "2"),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "trusted_registry.0.registry", "docker.io"),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "trusted_registry.1.registry", "quay.io"),
+//					// Assert that other optional lists are empty by default
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "dns_server.#", "0"),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "ntp_server.#", "0"),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "ssh_user.#", "0"),
+//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "allowed_host.#", "0"),
+//					resource.TestCheckResourceAttrSet("taikun_access_profile.bar", "organization_id"),
+//				),
+//			},
+//			{
+//				ResourceName:      "taikun_access_profile.bar",
+//				ImportState:       true,
+//				ImportStateVerify: true,
+//			},
+//		},
+//	})
+//}
 
 func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
