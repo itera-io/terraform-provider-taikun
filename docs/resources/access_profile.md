@@ -63,6 +63,7 @@ resource "taikun_access_profile" "foo" {
 - `ntp_server` (Block List, Max: 2) List of NTP servers. (see [below for nested schema](#nestedblock--ntp_server))
 - `organization_id` (String) The ID of the organization which owns the access profile.
 - `ssh_user` (Block List) List of SSH users. (see [below for nested schema](#nestedblock--ssh_user))
+- `trusted_registry` (Block List) List of trusted registries. (see [below for nested schema](#nestedblock--trusted_registry))
 
 ### Read-Only
 
@@ -121,6 +122,18 @@ Required:
 Read-Only:
 
 - `id` (String) ID of the SSH user.
+
+
+<a id="nestedblock--trusted_registry"></a>
+### Nested Schema for `trusted_registry`
+
+Required:
+
+- `registry` (String) Address of the trusted registry (e.g. docker.io or https://registry.acme.com).
+
+Read-Only:
+
+- `id` (String) ID of the trusted registry.
 
 ## Import
 
