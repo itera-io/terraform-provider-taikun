@@ -39,6 +39,7 @@ data "taikun_access_profile" "foo" {
 - `organization_id` (String) The ID of the organization which owns the access profile.
 - `organization_name` (String) The name of the organization which owns the access profile.
 - `ssh_user` (List of Object) List of SSH users. (see [below for nested schema](#nestedatt--ssh_user))
+- `trusted_registry` (List of Object) List of trusted registries. (see [below for nested schema](#nestedatt--trusted_registry))
 
 <a id="nestedatt--allowed_host"></a>
 ### Nested Schema for `allowed_host`
@@ -77,5 +78,14 @@ Read-Only:
 - `id` (String)
 - `name` (String)
 - `public_key` (String)
+
+
+<a id="nestedatt--trusted_registry"></a>
+### Nested Schema for `trusted_registry`
+
+Read-Only:
+
+- `id` (String)
+- `registry` (String)
 
 
