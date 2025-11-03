@@ -55,7 +55,7 @@ resource "taikun_repository" "bar" {
 
 - `organization_id` (String) The ID of the organization which owns the catalog. This is CloudWorks organization.
 - `password` (String, Sensitive) The registry password. (Can be set with env REGISTRY_PASSWORD)
-- `url` (String) The URL of the repository.
+- `url` (String) The URL of the repository (http|https|oci).
 - `username` (String, Sensitive) The registry username. (Can be set with env REGISTRY_USERNAME) Defaults to ` `.
 
 ### Read-Only
