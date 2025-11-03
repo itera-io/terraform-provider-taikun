@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,7 +12,6 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"time"
 )
 
 func resourceTaikunRepositorySchema() map[string]*schema.Schema {
@@ -55,10 +56,10 @@ func resourceTaikunRepositorySchema() map[string]*schema.Schema {
 		},
 		// url - Required when private is enabled, otherwise it gets filled from server
 		"url": {
-			Description:  "The URL of the repository.",
+			Description:  "The URL of the repository (http|https|oci).",
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			ValidateFunc: validation.IsURLWithScheme([]string{"http", "https", "oci"}),
 			ForceNew:     true,
 		},
 		"enabled": {

@@ -37,6 +37,6 @@ data "taikun_repository" "foo" {
 - `id` (String) The ID of the repository.
 - `id_apprepo` (String) The ID of the application repository.
 - `password` (String, Sensitive) The registry password. (Can be set with env REGISTRY_PASSWORD)
-- `url` (String) The URL of the repository.
+- `url` (String) The URL of the repository (http|https|oci).
 - `username` (String, Sensitive) The registry username. (Can be set with env REGISTRY_USERNAME)
 
