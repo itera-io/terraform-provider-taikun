@@ -117,10 +117,12 @@ func resourceTaikunCatalogProjectBindingDelete(ctx context.Context, d *schema.Re
 	// If not already, unbind the project from the catalog
 	if catalogHasProjectBound {
 		body := []int32{projectId}
-		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
-		if err != nil {
-			return diag.FromErr(tk.CreateError(response, err))
-		}
+		//response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
+		//if err != nil {
+		//	return diag.FromErr(tk.CreateError(response, err))
+		//}
+		// If you destroy the binding, Terraform will try to unbind, but ignores if the unbind fails. This is useful in case there are other apps present in the project, but not in terraform state.
+		_, _ = apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
 	}
 
 	return nil

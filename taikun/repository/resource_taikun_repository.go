@@ -58,10 +58,10 @@ func resourceTaikunRepositorySchema() map[string]*schema.Schema {
 		},
 		// url - Required when private is enabled, otherwise it gets filled from server
 		"url": {
-			Description:  "The URL of the repository.",
+			Description:  "The URL of the repository (http|https|oci).",
 			Type:         schema.TypeString,
 			Optional:     true,
-			ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+			ValidateFunc: validation.IsURLWithScheme([]string{"http", "https", "oci"}),
 			ForceNew:     true,
 		},
 		"enabled": {
