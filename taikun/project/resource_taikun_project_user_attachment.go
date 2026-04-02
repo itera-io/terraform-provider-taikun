@@ -3,9 +3,10 @@ package project
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,8 +47,9 @@ func ResourceTaikunProjectUserAttachment() *schema.Resource {
 	}
 }
 
+// FIXME: This function is broken and does not call any API anymore. Functionality is deprecated.
 func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*tk.Client)
+	//client := meta.(*tk.Client)
 
 	userId := d.Get("user_id").(string)
 
@@ -56,11 +58,11 @@ func resourceTaikunProjectUserAttachmentCreate(ctx context.Context, d *schema.Re
 		return diag.Errorf("project_id isn't valid: %s", d.Get("project_id").(string))
 	}
 
-	body := []string{userId}
-	response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
-	if err != nil {
-		return diag.FromErr(tk.CreateError(response, err))
-	}
+	//body := []string{userId}
+	//response, err := client.Client.ProjectsAPI.ProjectsAddProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
+	//if err != nil {
+	//	return diag.FromErr(tk.CreateError(response, err))
+	//}
 
 	id := fmt.Sprintf("%d/%s", projectId, userId)
 	d.SetId(id)
@@ -122,6 +124,7 @@ func generateResourceTaikunProjectUserAttachmentRead(withRetries bool) schema.Re
 	}
 }
 
+// FIXME: This function is broken and does not call any API anymore. Functionality is deprecated.
 func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
@@ -148,11 +151,11 @@ func resourceTaikunProjectUserAttachmentDelete(_ context.Context, d *schema.Reso
 		return nil
 	}
 
-	body := []string{userId}
-	response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
-	if err != nil {
-		return diag.FromErr(tk.CreateError(response, err))
-	}
+	//body := []string{userId}
+	//response, err := apiClient.Client.ProjectsAPI.ProjectsDeleteProjectUsers(context.TODO(), projectId).RequestBody(body).Execute()
+	//if err != nil {
+	//	return diag.FromErr(tk.CreateError(response, err))
+	//}
 
 	d.SetId("")
 	return nil

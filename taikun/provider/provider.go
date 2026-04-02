@@ -179,14 +179,14 @@ func Provider() *schema.Provider {
 			"taikun_organization":                         organization.ResourceTaikunOrganization(),
 			"taikun_policy_profile":                       policy_profile.ResourceTaikunPolicyProfile(),
 			"taikun_project":                              project.ResourceTaikunProject(),
-			"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(),
-			"taikun_repository":                           repository.ResourceTaikunRepository(),
-			"taikun_showback_credential":                  showback.ResourceTaikunShowbackCredential(),
-			"taikun_showback_rule":                        showback.ResourceTaikunShowbackRule(),
-			"taikun_slack_configuration":                  slack.ResourceTaikunSlackConfiguration(),
-			"taikun_standalone_profile":                   standalone_profile.ResourceTaikunStandaloneProfile(),
-			"taikun_user":                                 user.ResourceTaikunUser(),
-			"taikun_virtual_cluster":                      virtual_cluster.ResourceTaikunVirtualCluster(),
+			//"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(), // DEPRECATED
+			"taikun_repository":          repository.ResourceTaikunRepository(),
+			"taikun_showback_credential": showback.ResourceTaikunShowbackCredential(),
+			"taikun_showback_rule":       showback.ResourceTaikunShowbackRule(),
+			"taikun_slack_configuration": slack.ResourceTaikunSlackConfiguration(),
+			"taikun_standalone_profile":  standalone_profile.ResourceTaikunStandaloneProfile(),
+			"taikun_user":                user.ResourceTaikunUser(),
+			"taikun_virtual_cluster":     virtual_cluster.ResourceTaikunVirtualCluster(),
 			//"taikun_cloud_credential":                     taikun.resourceTaikunCloudCredential(), // DEPRECATED
 
 		},

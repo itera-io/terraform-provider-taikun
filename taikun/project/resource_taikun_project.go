@@ -1355,11 +1355,11 @@ func resourceTaikunProjectGetBoundFlavorDTOs(projectID int32, apiClient *tk.Clie
 			return nil, err
 		}
 		boundFlavorDTOs = append(boundFlavorDTOs, response.Data...)
-		boundFlavorDTOsCount := int32(len(boundFlavorDTOs))
+		boundFlavorDTOsCount := int64(len(boundFlavorDTOs))
 		if boundFlavorDTOsCount == response.GetTotalCount() {
 			break
 		}
-		offset = boundFlavorDTOsCount
+		offset = int32(boundFlavorDTOsCount) // casting from int64 to int32 is safe due to original output type of len() function, which is int => boundaries would not be exceeded in any case
 	}
 	return boundFlavorDTOs, nil
 }
@@ -1373,11 +1373,11 @@ func resourceTaikunProjectGetBoundImageDTOs(projectID int32, apiClient *tk.Clien
 			return nil, err
 		}
 		boundImageDTOs = append(boundImageDTOs, response.GetData()...)
-		boundFlavorDTOsCount := int32(len(boundImageDTOs))
+		boundFlavorDTOsCount := int64(len(boundImageDTOs))
 		if boundFlavorDTOsCount == response.GetTotalCount() {
 			break
 		}
-		offset = boundFlavorDTOsCount
+		offset = int32(boundFlavorDTOsCount) // casting from int64 back to int32 is safe due to original output type of len() function, which is int => boundaries would not be exceeded in any case
 	}
 	return boundImageDTOs, nil
 }
