@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/itera-io/terraform-provider-taikun/taikun/access_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/alerting_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/app_instance"
@@ -30,8 +33,6 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/user"
 	"github.com/itera-io/terraform-provider-taikun/taikun/virtual_cluster"
-	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -260,38 +261,66 @@ func Provider() *schema.Provider {
 }
 
 func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	var (
-		email     string
-		password  string
-		accessKey string
-		secretKey string
-		authMode  string
-	)
-
-	// 1. Try Keycloak
-	if rawEmail, ok := d.GetOk("keycloak_email"); ok {
-		email, _ = rawEmail.(string)
-		rawPassword := d.Get("keycloak_password")
-		password, _ = rawPassword.(string)
-		authMode = "keycloak"
-	} else if rawEmail, ok := d.GetOk("email"); ok {
-		// 2. Try Username/Password
-		email, _ = rawEmail.(string)
-		rawPassword := d.Get("password")
-		password, _ = rawPassword.(string)
-		authMode = ""
-	} else if rawAccessKey, ok := d.GetOk("access_key"); ok {
-		// 3. Try Access Key mode
-		accessKey, _ = rawAccessKey.(string)
-		rawSecretKey := d.Get("secret_key")
-		secretKey, _ = rawSecretKey.(string)
-		authMode = "token"
-	} else {
-		return nil, diag.Errorf("You must define credentials using either keycloak_email, email/password, or access_key/secret_key")
+	// Get account name
+	rawAccountName, ok := d.GetOk("account_name")
+	if !ok {
+		return nil, diag.Errorf("account_name is required")
+	}
+	// Casting account name to string
+	accountName, ok := rawAccountName.(string)
+	if !ok {
+		return nil, diag.Errorf("casting to string failed, account_name must be a string")
 	}
 
-	apiHost, _ := d.Get("api_host").(string)
+	// Get API host
+	apiHost, ok := d.Get("api_host").(string)
+	if !ok {
+		return nil, diag.Errorf("casting failed, api_host must be a string")
+	}
 
-	client := tk.NewClientFromCredentials(email, password, accessKey, secretKey, authMode, apiHost)
-	return client, nil
+	// Try Keycloak
+	if rawEmail, ok := d.GetOk("keycloak_email"); ok {
+		email, ok1 := rawEmail.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, keycloak_email must be a string")
+		}
+		rawPassword := d.Get("keycloak_password")
+		password, ok1 := rawPassword.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, keycloak_password must be a string")
+		}
+		authMode := "keycloak"
+		return tk.NewClientFromCredentials(accountName, email, password, authMode, apiHost), nil
+	}
+
+	// Try Username/Password
+	if rawEmail, ok := d.GetOk("email"); ok {
+		email, ok1 := rawEmail.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, email must be a string")
+		}
+		rawPassword := d.Get("password")
+		password, ok1 := rawPassword.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, password must be a string")
+		}
+		authMode := ""
+		return tk.NewClientFromCredentials(accountName, email, password, authMode, apiHost), nil
+	}
+
+	// Try Access Key mode
+	if rawAccessKey, ok := d.GetOk("access_key"); ok {
+		accessKey, ok1 := rawAccessKey.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, access_key must be a string")
+		}
+		rawSecretKey := d.Get("secret_key")
+		secretKey, ok1 := rawSecretKey.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, secret_key must be a string")
+		}
+		return tk.NewClientFromAccessKey(accountName, accessKey, secretKey, apiHost), nil
+	}
+
+	return nil, diag.Errorf("You must define credentials using either keycloak_email, email/password, or access_key/secret_key")
 }

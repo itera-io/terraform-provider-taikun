@@ -1,3 +1,5 @@
+GOLANGCI_LINTERS_VERSION := v2.11.4
+
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=itera-io
 NAMESPACE=dev
@@ -8,26 +10,49 @@ OS_ARCH=linux_amd64
 
 default: install
 
-build:
+deps: go-linters-install check-terraform ## Installing development prerequisites locally and checking all dependencies (if they're installed)
+
+check-terraform:
+	@command -v terraform >/dev/null 2>&1 || { echo >&2 "Error: Terraform is not installed. Aborting."; exit 1; }
+	@echo "Terraform is installed!"
+
+build: go-vendor # Builds Golang binary
 	go build -o ${BINARY}
 
-dockerbuild:
+generate: ## Generates Terraform's bindings
+	go generate ./...
+
+go-linters-install: ## Installs Golang's linters locally for verification
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI_LINTERS_VERSION}
+
+dockerbuild: ## Builds Docker image
 	DOCKER_BUILDKIT=1 docker build --rm --target bin --output . .
 
-commoninstall:
+commoninstall: ## Installs built binary to the host's system
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
+install: ## Builds and installs Terraform provider locally
 install: build commoninstall
 
+dockerinstall: ## Builds Docker image and installs binary to th Host system
 dockerinstall: dockerbuild commoninstall
 
-test:
+test: ## Runs unit tests
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
-testacc:
+testacc: ## Runs unit tests with specified arguments
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+
+go-tidy: ## Runs go mod tidy
+	go mod tidy
+
+go-vendor: go-tidy ## Runs go mod tidy && go mod vendor
+	go mod vendor
+
+clean-vendor: ## Removes vendor folder
+	rm -rf vendor
 
 # --- Radek's rigorous testing here ---
 #ACCEPTANCE_TESTS='(TestAccResourceTaikunRepository|TestAccDataSourceTaikunRepository|TestAccDataSourceTaikunCatalog|TestAccResourceTaikunCatalog|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
@@ -97,10 +122,11 @@ rtestacc4:
 
 rtestaccrigorous: rtestacc1 rtestacc2 rtestacc3 rtestacc4
 
-clean:
+clean: ## Removes built binary
 	rm -f ${BINARY}
 
-.PHONY: build dockerbuild commoninstall install dockerinstall test testacc clean
+test-ci: ## Simulates CI/CD pipeline locally
+test-ci: build dockerbuild commoninstall install dockerinstall test testacc clean
 
 
 #TEST?=$$(go list ./... | grep -v 'vendor')
@@ -164,3 +190,7 @@ clean:
 #	rm -f ${BINARY}
 #
 #.PHONY: build dockerbuild commoninstall install dockerinstall test testacc clean
+
+.PHONY: help
+help: # Credits to https://gist.github.com/prwhite/8168133 for this handy oneliner
+	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)

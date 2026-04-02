@@ -2,6 +2,7 @@ package showback
 
 import (
 	"context"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
@@ -230,6 +231,6 @@ func resourceTaikunShowbackCredentialLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	_, resp, err := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsLockManagement(context.TODO()).ShowbackCredentialLockCommand(body).Execute()
+	resp, err := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsLockManagement(context.TODO()).ShowbackCredentialLockCommand(body).Execute()
 	return tk.CreateError(resp, err)
 }

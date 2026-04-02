@@ -311,13 +311,6 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 		body.SetId(id)
 		body.SetName(d.Get("name").(string))
 
-		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-			organizationID, err := utils.Atoi32(organizationIDData.(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			body.SetOrganizationId(organizationID)
-		}
 		if reminderData, reminderIsSet := d.GetOk("reminder"); reminderIsSet {
 			body.SetReminder(tkcore.AlertingReminder(reminderData.(string)))
 		}

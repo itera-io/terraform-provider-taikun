@@ -2,10 +2,11 @@ package user
 
 import (
 	"context"
+	"regexp"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -117,15 +118,14 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 	body.SetUsername(d.Get("user_name").(string))
 	body.SetDisplayName(d.Get("display_name").(string))
 	body.SetEmail(d.Get("email").(string))
-	body.SetRole(tkcore.UserRole(d.Get("role").(string)))
 
-	organizationIDData, organizationIDIsSet := d.GetOk("organization_id")
-	if organizationIDIsSet {
-		organizationId, err := utils.Atoi32(organizationIDData.(string))
+	accountIDData, accountIDIsSet := d.GetOk("account_id")
+	if accountIDIsSet {
+		accountID, err := utils.Atoi32(accountIDData.(string))
 		if err != nil {
-			return diag.Errorf("organization_id isn't valid: %s", d.Get("organization_id").(string))
+			return diag.Errorf("account_id isn't valid: %s", d.Get("account_id").(string))
 		}
-		body.SetOrganizationId(organizationId)
+		body.SetAccountId(accountID)
 	}
 
 	result, res, err := apiClient.Client.UsersAPI.UsersCreate(context.TODO()).CreateUserCommand(body).Execute()
@@ -182,11 +182,11 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	body.SetDisplayName(d.Get("display_name").(string))
 	body.SetUsername(d.Get("user_name").(string))
 	body.SetEmail(d.Get("email").(string))
-	body.SetRole(tkcore.UserRole(d.Get("role").(string)))
 	body.SetIsApprovedByPartner(true)
+	body.SetForceToResetPassword(d.Get("force_to_reset_password").(bool))
+	body.SetDisable(d.Get("disable").(bool))
 
 	res, err := apiClient.Client.UsersAPI.UsersUpdateUser(context.TODO()).UpdateUserCommand(body).Execute()
-
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -208,20 +208,54 @@ func resourceTaikunUserDelete(_ context.Context, d *schema.ResourceData, meta in
 }
 
 func flattenTaikunUser(rawUser tkcore.UserForListDto) map[string]interface{} {
+	organizations := make(map[string]map[string]interface{}, 0)
+	for key, orgContext := range rawUser.GetOrganizations() {
+		organizations[key] = map[string]interface{}{
+			"role":              orgContext.GetRole(),
+			"organization_name": orgContext.GetOrganizationName(),
+		}
+	}
+
+	rawAccount := rawUser.GetAccount()
+
+	projects := make([]map[string]interface{}, 0)
+	for _, projectDTO := range rawUser.GetBoundProjects() {
+		projects = append(projects, map[string]interface{}{
+			"project_id":   projectDTO.GetProjectId(),
+			"project_name": projectDTO.GetProjectName(),
+		})
+	}
 
 	return map[string]interface{}{
-		"id":                         rawUser.GetId(),
-		"user_name":                  rawUser.GetUsername(),
-		"organization_id":            utils.I32toa(rawUser.GetOrganizationId()),
-		"organization_name":          rawUser.GetOrganizationName(),
-		"role":                       rawUser.GetRole(),
-		"email":                      rawUser.GetEmail(),
-		"display_name":               rawUser.GetDisplayName(),
-		"email_confirmed":            rawUser.GetIsEmailConfirmed(),
-		"email_notification_enabled": rawUser.GetIsEmailNotificationEnabled(),
-		"is_csm":                     rawUser.GetIsCsm(),
-		"is_disabled":                rawUser.GetIsLocked(),
-		"is_approved_by_partner":     rawUser.GetIsApprovedByPartner(),
-		"is_owner":                   rawUser.GetOwner(),
+		"id":             rawUser.GetId(),
+		"user_name":      rawUser.GetUsername(),
+		"email":          rawUser.GetEmail(),
+		"display_name":   rawUser.GetDisplayName(),
+		"createdAt":      rawUser.GetCreatedAt(),
+		"is_2fa_enabled": rawUser.GetIs2FAEnabled(),
+		"account": map[string]interface{}{
+			"account_id": utils.I32toa(rawAccount.GetAccountId()),
+			"name":       rawAccount.GetName(),
+			"logo":       rawAccount.GetLogo(),
+			"domain":     rawAccount.GetDomain(),
+		},
+		"role":                        rawUser.GetRole(),
+		"organizations":               organizations,
+		"has_customer_id":             rawUser.GetHasCustomerId(),
+		"has_payment_method":          rawUser.GetHasPaymentMethod(),
+		"email_confirmed":             rawUser.GetIsEmailConfirmed(),
+		"email_notification_enabled":  rawUser.GetIsEmailNotificationEnabled(),
+		"is_forced_to_recet_password": rawUser.GetIsForcedToResetPassword(),
+		"is_csm":                      rawUser.GetIsCsm(),
+		"is_eligible_subscription":    rawUser.GetIsEligibleUpdateSubscription(),
+		"is_approved_by_partner":      rawUser.GetIsApprovedByPartner(),
+		"is_owner":                    rawUser.GetOwner(),
+		"is_read_only":                rawUser.GetIsReadOnly(),
+		"has_repo":                    rawUser.GetHasRepo(),
+		"is_new_organization":         rawUser.GetIsNewOrganization(),
+		"last_login_at":               rawUser.GetLastLoginAt(),
+		"is_forced_to_enable_2fa":     rawUser.GetIsForcedToEnableTwoFactorAuthentication(),
+		"bound_projects":              projects,
+		"is_disabled":                 rawUser.GetIsLocked(),
 	}
 }

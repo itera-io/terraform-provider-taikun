@@ -11,11 +11,12 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.23.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
-	github.com/itera-io/taikungoclient v0.0.0-20251014100817-e7578ebb929f
+	github.com/itera-io/taikungoclient v0.0.0-20260402000656-26ade25e8aed
 	github.com/robfig/cron/v3 v3.0.1
 )
 
 // replace github.com/itera-io/taikungoclient => /home/radek/taikun/taikungoclient/taikungoclient-official
+replace github.com/itera-io/taikungoclient v0.0.0-20260402000656-26ade25e8aed => ../taikungoclient
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
