@@ -2,6 +2,7 @@ package organization
 
 import (
 	"context"
+
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 
@@ -51,7 +52,10 @@ func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData,
 
 	params := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Limit(limit)
 	id := d.Get("id").(string)
-	id32, _ := utils.Atoi32(id)
+	id32, err := utils.Atoi32(id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	if id != "" {
 		params = params.Id(id32)
 	}
@@ -72,7 +76,9 @@ func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData,
 	organizationMap["cloud_credentials"] = rawOrganization.GetCloudCredentials()
 	organizationMap["projects"] = rawOrganization.GetProjects()
 	organizationMap["servers"] = rawOrganization.GetServers()
-	organizationMap["users"] = rawOrganization.GetUsers()
+	organizationMap["name"] = rawOrganization.GetName()
+	organizationMap["full_name"] = rawOrganization.GetFullName()
+	organizationMap["email"] = rawOrganization.GetEmail()
 
 	err = utils.SetResourceDataFromMap(d, organizationMap)
 	if err != nil {

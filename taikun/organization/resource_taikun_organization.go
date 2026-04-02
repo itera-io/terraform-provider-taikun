@@ -223,23 +223,25 @@ func resourceTaikunOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 }
 
 func flattenTaikunOrganization(rawOrganization *tkcore.OrganizationDetailsDto) map[string]interface{} {
+	boundRules := make([]map[string]interface{}, len(rawOrganization.GetBoundRules()))
+	for i, rule := range rawOrganization.GetBoundRules() {
+		boundRules[i] = map[string]interface{}{
+			"prometheus_rule_id":    utils.I32toa(rule.GetPrometheusRuleId()),
+			"prometheus_rule_name":  rule.GetPrometheusRuleName(),
+			"rule_discount_rate":    rule.GetRuleDiscountRate(),
+			"additional_properties": rule.AdditionalProperties,
+		}
+	}
 	return map[string]interface{}{
-		"address":                          rawOrganization.GetAddress(),
-		"billing_email":                    rawOrganization.GetBillingEmail(),
-		"city":                             rawOrganization.GetCity(),
-		"country":                          rawOrganization.GetCountry(),
-		"created_at":                       rawOrganization.GetCreatedAt(),
-		"discount_rate":                    rawOrganization.GetDiscountRate(),
-		"email":                            rawOrganization.GetEmail(),
-		"full_name":                        rawOrganization.GetFullName(),
-		"id":                               utils.I32toa(rawOrganization.GetId()),
-		"managers_can_change_subscription": rawOrganization.GetIsEligibleUpdateSubscription(),
-		"lock":                             rawOrganization.GetIsLocked(),
-		"is_read_only":                     rawOrganization.GetIsReadOnly(),
-		"name":                             rawOrganization.GetName(),
-		"partner_id":                       utils.I32toa(rawOrganization.GetPartnerId()),
-		"partner_name":                     rawOrganization.GetPartnerName(),
-		"phone":                            rawOrganization.GetPhone(),
-		"vat_number":                       rawOrganization.GetVatNumber(),
+		"id":                    utils.I32toa(rawOrganization.GetId()),
+		"name":                  rawOrganization.GetName(),
+		"full_name":             rawOrganization.GetFullName(),
+		"email":                 rawOrganization.GetEmail(),
+		"projects":              rawOrganization.GetProjects(),
+		"servers":               rawOrganization.GetServers(),
+		"cloud_credentials":     rawOrganization.GetCloudCredentials(),
+		"created_at":            rawOrganization.GetCreatedAt(),
+		"bound_rules":           boundRules,
+		"additional_properties": rawOrganization.AdditionalProperties,
 	}
 }
