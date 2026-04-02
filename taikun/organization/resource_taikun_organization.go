@@ -2,10 +2,11 @@ package organization
 
 import (
 	"context"
+	"regexp"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -132,49 +133,15 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	apiClient := meta.(*tk.Client)
 
 	body := tkcore.OrganizationCreateCommand{}
-	body.SetAddress(d.Get("address").(string))
-	body.SetBillingEmail(d.Get("billing_email").(string))
-	body.SetCity(d.Get("city").(string))
-	body.SetCountry(d.Get("country").(string))
-	body.SetDiscountRate(d.Get("discount_rate").(float64))
-	body.SetEmail(d.Get("email").(string))
-	body.SetFullName(d.Get("full_name").(string))
-	body.SetIsEligibleUpdateSubscription(d.Get("managers_can_change_subscription").(bool))
 	body.SetName(d.Get("name").(string))
-	body.SetPhone(d.Get("phone").(string))
-	body.SetVatNumber(d.Get("vat_number").(string))
+	body.SetFullName(d.Get("full_name").(string))
+	body.SetEmail(d.Get("email").(string))
+	body.SetAccountId(d.Get("account_id").(int32))
+	body.SetAdminCloudCredentialId(d.Get("admin_cloud_credential_id").(int32))
 
-	createResult, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
+	_, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
-	}
-	id, err := utils.Atoi32(createResult.GetId())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(createResult.GetId())
-
-	if isLocked, isLockedIsSet := d.GetOk("lock"); isLockedIsSet {
-		updateLockBody := tkcore.UpdateOrganizationCommand{}
-		updateLockBody.SetAddress(body.GetAddress())
-		updateLockBody.SetBillingEmail(body.GetBillingEmail())
-		updateLockBody.SetCity(body.GetCity())
-		updateLockBody.SetCountry(body.GetCountry())
-		updateLockBody.SetDiscountRate(body.GetDiscountRate())
-		updateLockBody.SetEmail(body.GetEmail())
-		updateLockBody.SetFullName(body.GetFullName())
-		updateLockBody.SetId(id)
-		updateLockBody.SetIsEligibleUpdateSubscription(body.GetIsEligibleUpdateSubscription())
-		updateLockBody.SetIsLocked(isLocked.(bool))
-		updateLockBody.SetName(body.GetName())
-		updateLockBody.SetPhone(body.GetPhone())
-		updateLockBody.SetVatNumber(body.GetVatNumber())
-
-		res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(ctx).UpdateOrganizationCommand(updateLockBody).Execute()
-		if err != nil {
-			return diag.FromErr(tk.CreateError(res, err))
-		}
 	}
 
 	return utils.ReadAfterCreateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, d, meta)
@@ -227,19 +194,9 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	body := tkcore.UpdateOrganizationCommand{}
-	body.SetAddress(d.Get("address").(string))
-	body.SetBillingEmail(d.Get("billing_email").(string))
-	body.SetCity(d.Get("city").(string))
-	body.SetCountry(d.Get("country").(string))
-	body.SetDiscountRate(d.Get("discount_rate").(float64))
-	body.SetEmail(d.Get("email").(string))
-	body.SetFullName(d.Get("full_name").(string))
 	body.SetId(id)
-	body.SetIsEligibleUpdateSubscription(d.Get("managers_can_change_subscription").(bool))
-	body.SetIsLocked(d.Get("lock").(bool))
 	body.SetName(d.Get("name").(string))
-	body.SetPhone(d.Get("phone").(string))
-	body.SetVatNumber(d.Get("vat_number").(string))
+	body.SetFullName(d.Get("full_name").(string))
 
 	res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
 	if err != nil {
