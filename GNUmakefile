@@ -17,7 +17,7 @@ check-terraform:
 	@echo "Terraform is installed!"
 
 build: go-vendor ## Builds Golang binary
-	go build -o ${BINARY}
+	go build -o build/_output/${BINARY}
 
 generate: build ## Generates Terraform's bindings
 	go generate ./...
@@ -33,7 +33,7 @@ dockerbuild: ## Builds Docker image
 
 commoninstall: ## Installs built binary to the host's system
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+	mv build/_output/${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
 install: ## Builds and installs Terraform provider locally
 install: build commoninstall
@@ -126,73 +126,10 @@ rtestacc4:
 rtestaccrigorous: rtestacc1 rtestacc2 rtestacc3 rtestacc4
 
 clean: ## Removes built binary
-	rm -f ${BINARY}
+	rm -f build/_output/${BINARY}
 
 test-ci: ## Simulates CI/CD pipeline locally
 test-ci: build dockerbuild commoninstall install dockerinstall test testacc clean
-
-
-#TEST?=$$(go list ./... | grep -v 'vendor')
-#HOSTNAME=itera-io
-#NAMESPACE=dev
-#NAME=taikun
-#BINARY=terraform-provider-${NAME}
-#VERSION=0.1.0
-#OS_ARCH=linux_amd64
-#
-#default: install
-#
-#build:
-#	go build -o ${BINARY}
-#
-#dockerbuild:
-#	DOCKER_BUILDKIT=1 docker build --rm --target bin --output . .
-#
-#commoninstall:
-#	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-#	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-#
-#install: build commoninstall
-#
-#dockerinstall: dockerbuild commoninstall
-#
-#test:
-#	go test -i "$(TEST)" || exit 1
-#	echo "$(TEST)" | xargs -t -n4 go test "$(TESTARGS)" -timeout=30s -parallel=4
-#
-#testacc:
-#	# __________________________________________________________
-#	# ---------------- TESTACC start Threads: 1 ----------------
-#	go clean -testcache
-#	TF_ACC=1 go test $(TEST) -v "$TESTARGS" -timeout 120m
-#
-#testacc2:
-#	clear
-#	# __________________________________________________________
-#	# >>>>>>>>>>>>>>>> TESTACC start Threads: 2 <<<<<<<<<<<<<<<<
-#	go clean -testcache
-#	TF_ACC=1 go test "$(TEST)" -v "$TESTARGS" -timeout 120m -parallel=2
-#
-#testacc3:
-#	#
-#	# __________________________________________________________
-#	# >>>>>>>>>>>>>>>> TESTACC start Threads: 3 <<<<<<<<<<<<<<<<
-#	go clean -testcache
-#	TF_ACC=1 go test "$(TEST)" -v "$TESTARGS" -timeout 120m -parallel=3
-#
-#testacc4:
-#	#
-#	# __________________________________________________________
-#	# >>>>>>>>>>>>>>>> TESTACC start Threads: 4 <<<<<<<<<<<<<<<<
-#	go clean -testcache
-#	TF_ACC=1 go test "$(TEST)" -v "$TESTARGS" -timeout 120m -parallel=4
-#
-#testrigorous: testacc2 testacc3 testacc4
-#
-#clean:
-#	rm -f ${BINARY}
-#
-#.PHONY: build dockerbuild commoninstall install dockerinstall test testacc clean
 
 .PHONY: help
 help: # Credits to https://gist.github.com/prwhite/8168133 for this handy oneliner
