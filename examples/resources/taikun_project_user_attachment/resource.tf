@@ -1,7 +1,6 @@
 resource "taikun_user" "foo" {
   user_name = "foo"
-  email     = "email"
-  role      = "User"
+  email     = "email@domain.fr"
 }
 
 resource "taikun_cloud_credential_aws" "foo" {
