@@ -1,12 +1,12 @@
 ---
 page_title: "taikun_project_user_attachment Resource - terraform-provider-taikun"
 subcategory: ""
-description: |-   Taikun Project-User Attachment
+description: |-   Taikun Project User Attachment (Deprecated)
 ---
 
 # taikun_project_user_attachment (Resource)
 
-Taikun Project-User Attachment
+Taikun Project User Attachment (Deprecated)
 
 ~> **Role Requirement** To use the `taikun_project_user_attachment` resource, you need a Manager or Partner account.
 
@@ -15,8 +15,7 @@ Taikun Project-User Attachment
 ```terraform
 resource "taikun_user" "foo" {
   user_name = "foo"
-  email     = "email"
-  role      = "User"
+  email     = "email@domain.fr"
 }
 
 resource "taikun_cloud_credential_aws" "foo" {
@@ -39,11 +38,10 @@ resource "taikun_project_user_attachment" "foo" {
 
 ### Required
 
-- `project_id` (String) ID of the project.
-- `user_id` (String) ID of the user.
+- `project_id` (String) The ID of the project.
+- `user_id` (String) The ID of the user.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `project_name` (String) Name of the project.
 
