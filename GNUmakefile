@@ -8,7 +8,7 @@ BINARY=terraform-provider-${NAME}
 VERSION=0.1.0
 OS_ARCH=linux_amd64
 
-default: install
+default: help
 
 deps: go-linters-install check-terraform ## Installing development prerequisites locally and checking all dependencies (if they're installed)
 
