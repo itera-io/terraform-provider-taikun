@@ -92,6 +92,8 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
+			//"taikun_account":                     account.DataSourceTaikunAccount(),
+			//"taikun_accounts":                    account.DataSourceTaikunAccounts(),
 			"taikun_access_profile":              access_profile.DataSourceTaikunAccessProfile(),
 			"taikun_access_profiles":             access_profile.DataSourceTaikunAccessProfiles(),
 			"taikun_alerting_profile":            alerting_profile.DataSourceTaikunAlertingProfile(),
@@ -157,6 +159,7 @@ func Provider() *schema.Provider {
 			//"taikun_images":                      taikun.dataSourceTaikunImages(), // DEPRECATED
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			//"taikun_account":                              account.ResourceTaikunAccount(),
 			"taikun_access_profile":                       access_profile.ResourceTaikunAccessProfile(),
 			"taikun_alerting_profile":                     alerting_profile.ResourceTaikunAlertingProfile(),
 			"taikun_app_instance":                         app_instance.ResourceTaikunAppInstance(),
@@ -179,14 +182,14 @@ func Provider() *schema.Provider {
 			"taikun_organization":                         organization.ResourceTaikunOrganization(),
 			"taikun_policy_profile":                       policy_profile.ResourceTaikunPolicyProfile(),
 			"taikun_project":                              project.ResourceTaikunProject(),
-			//"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(), // DEPRECATED
-			"taikun_repository":          repository.ResourceTaikunRepository(),
-			"taikun_showback_credential": showback.ResourceTaikunShowbackCredential(),
-			"taikun_showback_rule":       showback.ResourceTaikunShowbackRule(),
-			"taikun_slack_configuration": slack.ResourceTaikunSlackConfiguration(),
-			"taikun_standalone_profile":  standalone_profile.ResourceTaikunStandaloneProfile(),
-			"taikun_user":                user.ResourceTaikunUser(),
-			"taikun_virtual_cluster":     virtual_cluster.ResourceTaikunVirtualCluster(),
+			"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(), // DEPRECATED
+			"taikun_repository":                           repository.ResourceTaikunRepository(),
+			"taikun_showback_credential":                  showback.ResourceTaikunShowbackCredential(),
+			"taikun_showback_rule":                        showback.ResourceTaikunShowbackRule(),
+			"taikun_slack_configuration":                  slack.ResourceTaikunSlackConfiguration(),
+			"taikun_standalone_profile":                   standalone_profile.ResourceTaikunStandaloneProfile(),
+			"taikun_user":                                 user.ResourceTaikunUser(),
+			"taikun_virtual_cluster":                      virtual_cluster.ResourceTaikunVirtualCluster(),
 			//"taikun_cloud_credential":                     taikun.resourceTaikunCloudCredential(), // DEPRECATED
 
 		},
