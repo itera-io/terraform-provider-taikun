@@ -1,17 +1,19 @@
+//nolint:staticcheck // this code does not go to the production. For unit testing purposes it is more than sufficient.
 package testing
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	tk "github.com/itera-io/taikungoclient"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 	"math/rand"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	tk "github.com/itera-io/taikungoclient"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"

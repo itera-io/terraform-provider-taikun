@@ -227,11 +227,12 @@ func flattenTaikunUser(rawUser *tkcore.UserDetailsDto, accountID int32) map[stri
 	}
 
 	return map[string]interface{}{
-		"id":           rawUser.GetId(),
-		"user_name":    rawUser.GetName(),
-		"display_name": rawUser.GetDisplayName(),
-		"email":        rawUser.GetEmail(),
-		"account_id":   utils.I32toa(accountID),
-		"global_role":  string(*rawUser.GlobalRole),
+		"id":            rawUser.GetId(),
+		"user_name":     rawUser.GetName(),
+		"display_name":  rawUser.GetDisplayName(),
+		"email":         rawUser.GetEmail(),
+		"organizations": organizations,
+		"account_id":    utils.I32toa(accountID),
+		"global_role":   string(*rawUser.GlobalRole),
 	}
 }
