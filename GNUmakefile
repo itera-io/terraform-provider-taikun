@@ -16,14 +16,17 @@ check-terraform:
 	@command -v terraform >/dev/null 2>&1 || { echo >&2 "Error: Terraform is not installed. Aborting."; exit 1; }
 	@echo "Terraform is installed!"
 
-build: go-vendor # Builds Golang binary
+build: go-vendor ## Builds Golang binary
 	go build -o ${BINARY}
 
-generate: ## Generates Terraform's bindings
+generate: build ## Generates Terraform's bindings
 	go generate ./...
 
 go-linters-install: ## Installs Golang's linters locally for verification
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI_LINTERS_VERSION}
+
+lint: go-linters-install ## Runs golangci-lint against codebase
+	golangci-lint run --timeout 5m
 
 dockerbuild: ## Builds Docker image
 	DOCKER_BUILDKIT=1 docker build --rm --target bin --output . .
