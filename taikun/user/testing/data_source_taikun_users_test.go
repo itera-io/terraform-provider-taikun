@@ -2,9 +2,10 @@ package testing
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -26,16 +27,11 @@ func TestAccDataSourceTaikunUsers(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.id"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.user_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.role"),
+					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.global_role"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_confirmed"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_notification_enabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_csm"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_owner"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_disabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_approved_by_partner"),
 				),
 			},
 		},
@@ -52,10 +48,9 @@ resource "taikun_organization" "foo" {
 resource "taikun_user" "foo" {
   user_name = "%s"
   email     = "%s"
-  role      = "%s"
+  global_role      = "%s"
 
   display_name        = "%s"
-  organization_id = resource.taikun_organization.foo.id
 }
 
 data "taikun_users" "all" {
@@ -71,7 +66,7 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 	organizationFullName := utils.RandomTestName()
 	userName := utils.RandomTestName()
 	email := utils.RandomEmail()
-	role := "User"
+	globalRole := "Admin"
 	displayName := utils.RandomString()
 
 	resource.Test(t, resource.TestCase{
@@ -84,25 +79,21 @@ func TestAccDataSourceTaikunUsersWithFilter(t *testing.T) {
 					organizationFullName,
 					userName,
 					email,
-					role,
+					globalRole,
 					displayName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.user_name", userName),
-					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.role", role),
+					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.role", globalRole),
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.email", email),
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.display_name", displayName),
 					resource.TestCheckResourceAttr("data.taikun_users.all", "users.0.organization_name", organizationName),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "id"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.#"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.id"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.organization_id"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_confirmed"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.email_notification_enabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_csm"),
 					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_owner"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_disabled"),
-					resource.TestCheckResourceAttrSet("data.taikun_users.all", "users.0.is_approved_by_partner"),
 				),
 			},
 		},

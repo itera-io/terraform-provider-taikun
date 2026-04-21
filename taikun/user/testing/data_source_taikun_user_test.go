@@ -2,9 +2,10 @@ package testing
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -13,7 +14,7 @@ const testAccDataSourceTaikunUserConfig = `
 resource "taikun_user" "foo" {
   user_name = "%s"
   email     = "%s"
-  role      = "%s"
+  global_role      = "%s"
 
   display_name = "%s"
 }
@@ -26,7 +27,7 @@ data "taikun_user" "foo" {
 func TestAccDataSourceTaikunUser(t *testing.T) {
 	userName := utils.RandomTestName()
 	email := utils.RandomEmail()
-	role := "Manager"
+	globalRole := "Admin"
 	displayName := utils.RandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -37,7 +38,7 @@ func TestAccDataSourceTaikunUser(t *testing.T) {
 				Config: fmt.Sprintf(testAccDataSourceTaikunUserConfig,
 					userName,
 					email,
-					role,
+					globalRole,
 					displayName,
 				),
 				Check: utils_testing.CheckDataSourceStateMatchesResourceState(
