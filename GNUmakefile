@@ -38,7 +38,7 @@ commoninstall: ## Installs built binary to the host's system
 install: ## Builds and installs Terraform provider locally
 install: build commoninstall
 
-dockerinstall: ## Builds Docker image and installs binary to th Host system
+dockerinstall: ## Builds Docker image and installs binary to the Host system
 dockerinstall: dockerbuild commoninstall
 
 test: ## Runs unit tests

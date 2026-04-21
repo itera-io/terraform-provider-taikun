@@ -1,8 +1,6 @@
 module github.com/itera-io/terraform-provider-taikun
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.26
 
 require (
 	github.com/go-openapi/strfmt v0.24.0
