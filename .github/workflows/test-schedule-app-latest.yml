@@ -1,0 +1,13 @@
+name: "Tests Scheduled app-latest"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 4 * * *
+
+jobs:
+  tests-scheduled-app-latest:
+    uses: ./.github/workflows/tests_reusable.yml
+    with:
+      branch: "app-latest"
+      endpoint: "dev"
+    secrets: inherit
