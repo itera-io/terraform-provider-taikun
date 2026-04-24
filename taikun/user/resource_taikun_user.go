@@ -137,9 +137,9 @@ func generateResourceTaikunUserRead(withRetries bool) schema.ReadContextFunc {
 
 		searchBody := tkcore.UsersSearchCommand{}
 		searchBody.SetSearchTerm(id)
-		searchRes, _, err := apiClient.Client.SearchAPI.SearchUsers(ctx).UsersSearchCommand(searchBody).Execute()
+		searchRes, res, err := apiClient.Client.SearchAPI.SearchUsers(ctx).UsersSearchCommand(searchBody).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		var accountId int32

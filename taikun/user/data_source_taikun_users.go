@@ -48,9 +48,9 @@ func dataSourceTaikunUsersRead(ctx context.Context, d *schema.ResourceData, meta
 			return diag.FromErr(err)
 		}
 
-		dropdownRes, _, err := apiClient.Client.UsersAPI.UsersDropdown(ctx).OrganizationId(organizationID).Execute()
+		dropdownRes, res, err := apiClient.Client.UsersAPI.UsersDropdown(ctx).OrganizationId(organizationID).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		for _, u := range dropdownRes.GetData() {
@@ -68,9 +68,9 @@ func dataSourceTaikunUsersRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	} else {
 		searchBody := tkcore.UsersSearchCommand{}
-		searchRes, _, err := apiClient.Client.SearchAPI.SearchUsers(ctx).UsersSearchCommand(searchBody).Execute()
+		searchRes, res, err := apiClient.Client.SearchAPI.SearchUsers(ctx).UsersSearchCommand(searchBody).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 		rawUserList = searchRes.GetData()
 	}

@@ -209,9 +209,9 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 		if len(response.GetData()) != 1 {
 			if withRetries {
@@ -272,6 +272,6 @@ func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *tk.Cli
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	_, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
-	return err
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }

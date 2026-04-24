@@ -211,7 +211,7 @@ func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextF
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		data, _, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), appId).Execute()
+		data, res, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), appId).Execute()
 		if err != nil {
 			// Already destroyed/create again
 			d.SetId("")

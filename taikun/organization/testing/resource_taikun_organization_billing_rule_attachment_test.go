@@ -102,9 +102,9 @@ func testAccCheckTaikunOrganizationBillingRuleAttachmentExists(state *terraform.
 			return err
 		}
 
-		response, _, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+		response, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
 		if err != nil {
-			return err
+			return tk.CreateError(res, err)
 		}
 		if len(response.GetData()) != 1 {
 			return fmt.Errorf("billing rule with ID %d not found", billingRuleId)

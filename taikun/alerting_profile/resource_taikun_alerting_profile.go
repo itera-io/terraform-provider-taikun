@@ -263,9 +263,9 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 		if len(response.Data) != 1 {
 			if withRetries {
@@ -276,9 +276,9 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 		}
 		alertingProfileDTO := response.Data[0]
 
-		alertingIntegrationsResponse, _, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
+		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		err = utils.SetResourceDataFromMap(d, flattenTaikunAlertingProfile(&alertingProfileDTO, alertingIntegrationsResponse))

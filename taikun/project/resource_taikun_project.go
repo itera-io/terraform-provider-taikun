@@ -783,9 +783,9 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		res, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 	if d.HasChange("images") {
@@ -862,9 +862,9 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				deleteServerBody.SetProjectId(id)
 				deleteServerBody.SetServerIds(serverIds)
 
-				_, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+				res, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 				if err != nil {
-					return diag.FromErr(err)
+					return diag.FromErr(tk.CreateError(res, err))
 				}
 
 				if err = resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Deleting", "PendingDelete"}, apiClient, id); err != nil {
@@ -1031,9 +1031,9 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	)
 
 	// Get all autoscaler servers
-	autoscalerData, _, err := apiClient.Client.ServersAPI.ServersList(ctx).AutoscalingGroup(d.Get("autoscaler_name").(string)).Execute()
+	autoscalerData, res, err := apiClient.Client.ServersAPI.ServersList(ctx).AutoscalingGroup(d.Get("autoscaler_name").(string)).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 	// Add the ids to the list of servers about to be deleted
 	var i int32 = 0
@@ -1064,9 +1064,9 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 	body := tkcore.DeleteProjectCommand{}
 	body.SetProjectId(id)
 	body.SetIsForceDelete(false)
-	_, err = apiClient.Client.ProjectsAPI.ProjectsDelete(ctx).DeleteProjectCommand(body).Execute()
+	res, err = apiClient.Client.ProjectsAPI.ProjectsDelete(ctx).DeleteProjectCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	d.SetId("")
@@ -1074,9 +1074,9 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTaikunProjectUnlockIfLocked(projectID int32, apiClient *tk.Client) error {
-	response, _, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
+	response, res, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
 	if err != nil {
-		return err
+		return tk.CreateError(res, err)
 	}
 
 	project := response.GetProject()
@@ -1537,8 +1537,8 @@ func resourceTaikunProjectLock(id int32, lock bool, apiClient *tk.Client) error 
 	body := tkcore.ProjectLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
-	_, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
-	return err
+	res, err := apiClient.Client.ProjectsAPI.ProjectsLockManager(context.TODO()).ProjectLockManagerCommand(body).Execute()
+	return tk.CreateError(res, err)
 }
 
 func resourceTaikunProjectQuotaIsSet(d *schema.ResourceData) bool {

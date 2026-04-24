@@ -3,12 +3,13 @@ package standalone_profile
 import (
 	"context"
 	"fmt"
-	tk "github.com/itera-io/taikungoclient"
-	tkcore "github.com/itera-io/taikungoclient/client"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 	"hash/fnv"
 	"regexp"
 	"strings"
+
+	tk "github.com/itera-io/taikungoclient"
+	tkcore "github.com/itera-io/taikungoclient/client"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -169,9 +170,9 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, _, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileCreate(ctx).StandAloneProfileCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileCreate(ctx).StandAloneProfileCreateCommand(body).Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 	id, err := utils.Atoi32(createResult.GetId())
 	if err != nil {
@@ -203,9 +204,9 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 		if len(response.GetData()) != 1 {
 			if withRetries {
@@ -217,7 +218,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 
 		rawStandaloneProfile := response.GetData()[0]
 
-		securityGroupResponse, _, err := apiClient.Client.SecurityGroupAPI.SecuritygroupList(context.TODO(), id).Execute()
+		securityGroupResponse, res, err := apiClient.Client.SecurityGroupAPI.SecuritygroupList(context.TODO(), id).Execute()
 		if err != nil {
 
 			/*
@@ -227,7 +228,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 				}
 
 			*/
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		err = utils.SetResourceDataFromMap(d, flattenTaikunStandaloneProfile(&rawStandaloneProfile, securityGroupResponse))
@@ -254,9 +255,9 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 		body.SetId(id)
 		body.SetName(d.Get("name").(string))
 
-		_, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
+		res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileEdit(ctx).StandAloneProfileUpdateCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
@@ -277,9 +278,9 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			_, err = apiClient.Client.SecurityGroupAPI.SecuritygroupDelete(ctx, secId).Execute()
+			res, err := apiClient.Client.SecurityGroupAPI.SecuritygroupDelete(ctx, secId).Execute()
 			if err != nil {
-				return diag.FromErr(err)
+				return diag.FromErr(tk.CreateError(res, err))
 			}
 		}
 

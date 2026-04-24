@@ -112,9 +112,9 @@ func resourceTaikunVirtualClusterUpdate(ctx context.Context, d *schema.ResourceD
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		res, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
