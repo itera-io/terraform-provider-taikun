@@ -201,6 +201,13 @@ func Provider() *schema.Provider {
 				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_API_HOST", "api.taikun.cloud"),
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
+			"account_name": {
+				Type:         schema.TypeString,
+				Description:  "Custom Taikun account_name. Can be set with TAIKUN_ACCOUNT_NAME.",
+				Required:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_ACCOUNT_NAME", "taikun"),
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 			"email": {
 				Type:          schema.TypeString,
 				Description:   "Taikun email. Can be set with TAIKUN_EMAIL",
