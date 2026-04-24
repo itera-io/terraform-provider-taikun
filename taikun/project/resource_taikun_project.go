@@ -783,7 +783,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 			body.SetDeleteOnExpiration(false)
 		}
 
-		res, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		res, err := apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -862,7 +862,7 @@ func resourceTaikunProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 				deleteServerBody.SetProjectId(id)
 				deleteServerBody.SetServerIds(serverIds)
 
-				res, err = apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+				res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 				if err != nil {
 					return diag.FromErr(tk.CreateError(res, err))
 				}
