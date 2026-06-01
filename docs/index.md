@@ -26,6 +26,7 @@ Take a look at the **quickstart templates** available in the [quickstart example
 ### Optional
 
 - `access_key` (String) Taikun access key. Can be set with TAIKUN_ACCESS_KEY. Conflicts with: `email`, `keycloak_email`. Required with: `secret_key`.
+- `account_name` (String) Custom Taikun account_name. Can be set with TAIKUN_ACCOUNT_NAME.
 - `api_host` (String) Custom Taikun API host. Can be set with TAIKUN_API_HOST.
 - `email` (String) Taikun email. Can be set with TAIKUN_EMAIL Conflicts with: `keycloak_email`, `access_key`. Required with: `password`.
 - `keycloak_email` (String) Taikun Keycloak email. Can be set with TAIKUN_KEYCLOAK_EMAIL. Conflicts with: `email`, `access_key`. Required with: `keycloak_password`.

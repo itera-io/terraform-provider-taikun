@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/itera-io/terraform-provider-taikun/taikun/account"
 	"github.com/itera-io/terraform-provider-taikun/taikun/access_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/alerting_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/app_instance"
@@ -22,12 +23,15 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_vsphere"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_zadara"
 	"github.com/itera-io/terraform-provider-taikun/taikun/flavors"
+	"github.com/itera-io/terraform-provider-taikun/taikun/group"
 	"github.com/itera-io/terraform-provider-taikun/taikun/kubeconfig"
 	"github.com/itera-io/terraform-provider-taikun/taikun/kubernetes_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/organization"
 	"github.com/itera-io/terraform-provider-taikun/taikun/policy_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/project"
+	"github.com/itera-io/terraform-provider-taikun/taikun/project_subnets"
 	"github.com/itera-io/terraform-provider-taikun/taikun/repository"
+	"github.com/itera-io/terraform-provider-taikun/taikun/robot"
 	"github.com/itera-io/terraform-provider-taikun/taikun/showback"
 	"github.com/itera-io/terraform-provider-taikun/taikun/slack"
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
@@ -92,8 +96,8 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
-			//"taikun_account":                     account.DataSourceTaikunAccount(),
-			//"taikun_accounts":                    account.DataSourceTaikunAccounts(),
+			"taikun_account":                     account.DataSourceTaikunAccount(),
+			"taikun_accounts":                    account.DataSourceTaikunAccounts(),
 			"taikun_access_profile":              access_profile.DataSourceTaikunAccessProfile(),
 			"taikun_access_profiles":             access_profile.DataSourceTaikunAccessProfiles(),
 			"taikun_alerting_profile":            alerting_profile.DataSourceTaikunAlertingProfile(),
@@ -125,6 +129,8 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_vsphere":   cc_vsphere.DataSourceTaikunCloudCredentialsVsphere(),
 			"taikun_cloud_credentials_zadara":    cc_zadara.DataSourceTaikunCloudCredentialsZadara(),
 			"taikun_flavors":                     flavors.DataSourceTaikunFlavors(),
+			"taikun_group":                       group.DataSourceTaikunGroup(),
+			"taikun_groups":                      group.DataSourceTaikunGroups(),
 			"taikun_images_aws":                  cc_aws.DataSourceTaikunImagesAWS(),
 			"taikun_images_azure":                cc_azure.DataSourceTaikunImagesAzure(),
 			"taikun_images_gcp":                  cc_gcp.DataSourceTaikunImagesGCP(),
@@ -141,7 +147,9 @@ func Provider() *schema.Provider {
 			"taikun_policy_profile":              policy_profile.DataSourceTaikunPolicyProfile(),
 			"taikun_policy_profiles":             policy_profile.DataSourceTaikunPolicyProfiles(),
 			"taikun_project":                     project.DataSourceTaikunProject(),
+			"taikun_project_subnets":             project_subnets.DataSourceTaikunProjectSubnets(),
 			"taikun_projects":                    project.DataSourceTaikunProjects(),
+			"taikun_robots":                      robot.DataSourceTaikunRobots(),
 			"taikun_repository":                  repository.DataSourceTaikunRespository(),
 			"taikun_repositories":                repository.DataSourceTaikunRepositories(),
 			"taikun_showback_credential":         showback.DataSourceTaikunShowbackCredential(),
@@ -159,7 +167,7 @@ func Provider() *schema.Provider {
 			//"taikun_images":                      taikun.dataSourceTaikunImages(), // DEPRECATED
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			//"taikun_account":                              account.ResourceTaikunAccount(),
+			"taikun_account":                              account.ResourceTaikunAccount(),
 			"taikun_access_profile":                       access_profile.ResourceTaikunAccessProfile(),
 			"taikun_alerting_profile":                     alerting_profile.ResourceTaikunAlertingProfile(),
 			"taikun_app_instance":                         app_instance.ResourceTaikunAppInstance(),
@@ -176,6 +184,7 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_proxmox":             cc_proxmox.ResourceTaikunCloudCredentialProxmox(),
 			"taikun_cloud_credential_vsphere":             cc_vsphere.ResourceTaikunCloudCredentialVsphere(),
 			"taikun_cloud_credential_zadara":              cc_zadara.ResourceTaikunCloudCredentialZadara(),
+			"taikun_group":                                group.ResourceTaikunGroup(),
 			"taikun_kubeconfig":                           kubeconfig.ResourceTaikunKubeconfig(),
 			"taikun_kubernetes_profile":                   kubernetes_profile.ResourceTaikunKubernetesProfile(),
 			"taikun_organization_billing_rule_attachment": organization.ResourceTaikunOrganizationBillingRuleAttachment(),
@@ -183,6 +192,7 @@ func Provider() *schema.Provider {
 			"taikun_policy_profile":                       policy_profile.ResourceTaikunPolicyProfile(),
 			"taikun_project":                              project.ResourceTaikunProject(),
 			"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(), // DEPRECATED
+			"taikun_robot":                                robot.ResourceTaikunRobot(),
 			"taikun_repository":                           repository.ResourceTaikunRepository(),
 			"taikun_showback_credential":                  showback.ResourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        showback.ResourceTaikunShowbackRule(),
