@@ -1036,7 +1036,7 @@ func resourceTaikunProjectDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 	// Add the ids to the list of servers about to be deleted
-	var i int32 = 0
+	var i int64 = 0
 	for ; i < autoscalerData.GetTotalCount(); i++ {
 		serversToPurge = append(serversToPurge, map[string]interface{}{"id": fmt.Sprint(autoscalerData.GetData()[0].GetId())})
 	}
