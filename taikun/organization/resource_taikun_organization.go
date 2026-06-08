@@ -135,14 +135,22 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	body := tkcore.OrganizationCreateCommand{}
 	body.SetName(d.Get("name").(string))
 	body.SetFullName(d.Get("full_name").(string))
-	body.SetEmail(d.Get("email").(string))
-	body.SetAccountId(d.Get("account_id").(int32))
-	body.SetAdminCloudCredentialId(d.Get("admin_cloud_credential_id").(int32))
+	if d.Get("email") != nil {
+		body.SetEmail(d.Get("email").(string))
+	}
+	if d.Get("account_id") != nil {
+		body.SetAccountId(d.Get("account_id").(int32))
+	}
+	if d.Get("admin_cloud_credential_id") != nil {
+		body.SetAdminCloudCredentialId(d.Get("admin_cloud_credential_id").(int32))
+	}
 
-	_, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
+
+	d.SetId(createResult.GetId())
 
 	return utils.ReadAfterCreateWithRetries(generateResourceTaikunOrganizationReadWithRetries(), ctx, d, meta)
 }
@@ -223,25 +231,11 @@ func resourceTaikunOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 }
 
 func flattenTaikunOrganization(rawOrganization *tkcore.OrganizationDetailsDto) map[string]interface{} {
-	boundRules := make([]map[string]interface{}, len(rawOrganization.GetBoundRules()))
-	for i, rule := range rawOrganization.GetBoundRules() {
-		boundRules[i] = map[string]interface{}{
-			"prometheus_rule_id":    utils.I32toa(rule.GetPrometheusRuleId()),
-			"prometheus_rule_name":  rule.GetPrometheusRuleName(),
-			"rule_discount_rate":    rule.GetRuleDiscountRate(),
-			"additional_properties": rule.AdditionalProperties,
-		}
-	}
 	return map[string]interface{}{
-		"id":                    utils.I32toa(rawOrganization.GetId()),
-		"name":                  rawOrganization.GetName(),
-		"full_name":             rawOrganization.GetFullName(),
-		"email":                 rawOrganization.GetEmail(),
-		"projects":              rawOrganization.GetProjects(),
-		"servers":               rawOrganization.GetServers(),
-		"cloud_credentials":     rawOrganization.GetCloudCredentials(),
-		"created_at":            rawOrganization.GetCreatedAt(),
-		"bound_rules":           boundRules,
-		"additional_properties": rawOrganization.AdditionalProperties,
+		"id":         utils.I32toa(rawOrganization.GetId()),
+		"name":       rawOrganization.GetName(),
+		"full_name":  rawOrganization.GetFullName(),
+		"email":      rawOrganization.GetEmail(),
+		"created_at": rawOrganization.GetCreatedAt(),
 	}
 }

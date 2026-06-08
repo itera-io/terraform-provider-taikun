@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 	"strings"
 	"testing"
 
@@ -65,21 +64,11 @@ resource "taikun_organization" "foo" {
   discount_rate = 42
 }
 
-resource "taikun_slack_configuration" "foo" {
-  organization_id = resource.taikun_organization.foo.id
-
-  name = "%s"
-  url  = "%s"
-  channel = "any"
-  type = "Alert"
-}
-
 resource "taikun_alerting_profile" "foo" {
   organization_id = resource.taikun_organization.foo.id
 
   name = "%s"
   reminder = "%s"
-  slack_configuration_id = resource.taikun_slack_configuration.foo.id
 
   lock = %t
 
@@ -97,8 +86,6 @@ resource "taikun_alerting_profile" "foo" {
 func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 	organizationName := utils.RandomTestName()
 	organizationFullName := utils.RandomTestName()
-	slackConfigName := utils.RandomTestName()
-	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := utils.RandomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[utils.RandomInt(3)]
 	isLocked := utils.RandomBool()
@@ -117,8 +104,6 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
 					organizationFullName,
-					slackConfigName,
-					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -128,7 +113,6 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
@@ -149,8 +133,6 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 	organizationName := utils.RandomTestName()
 	organizationFullName := utils.RandomTestName()
-	slackConfigName := utils.RandomTestName()
-	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := utils.RandomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[utils.RandomInt(3)]
 	isLocked := utils.RandomBool()
@@ -176,8 +158,6 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
 					organizationFullName,
-					slackConfigName,
-					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -187,7 +167,6 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
@@ -200,8 +179,6 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
 					organizationFullName,
-					slackConfigName,
-					slackUrl,
 					newAlertingProfileName,
 					newReminder,
 					newIsLocked,
@@ -211,7 +188,6 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", newAlertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", newReminder),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(newIsLocked)),
@@ -231,8 +207,6 @@ func TestAccResourceTaikunAlertingProfileModifyIntegrations(t *testing.T) {
 	//}
 	organizationName := utils.RandomTestName()
 	organizationFullName := utils.RandomTestName()
-	slackConfigName := utils.RandomTestName()
-	slackUrl := os.Getenv("SLACK_WEBHOOK")
 	alertingProfileName := utils.RandomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[utils.RandomInt(3)]
 	isLocked := utils.RandomBool()
@@ -278,8 +252,6 @@ integration {
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
 					organizationFullName,
-					slackConfigName,
-					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -289,13 +261,11 @@ integration {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "integration.#", fmt.Sprint(numberOfIntegrations)),
 				),
@@ -304,8 +274,6 @@ integration {
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
 					organizationName,
 					organizationFullName,
-					slackConfigName,
-					slackUrl,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -315,7 +283,6 @@ integration {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAlertingProfileExists,
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
-					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
@@ -328,6 +295,100 @@ integration {
 		},
 	})
 }
+
+// TestAccResourceTaikunAlertingProfileSlack exercises the optional Slack
+// configuration link on an alerting profile. It is kept commented out because
+// it requires permission to create Slack configurations (POST /api/v1/slack/create),
+// which is not granted on all environments and otherwise fails with HTTP 403.
+// To run it, re-add the "os" import and a SLACK_WEBHOOK env var with a valid webhook URL.
+//
+// const testAccResourceTaikunAlertingProfileSlackConfig = `
+// resource "taikun_organization" "foo" {
+//   name = "%s"
+//   full_name = "%s"
+//   discount_rate = 42
+// }
+//
+// resource "taikun_slack_configuration" "foo" {
+//   organization_id = resource.taikun_organization.foo.id
+//
+//   name = "%s"
+//   url  = "%s"
+//   channel = "any"
+//   type = "Alert"
+// }
+//
+// resource "taikun_alerting_profile" "foo" {
+//   organization_id = resource.taikun_organization.foo.id
+//
+//   name = "%s"
+//   reminder = "%s"
+//   slack_configuration_id = resource.taikun_slack_configuration.foo.id
+//
+//   lock = %t
+//
+//   # emails:
+//   %s
+//
+//   # webhooks:
+//   %s
+//
+//   # integrations:
+//   %s
+// }
+// `
+//
+// func TestAccResourceTaikunAlertingProfileSlack(t *testing.T) {
+// 	organizationName := utils.RandomTestName()
+// 	organizationFullName := utils.RandomTestName()
+// 	slackConfigName := utils.RandomTestName()
+// 	slackUrl := os.Getenv("SLACK_WEBHOOK")
+// 	alertingProfileName := utils.RandomTestName()
+// 	reminder := []string{"HalfHour", "Hourly", "Daily"}[utils.RandomInt(3)]
+// 	isLocked := utils.RandomBool()
+// 	numberOfEmails := 5
+// 	emails := testAccResourceTaikunAlertingProfileRandomEmails(numberOfEmails)
+// 	numberOfWebhooks := 3
+// 	webhooks := testAccResourceTaikunAlertingProfileRandomWebhooks(numberOfWebhooks)
+// 	integrations := ""
+//
+// 	resource.ParallelTest(t, resource.TestCase{
+// 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
+// 		ProviderFactories: utils_testing.TestAccProviderFactories,
+// 		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy,
+// 		Steps: []resource.TestStep{
+// 			{
+// 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileSlackConfig,
+// 					organizationName,
+// 					organizationFullName,
+// 					slackConfigName,
+// 					slackUrl,
+// 					alertingProfileName,
+// 					reminder,
+// 					isLocked,
+// 					emails,
+// 					webhooks,
+// 					integrations),
+// 				Check: resource.ComposeAggregateTestCheckFunc(
+// 					testAccCheckTaikunAlertingProfileExists,
+// 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "lock", fmt.Sprint(isLocked)),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "emails.#", fmt.Sprint(numberOfEmails)),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "webhook.#", fmt.Sprint(numberOfWebhooks)),
+// 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "organization_name", organizationName),
+// 				),
+// 			},
+// 			{
+// 				ResourceName:      "taikun_alerting_profile.foo",
+// 				ImportState:       true,
+// 				ImportStateVerify: true,
+// 			},
+// 		},
+// 	})
+// }
 
 func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
 	apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
