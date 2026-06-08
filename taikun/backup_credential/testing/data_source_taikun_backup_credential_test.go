@@ -11,8 +11,15 @@ import (
 )
 
 const testAccDataSourceTaikunBackupCredentialConfig = `
+resource "taikun_organization" "foo" {
+  name          = "%s"
+  full_name     = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_backup_credential" "foo" {
   name            = "%s"
+  organization_id = resource.taikun_organization.foo.id
 
   s3_endpoint = "%s"
   s3_region   = "%s"
@@ -23,7 +30,11 @@ data "taikun_backup_credential" "foo" {
 }
 `
 
+// TestAccDataSourceTaikunBackupCredential verifies GET /api/v1/s3credentials/list by id
+// matches the managed resource (secret key omitted from API read).
 func TestAccDataSourceTaikunBackupCredential(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	backupCredentialName := utils.RandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -32,6 +43,8 @@ func TestAccDataSourceTaikunBackupCredential(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunBackupCredentialConfig,
+					organizationName,
+					organizationFullName,
 					backupCredentialName,
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
