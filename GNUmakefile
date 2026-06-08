@@ -1,4 +1,4 @@
-GOLANGCI_LINTERS_VERSION := v2.11.4
+GOLANGCI_LINTERS_VERSION := v2.12.2
 
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=itera-io
@@ -7,6 +7,9 @@ NAME=taikun
 BINARY=terraform-provider-${NAME}
 VERSION=0.1.0
 OS_ARCH=linux_amd64
+
+## Including environmental variables necessary for running unit tests
+include ./dev-env.sh
 
 default: help
 
@@ -23,9 +26,12 @@ generate: build ## Generates Terraform's bindings
 	go generate ./...
 
 go-linters-install: ## Installs Golang's linters locally for verification
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI_LINTERS_VERSION}
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI_LINTERS_VERSION}
 
-lint: go-linters-install ## Runs golangci-lint against codebase
+go-vet:
+	go vet ./...
+
+lint: go-vet go-linters-install ## Runs golangci-lint against codebase
 	golangci-lint run --timeout 5m
 
 dockerbuild: ## Builds Docker image
@@ -66,7 +72,7 @@ clean-vendor: ## Removes vendor folder
 # 1C
 #ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialsZadara|TestAccDataSourceTaikunImagesZadara$$|TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
 
-ACCEPTANCE_TESTS='(TestAccResourceTaikunAccessProfileTrustedRegistries$$)'
+ACCEPTANCE_TESTS='(TestAccResourceTaikunAccessProfileUpdate$$)'
 
 # --- CI: Not creating resources ---
 # Acklowledgment testing ALPHA
@@ -89,34 +95,33 @@ ACCEPTANCE_TESTS='(TestAccResourceTaikunAccessProfileTrustedRegistries$$)'
 # Part 4b - Azure -- 706 s
 # Part 4c - Azure -- 464 s
 
-
-rtestacc:
+rtestacc: install
 	date
 	go clean -testcache
 	TF_ACC=1 go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 120m
 
-rtestacc1:
+rtestacc1: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 1 <<<<<<<<<<<<<<<<
 	go clean -testcache
 	TF_ACC=1 go test $(TEST) -v -run ${ACCEPTANCE_TESTS} -timeout 120m -parallel=1
 
-rtestacc2:
+rtestacc2: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 2 <<<<<<<<<<<<<<<<
 	go clean -testcache
 	TF_ACC=1 go test $(TEST) -v -run ${ACCEPTANCE_TESTS} -timeout 120m -parallel=2
 
-rtestacc3:
+rtestacc3: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 3 <<<<<<<<<<<<<<<<
 	go clean -testcache
 	TF_ACC=1 go test $(TEST) -v -run ${ACCEPTANCE_TESTS} -timeout 120m -parallel=3
 
-rtestacc4:
+rtestacc4: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 4 <<<<<<<<<<<<<<<<
@@ -125,7 +130,7 @@ rtestacc4:
 
 rtestaccrigorous: rtestacc1 rtestacc2 rtestacc3 rtestacc4
 
-clean: ## Removes built binary
+clean: clean-vendor ## Removes built binary
 	rm -f build/_output/${BINARY}
 
 test-ci: ## Simulates CI/CD pipeline locally

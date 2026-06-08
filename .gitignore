@@ -40,3 +40,5 @@ website/vendor
 gcp.json
 
 terraform-provider-taikun
+
+dev-env.sh
