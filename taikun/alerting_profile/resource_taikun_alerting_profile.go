@@ -319,7 +319,9 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			body.SetSlackConfigurationId(slackConfigID)
+			if slackConfigID != 0 {
+				body.SetSlackConfigurationId(slackConfigID)
+			}
 		}
 
 		_, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesEdit(ctx).UpdateAlertingProfileCommand(body).Execute()

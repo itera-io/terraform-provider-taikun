@@ -9,7 +9,15 @@ import (
 )
 
 const testAccDataSourceTaikunAlertingProfileConfig = `
+resource "taikun_organization" "foo" {
+  name = "%s"
+  full_name = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_alerting_profile" "foo" {
+  organization_id = resource.taikun_organization.foo.id
+
   name = "%s"
   reminder = "%s"
 
@@ -39,6 +47,8 @@ data "taikun_alerting_profile" "foo" {
 `
 
 func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	alertingProfileName := utils.RandomTestName()
 	reminder := []string{"HalfHour", "Hourly", "Daily"}[utils.RandomInt(3)]
 	isLocked := utils.RandomBool()
@@ -53,6 +63,8 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAlertingProfileConfig,
+					organizationName,
+					organizationFullName,
 					alertingProfileName,
 					reminder,
 					isLocked,
@@ -67,14 +79,25 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 	})
 }
 
+// --- Slack integration tests (disabled) ---
+// Slack is not available on the current platform: POST /api/v1/slack/create returns
+// HTTP 403 (Forbidden Access Exception). Active test above omits slack_configuration_id.
+// When Slack is re-enabled, uncomment the block below, add `import "os"`, and set
+// SLACK_WEBHOOK to a valid webhook URL.
+//
 // TestAccDataSourceTaikunAlertingProfileSlack is the Slack-linked variant of the
-// data source test. It is kept commented out because it requires permission to
-// create Slack configurations (POST /api/v1/slack/create), which is not granted
-// on all environments and otherwise fails with HTTP 403.
-// To run it, re-add the "os" import and a SLACK_WEBHOOK env var with a valid webhook URL.
+// data source test (resource + data source state parity with slack_configuration_id).
 //
 // const testAccDataSourceTaikunAlertingProfileSlackConfig = `
+// resource "taikun_organization" "foo" {
+//   name = "%s"
+//   full_name = "%s"
+//   discount_rate = 42
+// }
+//
 // resource "taikun_slack_configuration" "foo" {
+//   organization_id = resource.taikun_organization.foo.id
+//
 //   name = "%s"
 //   url  = "%s"
 //   channel = "any"
@@ -82,6 +105,8 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 // }
 //
 // resource "taikun_alerting_profile" "foo" {
+//   organization_id = resource.taikun_organization.foo.id
+//
 //   name = "%s"
 //   reminder = "%s"
 //   slack_configuration_id = resource.taikun_slack_configuration.foo.id
@@ -112,6 +137,8 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 // `
 //
 // func TestAccDataSourceTaikunAlertingProfileSlack(t *testing.T) {
+// 	organizationName := utils.RandomTestName()
+// 	organizationFullName := utils.RandomTestName()
 // 	slackConfigName := utils.RandomTestName()
 // 	slackUrl := os.Getenv("SLACK_WEBHOOK")
 // 	alertingProfileName := utils.RandomTestName()
@@ -128,6 +155,8 @@ func TestAccDataSourceTaikunAlertingProfile(t *testing.T) {
 // 		Steps: []resource.TestStep{
 // 			{
 // 				Config: fmt.Sprintf(testAccDataSourceTaikunAlertingProfileSlackConfig,
+// 					organizationName,
+// 					organizationFullName,
 // 					slackConfigName,
 // 					slackUrl,
 // 					alertingProfileName,

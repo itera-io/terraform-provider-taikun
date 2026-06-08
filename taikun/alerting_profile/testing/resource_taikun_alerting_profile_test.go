@@ -296,11 +296,14 @@ integration {
 	})
 }
 
+// --- Slack integration tests (disabled) ---
+// Slack is not available on the current platform: POST /api/v1/slack/create returns
+// HTTP 403 (Forbidden Access Exception). Active tests above omit slack_configuration_id
+// (schema default "0"). When Slack is re-enabled, uncomment the block below, add
+// `import "os"`, and set SLACK_WEBHOOK to a valid webhook URL.
+//
 // TestAccResourceTaikunAlertingProfileSlack exercises the optional Slack
-// configuration link on an alerting profile. It is kept commented out because
-// it requires permission to create Slack configurations (POST /api/v1/slack/create),
-// which is not granted on all environments and otherwise fails with HTTP 403.
-// To run it, re-add the "os" import and a SLACK_WEBHOOK env var with a valid webhook URL.
+// configuration link on an alerting profile (create + import + slack_configuration_name).
 //
 // const testAccResourceTaikunAlertingProfileSlackConfig = `
 // resource "taikun_organization" "foo" {

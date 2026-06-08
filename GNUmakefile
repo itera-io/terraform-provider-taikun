@@ -72,7 +72,7 @@ clean-vendor: ## Removes vendor folder
 # 1C
 #ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialsZadara|TestAccDataSourceTaikunImagesZadara$$|TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
 
-ACCEPTANCE_TESTS='(TestAccResourceTaikunAccessProfileUpdate$$)'
+ACCEPTANCE_TESTS='(TestAccResourceTaikunAlertingProfile$$|TestAccResourceTaikunAlertingProfileModify$$|TestAccResourceTaikunAlertingProfileModifyIntegrations$$|TestAccDataSourceTaikunAlertingProfile$$|TestAccDataSourceTaikunAlertingProfilesWithFilter$$)'
 
 # --- CI: Not creating resources ---
 # Acklowledgment testing ALPHA
