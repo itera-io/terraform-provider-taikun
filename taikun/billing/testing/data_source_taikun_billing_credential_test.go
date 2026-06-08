@@ -11,8 +11,15 @@ import (
 )
 
 const testAccDataSourceTaikunBillingCredentialConfig = `
+resource "taikun_organization" "foo" {
+  name          = "%s"
+  full_name     = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_billing_credential" "foo" {
-  name = "%s"
+  name            = "%s"
+  organization_id = resource.taikun_organization.foo.id
 
   prometheus_password = "%s"
   prometheus_url      = "%s"
@@ -24,7 +31,14 @@ data "taikun_billing_credential" "foo" {
 }
 `
 
+// TestAccDataSourceTaikunBillingCredential verifies that we can retrieve a single billing credential by ID.
+// Skipped because Managing Operation/Billing Credentials requires a Partner role on the Taikun API,
+// which is not possessed by the standard robot account credentials in dev-env.sh.
 func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
+	t.Skip("requires Partner API role privileges; re-enable when Partner credentials are available in dev-env.sh")
+
+	orgName := utils.RandomTestName()
+	orgFullName := utils.RandomTestName()
 	billingCredentialName := utils.RandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -33,6 +47,8 @@ func TestAccDataSourceTaikunBillingCredential(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunBillingCredentialConfig,
+					orgName,
+					orgFullName,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),
