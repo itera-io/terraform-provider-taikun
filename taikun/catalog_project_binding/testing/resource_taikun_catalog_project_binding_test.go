@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -45,7 +44,7 @@ func TestAccResourceTaikunCatalogAppBinding(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCatalogDestroy,
+		CheckDestroy:      testAccCheckTaikunCatalogDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCatalogConfig,
@@ -54,7 +53,7 @@ func TestAccResourceTaikunCatalogAppBinding(t *testing.T) {
 					testAccResourceWordpress,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCatalogExists,
+					testAccCheckTaikunCatalogExists(t),
 					resource.TestCheckResourceAttr("taikun_catalog.foo", "name", catalogName),
 					resource.TestCheckResourceAttr("taikun_catalog.foo", "description", catalogDescription),
 					resource.TestCheckResourceAttr("taikun_catalog.foo", "application.#", "1"),
@@ -68,7 +67,7 @@ func TestAccResourceTaikunCatalogAppBinding(t *testing.T) {
 					testAccResourceNginx,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCatalogExists,
+					testAccCheckTaikunCatalogExists(t),
 					resource.TestCheckResourceAttr("taikun_catalog.foo", "name", catalogName),
 					resource.TestCheckResourceAttr("taikun_catalog.foo", "description", catalogDescriptionChanged),
 					resource.TestCheckResourceAttr("taikun_catalog.foo", "application.#", "1"),
@@ -79,52 +78,56 @@ func TestAccResourceTaikunCatalogAppBinding(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunCatalogExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunCatalogExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_catalog" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_catalog" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := client.Client.CatalogAPI.CatalogList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCount() != 1 {
-			return fmt.Errorf("catalog doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunCatalogDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_catalog" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.CatalogAPI.CatalogList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := client.Client.CatalogAPI.CatalogList(t.Context()).Id(id).Execute()
+			if err != nil || response.GetTotalCount() != 1 {
+				return fmt.Errorf("catalog doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("catalog still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("catalog still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunCatalogDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_catalog" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := client.Client.CatalogAPI.CatalogList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("catalog still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("catalog still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

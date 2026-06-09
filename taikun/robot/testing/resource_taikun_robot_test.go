@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -34,12 +33,12 @@ func TestAccResourceTaikunRobot(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { preCheckRobot(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunRobotDestroy,
+		CheckDestroy:      testAccCheckTaikunRobotDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunRobotConfig, robotName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunRobotExists,
+					testAccCheckTaikunRobotExists(t),
 					resource.TestCheckResourceAttrSet("taikun_robot.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "name", robotName),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "description", "Test robot user"),
@@ -83,7 +82,7 @@ func TestAccResourceTaikunRobotUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { preCheckRobot(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunRobotDestroy,
+		CheckDestroy:      testAccCheckTaikunRobotDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunRobotUpdateConfig,
@@ -93,7 +92,7 @@ func TestAccResourceTaikunRobotUpdate(t *testing.T) {
 					`"read:project"`,
 					""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunRobotExists,
+					testAccCheckTaikunRobotExists(t),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "name", robotName),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "description", "Initial description"),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "scopes.#", "1"),
@@ -109,7 +108,7 @@ func TestAccResourceTaikunRobotUpdate(t *testing.T) {
 					`"read:project", "write:project"`,
 					`"192.168.1.0/24"`),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunRobotExists,
+					testAccCheckTaikunRobotExists(t),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "name", newRobotName),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "description", "Updated description"),
 					resource.TestCheckResourceAttr("taikun_robot.foo", "expires_at", "2027-06-01T00:00:00Z"),
@@ -141,7 +140,7 @@ func TestAccDataSourceTaikunRobots(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { preCheckRobot(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunRobotDestroy,
+		CheckDestroy:      testAccCheckTaikunRobotDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunRobotsConfig, robotName),
@@ -153,62 +152,66 @@ func TestAccDataSourceTaikunRobots(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunRobotExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunRobotExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_robot" {
-			continue
-		}
-
-		response, _, err := client.Client.RobotAPI.RobotList(context.TODO()).SearchId(rs.Primary.ID).Execute()
-		if err != nil {
-			return fmt.Errorf("error looking up robot: %s", err)
-		}
-
-		found := false
-		for _, r := range response.GetData() {
-			if r.GetUserId() == rs.Primary.ID {
-				found = true
-				break
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_robot" {
+				continue
 			}
-		}
-		if !found {
-			return fmt.Errorf("robot doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
 
-	return nil
-}
-
-func testAccCheckTaikunRobotDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_robot" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-			response, _, err := client.Client.RobotAPI.RobotList(context.TODO()).SearchId(rs.Primary.ID).Execute()
+			response, _, err := client.Client.RobotAPI.RobotList(t.Context()).SearchId(rs.Primary.ID).Execute()
 			if err != nil {
-				return retry.NonRetryableError(err)
+				return fmt.Errorf("error looking up robot: %s", err)
 			}
 
+			found := false
 			for _, r := range response.GetData() {
 				if r.GetUserId() == rs.Primary.ID {
-					return retry.RetryableError(errors.New("robot still exists"))
+					found = true
+					break
 				}
 			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("robot still exists (timed out)")
+			if !found {
+				return fmt.Errorf("robot doesn't exist (id = %s)", rs.Primary.ID)
+			}
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunRobotDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_robot" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				response, _, err := client.Client.RobotAPI.RobotList(t.Context()).SearchId(rs.Primary.ID).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				for _, r := range response.GetData() {
+					if r.GetUserId() == rs.Primary.ID {
+						return retry.RetryableError(errors.New("robot still exists"))
+					}
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("robot still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

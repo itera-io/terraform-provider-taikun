@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -78,12 +77,12 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
+		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAccessProfileExists,
+					testAccCheckTaikunAccessProfileExists(t),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
@@ -127,12 +126,12 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
+		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAccessProfileExists,
+					testAccCheckTaikunAccessProfileExists(t),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
@@ -160,7 +159,7 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, locked),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAccessProfileExists,
+					testAccCheckTaikunAccessProfileExists(t),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
@@ -238,12 +237,12 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
+		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAccessProfileExists,
+					testAccCheckTaikunAccessProfileExists(t),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "2"),
@@ -271,7 +270,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAccessProfileExists,
+					testAccCheckTaikunAccessProfileExists(t),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "dns_server.#", "1"),
@@ -330,12 +329,12 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 //	resource.ParallelTest(t, resource.TestCase{
 //		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 //		ProviderFactories: utils_testing.TestAccProviderFactories,
-//		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
+//		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy(t),
 //		Steps: []resource.TestStep{
 //			{
 //				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileTrustedRegistriesConfig, organizationName, organizationFullName, name),
 //				Check: resource.ComposeAggregateTestCheckFunc(
-//					testAccCheckTaikunAccessProfileExists,
+//					testAccCheckTaikunAccessProfileExists(t),
 //					resource.TestCheckResourceAttr("taikun_access_profile.bar", "name", name),
 //					resource.TestCheckResourceAttr("taikun_access_profile.bar", "lock", "false"),
 //					testAccCheckTaikunAccessProfileTrustedRegistries("taikun_access_profile.bar", "ghcr.io", "quay.io"),
@@ -386,52 +385,56 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 //	}
 //}
 
-func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunAccessProfileExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_access_profile" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_access_profile" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := client.Client.AccessProfilesAPI.AccessprofilesList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCount() != 1 {
-			return fmt.Errorf("access profile doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunAccessProfileDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_access_profile" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.AccessProfilesAPI.AccessprofilesList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := client.Client.AccessProfilesAPI.AccessprofilesList(t.Context()).Id(id).Execute()
+			if err != nil || response.GetTotalCount() != 1 {
+				return fmt.Errorf("access profile doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("access profile still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("access profile still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunAccessProfileDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_access_profile" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := client.Client.AccessProfilesAPI.AccessprofilesList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("access profile still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("access profile still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

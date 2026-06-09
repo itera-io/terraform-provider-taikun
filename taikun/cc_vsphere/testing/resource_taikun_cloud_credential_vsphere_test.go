@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -28,7 +27,7 @@ func TestAccResourceTaikunCloudCredentialVsphere(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckVsphere(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialVsphereDestroy,
+		CheckDestroy:      testAccCheckTaikunCloudCredentialVsphereDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialVsphereConfig,
@@ -36,7 +35,7 @@ func TestAccResourceTaikunCloudCredentialVsphere(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialVsphereExists,
+					testAccCheckTaikunCloudCredentialVsphereExists(t),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "api_host", os.Getenv("VSPHERE_API_URL")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "username", os.Getenv("VSPHERE_USERNAME")),
@@ -76,7 +75,7 @@ func TestAccResourceTaikunCloudCredentialVsphereLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckVsphere(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialVsphereDestroy,
+		CheckDestroy:      testAccCheckTaikunCloudCredentialVsphereDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialVsphereConfig,
@@ -84,7 +83,7 @@ func TestAccResourceTaikunCloudCredentialVsphereLock(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialVsphereExists,
+					testAccCheckTaikunCloudCredentialVsphereExists(t),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "api_host", os.Getenv("VSPHERE_API_URL")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "username", os.Getenv("VSPHERE_USERNAME")),
@@ -120,7 +119,7 @@ func TestAccResourceTaikunCloudCredentialVsphereLock(t *testing.T) {
 					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialVsphereExists,
+					testAccCheckTaikunCloudCredentialVsphereExists(t),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "api_host", os.Getenv("VSPHERE_API_URL")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "username", os.Getenv("VSPHERE_USERNAME")),
@@ -173,7 +172,7 @@ func TestAccResourceTaikunCloudCredentialVsphereUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckVsphere(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialVsphereDestroy,
+		CheckDestroy:      testAccCheckTaikunCloudCredentialVsphereDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialVsphereHypervisorConfig,
@@ -182,7 +181,7 @@ func TestAccResourceTaikunCloudCredentialVsphereUpdate(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialVsphereExists,
+					testAccCheckTaikunCloudCredentialVsphereExists(t),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "api_host", os.Getenv("VSPHERE_API_URL")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "username", os.Getenv("VSPHERE_USERNAME")),
@@ -220,7 +219,7 @@ func TestAccResourceTaikunCloudCredentialVsphereUpdate(t *testing.T) {
 					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialVsphereExists,
+					testAccCheckTaikunCloudCredentialVsphereExists(t),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "api_host", os.Getenv("VSPHERE_API_URL")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_vsphere.foo", "username", os.Getenv("VSPHERE_USERNAME")),
@@ -256,52 +255,56 @@ func TestAccResourceTaikunCloudCredentialVsphereUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunCloudCredentialVsphereExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunCloudCredentialVsphereExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_cloud_credential_vsphere" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_cloud_credential_vsphere" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := client.Client.VsphereCloudCredentialAPI.VsphereList(context.TODO()).Id(id).Execute()
-		if err != nil || len(response.GetData()) != 1 {
-			return fmt.Errorf("vsphere cloud credential doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunCloudCredentialVsphereDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_cloud_credential_vsphere" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.VsphereCloudCredentialAPI.VsphereList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := client.Client.VsphereCloudCredentialAPI.VsphereList(t.Context()).Id(id).Execute()
+			if err != nil || len(response.GetData()) != 1 {
+				return fmt.Errorf("vsphere cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if len(response.GetData()) != 0 {
-				return retry.RetryableError(errors.New("Vsphere cloud credential still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("Vsphere cloud credential still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunCloudCredentialVsphereDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_cloud_credential_vsphere" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := client.Client.VsphereCloudCredentialAPI.VsphereList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if len(response.GetData()) != 0 {
+					return retry.RetryableError(errors.New("Vsphere cloud credential still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("Vsphere cloud credential still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

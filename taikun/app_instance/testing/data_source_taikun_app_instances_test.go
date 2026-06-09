@@ -39,7 +39,7 @@ func TestAccDataSourceTaikunAppInstances(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckAppInstance(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy,
+		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAppInstancesConfig,
@@ -93,7 +93,7 @@ func TestAccDataSourceTaikunAppInstancesWithFilter(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckAppInstance(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy,
+		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAppInstancesWithFilterConfig,

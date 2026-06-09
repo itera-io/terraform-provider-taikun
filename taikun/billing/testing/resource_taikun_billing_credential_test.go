@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -50,7 +49,7 @@ func TestAccResourceTaikunBillingCredential(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunBillingCredentialDestroy,
+		CheckDestroy:      testAccCheckTaikunBillingCredentialDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig,
@@ -63,7 +62,7 @@ func TestAccResourceTaikunBillingCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingCredentialExists,
+					testAccCheckTaikunBillingCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
@@ -87,12 +86,12 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunBillingCredentialDestroy,
+		CheckDestroy:      testAccCheckTaikunBillingCredentialDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, orgName, orgFullName, firstName, false, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingCredentialExists,
+					testAccCheckTaikunBillingCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
@@ -103,7 +102,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, orgName, orgFullName, firstName, true, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingCredentialExists,
+					testAccCheckTaikunBillingCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
@@ -114,7 +113,7 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingCredentialConfig, orgName, orgFullName, firstName, false, os.Getenv("PROMETHEUS_PASSWORD"), os.Getenv("PROMETHEUS_URL"), os.Getenv("PROMETHEUS_USERNAME")),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingCredentialExists,
+					testAccCheckTaikunBillingCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_billing_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_billing_credential.foo", "organization_id"),
@@ -126,51 +125,55 @@ func TestAccResourceTaikunBillingCredentialLock(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunBillingCredentialExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunBillingCredentialExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_billing_credential" {
-			continue
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_billing_credential" {
+				continue
+			}
+
+			id, _ := utils.Atoi32(rs.Primary.ID)
+			foundBillingCredId, err := billing.ResourceTaikunBillingCredentialFind(t.Context(), id, client)
+			if err != nil || foundBillingCredId == nil {
+				return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
+			}
 		}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-		foundBillingCredId, err := billing.ResourceTaikunBillingCredentialFind(context.TODO(), id, client)
-		if err != nil || foundBillingCredId == nil {
-			return fmt.Errorf("billing credential doesn't exist (id = %s)", rs.Primary.ID)
-		}
+		return nil
 	}
-
-	return nil
 }
 
-func testAccCheckTaikunBillingCredentialDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunBillingCredentialDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_billing_credential" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-			id, _ := utils.Atoi32(rs.Primary.ID)
-
-			billingCredential, err := billing.ResourceTaikunBillingCredentialFind(context.TODO(), id, client)
-			if err != nil {
-				return retry.NonRetryableError(err)
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_billing_credential" {
+				continue
 			}
-			if billingCredential != nil {
-				return retry.RetryableError(errors.New("billing credential still exists"))
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				billingCredential, err := billing.ResourceTaikunBillingCredentialFind(t.Context(), id, client)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if billingCredential != nil {
+					return retry.RetryableError(errors.New("billing credential still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("billing credential still exists (timed out)")
 			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("billing credential still exists (timed out)")
+			if retryErr != nil {
+				return retryErr
+			}
 		}
-		if retryErr != nil {
-			return retryErr
-		}
+
+		return nil
 	}
-
-	return nil
 }

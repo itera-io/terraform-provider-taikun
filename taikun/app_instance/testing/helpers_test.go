@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	tk "github.com/itera-io/taikungoclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
@@ -58,50 +58,54 @@ func testAccAppInstanceName() string {
 	return strings.ToLower(utils.ShortRandomTestName())
 }
 
-func testAccCheckTaikunAppInstanceExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunAppInstanceExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_app_instance" {
-			continue
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_app_instance" {
+				continue
+			}
+
+			id, _ := utils.Atoi32(rs.Primary.ID)
+			_, _, err := client.Client.ProjectAppsAPI.ProjectappDetails(t.Context(), id).Execute()
+			if err != nil {
+				return fmt.Errorf("app instance doesn't exist (id = %s)", rs.Primary.ID)
+			}
 		}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-		_, _, err := client.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), id).Execute()
-		if err != nil {
-			return fmt.Errorf("app instance doesn't exist (id = %s)", rs.Primary.ID)
-		}
+		return nil
 	}
-
-	return nil
 }
 
-func testAccCheckTaikunAppInstanceDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunAppInstanceDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_app_instance" {
-			continue
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_app_instance" {
+				continue
+			}
+
+			id, _ := utils.Atoi32(rs.Primary.ID)
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				response, _, err := client.Client.ProjectAppsAPI.ProjectappList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("app instance still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("app instance still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
 		}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-			response, _, err := client.Client.ProjectAppsAPI.ProjectappList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
-			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("app instance still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("app instance still exists (timed out)")
-		}
-		if retryErr != nil {
-			return retryErr
-		}
+		return nil
 	}
-
-	return nil
 }

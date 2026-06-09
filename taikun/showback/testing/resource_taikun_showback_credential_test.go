@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -32,7 +31,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy,
+		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredentialConfig,
@@ -43,7 +42,7 @@ func TestAccResourceTaikunShowbackCredential(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunShowbackCredentialExists,
+					testAccCheckTaikunShowbackCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
@@ -61,7 +60,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy,
+		CheckDestroy:      testAccCheckTaikunShowbackCredentialDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunShowbackCredentialConfig,
@@ -72,7 +71,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunShowbackCredentialExists,
+					testAccCheckTaikunShowbackCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
@@ -89,7 +88,7 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 					os.Getenv("PROMETHEUS_USERNAME"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunShowbackCredentialExists,
+					testAccCheckTaikunShowbackCredentialExists(t),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "name", showbackCredentialName),
 					resource.TestCheckResourceAttr("taikun_showback_credential.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_showback_credential.foo", "organization_id"),
@@ -101,52 +100,56 @@ func TestAccResourceTaikunShowbackCredentialLock(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunShowbackCredentialExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunShowbackCredentialExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_showback_credential" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_showback_credential" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := client.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCount() != 1 {
-			return fmt.Errorf("showback credential doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunShowbackCredentialDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_showback_credential" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := client.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := client.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsList(t.Context()).Id(id).Execute()
+			if err != nil || response.GetTotalCount() != 1 {
+				return fmt.Errorf("showback credential doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("showback credential still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("showback credential still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunShowbackCredentialDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_showback_credential" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := client.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("showback credential still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("showback credential still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

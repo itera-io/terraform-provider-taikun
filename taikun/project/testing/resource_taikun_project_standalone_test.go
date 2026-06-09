@@ -31,7 +31,7 @@ func TestAccResourceTaikunProjectModifyImages(t *testing.T) {
 	cloudCredentialName := utils.RandomTestName()
 	projectName := utils.RandomTestName()
 	checkFunc := resource.ComposeAggregateTestCheckFunc(
-		testAccCheckTaikunProjectExists,
+		testAccCheckTaikunProjectExists(t),
 		resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 		resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -42,7 +42,7 @@ func TestAccResourceTaikunProjectModifyImages(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckOpenStack(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithImages,
@@ -134,7 +134,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckOpenStack(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneOpenStackMinimal,
@@ -145,7 +145,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimal(t *testing.T) {
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -179,7 +179,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckOpenStack(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneOpenStackMinimal,
@@ -190,7 +190,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -213,7 +213,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					"public_ip = true",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -236,7 +236,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateIP(t *testing.T
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -262,7 +262,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor(t *testi
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckOpenStack(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneOpenStackMinimal,
@@ -273,7 +273,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor(t *testi
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -296,7 +296,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalUpdateFlavor(t *testi
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -322,7 +322,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckOpenStack(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneOpenStackMinimal,
@@ -333,7 +333,7 @@ func TestAccResourceTaikunProjectStandaloneOpenStackMinimalWithVolumeType(t *tes
 					"volume_type = \"ssd\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -427,7 +427,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAWSMinimal,
@@ -439,7 +439,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimal(t *testing.T) {
 					zone,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -475,7 +475,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAWSMinimal,
@@ -487,7 +487,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					zone,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -511,7 +511,7 @@ func TestAccResourceTaikunProjectStandaloneAWSMinimalUpdateFlavor(t *testing.T) 
 					zone,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -604,7 +604,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAzure(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
@@ -616,7 +616,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimal(t *testing.T) {
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -646,7 +646,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAzure(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
@@ -658,7 +658,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -682,7 +682,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalUpdateFlavor(t *testing.T
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -708,7 +708,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAzure(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneAzureMinimal,
@@ -720,7 +720,7 @@ func TestAccResourceTaikunProjectStandaloneAzureMinimalWithVolumeType(t *testing
 					"volume_type = \"Premium_LRS\"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -811,7 +811,7 @@ func TestAccResourceTaikunProjectStandaloneProxmoxMinimal(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectStandaloneProxmoxMinimal,
@@ -827,7 +827,7 @@ func TestAccResourceTaikunProjectStandaloneProxmoxMinimal(t *testing.T) {
 					hypervisor,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.proxmox01", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.proxmox01", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.proxmox01", "cloud_credential_id"),

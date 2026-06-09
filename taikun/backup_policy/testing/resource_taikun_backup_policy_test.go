@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -43,7 +42,7 @@ func TestAccResourceTaikunBackupPolicy(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunBackupPolicyDestroy,
+		CheckDestroy:      testAccCheckTaikunBackupPolicyDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBackupPolicyConfig,
@@ -51,7 +50,7 @@ func TestAccResourceTaikunBackupPolicy(t *testing.T) {
 					backupPolicyName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBackupPolicyExists,
+					testAccCheckTaikunBackupPolicyExists(t),
 					resource.TestCheckResourceAttrSet("taikun_backup_policy.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_backup_policy.foo", "name", backupPolicyName),
 					resource.TestCheckResourceAttr("taikun_backup_policy.foo", "project_id", projectID),
@@ -66,79 +65,83 @@ func TestAccResourceTaikunBackupPolicy(t *testing.T) {
 }
 
 // Check that the backup policy exists in the Taikun API by listing schedules.
-func testAccCheckTaikunBackupPolicyExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunBackupPolicyExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_backup_policy" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_backup_policy" {
+				continue
+			}
 
-		list := strings.Split(rs.Primary.ID, "/")
-		if len(list) != 2 {
-			return fmt.Errorf("invalid backup policy ID format in state: %s", rs.Primary.ID)
-		}
-		projectID, _ := utils.Atoi32(list[0])
-		backupPolicyName := list[1]
+			list := strings.Split(rs.Primary.ID, "/")
+			if len(list) != 2 {
+				return fmt.Errorf("invalid backup policy ID format in state: %s", rs.Primary.ID)
+			}
+			projectID, _ := utils.Atoi32(list[0])
+			backupPolicyName := list[1]
 
-		response, _, err := client.Client.BackupPolicyAPI.BackupListAllSchedules(context.TODO(), projectID).Limit(4000).Execute()
-		if err != nil {
-			return fmt.Errorf("failed to list backup policies for project %d: %w", projectID, err)
-		}
+			response, _, err := client.Client.BackupPolicyAPI.BackupListAllSchedules(t.Context(), projectID).Limit(4000).Execute()
+			if err != nil {
+				return fmt.Errorf("failed to list backup policies for project %d: %w", projectID, err)
+			}
 
-		found := false
-		for _, policy := range response.Data {
-			if policy.GetMetadataName() == backupPolicyName {
-				found = true
-				break
+			found := false
+			for _, policy := range response.Data {
+				if policy.GetMetadataName() == backupPolicyName {
+					found = true
+					break
+				}
+			}
+
+			if !found {
+				return fmt.Errorf("backup policy %s not found on project %d", backupPolicyName, projectID)
 			}
 		}
 
-		if !found {
-			return fmt.Errorf("backup policy %s not found on project %d", backupPolicyName, projectID)
-		}
+		return nil
 	}
-
-	return nil
 }
 
 // Verify that the backup policy has been deleted/destroyed correctly in the Taikun API.
-func testAccCheckTaikunBackupPolicyDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunBackupPolicyDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_backup_policy" {
-			continue
-		}
-
-		list := strings.Split(rs.Primary.ID, "/")
-		if len(list) != 2 {
-			return fmt.Errorf("invalid backup policy ID format in state: %s", rs.Primary.ID)
-		}
-		projectID, _ := utils.Atoi32(list[0])
-		backupPolicyName := list[1]
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-			response, _, err := client.Client.BackupPolicyAPI.BackupListAllSchedules(context.TODO(), projectID).Limit(4000).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_backup_policy" {
+				continue
 			}
 
-			for _, policy := range response.Data {
-				if policy.GetMetadataName() == backupPolicyName {
-					return retry.RetryableError(errors.New("backup policy still exists"))
+			list := strings.Split(rs.Primary.ID, "/")
+			if len(list) != 2 {
+				return fmt.Errorf("invalid backup policy ID format in state: %s", rs.Primary.ID)
+			}
+			projectID, _ := utils.Atoi32(list[0])
+			backupPolicyName := list[1]
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				response, _, err := client.Client.BackupPolicyAPI.BackupListAllSchedules(t.Context(), projectID).Limit(4000).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
 				}
+
+				for _, policy := range response.Data {
+					if policy.GetMetadataName() == backupPolicyName {
+						return retry.RetryableError(errors.New("backup policy still exists"))
+					}
+				}
+				return nil
+			})
+
+			if utils.TimedOut(retryErr) {
+				return errors.New("backup policy still exists (timed out waiting for deletion)")
 			}
-			return nil
-		})
+			if retryErr != nil {
+				return retryErr
+			}
+		}
 
-		if utils.TimedOut(retryErr) {
-			return errors.New("backup policy still exists (timed out waiting for deletion)")
-		}
-		if retryErr != nil {
-			return retryErr
-		}
+		return nil
 	}
-
-	return nil
 }

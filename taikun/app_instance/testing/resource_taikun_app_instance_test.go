@@ -34,7 +34,7 @@ func TestAccResourceTaikunAppInstance(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckAppInstance(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy,
+		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAppInstanceConfig,
@@ -46,7 +46,7 @@ func TestAccResourceTaikunAppInstance(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAppInstanceExists,
+					testAccCheckTaikunAppInstanceExists(t),
 					resource.TestCheckResourceAttrSet("taikun_app_instance.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_app_instance.foo", "name", appName),
 					resource.TestCheckResourceAttr("taikun_app_instance.foo", "namespace", namespace),
@@ -83,7 +83,7 @@ func TestAccResourceTaikunAppInstanceUpdateAutosync(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckAppInstance(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy,
+		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAppInstanceUpdateAutosyncConfig,
@@ -95,7 +95,7 @@ func TestAccResourceTaikunAppInstanceUpdateAutosync(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAppInstanceExists,
+					testAccCheckTaikunAppInstanceExists(t),
 					resource.TestCheckResourceAttr("taikun_app_instance.foo", "autosync", "false"),
 				),
 			},
@@ -109,7 +109,7 @@ func TestAccResourceTaikunAppInstanceUpdateAutosync(t *testing.T) {
 					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAppInstanceExists,
+					testAccCheckTaikunAppInstanceExists(t),
 					resource.TestCheckResourceAttr("taikun_app_instance.foo", "autosync", "true"),
 				),
 			},

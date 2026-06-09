@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -38,7 +37,7 @@ func TestAccResourceTaikunProject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
@@ -47,7 +46,7 @@ func TestAccResourceTaikunProject(t *testing.T) {
 					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
@@ -75,7 +74,7 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfig,
@@ -84,7 +83,7 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
@@ -100,7 +99,7 @@ func TestAccResourceTaikunProjectExtendLifetime(t *testing.T) {
 					enableMonitoring,
 					newExpirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", newExpirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
@@ -192,7 +191,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithAlertingProfiles,
@@ -206,7 +205,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
@@ -229,7 +228,7 @@ func TestAccResourceTaikunProjectModifyAlertingProfile(t *testing.T) {
 					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_name", newAlertingProfileName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
@@ -253,7 +252,7 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectConfigWithAlertingProfile,
@@ -263,7 +262,7 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
@@ -281,7 +280,7 @@ func TestAccResourceTaikunProjectDetachAlertingProfile(t *testing.T) {
 					enableMonitoring,
 					expirationDate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "alerting_profile_id", ""),
 					resource.TestCheckResourceAttr("taikun_project.foo", "monitoring", fmt.Sprint(enableMonitoring)),
 					resource.TestCheckResourceAttr("taikun_project.foo", "expiration_date", expirationDate),
@@ -314,7 +313,7 @@ func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectKubernetesVersionConfig,
@@ -323,7 +322,7 @@ func TestAccResourceTaikunProjectKubernetesVersion(t *testing.T) {
 					kubernetesVersion,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "kubernetes_version", kubernetesVersion),
 				),
 			},
@@ -352,7 +351,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectLockConfig,
@@ -361,7 +360,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					locked,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(locked)),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -377,7 +376,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					unlocked,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(unlocked)),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -393,7 +392,7 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 					locked,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttr("taikun_project.foo", "lock", fmt.Sprint(locked)),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
@@ -406,54 +405,58 @@ func TestAccResourceTaikunProjectToggleLock(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunProjectExists(state *terraform.State) error {
-	apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunProjectExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_project" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_project" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(id).Execute()
-		if err != nil || len(response.GetData()) != 1 {
-			return fmt.Errorf("project doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunProjectDestroy(state *terraform.State) error {
-	apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_project" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(t.Context()).Id(id).Execute()
+			if err != nil || len(response.GetData()) != 1 {
+				return fmt.Errorf("project doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if len(response.GetData()) != 0 {
-				return retry.RetryableError(errors.New("project still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("project still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunProjectDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_project" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := apiClient.Client.ProjectsAPI.ProjectsList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if len(response.GetData()) != 0 {
+					return retry.RetryableError(errors.New("project still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("project still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }
 
 const testAccResourceTaikunProjectAutoscalerOpenstackConfig = `
@@ -492,14 +495,14 @@ func TestAccResourceTaikunAutoscalerOpenstackProject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerOpenstackConfig,
 					cloudCredentialName,
 					projectName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -560,7 +563,7 @@ func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckAWS(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunProjectDestroy,
+		CheckDestroy:      testAccCheckTaikunProjectDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunProjectAutoscalerAwsConfig,
@@ -574,7 +577,7 @@ func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
 					true,  // Spot Vms enabled
 					true), //Spot workers enabled
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),
@@ -602,7 +605,7 @@ func TestAccResourceTaikunAutoscalerAwsProject(t *testing.T) {
 					false, // Spot Vms enabled
 					true), //Spot workers enabled
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunProjectExists,
+					testAccCheckTaikunProjectExists(t),
 					resource.TestCheckResourceAttr("taikun_project.foo", "name", projectName),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "access_profile_id"),
 					resource.TestCheckResourceAttrSet("taikun_project.foo", "cloud_credential_id"),

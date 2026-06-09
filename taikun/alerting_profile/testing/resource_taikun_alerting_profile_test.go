@@ -2,7 +2,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -98,7 +97,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy,
+		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
@@ -111,7 +110,7 @@ func TestAccResourceTaikunAlertingProfile(t *testing.T) {
 					webhooks,
 					integrations),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAlertingProfileExists,
+					testAccCheckTaikunAlertingProfileExists(t),
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
@@ -152,7 +151,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy,
+		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
@@ -165,7 +164,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					webhooks,
 					integrations),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAlertingProfileExists,
+					testAccCheckTaikunAlertingProfileExists(t),
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
@@ -186,7 +185,7 @@ func TestAccResourceTaikunAlertingProfileModify(t *testing.T) {
 					newWebhooks,
 					integrations),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAlertingProfileExists,
+					testAccCheckTaikunAlertingProfileExists(t),
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", newAlertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", newReminder),
@@ -246,7 +245,7 @@ integration {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy,
+		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileConfig,
@@ -259,7 +258,7 @@ integration {
 					webhooks,
 					integrations),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAlertingProfileExists,
+					testAccCheckTaikunAlertingProfileExists(t),
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
@@ -281,7 +280,7 @@ integration {
 					webhooks,
 					newIntegrations),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAlertingProfileExists,
+					testAccCheckTaikunAlertingProfileExists(t),
 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "reminder", reminder),
@@ -358,7 +357,7 @@ integration {
 // 	resource.ParallelTest(t, resource.TestCase{
 // 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 // 		ProviderFactories: utils_testing.TestAccProviderFactories,
-// 		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy,
+// 		CheckDestroy:      testAccCheckTaikunAlertingProfileDestroy(t),
 // 		Steps: []resource.TestStep{
 // 			{
 // 				Config: fmt.Sprintf(testAccResourceTaikunAlertingProfileSlackConfig,
@@ -373,7 +372,7 @@ integration {
 // 					webhooks,
 // 					integrations),
 // 				Check: resource.ComposeAggregateTestCheckFunc(
-// 					testAccCheckTaikunAlertingProfileExists,
+// 					testAccCheckTaikunAlertingProfileExists(t),
 // 					resource.TestCheckResourceAttrSet("taikun_alerting_profile.foo", "id"),
 // 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "slack_configuration_name", slackConfigName),
 // 					resource.TestCheckResourceAttr("taikun_alerting_profile.foo", "name", alertingProfileName),
@@ -393,52 +392,56 @@ integration {
 // 	})
 // }
 
-func testAccCheckTaikunAlertingProfileExists(state *terraform.State) error {
-	apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunAlertingProfileExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_alerting_profile" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_alerting_profile" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCount() != 1 {
-			return fmt.Errorf("alerting profile with ID %d doesn't exist", id)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunAlertingProfileDestroy(state *terraform.State) error {
-	apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_alerting_profile" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(t.Context()).Id(id).Execute()
+			if err != nil || response.GetTotalCount() != 1 {
+				return fmt.Errorf("alerting profile with ID %d doesn't exist", id)
 			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("alerting profile still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("alerting profile still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunAlertingProfileDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		apiClient := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_alerting_profile" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("alerting profile still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("alerting profile still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

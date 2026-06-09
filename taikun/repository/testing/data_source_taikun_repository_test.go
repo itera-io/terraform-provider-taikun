@@ -29,7 +29,7 @@ func TestAccDataSourceTaikunRepository(t *testing.T) {
 					repositoryOrgName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunRepositoryExists,
+					testAccCheckTaikunRepositoryExists(t),
 					resource.TestCheckResourceAttr("data.taikun_repository.foo", "name", repositoryName),
 					resource.TestCheckResourceAttr("data.taikun_repository.foo", "organization_name", repositoryOrgName),
 					resource.TestCheckResourceAttr("data.taikun_repository.foo", "private", "false"),

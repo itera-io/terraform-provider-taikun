@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -61,7 +60,7 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
+		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingRuleConfig,
@@ -74,7 +73,7 @@ func TestAccResourceTaikunBillingRule(t *testing.T) {
 					ruleName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingRuleExists,
+					testAccCheckTaikunBillingRuleExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
@@ -105,7 +104,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
+		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingRuleConfig,
@@ -118,7 +117,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					ruleName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingRuleExists,
+					testAccCheckTaikunBillingRuleExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
@@ -137,7 +136,7 @@ func TestAccResourceTaikunBillingRuleRename(t *testing.T) {
 					ruleNameNew,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingRuleExists,
+					testAccCheckTaikunBillingRuleExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleNameNew),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
@@ -204,7 +203,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy,
+		CheckDestroy:      testAccCheckTaikunBillingRuleDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBillingRuleConfig,
@@ -217,7 +216,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 					ruleName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingRuleExists,
+					testAccCheckTaikunBillingRuleExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
@@ -237,7 +236,7 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 					ruleName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunBillingRuleExists,
+					testAccCheckTaikunBillingRuleExists(t),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "name", ruleName),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "metric_name", "alertmanager_alerts"),
 					resource.TestCheckResourceAttr("taikun_billing_rule.foo", "type", "Sum"),
@@ -250,52 +249,56 @@ func TestAccResourceTaikunBillingRuleUpdateLabels(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunBillingRuleExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunBillingRuleExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_billing_rule" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_billing_rule" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := client.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCount() != 1 {
-			return fmt.Errorf("billing rule doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunBillingRuleDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_billing_rule" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := client.Client.PrometheusRulesAPI.PrometheusrulesList(t.Context()).Id(id).Execute()
+			if err != nil || response.GetTotalCount() != 1 {
+				return fmt.Errorf("billing rule doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("billing rule still exists ()"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("billing rule still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunBillingRuleDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_billing_rule" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := client.Client.PrometheusRulesAPI.PrometheusrulesList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("billing rule still exists ()"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("billing rule still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

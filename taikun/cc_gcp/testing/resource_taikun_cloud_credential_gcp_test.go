@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -32,7 +31,7 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckGCP(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialGCPDestroy,
+		CheckDestroy:      testAccCheckTaikunCloudCredentialGCPDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialGCPConfig,
@@ -41,7 +40,7 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 					os.Getenv("GCP_AZ_COUNT"),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialGCPExists,
+					testAccCheckTaikunCloudCredentialGCPExists(t),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "config_file", "./gcp.json"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "import_project", "true"),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_gcp.foo", "lock", "false"),
@@ -54,52 +53,56 @@ func TestAccResourceTaikunCloudCredentialGCP(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunCloudCredentialGCPExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunCloudCredentialGCPExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_cloud_credential_gcp" {
-			continue
-		}
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_cloud_credential_gcp" {
+				continue
+			}
 
-		id, _ := utils.Atoi32(rs.Primary.ID)
-
-		response, _, err := client.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
-		if err != nil || response.GetTotalCount() != 1 {
-			return fmt.Errorf("gcp cloud credential doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunCloudCredentialGCPDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_cloud_credential_gcp" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			id, _ := utils.Atoi32(rs.Primary.ID)
 
-			response, _, err := client.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
-			if err != nil {
-				return retry.NonRetryableError(err)
+			response, _, err := client.Client.GoogleAPI.GooglecloudList(t.Context()).Id(id).Execute()
+			if err != nil || response.GetTotalCount() != 1 {
+				return fmt.Errorf("gcp cloud credential doesn't exist (id = %s)", rs.Primary.ID)
 			}
-			if response.GetTotalCount() != 0 {
-				return retry.RetryableError(errors.New("gcp cloud credential still exists"))
-			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("gcp cloud credential still exists (timed out)")
 		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+		return nil
+	}
+}
+
+func testAccCheckTaikunCloudCredentialGCPDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_cloud_credential_gcp" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				id, _ := utils.Atoi32(rs.Primary.ID)
+
+				response, _, err := client.Client.GoogleAPI.GooglecloudList(t.Context()).Id(id).Execute()
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+				if response.GetTotalCount() != 0 {
+					return retry.RetryableError(errors.New("gcp cloud credential still exists"))
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("gcp cloud credential still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }

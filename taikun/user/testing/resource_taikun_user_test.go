@@ -1,7 +1,6 @@
 package testing
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -35,7 +34,7 @@ func TestAccResourceTaikunUser(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunUserDestroy,
+		CheckDestroy:      testAccCheckTaikunUserDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunUserConfig,
@@ -45,7 +44,7 @@ func TestAccResourceTaikunUser(t *testing.T) {
 					displayName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunUserExists,
+					testAccCheckTaikunUserExists(t),
 					resource.TestCheckResourceAttr("taikun_user.foo", "user_name", userName),
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
 					resource.TestCheckResourceAttr("taikun_user.foo", "global_role", globalRole),
@@ -78,7 +77,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunUserDestroy,
+		CheckDestroy:      testAccCheckTaikunUserDestroy(t),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunUserConfig,
@@ -88,7 +87,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					displayName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunUserExists,
+					testAccCheckTaikunUserExists(t),
 					resource.TestCheckResourceAttr("taikun_user.foo", "user_name", userName),
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", email),
 					resource.TestCheckResourceAttr("taikun_user.foo", "global_role", globalRole),
@@ -107,7 +106,7 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 					newDisplayName,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunUserExists,
+					testAccCheckTaikunUserExists(t),
 					resource.TestCheckResourceAttr("taikun_user.foo", "user_name", newUserName),
 					resource.TestCheckResourceAttr("taikun_user.foo", "email", newEmail),
 					resource.TestCheckResourceAttr("taikun_user.foo", "global_role", newGlobalRole),
@@ -122,69 +121,73 @@ func TestAccResourceTaikunUserUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunUserExists(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunUserExists(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_user" {
-			continue
-		}
-
-		searchBody := tkcore.UsersSearchCommand{}
-		searchBody.SetSearchTerm(rs.Primary.ID)
-		searchRes, _, err := client.Client.SearchAPI.SearchUsers(context.TODO()).UsersSearchCommand(searchBody).Execute()
-
-		if err != nil {
-			return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
-		}
-
-		found := false
-		for _, u := range searchRes.GetData() {
-			if u.GetId() == rs.Primary.ID {
-				found = true
-				break
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_user" {
+				continue
 			}
-		}
 
-		if !found {
-			return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
-func testAccCheckTaikunUserDestroy(state *terraform.State) error {
-	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
-
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "taikun_user" {
-			continue
-		}
-
-		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
 			searchBody := tkcore.UsersSearchCommand{}
 			searchBody.SetSearchTerm(rs.Primary.ID)
-			searchRes, _, err := client.Client.SearchAPI.SearchUsers(context.TODO()).UsersSearchCommand(searchBody).Execute()
+			searchRes, _, err := client.Client.SearchAPI.SearchUsers(t.Context()).UsersSearchCommand(searchBody).Execute()
 
 			if err != nil {
-				return retry.NonRetryableError(err)
+				return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
 			}
 
+			found := false
 			for _, u := range searchRes.GetData() {
 				if u.GetId() == rs.Primary.ID {
-					return retry.RetryableError(errors.New("user still exists"))
+					found = true
+					break
 				}
 			}
-			return nil
-		})
-		if utils.TimedOut(retryErr) {
-			return errors.New("user still exists (timed out)")
-		}
-		if retryErr != nil {
-			return retryErr
-		}
-	}
 
-	return nil
+			if !found {
+				return fmt.Errorf("user doesn't exist (id = %s)", rs.Primary.ID)
+			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckTaikunUserDestroy(t *testing.T) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "taikun_user" {
+				continue
+			}
+
+			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+				searchBody := tkcore.UsersSearchCommand{}
+				searchBody.SetSearchTerm(rs.Primary.ID)
+				searchRes, _, err := client.Client.SearchAPI.SearchUsers(t.Context()).UsersSearchCommand(searchBody).Execute()
+
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				for _, u := range searchRes.GetData() {
+					if u.GetId() == rs.Primary.ID {
+						return retry.RetryableError(errors.New("user still exists"))
+					}
+				}
+				return nil
+			})
+			if utils.TimedOut(retryErr) {
+				return errors.New("user still exists (timed out)")
+			}
+			if retryErr != nil {
+				return retryErr
+			}
+		}
+
+		return nil
+	}
 }
