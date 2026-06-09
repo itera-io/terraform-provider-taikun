@@ -17,13 +17,13 @@ Taikun Robot User
 
 ### Required
 
-- `account_id` (Number) Account ID the robot user belongs to.
 - `description` (String) Robot user's description.
 - `expires_at` (String) Expiration date in RFC3339 format.
 - `name` (String) Robot user's name.
 
 ### Optional
 
+- `account_id` (Number) Account ID the robot user belongs to. Defaults to the caller's account if omitted.
 - `ips` (List of String) List of allowed IP addresses.
 - `organization_id` (Number) Organization ID for the robot user.
 - `regenerate_trigger` (String) Change this value to trigger credential regeneration.
