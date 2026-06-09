@@ -15,42 +15,21 @@ import (
 
 func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"address": {
-			Description: "Address.",
-			Type:        schema.TypeString,
-			Optional:    true,
-		},
-		"billing_email": {
-			Description: "Billing email.",
-			Type:        schema.TypeString,
-			Optional:    true,
-		},
-		"city": {
-			Description: "City.",
-			Type:        schema.TypeString,
-			Optional:    true,
-		},
-		"country": {
-			Description: "Country.",
-			Type:        schema.TypeString,
-			Optional:    true,
+		"cloud_credentials": {
+			Description: "Number of associated cloud credentials.",
+			Type:        schema.TypeInt,
+			Computed:    true,
 		},
 		"created_at": {
 			Description: "Time and date of creation.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
-		"discount_rate": {
-			Description:  "Discount rate, must be between 0 and 100 (included).",
-			Type:         schema.TypeFloat,
-			Optional:     true,
-			Default:      100,
-			ValidateFunc: validation.FloatBetween(0, 100),
-		},
 		"email": {
 			Description: "Email.",
 			Type:        schema.TypeString,
 			Optional:    true,
+			ForceNew:    true,
 		},
 		"full_name": {
 			Description:  "Full name.",
@@ -62,23 +41,6 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 			Description: "Organization's ID.",
 			Type:        schema.TypeString,
 			Computed:    true,
-		},
-		"is_read_only": {
-			Description: "Whether the organization is in read-only mode.",
-			Type:        schema.TypeBool,
-			Computed:    true,
-		},
-		"lock": {
-			Description: "Indicates whether to lock the organization.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     false,
-		},
-		"managers_can_change_subscription": {
-			Description: "Allow subscription to be changed by managers.",
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Default:     true,
 		},
 		"name": {
 			Description: "Organization's name.",
@@ -92,25 +54,15 @@ func resourceTaikunOrganizationSchema() map[string]*schema.Schema {
 				),
 			),
 		},
-		"partner_id": {
-			Description: "ID of the organization's partner.",
-			Type:        schema.TypeString,
+		"projects": {
+			Description: "Number of associated projects.",
+			Type:        schema.TypeInt,
 			Computed:    true,
 		},
-		"partner_name": {
-			Description: "Name of the organization's partner.",
-			Type:        schema.TypeString,
+		"servers": {
+			Description: "Number of associated servers.",
+			Type:        schema.TypeInt,
 			Computed:    true,
-		},
-		"phone": {
-			Description: "Phone number.",
-			Type:        schema.TypeString,
-			Optional:    true,
-		},
-		"vat_number": {
-			Description: "VAT number.",
-			Type:        schema.TypeString,
-			Optional:    true,
 		},
 	}
 }
@@ -135,14 +87,8 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 	body := tkcore.OrganizationCreateCommand{}
 	body.SetName(d.Get("name").(string))
 	body.SetFullName(d.Get("full_name").(string))
-	if d.Get("email") != nil {
-		body.SetEmail(d.Get("email").(string))
-	}
-	if d.Get("account_id") != nil {
-		body.SetAccountId(d.Get("account_id").(int32))
-	}
-	if d.Get("admin_cloud_credential_id") != nil {
-		body.SetAdminCloudCredentialId(d.Get("admin_cloud_credential_id").(int32))
+	if email, ok := d.GetOk("email"); ok {
+		body.SetEmail(email.(string))
 	}
 
 	createResult, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
@@ -232,10 +178,13 @@ func resourceTaikunOrganizationDelete(ctx context.Context, d *schema.ResourceDat
 
 func flattenTaikunOrganization(rawOrganization *tkcore.OrganizationDetailsDto) map[string]interface{} {
 	return map[string]interface{}{
-		"id":         utils.I32toa(rawOrganization.GetId()),
-		"name":       rawOrganization.GetName(),
-		"full_name":  rawOrganization.GetFullName(),
-		"email":      rawOrganization.GetEmail(),
-		"created_at": rawOrganization.GetCreatedAt(),
+		"id":                utils.I32toa(rawOrganization.GetId()),
+		"name":             rawOrganization.GetName(),
+		"full_name":        rawOrganization.GetFullName(),
+		"email":            rawOrganization.GetEmail(),
+		"created_at":       rawOrganization.GetCreatedAt(),
+		"cloud_credentials": rawOrganization.GetCloudCredentials(),
+		"projects":         rawOrganization.GetProjects(),
+		"servers":          rawOrganization.GetServers(),
 	}
 }

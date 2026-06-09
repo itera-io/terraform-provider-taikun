@@ -14,26 +14,6 @@ func dataSourceTaikunOrganizationSchema() map[string]*schema.Schema {
 	dsSchema := utils.DataSourceSchemaFromResourceSchema(resourceTaikunOrganizationSchema())
 	utils.AddOptionalFieldsToSchema(dsSchema, "id")
 	utils.SetValidateDiagFuncToSchema(dsSchema, "id", utils.StringIsInt)
-	utils.SetFieldInSchema(dsSchema, "cloud_credentials", &schema.Schema{
-		Description: "Number of associated cloud credentials.",
-		Type:        schema.TypeInt,
-		Computed:    true,
-	})
-	utils.SetFieldInSchema(dsSchema, "users", &schema.Schema{
-		Description: "Number of associated users.",
-		Type:        schema.TypeInt,
-		Computed:    true,
-	})
-	utils.SetFieldInSchema(dsSchema, "projects", &schema.Schema{
-		Description: "Number of associated projects.",
-		Type:        schema.TypeInt,
-		Computed:    true,
-	})
-	utils.SetFieldInSchema(dsSchema, "servers", &schema.Schema{
-		Description: "Number of associated servers.",
-		Type:        schema.TypeInt,
-		Computed:    true,
-	})
 	return dsSchema
 }
 
@@ -52,11 +32,11 @@ func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData,
 
 	params := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Limit(limit)
 	id := d.Get("id").(string)
-	id32, err := utils.Atoi32(id)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 	if id != "" {
+		id32, err := utils.Atoi32(id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		params = params.Id(id32)
 	}
 
@@ -67,20 +47,12 @@ func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData,
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 	if len(response.Data) != 1 {
-		return diag.Errorf("organization with ID %d not found", id32)
+		return diag.Errorf("organization not found")
 	}
 
 	rawOrganization := response.Data[0]
 
-	organizationMap := flattenTaikunOrganization(&rawOrganization)
-	organizationMap["cloud_credentials"] = rawOrganization.GetCloudCredentials()
-	organizationMap["projects"] = rawOrganization.GetProjects()
-	organizationMap["servers"] = rawOrganization.GetServers()
-	organizationMap["name"] = rawOrganization.GetName()
-	organizationMap["full_name"] = rawOrganization.GetFullName()
-	organizationMap["email"] = rawOrganization.GetEmail()
-
-	err = utils.SetResourceDataFromMap(d, organizationMap)
+	err = utils.SetResourceDataFromMap(d, flattenTaikunOrganization(&rawOrganization))
 	if err != nil {
 		return diag.FromErr(err)
 	}
