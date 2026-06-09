@@ -9,12 +9,15 @@ With the Taikun provider, you can use Terraform to manage resources in [Taikun](
 
 Use the navigation to the left to learn about the available resources and data sources.
 
+~> **Robot user warning** If you are using Robot users to authenticate to CCF be aware of the organizational scope allowed for that robot.
+
 ## Example Usage
 
 ```terraform
 provider "taikun" {
-  email    = "user@itera.io"
-  password = "userpassword"
+  account_name = "account01" # Can be set with env var TAIKUN_ACCOUNT_NAME
+  access_key   = "asdf"      # Can be set with env var TAIKUN_ACCESS_KEY
+  secret_key   = "asdfasdf"  # Can be set with env var TAIKUN_SECRET_KEY
 }
 ```
 
