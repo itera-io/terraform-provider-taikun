@@ -184,7 +184,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsCreate(context.TODO()).CreateAwsCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsCreate(ctx).CreateAwsCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -196,7 +196,7 @@ func resourceTaikunCloudCredentialAWSCreate(ctx context.Context, d *schema.Resou
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialAWSLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -210,7 +210,7 @@ func generateResourceTaikunCloudCredentialAWSReadWithoutRetries() schema.ReadCon
 	return generateResourceTaikunCloudCredentialAWSRead(false)
 }
 func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -218,7 +218,7 @@ func generateResourceTaikunCloudCredentialAWSRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -251,7 +251,7 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunCloudCredentialAWSLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialAWSLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -263,14 +263,14 @@ func resourceTaikunCloudCredentialAWSUpdate(ctx context.Context, d *schema.Resou
 		updateBody.SetAwsAccessKeyId(d.Get("access_key_id").(string))
 		updateBody.SetAwsSecretAccessKey(d.Get("secret_access_key").(string))
 
-		res, err := apiClient.Client.AWSCloudCredentialAPI.AwsUpdate(context.TODO()).UpdateAwsCommand(updateBody).Execute()
+		res, err := apiClient.Client.AWSCloudCredentialAPI.AwsUpdate(ctx).UpdateAwsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialAWSLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialAWSLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -295,11 +295,11 @@ func flattenTaikunCloudCredentialAWS(rawAWSCredential *tkcore.AmazonCredentialsL
 	}
 }
 
-func resourceTaikunCloudCredentialAWSLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialAWSLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

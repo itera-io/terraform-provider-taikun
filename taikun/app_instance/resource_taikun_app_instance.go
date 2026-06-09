@@ -163,14 +163,14 @@ func resourceTaikunAppInstanceCreate(ctx context.Context, d *schema.ResourceData
 	body.SetAutoSync(d.Get("autosync").(bool))
 	body.SetTaikunLinkEnabled(d.Get("taikun_link").(bool))
 	body.SetTimeout(int32(d.Get("timeout").(int)))
-	data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappInstall(context.TODO()).CreateProjectAppCommand(*body).Execute()
+	data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappInstall(ctx).CreateProjectAppCommand(*body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
 
 	// Wait for install to finish
 	d.SetId(data.GetId())
-	err = resourceTaikunAppInstanceWaitForReady(d, meta)
+	err = resourceTaikunAppInstanceWaitForReady(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -184,13 +184,13 @@ func resourceTaikunAppInstanceDelete(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appInstanceId).Execute()
+	_, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDelete(ctx, appInstanceId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
 
 	// Wait for uninstall
-	err = resourceTaikunAppInstanceWaitForDelete(d, meta)
+	err = resourceTaikunAppInstanceWaitForDelete(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -205,13 +205,13 @@ func generateResourceTaikunAppInstanceReadWithoutRetries() schema.ReadContextFun
 }
 
 func generateResourceTaikunAppInstanceRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		appId, err := utils.Atoi32(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		data, _, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), appId).Execute()
+		data, _, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(ctx, appId).Execute()
 		if err != nil {
 			// Already destroyed/create again
 			d.SetId("")
@@ -291,14 +291,14 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 		body.SetId(appId)
 		body.SetMode(mode)
 
-		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappAutosync(context.TODO()).AutoSyncManagementCommand(body).Execute()
+		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappAutosync(ctx).AutoSyncManagementCommand(body).Execute()
 
 		if errSync != nil {
 			return diag.FromErr(tk.CreateError(response, errSync))
 		}
 	}
 
-	err = updateParams(appId, d, meta, !autosyncNew.(bool)) // If autosync is enabled, it will trigger sync automatically. If not we need to sync manually.
+	err = updateParams(ctx, appId, d, meta, !autosyncNew.(bool)) // If autosync is enabled, it will trigger sync automatically. If not we need to sync manually.
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -307,7 +307,7 @@ func resourceTaikunAppInstanceUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 // Wait until app is Ready
-func resourceTaikunAppInstanceWaitForReady(d *schema.ResourceData, meta interface{}) error {
+func resourceTaikunAppInstanceWaitForReady(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	apiClient := meta.(*tk.Client)
 	appId, err := utils.Atoi32(d.Id())
 	if err != nil {
@@ -327,7 +327,7 @@ func resourceTaikunAppInstanceWaitForReady(d *schema.ResourceData, meta interfac
 		Pending: pendingStates,
 		Target:  targetStates,
 		Refresh: func() (interface{}, string, error) {
-			data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(context.TODO(), appId).Execute()
+			data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappDetails(ctx, appId).Execute()
 			if err != nil {
 				return nil, "", tk.CreateError(response, err)
 			}
@@ -339,7 +339,7 @@ func resourceTaikunAppInstanceWaitForReady(d *schema.ResourceData, meta interfac
 		MinTimeout: 10 * time.Second,
 	}
 
-	_, err = createStateConf.WaitForStateContext(context.TODO())
+	_, err = createStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return fmt.Errorf("error waiting for application (%d) to be ready: %s", appId, err)
 	}
@@ -348,7 +348,7 @@ func resourceTaikunAppInstanceWaitForReady(d *schema.ResourceData, meta interfac
 }
 
 // Wait until app is uninstalled, removed, not found.
-func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceTaikunAppInstanceWaitForDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	apiClient := meta.(*tk.Client)
 	appId, err := utils.Atoi32(d.Id())
 	if err != nil {
@@ -369,7 +369,7 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 		Pending: pendingStates,
 		Target:  targetStates,
 		Refresh: func() (interface{}, string, error) {
-			data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappList(context.TODO()).Id(appId).Execute()
+			data, response, err := apiClient.Client.ProjectAppsAPI.ProjectappList(ctx).Id(appId).Execute()
 			if err != nil {
 				return nil, "", tk.CreateError(response, err)
 			}
@@ -383,7 +383,7 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 			if data.GetTotalCount() == 1 {
 				if (data.GetData()[0].GetStatus() == tkcore.EINSTANCESTATUS_FAILURE) && secondChance {
 					secondChance = false
-					_, response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(context.TODO(), appId).Execute()
+					_, response, err = apiClient.Client.ProjectAppsAPI.ProjectappDelete(ctx, appId).Execute()
 					if err != nil {
 						return nil, "", tk.CreateError(response, err)
 					}
@@ -397,7 +397,7 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 		MinTimeout: 10 * time.Second,
 	}
 
-	_, err = createStateConf.WaitForStateContext(context.TODO())
+	_, err = createStateConf.WaitForStateContext(ctx)
 	if err != nil {
 		return fmt.Errorf("error waiting for application (%d) to be ready: %s", appId, err)
 	}
@@ -406,13 +406,13 @@ func resourceTaikunAppInstanceWaitForDelete(d *schema.ResourceData, meta interfa
 }
 
 // Set new parameters, sync app, wait until ready
-func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schema.ResourceData, meta interface{}, triggerSync bool) error {
+func setParamsAndSyncTaikunAppInstance(ctx context.Context, appId int32, extraValues string, d *schema.ResourceData, meta interface{}, triggerSync bool) error {
 	apiClient := meta.(*tk.Client)
 
 	body := tkcore.EditProjectAppExtraValuesCommand{}
 	body.SetProjectAppId(appId)
 	body.SetExtraValues(extraValues)
-	_, response, errParams := apiClient.Client.ProjectAppsAPI.ProjectappUpdateExtraValues(context.TODO()).EditProjectAppExtraValuesCommand(body).Execute()
+	_, response, errParams := apiClient.Client.ProjectAppsAPI.ProjectappUpdateExtraValues(ctx).EditProjectAppExtraValuesCommand(body).Execute()
 	if errParams != nil {
 		return tk.CreateError(response, errParams)
 	}
@@ -421,13 +421,13 @@ func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schem
 		bodySync := tkcore.SyncProjectAppCommand{}
 		bodySync.SetProjectAppId(appId)
 		bodySync.SetTimeout(int32(d.Get("timeout").(int)))
-		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(context.TODO()).SyncProjectAppCommand(bodySync).Execute()
+		response, errSync := apiClient.Client.ProjectAppsAPI.ProjectappSync(ctx).SyncProjectAppCommand(bodySync).Execute()
 		if errSync != nil {
 			return tk.CreateError(response, errSync)
 		}
 	}
 
-	err := resourceTaikunAppInstanceWaitForReady(d, meta)
+	err := resourceTaikunAppInstanceWaitForReady(ctx, d, meta)
 	if err != nil {
 		return err
 	}
@@ -436,7 +436,7 @@ func setParamsAndSyncTaikunAppInstance(appId int32, extraValues string, d *schem
 
 // Update parameters of this app in correct order
 // Check if user specified file of base64 string. Then modify App instance in correct order.
-func updateParams(appId int32, d *schema.ResourceData, meta interface{}, triggerSync bool) (err error) {
+func updateParams(ctx context.Context, appId int32, d *schema.ResourceData, meta interface{}, triggerSync bool) (err error) {
 	var extraValues string
 
 	paramsInFile := paramsSpecifiedAsFile(d)
@@ -447,7 +447,7 @@ func updateParams(appId int32, d *schema.ResourceData, meta interface{}, trigger
 	if paramsInFile {
 		//  Fist delete base64 params, then create params from file
 		if oldBase64Parameters != newBase64Parameters {
-			err = setParamsAndSyncTaikunAppInstance(appId, newBase64Parameters.(string), d, meta, triggerSync)
+			err = setParamsAndSyncTaikunAppInstance(ctx, appId, newBase64Parameters.(string), d, meta, triggerSync)
 			if err != nil {
 				return err
 			}
@@ -457,7 +457,7 @@ func updateParams(appId int32, d *schema.ResourceData, meta interface{}, trigger
 			if err != nil {
 				return err
 			}
-			err = setParamsAndSyncTaikunAppInstance(appId, extraValues, d, meta, triggerSync)
+			err = setParamsAndSyncTaikunAppInstance(ctx, appId, extraValues, d, meta, triggerSync)
 			if err != nil {
 				return err
 			}
@@ -469,13 +469,13 @@ func updateParams(appId int32, d *schema.ResourceData, meta interface{}, trigger
 			if err != nil {
 				return err
 			}
-			err = setParamsAndSyncTaikunAppInstance(appId, extraValues, d, meta, triggerSync)
+			err = setParamsAndSyncTaikunAppInstance(ctx, appId, extraValues, d, meta, triggerSync)
 			if err != nil {
 				return err
 			}
 		}
 		if oldBase64Parameters != newBase64Parameters {
-			err = setParamsAndSyncTaikunAppInstance(appId, newBase64Parameters.(string), d, meta, triggerSync)
+			err = setParamsAndSyncTaikunAppInstance(ctx, appId, newBase64Parameters.(string), d, meta, triggerSync)
 			if err != nil {
 				return err
 			}

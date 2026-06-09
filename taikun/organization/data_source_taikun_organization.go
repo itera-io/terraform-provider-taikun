@@ -25,12 +25,12 @@ func DataSourceTaikunOrganization() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunOrganizationRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunOrganizationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
 	var limit int32 = 1
 
-	params := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Limit(limit)
+	params := apiClient.Client.OrganizationsAPI.OrganizationsList(ctx).Limit(limit)
 	id := d.Get("id").(string)
 	if id != "" {
 		id32, err := utils.Atoi32(id)

@@ -27,12 +27,12 @@ func DataSourceTaikunOrganizations() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunOrganizationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunOrganizationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO())
+	params := apiClient.Client.OrganizationsAPI.OrganizationsList(ctx)
 
 	var rawOrganizationsList []tkcore.OrganizationDetailsDto
 	for {

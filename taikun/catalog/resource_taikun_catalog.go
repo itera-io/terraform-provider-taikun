@@ -156,7 +156,7 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 		body.SetOrganizationId(orgId)
 	}
 
-	response, err := apiClient.Client.CatalogAPI.CatalogCreate(context.TODO()).CreateCatalogCommand(*body).Execute()
+	response, err := apiClient.Client.CatalogAPI.CatalogCreate(ctx).CreateCatalogCommand(*body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -173,14 +173,14 @@ func resourceTaikunCatalogCreate(ctx context.Context, d *schema.ResourceData, me
 
 	// Bind Legacy projects
 	emptyBoundProjects := schema.Set{}
-	errDiag = reconcileProjectsBound(&emptyBoundProjects, legacyProjectsWhichShouldBeBound, catalogId, meta)
+	errDiag = reconcileProjectsBound(ctx, &emptyBoundProjects, legacyProjectsWhichShouldBeBound, catalogId, meta)
 	if errDiag != nil {
 		return errDiag
 	}
 
 	// Bind applications
 	emptyBoundApplications := schema.Set{}
-	errDiag = reconcileApplicationsBound(&emptyBoundApplications, applicationsWhichShouldBeBound, catalogId, meta)
+	errDiag = reconcileApplicationsBound(ctx, &emptyBoundApplications, applicationsWhichShouldBeBound, catalogId, meta)
 	if errDiag != nil {
 		return errDiag
 	}
@@ -201,14 +201,14 @@ func resourceTaikunCatalogDelete(ctx context.Context, d *schema.ResourceData, me
 		projects = schema.NewSet(schema.HashString, []interface{}{})
 	}
 	legacyProjectsWhichShouldBeUnbound := projects.(*schema.Set)
-	errDiag := reconcileProjectsBound(legacyProjectsWhichShouldBeUnbound, &emptyBoundProjects, catalogId, meta)
+	errDiag := reconcileProjectsBound(ctx, legacyProjectsWhichShouldBeUnbound, &emptyBoundProjects, catalogId, meta)
 	if errDiag != nil {
 		return errDiag
 	}
 
 	// Unbind all applications
 	emptyBoundApplications := schema.Set{}
-	errDiag = reconcileApplicationsBound(d.Get("application"), &emptyBoundApplications, catalogId, meta)
+	errDiag = reconcileApplicationsBound(ctx, d.Get("application"), &emptyBoundApplications, catalogId, meta)
 	if errDiag != nil {
 		return errDiag
 	}
@@ -231,10 +231,10 @@ func generateResourceTaikunCatalogReadWithoutRetries() schema.ReadContextFunc {
 }
 
 func generateResourceTaikunCatalogRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		catalogName := d.Get("name").(string)
-		listQuery := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName)
+		listQuery := apiClient.Client.CatalogAPI.CatalogList(ctx).Search(catalogName)
 
 		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
 			orgId, err := utils.Atoi32(organizationIDData.(string))
@@ -332,7 +332,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 	updatedCatalog.SetId(catalogId)
 	updatedCatalog.SetName(newName.(string))
 	updatedCatalog.SetDescription(newDescription.(string))
-	response, err := apiClient.Client.CatalogAPI.CatalogEdit(context.TODO()).EditCatalogCommand(updatedCatalog).Execute()
+	response, err := apiClient.Client.CatalogAPI.CatalogEdit(ctx).EditCatalogCommand(updatedCatalog).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -343,7 +343,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 		updateLock := tkcore.CatalogLockManagementCommand{}
 		updateLock.SetId(catalogId)
 		updateLock.SetMode(utils.GetLockMode(newCatalogLocked.(bool)))
-		response, err = apiClient.Client.CatalogAPI.CatalogLock(context.TODO()).CatalogLockManagementCommand(updateLock).Execute()
+		response, err = apiClient.Client.CatalogAPI.CatalogLock(ctx).CatalogLockManagementCommand(updateLock).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -355,7 +355,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 		if newDefault.(bool) {
 			updateDefault := tkcore.CatalogMakeDefaultCommand{}
 			updateDefault.SetId(catalogId)
-			response, err = apiClient.Client.CatalogAPI.CatalogMakeDefault(context.TODO()).CatalogMakeDefaultCommand(updateDefault).Execute()
+			response, err = apiClient.Client.CatalogAPI.CatalogMakeDefault(ctx).CatalogMakeDefaultCommand(updateDefault).Execute()
 			if err != nil {
 				return diag.FromErr(tk.CreateError(response, err))
 			}
@@ -367,7 +367,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	// Binding applications
 	oldCatalogApplicationsBound, newCatalogApplicationsBound := d.GetChange("application")
-	errReconcile := reconcileApplicationsBound(oldCatalogApplicationsBound, newCatalogApplicationsBound, catalogId, meta)
+	errReconcile := reconcileApplicationsBound(ctx, oldCatalogApplicationsBound, newCatalogApplicationsBound, catalogId, meta)
 	if errReconcile != nil {
 		return errReconcile
 	}
@@ -376,7 +376,7 @@ func resourceTaikunCatalogUpdate(ctx context.Context, d *schema.ResourceData, me
 }
 
 // Unbind apps that should be unbound, bind apps that should be bound
-func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCatalogApplicationsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
+func reconcileApplicationsBound(ctx context.Context, oldCatalogApplicationsBound interface{}, newCatalogApplicationsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	oldApplications := oldCatalogApplicationsBound.(*schema.Set)
 	newApplications := newCatalogApplicationsBound.(*schema.Set)
@@ -388,7 +388,7 @@ func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCata
 		if err != nil {
 			diag.FromErr(err)
 		}
-		response, err := apiClient.Client.CatalogAppAPI.CatalogAppDelete(context.TODO(), catalogAppId).Execute()
+		response, err := apiClient.Client.CatalogAppAPI.CatalogAppDelete(ctx, catalogAppId).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -402,7 +402,7 @@ func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCata
 		catalogAppToCreate.SetRepoName(app.(map[string]interface{})["repository"].(string))
 		catalogAppToCreate.SetPackageName(app.(map[string]interface{})["name"].(string))
 		catalogAppToCreate.SetParameters([]tkcore.CatalogAppParamsDto{})
-		_, response, err := apiClient.Client.CatalogAppAPI.CatalogAppCreate(context.TODO()).CreateCatalogAppCommand(catalogAppToCreate).Execute()
+		_, response, err := apiClient.Client.CatalogAppAPI.CatalogAppCreate(ctx).CreateCatalogAppCommand(catalogAppToCreate).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -412,7 +412,7 @@ func reconcileApplicationsBound(oldCatalogApplicationsBound interface{}, newCata
 }
 
 // Ensure the catalog has only all the projects in newCatalogProjectsBound bound - ignore error if the project does not exist
-func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProjectsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
+func reconcileProjectsBound(ctx context.Context, oldCatalogProjectsBound interface{}, newCatalogProjectsBound interface{}, catalogId int32, meta interface{}) diag.Diagnostics {
 	oldProjects := oldCatalogProjectsBound.(*schema.Set)
 	newProjects := newCatalogProjectsBound.(*schema.Set)
 	apiClient := meta.(*tk.Client)
@@ -424,7 +424,7 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, _ = apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		_, _ = apiClient.Client.CatalogAPI.CatalogDeleteProject(ctx, catalogId).RequestBody(body).Execute()
 	}
 
 	// New stuff that we should bind - What was is in new catalog and was not in old catalog.
@@ -434,7 +434,7 @@ func reconcileProjectsBound(oldCatalogProjectsBound interface{}, newCatalogProje
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		_, _ = apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), catalogId).RequestBody(body).Execute()
+		_, _ = apiClient.Client.CatalogAPI.CatalogAddProject(ctx, catalogId).RequestBody(body).Execute()
 	}
 
 	return nil

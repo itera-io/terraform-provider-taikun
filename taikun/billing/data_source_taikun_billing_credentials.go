@@ -33,12 +33,12 @@ func DataSourceTaikunBillingCredentials() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBillingCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunBillingCredentialsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.OperationCredentialsAPI.OpscredentialsList(context.TODO())
+	params := apiClient.Client.OperationCredentialsAPI.OpscredentialsList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

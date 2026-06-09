@@ -33,13 +33,13 @@ func DataSourceTaikunCloudCredentialsGCP() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsGCPRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsGCPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
 	var offset int32 = 0
 
-	params := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO())
+	params := apiClient.Client.GoogleAPI.GooglecloudList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

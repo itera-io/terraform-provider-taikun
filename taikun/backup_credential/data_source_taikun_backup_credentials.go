@@ -33,11 +33,11 @@ func DataSourceTaikunBackupCredentials() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBackupCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunBackupCredentialsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.Client.S3CredentialsAPI.S3credentialsList(context.TODO())
+	params := apiClient.Client.S3CredentialsAPI.S3credentialsList(ctx)
 	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")

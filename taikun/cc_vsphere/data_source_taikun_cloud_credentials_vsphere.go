@@ -33,12 +33,12 @@ func DataSourceTaikunCloudCredentialsVsphere() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsVsphereRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsVsphereRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.VsphereCloudCredentialAPI.VsphereList(context.TODO())
+	params := apiClient.Client.VsphereCloudCredentialAPI.VsphereList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

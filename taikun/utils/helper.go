@@ -380,8 +380,8 @@ func GetLastCharacter(zoneString string) string {
 }
 
 // Proxmox storage options in kubernetes profile and Project are different from what we send while creating k8s servers
-func GetProxmoxStorageStringForServer(projectID int32, apiClient *tk.Client) (string, error) {
-	data, response, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectID).Execute()
+func GetProxmoxStorageStringForServer(ctx context.Context, projectID int32, apiClient *tk.Client) (string, error) {
+	data, response, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectID).Execute()
 	if err != nil {
 		return "", tk.CreateError(response, err)
 	}

@@ -182,7 +182,7 @@ func resourceTaikunStandaloneProfileCreate(ctx context.Context, d *schema.Resour
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunStandaloneProfileLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunStandaloneProfileLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -196,7 +196,7 @@ func generateResourceTaikunStandaloneProfileReadWithoutRetries() schema.ReadCont
 	return generateResourceTaikunStandaloneProfileRead(false)
 }
 func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -204,7 +204,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -218,7 +218,7 @@ func generateResourceTaikunStandaloneProfileRead(withRetries bool) schema.ReadCo
 
 		rawStandaloneProfile := response.GetData()[0]
 
-		securityGroupResponse, res, err := apiClient.Client.SecurityGroupAPI.SecuritygroupList(context.TODO(), id).Execute()
+		securityGroupResponse, res, err := apiClient.Client.SecurityGroupAPI.SecuritygroupList(ctx, id).Execute()
 		if err != nil {
 
 			/*
@@ -262,7 +262,7 @@ func resourceTaikunStandaloneProfileUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("lock") {
-		if err := resourceTaikunStandaloneProfileLock(id, d.Get("lock").(bool), apiClient); err != nil {
+		if err := resourceTaikunStandaloneProfileLock(ctx, id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -354,11 +354,11 @@ func flattenTaikunStandaloneProfile(rawStandaloneProfile *tkcore.StandAloneProfi
 	}
 }
 
-func resourceTaikunStandaloneProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunStandaloneProfileLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.StandAloneProfileLockManagementCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileLockManagement(context.TODO()).StandAloneProfileLockManagementCommand(body).Execute()
+	res, err := apiClient.Client.StandaloneProfileAPI.StandaloneprofileLockManagement(ctx).StandAloneProfileLockManagementCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

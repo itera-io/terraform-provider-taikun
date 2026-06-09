@@ -124,7 +124,7 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.Resourc
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.S3CredentialsAPI.S3credentialsCreate(context.TODO()).BackupCredentialsCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.S3CredentialsAPI.S3credentialsCreate(ctx).BackupCredentialsCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -136,7 +136,7 @@ func resourceTaikunBackupCredentialCreate(ctx context.Context, d *schema.Resourc
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunBackupCredentialLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -150,7 +150,7 @@ func generateResourceTaikunBackupCredentialReadWithoutRetries() schema.ReadConte
 	return generateResourceTaikunBackupCredentialRead(false)
 }
 func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -158,7 +158,7 @@ func generateResourceTaikunBackupCredentialRead(withRetries bool) schema.ReadCon
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.S3CredentialsAPI.S3credentialsList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.S3CredentialsAPI.S3credentialsList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -191,7 +191,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunBackupCredentialLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunBackupCredentialLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -210,7 +210,7 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunBackupCredentialLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunBackupCredentialLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -218,14 +218,14 @@ func resourceTaikunBackupCredentialUpdate(ctx context.Context, d *schema.Resourc
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunBackupCredentialReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunBackupCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	id, err := utils.Atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.S3CredentialsAPI.S3credentialsDelete(context.TODO(), id).Execute()
+	res, err := apiClient.Client.S3CredentialsAPI.S3credentialsDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -252,10 +252,10 @@ func flattenTaikunBackupCredential(rawBackupCredential *tkcore.BackupCredentials
 	}
 }
 
-func resourceTaikunBackupCredentialLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunBackupCredentialLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.BackupLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
-	res, err := apiClient.Client.S3CredentialsAPI.S3credentialsLockManagement(context.TODO()).BackupLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.S3CredentialsAPI.S3credentialsLockManagement(ctx).BackupLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

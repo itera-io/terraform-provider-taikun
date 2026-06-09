@@ -71,14 +71,14 @@ func DataSourceTaikunImagesAWS() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunImagesAWSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudCredentialID, err := utils.Atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	apiClient := meta.(*tk.Client)
-	owners, err := dataSourceTaikunImagesAWSGetOwnerID(apiClient, d.Get("owners").(*schema.Set).List())
+	owners, err := dataSourceTaikunImagesAWSGetOwnerID(ctx, apiClient, d.Get("owners").(*schema.Set).List())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,7 +92,7 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 	var imageList []map[string]interface{}
 	for {
 		body.SetOffset(offset)
-		response, res, err := apiClient.Client.ImagesAPI.ImagesAwsImagesList(context.TODO()).AwsImagesPostListCommand(body).Execute()
+		response, res, err := apiClient.Client.ImagesAPI.ImagesAwsImagesList(ctx).AwsImagesPostListCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -112,10 +112,10 @@ func dataSourceTaikunImagesAWSRead(_ context.Context, d *schema.ResourceData, me
 }
 
 // Converts a list of AWS owner names to a list of AWS owner IDs
-func dataSourceTaikunImagesAWSGetOwnerID(apiClient *tk.Client, ownerNames []interface{}) (ownerIds []string, err error) {
+func dataSourceTaikunImagesAWSGetOwnerID(ctx context.Context, apiClient *tk.Client, ownerNames []interface{}) (ownerIds []string, err error) {
 
 	// Get list of Owners with ID and Name from API
-	response, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsOwners(context.TODO()).Execute()
+	response, res, err := apiClient.Client.AWSCloudCredentialAPI.AwsOwners(ctx).Execute()
 	if err != nil {
 		err = tk.CreateError(res, err)
 		return

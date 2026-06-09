@@ -33,7 +33,7 @@ func DataSourceTaikunKubeconfigs() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunKubeconfigsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	var offset int32 = 0
 
@@ -42,7 +42,7 @@ func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	params := apiClient.Client.KubeConfigAPI.KubeconfigList(context.TODO()).ProjectId(projectID)
+	params := apiClient.Client.KubeConfigAPI.KubeconfigList(ctx).ProjectId(projectID)
 
 	var kubeconfigDTOs []tkcore.KubeConfigForUserDto
 	retrievedKubeconfigCount := 0
@@ -66,6 +66,7 @@ func dataSourceTaikunKubeconfigsRead(_ context.Context, d *schema.ResourceData, 
 	kubeconfigs := make([]map[string]interface{}, len(kubeconfigDTOs))
 	for i, kubeconfigDTO := range kubeconfigDTOs {
 		kubeconfigContent := resourceTaikunKubeconfigGetContent(
+			ctx,
 			kubeconfigDTO.GetProjectId(),
 			kubeconfigDTO.GetId(),
 			apiClient,

@@ -33,7 +33,7 @@ func dataSourceTaikunVirtualClusterRead(ctx context.Context, d *schema.ResourceD
 
 	// Get and set parent ID (Parent ID must be queried form API)
 	apiClient := meta.(*tk.Client)
-	data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(virtualClusterId).Execute()
+	data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(ctx).Id(virtualClusterId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}

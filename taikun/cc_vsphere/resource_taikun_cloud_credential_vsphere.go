@@ -287,7 +287,7 @@ func resourceTaikunCloudCredentialVsphereCreate(ctx context.Context, d *schema.R
 	body.SetVmTemplateName(d.Get("vm_template_name").(string))
 	body.SetContinent(d.Get("continent").(string))
 
-	datacenterId, err := getDatacenterId(d.Get("datacenter").(string), d.Get("api_host").(string), d.Get("username").(string), d.Get("password").(string), meta)
+	datacenterId, err := getDatacenterId(ctx, d.Get("datacenter").(string), d.Get("api_host").(string), d.Get("username").(string), d.Get("password").(string), meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -325,7 +325,7 @@ func resourceTaikunCloudCredentialVsphereCreate(ctx context.Context, d *schema.R
 		body.SetContinent(utils.ContinentShorthand(continentData.(string)))
 	}
 
-	createResult, res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereCreate(context.TODO()).CreateVsphereCommand(body).Execute()
+	createResult, res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereCreate(ctx).CreateVsphereCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -337,7 +337,7 @@ func resourceTaikunCloudCredentialVsphereCreate(ctx context.Context, d *schema.R
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialVsphereLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialVsphereLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -351,7 +351,7 @@ func generateResourceTaikunCloudCredentialVsphereReadWithoutRetries() schema.Rea
 	return generateResourceTaikunCloudCredentialVsphereRead(false)
 }
 func generateResourceTaikunCloudCredentialVsphereRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -359,7 +359,7 @@ func generateResourceTaikunCloudCredentialVsphereRead(withRetries bool) schema.R
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -393,7 +393,7 @@ func resourceTaikunCloudCredentialVsphereUpdate(ctx context.Context, d *schema.R
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunCloudCredentialVsphereLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialVsphereLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -405,7 +405,7 @@ func resourceTaikunCloudCredentialVsphereUpdate(ctx context.Context, d *schema.R
 		updateBody.SetUsername(d.Get("username").(string))
 		updateBody.SetPassword(d.Get("password").(string))
 
-		res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdate(context.TODO()).UpdateVsphereCommand(updateBody).Execute()
+		res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdate(ctx).UpdateVsphereCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -416,14 +416,14 @@ func resourceTaikunCloudCredentialVsphereUpdate(ctx context.Context, d *schema.R
 		updateBody.SetId(id)
 		updateBody.SetHypervisors(utils.ResourceGetStringList(d.Get("hypervisors")))
 
-		res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdateVsphereHypervisors(context.TODO()).UpdateVsphereHypervisorsCommand(updateBody).Execute()
+		res, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereUpdateVsphereHypervisors(ctx).UpdateVsphereHypervisorsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialVsphereLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialVsphereLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -503,16 +503,16 @@ func flattenTaikunCloudCredentialVsphere(rawVsphereCredential *tkcore.VsphereLis
 	}
 }
 
-func resourceTaikunCloudCredentialVsphereLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialVsphereLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
 
-func getDatacenterId(datacenterName string, url string, username string, password string, meta interface{}) (string, error) {
+func getDatacenterId(ctx context.Context, datacenterName string, url string, username string, password string, meta interface{}) (string, error) {
 	// Get a list of datacenters for this vSphere credential
 	apiClient := meta.(*tk.Client)
 	body := tkcore.DatacenterListCommand{
@@ -521,7 +521,7 @@ func getDatacenterId(datacenterName string, url string, username string, passwor
 		Password:       *tkcore.NewNullableString(&password),
 		DatacenterName: *tkcore.NewNullableString(&datacenterName),
 	}
-	data, response, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereDatacenterList(context.TODO()).DatacenterListCommand(body).Execute()
+	data, response, err := apiClient.Client.VsphereCloudCredentialAPI.VsphereDatacenterList(ctx).DatacenterListCommand(body).Execute()
 	if err != nil {
 		return "", tk.CreateError(response, err)
 	}

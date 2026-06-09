@@ -33,12 +33,12 @@ func DataSourceTaikunPolicyProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunPolicyProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunPolicyProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
 	var offset int32 = 0
-	params := apiClient.Client.OpaProfilesAPI.OpaprofilesList(context.TODO())
+	params := apiClient.Client.OpaProfilesAPI.OpaprofilesList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

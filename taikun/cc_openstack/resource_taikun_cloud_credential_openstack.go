@@ -244,7 +244,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 		body.SetOpenStackContinent(utils.ContinentShorthand(continentData.(string)))
 	}
 
-	createResult, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackCreate(context.TODO()).CreateOpenstackCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackCreate(ctx).CreateOpenstackCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -256,7 +256,7 @@ func resourceTaikunCloudCredentialOpenStackCreate(ctx context.Context, d *schema
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialOpenStackLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -270,7 +270,7 @@ func generateResourceTaikunCloudCredentialOpenStackReadWithoutRetries() schema.R
 	return generateResourceTaikunCloudCredentialOpenStackRead(false)
 }
 func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -278,7 +278,7 @@ func generateResourceTaikunCloudCredentialOpenStackRead(withRetries bool) schema
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -311,7 +311,7 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunCloudCredentialOpenStackLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialOpenStackLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -333,14 +333,14 @@ func resourceTaikunCloudCredentialOpenStackUpdate(ctx context.Context, d *schema
 			updateBody.SetOpenStackPassword(password)
 		}
 
-		res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackUpdate(context.TODO()).UpdateOpenStackCommand(updateBody).Execute()
+		res, err := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackUpdate(ctx).UpdateOpenStackCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialOpenStackLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialOpenStackLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -373,11 +373,11 @@ func flattenTaikunCloudCredentialOpenStack(rawOpenStackCredential *tkcore.Openst
 	}
 }
 
-func resourceTaikunCloudCredentialOpenStackLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialOpenStackLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

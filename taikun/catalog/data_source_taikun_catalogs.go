@@ -30,7 +30,7 @@ func dataSourceTaikunCatalogsRead(ctx context.Context, d *schema.ResourceData, m
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.CatalogAPI.CatalogList(context.TODO())
+	params := apiClient.Client.CatalogAPI.CatalogList(ctx)
 
 	var catalogsList []tkcore.CatalogListDto
 	for {

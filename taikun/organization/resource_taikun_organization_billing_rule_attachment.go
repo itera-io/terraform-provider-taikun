@@ -77,7 +77,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentCreate(ctx context.Context, 
 		},
 	}
 
-	response, err := apiClient.Client.OrganizationsAPI.OrganizationsAddPrometheusrules(context.TODO(), organizationId).AddPrometheusRulesToOrganizationDto(body).Execute()
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsAddPrometheusrules(ctx, organizationId).AddPrometheusRulesToOrganizationDto(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}
@@ -146,7 +146,7 @@ func generateResourceTaikunOrganizationBillingRuleAttachmentRead(withRetries boo
 	}
 }
 
-func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunOrganizationBillingRuleAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
 	organizationId, billingRuleId, err := ParseOrganizationBillingRuleAttachmentId(d.Id())
@@ -154,7 +154,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return diag.Errorf("Error while deleting taikun_organization_billing_rule_attachment : %s", err)
 	}
 
-	organizationsListResponse, res, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(organizationId).Execute()
+	organizationsListResponse, res, err := apiClient.Client.OrganizationsAPI.OrganizationsList(ctx).Id(organizationId).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
@@ -164,7 +164,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 		return nil
 	}
 
-	billingRulesListResponse, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO()).Id(billingRuleId).Execute()
+	billingRulesListResponse, res, err := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(ctx).Id(billingRuleId).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -174,7 +174,7 @@ func resourceTaikunOrganizationBillingRuleAttachmentDelete(_ context.Context, d 
 	}
 
 	body := []int32{billingRuleId}
-	response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(context.TODO(), organizationId).RequestBody(body).Execute()
+	response, err := apiClient.Client.OrganizationsAPI.OrganizationsDeletePrometheusrules(ctx, organizationId).RequestBody(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(response, err))
 	}

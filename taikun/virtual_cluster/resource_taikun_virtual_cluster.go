@@ -113,7 +113,7 @@ func resourceTaikunVirtualClusterUpdate(ctx context.Context, d *schema.ResourceD
 			body.SetDeleteOnExpiration(false)
 		}
 
-		res, err := apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		res, err := apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(ctx).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -178,7 +178,7 @@ func resourceTaikunVirtualClusterCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	// Get ID of newly created project
-	err = loadVirtualClusterId(d, meta)
+	err = loadVirtualClusterId(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -198,7 +198,7 @@ func resourceTaikunVirtualClusterCreate(ctx context.Context, d *schema.ResourceD
 }
 
 // From [Parent Project ID] and [Virtual Cluster Name] find the ID of the Virtual project and load it into schema (d)
-func loadVirtualClusterId(d *schema.ResourceData, meta interface{}) error {
+func loadVirtualClusterId(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
 	apiClient := meta.(*tk.Client)
 	var offset int32 = 0
 	virtualClusterName := d.Get("name").(string)
@@ -207,7 +207,7 @@ func loadVirtualClusterId(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	params := apiClient.Client.VirtualClusterAPI.VirtualClusterList(context.TODO(), parentId).Search(virtualClusterName)
+	params := apiClient.Client.VirtualClusterAPI.VirtualClusterList(ctx, parentId).Search(virtualClusterName)
 
 	var virtualClustersList []tkcore.VClusterListDto
 	for {
@@ -325,7 +325,7 @@ func resourceTaikunVirtualClusterWaitForReady(virtualClusterId int32, ctx contex
 		Pending: pendingStates,
 		Target:  targetStates,
 		Refresh: func() (interface{}, string, error) {
-			data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(virtualClusterId).Execute()
+			data, response, err := apiClient.Client.ProjectsAPI.ProjectsList(ctx).Id(virtualClusterId).Execute()
 			if err != nil {
 				return nil, "", tk.CreateError(response, err)
 			}

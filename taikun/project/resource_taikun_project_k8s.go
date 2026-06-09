@@ -164,7 +164,7 @@ func taikunServerBasicSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
+func resourceTaikunProjectSetServers(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
 
 	bastions := d.Get("server_bastion")
 	kubeMasters := d.Get("server_kubemaster")
@@ -186,7 +186,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		return err
 	}
 
-	serverCreateResponse, res, err := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+	serverCreateResponse, res, err := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -215,7 +215,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 			return err
 		}
 
-		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
 			return tk.CreateError(res, newErr)
 		}
@@ -240,7 +240,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 		serverCreateBody.SetHypervisor(kubeWorkerMap["hypervisor"].(string))
 
 		if kubeWorkerMap["proxmox_extra_disk_size"].(int) != 0 {
-			proxmoxStorageString, err1 := utils.GetProxmoxStorageStringForServer(projectID, apiClient)
+			proxmoxStorageString, err1 := utils.GetProxmoxStorageStringForServer(ctx, projectID, apiClient)
 			if err1 != nil {
 				return err1
 			}
@@ -259,7 +259,7 @@ func resourceTaikunProjectSetServers(d *schema.ResourceData, apiClient *tk.Clien
 			return err
 		}
 
-		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(context.TODO()).ServerForCreateDto(serverCreateBody).Execute()
+		serverCreateResponse, res, newErr := apiClient.Client.ServersAPI.ServersCreate(ctx).ServerForCreateDto(serverCreateBody).Execute()
 		if newErr != nil {
 			return tk.CreateError(res, newErr)
 		}
@@ -290,16 +290,16 @@ func resourceTaikunProjectSetServerSpots(serverMap map[string]interface{}, serve
 	return serverCreateBody, nil
 }
 
-func resourceTaikunProjectCommit(apiClient *tk.Client, projectID int32) error {
+func resourceTaikunProjectCommit(ctx context.Context, apiClient *tk.Client, projectID int32) error {
 	commitCommand := &tkcore.ProjectDeploymentCommitCommand{ProjectId: &projectID}
-	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(context.TODO()).ProjectDeploymentCommitCommand(*commitCommand).Execute()
+	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommit(ctx).ProjectDeploymentCommitCommand(*commitCommand).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
 	return nil
 }
 
-func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *tk.Client, projectID int32) error {
+func resourceTaikunProjectPurgeServers(ctx context.Context, serversToPurge []interface{}, apiClient *tk.Client, projectID int32) error {
 	serverIds := make([]int32, 0)
 
 	for _, server := range serversToPurge {
@@ -319,7 +319,7 @@ func resourceTaikunProjectPurgeServers(serversToPurge []interface{}, apiClient *
 		deleteServerBody.SetForceDeleteVClusters(true)
 		deleteServerBody.SetDeleteAutoscalingServers(true)
 
-		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(context.TODO()).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDelete(ctx).ProjectDeploymentDeleteServersCommand(deleteServerBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -388,7 +388,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 		if monitoringCurrentyEnabled {
 			disableBody := tkcore.DeploymentDisableMonitoringCommand{}
 			disableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(context.TODO()).DeploymentDisableMonitoringCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableMonitoring(ctx).DeploymentDisableMonitoringCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -426,7 +426,7 @@ func resourceTaikunProjectUpdateToggleMonitoring(ctx context.Context, d *schema.
 
 			enableBody := tkcore.DeploymentEnableMonitoringCommand{}
 			enableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(context.TODO()).DeploymentEnableMonitoringCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableMonitoring(ctx).DeploymentEnableMonitoringCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -453,7 +453,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 		if backupCurrentyEnabled {
 			disableBody := tkcore.DeploymentDisableBackupCommand{}
 			disableBody.SetProjectId(projectID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(context.TODO()).DeploymentDisableBackupCommand(disableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDisableBackup(ctx).DeploymentDisableBackupCommand(disableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -495,7 +495,7 @@ func resourceTaikunProjectUpdateToggleBackup(ctx context.Context, d *schema.Reso
 			enableBody := tkcore.DeploymentEnableBackupCommand{}
 			enableBody.SetProjectId(projectID)
 			enableBody.SetS3CredentialId(newCredentialID)
-			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(context.TODO()).DeploymentEnableBackupCommand(enableBody).Execute()
+			res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentEnableBackup(ctx).DeploymentEnableBackupCommand(enableBody).Execute()
 			if err != nil {
 				return tk.CreateError(res, err)
 			}
@@ -576,13 +576,13 @@ func resourceTaikunProjectUpdateToggleOPA(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Client, id int32) error {
+func resourceTaikunProjectEditFlavors(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client, id int32) error {
 	oldFlavorData, newFlavorData := d.GetChange("flavors")
 	oldFlavors := oldFlavorData.(*schema.Set)
 	newFlavors := newFlavorData.(*schema.Set)
 	flavorsToUnbind := oldFlavors.Difference(newFlavors)
 	flavorsToBind := newFlavors.Difference(oldFlavors).List()
-	boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(id, apiClient)
+	boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(ctx, id, apiClient)
 	if err != nil {
 		return err
 	}
@@ -595,7 +595,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		}
 		unbindBody := tkcore.UnbindFlavorFromProjectCommand{}
 		unbindBody.SetIds(flavorBindingsToUndo)
-		res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(context.TODO()).UnbindFlavorFromProjectCommand(unbindBody).Execute()
+		res, err := apiClient.Client.FlavorsAPI.FlavorsUnbindFromProject(ctx).UnbindFlavorFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -608,7 +608,7 @@ func resourceTaikunProjectEditFlavors(d *schema.ResourceData, apiClient *tk.Clie
 		bindBody := tkcore.BindFlavorToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetFlavors(flavorsToBindNames)
-		res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(context.TODO()).BindFlavorToProjectCommand(bindBody).Execute()
+		res, err := apiClient.Client.FlavorsAPI.FlavorsBindToProject(ctx).BindFlavorToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}

@@ -37,7 +37,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, d *schema.ResourceD
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.AccessProfilesAPI.AccessprofilesList(context.TODO())
+	params := apiClient.Client.AccessProfilesAPI.AccessprofilesList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -65,7 +65,7 @@ func dataSourceTaikunAccessProfilesRead(ctx context.Context, d *schema.ResourceD
 	accessProfiles := make([]map[string]interface{}, len(accessProfilesList))
 	for i, rawAccessProfile := range accessProfilesList {
 
-		sshResponse, res, err := apiClient.Client.SshUsersAPI.SshusersList(context.TODO(), rawAccessProfile.GetId()).Execute()
+		sshResponse, res, err := apiClient.Client.SshUsersAPI.SshusersList(ctx, rawAccessProfile.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

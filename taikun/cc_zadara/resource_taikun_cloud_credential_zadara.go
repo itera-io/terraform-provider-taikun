@@ -180,7 +180,7 @@ func resourceTaikunCloudCredentialZadaraCreate(ctx context.Context, d *schema.Re
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraCreate(context.TODO()).CreateZadaraCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraCreate(ctx).CreateZadaraCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -192,7 +192,7 @@ func resourceTaikunCloudCredentialZadaraCreate(ctx context.Context, d *schema.Re
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialZadaraLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialZadaraLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -206,7 +206,7 @@ func generateResourceTaikunCloudCredentialZadaraReadWithoutRetries() schema.Read
 	return generateResourceTaikunCloudCredentialZadaraRead(false)
 }
 func generateResourceTaikunCloudCredentialZadaraRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -214,7 +214,7 @@ func generateResourceTaikunCloudCredentialZadaraRead(withRetries bool) schema.Re
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -247,7 +247,7 @@ func resourceTaikunCloudCredentialZadaraUpdate(ctx context.Context, d *schema.Re
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunCloudCredentialZadaraLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialZadaraLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -259,14 +259,14 @@ func resourceTaikunCloudCredentialZadaraUpdate(ctx context.Context, d *schema.Re
 		updateBody.SetZadaraAccessKeyId(d.Get("access_key_id").(string))
 		updateBody.SetZadaraSecretAccessKey(d.Get("secret_access_key").(string))
 
-		res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraUpdate(context.TODO()).UpdateZadaraCommand(updateBody).Execute()
+		res, err := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraUpdate(ctx).UpdateZadaraCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialZadaraLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialZadaraLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -293,11 +293,11 @@ func flattenTaikunCloudCredentialZadara(rawZadaraCredential *tkcore.ZadaraCreden
 	}
 }
 
-func resourceTaikunCloudCredentialZadaraLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialZadaraLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

@@ -111,7 +111,7 @@ func generateResourceTaikunBackupPolicyReadWithoutRetries() schema.ReadContextFu
 	return generateResourceTaikunBackupPolicyRead(false)
 }
 func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 		if err != nil {
@@ -123,7 +123,7 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 		}
 
 		// maybe add search?
-		response, res, err := apiClient.Client.BackupPolicyAPI.BackupListAllSchedules(context.TODO(), projectId).Limit(4000).Execute()
+		response, res, err := apiClient.Client.BackupPolicyAPI.BackupListAllSchedules(ctx, projectId).Limit(4000).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -149,7 +149,7 @@ func generateResourceTaikunBackupPolicyRead(withRetries bool) schema.ReadContext
 	}
 }
 
-func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBackupPolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	projectId, backupPolicyName, err := parseBackupPolicyId(d.Id())
 	if err != nil {
@@ -160,7 +160,7 @@ func resourceTaikunBackupPolicyDelete(_ context.Context, d *schema.ResourceData,
 	deleteBody.SetName(backupPolicyName)
 	deleteBody.SetProjectId(projectId)
 
-	res, err := apiClient.Client.BackupPolicyAPI.BackupDeleteSchedule(context.TODO()).DeleteScheduleCommand(deleteBody).Execute()
+	res, err := apiClient.Client.BackupPolicyAPI.BackupDeleteSchedule(ctx).DeleteScheduleCommand(deleteBody).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

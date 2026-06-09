@@ -91,7 +91,7 @@ func resourceTaikunOrganizationCreate(ctx context.Context, d *schema.ResourceDat
 		body.SetEmail(email.(string))
 	}
 
-	createResult, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(context.TODO()).OrganizationCreateCommand(body).Execute()
+	createResult, res, err := apiClient.Client.OrganizationsAPI.OrganizationsCreate(ctx).OrganizationCreateCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -113,7 +113,7 @@ func generateResourceTaikunOrganizationRead(withRetries bool) schema.ReadContext
 		id32, _ := utils.Atoi32(d.Id())
 		d.SetId("")
 
-		response, res, err := apiClient.Client.OrganizationsAPI.OrganizationsList(context.TODO()).Id(id32).Execute()
+		response, res, err := apiClient.Client.OrganizationsAPI.OrganizationsList(ctx).Id(id32).Execute()
 
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
@@ -152,7 +152,7 @@ func resourceTaikunOrganizationUpdate(ctx context.Context, d *schema.ResourceDat
 	body.SetName(d.Get("name").(string))
 	body.SetFullName(d.Get("full_name").(string))
 
-	res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(context.TODO()).UpdateOrganizationCommand(body).Execute()
+	res, err := apiClient.Client.OrganizationsAPI.OrganizationsUpdate(ctx).UpdateOrganizationCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

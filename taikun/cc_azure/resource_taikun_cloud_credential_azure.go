@@ -168,7 +168,7 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureCreate(context.TODO()).CreateAzureCloudCommand(body).Execute()
+	createResult, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureCreate(ctx).CreateAzureCloudCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -180,7 +180,7 @@ func resourceTaikunCloudCredentialAzureCreate(ctx context.Context, d *schema.Res
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialAzureLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -194,7 +194,7 @@ func generateResourceTaikunCloudCredentialAzureReadWithoutRetries() schema.ReadC
 	return generateResourceTaikunCloudCredentialAzureRead(false)
 }
 func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -202,7 +202,7 @@ func generateResourceTaikunCloudCredentialAzureRead(withRetries bool) schema.Rea
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AzureCloudCredentialAPI.AzureList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -235,7 +235,7 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunCloudCredentialAzureLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialAzureLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -247,14 +247,14 @@ func resourceTaikunCloudCredentialAzureUpdate(ctx context.Context, d *schema.Res
 		updateBody.SetAzureClientId(d.Get("client_id").(string))
 		updateBody.SetAzureClientSecret(d.Get("client_secret").(string))
 
-		res, err := apiClient.Client.AzureCloudCredentialAPI.AzureUpdate(context.TODO()).UpdateAzureCommand(updateBody).Execute()
+		res, err := apiClient.Client.AzureCloudCredentialAPI.AzureUpdate(ctx).UpdateAzureCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialAzureLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialAzureLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -281,11 +281,11 @@ func flattenTaikunCloudCredentialAzure(rawAzureCredential *tkcore.AzureCredentia
 	}
 }
 
-func resourceTaikunCloudCredentialAzureLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialAzureLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
