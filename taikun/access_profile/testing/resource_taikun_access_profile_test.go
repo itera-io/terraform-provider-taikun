@@ -358,33 +358,33 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 
 // testAccCheckTaikunAccessProfileTrustedRegistries verifies trusted_registry values
 // regardless of list order. Used by TestAccResourceTaikunAccessProfileTrustedRegistries when uncommented.
-func testAccCheckTaikunAccessProfileTrustedRegistries(resourceName string, expected ...string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource %s not found in state", resourceName)
-		}
-
-		countAttr := rs.Primary.Attributes["trusted_registry.#"]
-		if countAttr != fmt.Sprint(len(expected)) {
-			return fmt.Errorf("%s: trusted_registry.# is %s, want %d", resourceName, countAttr, len(expected))
-		}
-
-		found := make(map[string]struct{}, len(expected))
-		for i := range expected {
-			registry := rs.Primary.Attributes[fmt.Sprintf("trusted_registry.%d.registry", i)]
-			found[registry] = struct{}{}
-		}
-
-		for _, registry := range expected {
-			if _, ok := found[registry]; !ok {
-				return fmt.Errorf("%s: trusted_registry missing %q", resourceName, registry)
-			}
-		}
-
-		return nil
-	}
-}
+//func testAccCheckTaikunAccessProfileTrustedRegistries(resourceName string, expected ...string) resource.TestCheckFunc {
+//	return func(s *terraform.State) error {
+//		rs, ok := s.RootModule().Resources[resourceName]
+//		if !ok {
+//			return fmt.Errorf("resource %s not found in state", resourceName)
+//		}
+//
+//		countAttr := rs.Primary.Attributes["trusted_registry.#"]
+//		if countAttr != fmt.Sprint(len(expected)) {
+//			return fmt.Errorf("%s: trusted_registry.# is %s, want %d", resourceName, countAttr, len(expected))
+//		}
+//
+//		found := make(map[string]struct{}, len(expected))
+//		for i := range expected {
+//			registry := rs.Primary.Attributes[fmt.Sprintf("trusted_registry.%d.registry", i)]
+//			found[registry] = struct{}{}
+//		}
+//
+//		for _, registry := range expected {
+//			if _, ok := found[registry]; !ok {
+//				return fmt.Errorf("%s: trusted_registry missing %q", resourceName, registry)
+//			}
+//		}
+//
+//		return nil
+//	}
+//}
 
 func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {
 	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
