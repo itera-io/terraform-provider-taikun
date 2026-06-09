@@ -36,6 +36,46 @@ func DataSourceTaikunProjectSubnets() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
+						"name": {
+							Description: "Subnet name.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"cidr": {
+							Description: "Subnet CIDR.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"zone": {
+							Description: "Availability zone.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"available_ip_count": {
+							Description: "Number of available IP addresses.",
+							Type:        schema.TypeInt,
+							Computed:    true,
+						},
+						"node_count": {
+							Description: "Number of nodes.",
+							Type:        schema.TypeInt,
+							Computed:    true,
+						},
+						"is_default": {
+							Description: "Whether the subnet is default.",
+							Type:        schema.TypeBool,
+							Computed:    true,
+						},
+						"owner_id": {
+							Description: "Owner ID.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"vpc_id": {
+							Description: "VPC ID.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -61,8 +101,16 @@ func dataSourceTaikunProjectSubnetsRead(ctx context.Context, d *schema.ResourceD
 	result := make([]interface{}, len(subnets))
 	for i, subnet := range subnets {
 		result[i] = map[string]interface{}{
-			"id":   subnet.GetSubnetId(),
-			"type": string(subnet.GetSubnetType()),
+			"id":                 subnet.GetSubnetId(),
+			"type":               string(subnet.GetSubnetType()),
+			"name":               subnet.GetName(),
+			"cidr":               subnet.GetCidr(),
+			"zone":               subnet.GetZone(),
+			"available_ip_count": int(subnet.GetAvailableIpCount()),
+			"node_count":         int(subnet.GetNodeCount()),
+			"is_default":         subnet.GetIsDefault(),
+			"owner_id":           subnet.GetOwnerId(),
+			"vpc_id":             subnet.GetVpcId(),
 		}
 	}
 
