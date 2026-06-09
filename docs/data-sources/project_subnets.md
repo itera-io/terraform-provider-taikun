@@ -29,5 +29,13 @@ Taikun Project Subnets Data Source
 
 Read-Only:
 
+- `available_ip_count` (Number)
+- `cidr` (String)
 - `id` (String)
+- `is_default` (Boolean)
+- `name` (String)
+- `node_count` (Number)
+- `owner_id` (String)
 - `type` (String)
+- `vpc_id` (String)
+- `zone` (String)
