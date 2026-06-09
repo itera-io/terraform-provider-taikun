@@ -37,7 +37,7 @@ func TestAccDataSourceTaikunAppInstance(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheckAppInstance(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy(t),
+		CheckDestroy:      testAccCheckTaikunAppInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunAppInstanceConfig,

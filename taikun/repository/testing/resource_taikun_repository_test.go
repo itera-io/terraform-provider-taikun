@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -30,7 +31,7 @@ func TestAccResourceTaikunRepository(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunRepositoryDestroy(t),
+		CheckDestroy:      testAccCheckTaikunRepositoryDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunRepositoryConfig,
@@ -39,7 +40,7 @@ func TestAccResourceTaikunRepository(t *testing.T) {
 					repositoryEnabled,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunRepositoryExists(t),
+					testAccCheckTaikunRepositoryExists,
 					resource.TestCheckResourceAttr("taikun_repository.foo", "name", repositoryName),
 					resource.TestCheckResourceAttr("taikun_repository.foo", "organization_name", repositoryOrgName),
 					resource.TestCheckResourceAttr("taikun_repository.foo", "private", "false"),
@@ -54,7 +55,7 @@ func TestAccResourceTaikunRepository(t *testing.T) {
 			//		repositoryDisabled,
 			//	),
 			//	Check: resource.ComposeAggregateTestCheckFunc(
-			//		testAccCheckTaikunRepositoryExists(t),
+			//		testAccCheckTaikunRepositoryExists,
 			//		resource.TestCheckResourceAttr("taikun_repository.foo", "name", repositoryName),
 			//		resource.TestCheckResourceAttr("taikun_repository.foo", "organization_name", repositoryOrgName),
 			//		resource.TestCheckResourceAttr("taikun_repository.foo", "private", "false"),
@@ -65,56 +66,52 @@ func TestAccResourceTaikunRepository(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunRepositoryExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunRepositoryExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_repository" {
-				continue
-			}
-
-			id := rs.Primary.ID
-
-			response, _, err := client.Client.AppRepositoriesAPI.RepositoryAvailableList(t.Context()).Id(id).Execute()
-			if err != nil || response.GetTotalCount() != 1 {
-				return fmt.Errorf("repository doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_repository" {
+			continue
 		}
 
-		return nil
+		id := rs.Primary.ID
+
+		response, _, err := client.Client.AppRepositoriesAPI.RepositoryAvailableList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
+			return fmt.Errorf("repository doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunRepositoryDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunRepositoryDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_repository" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-
-				response, _, err := client.Client.CatalogAPI.CatalogList(t.Context()).Id(id).Execute()
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-				if response.GetTotalCount() != 0 {
-					return retry.RetryableError(errors.New("repository still exists"))
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("repository still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_repository" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+
+			response, _, err := client.Client.CatalogAPI.CatalogList(context.TODO()).Id(id).Execute()
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if response.GetTotalCount() != 0 {
+				return retry.RetryableError(errors.New("repository still exists"))
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("repository still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

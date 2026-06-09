@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -30,7 +31,7 @@ func TestAccResourceTaikunCloudCredentialZadara(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy(t),
+		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialZadaraConfig,
@@ -39,7 +40,7 @@ func TestAccResourceTaikunCloudCredentialZadara(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialZadaraExists(t),
+					testAccCheckTaikunCloudCredentialZadaraExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
@@ -62,7 +63,7 @@ func TestAccResourceTaikunCloudCredentialZadaraLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy(t),
+		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialZadaraConfig,
@@ -71,7 +72,7 @@ func TestAccResourceTaikunCloudCredentialZadaraLock(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialZadaraExists(t),
+					testAccCheckTaikunCloudCredentialZadaraExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
@@ -90,7 +91,7 @@ func TestAccResourceTaikunCloudCredentialZadaraLock(t *testing.T) {
 					true,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialZadaraExists(t),
+					testAccCheckTaikunCloudCredentialZadaraExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
@@ -109,7 +110,7 @@ func TestAccResourceTaikunCloudCredentialZadaraLock(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialZadaraExists(t),
+					testAccCheckTaikunCloudCredentialZadaraExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
@@ -133,7 +134,7 @@ func TestAccResourceTaikunCloudCredentialZadaraRename(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckZadara(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy(t),
+		CheckDestroy:      testAccCheckTaikunCloudCredentialZadaraDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunCloudCredentialZadaraConfig,
@@ -142,7 +143,7 @@ func TestAccResourceTaikunCloudCredentialZadaraRename(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialZadaraExists(t),
+					testAccCheckTaikunCloudCredentialZadaraExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", cloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
@@ -161,7 +162,7 @@ func TestAccResourceTaikunCloudCredentialZadaraRename(t *testing.T) {
 					false,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunCloudCredentialZadaraExists(t),
+					testAccCheckTaikunCloudCredentialZadaraExists,
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "name", newCloudCredentialName),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "access_key_id", os.Getenv("ZADARA_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_cloud_credential_zadara.foo", "secret_access_key", os.Getenv("ZADARA_SECRET_ACCESS_KEY")),
@@ -177,56 +178,52 @@ func TestAccResourceTaikunCloudCredentialZadaraRename(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunCloudCredentialZadaraExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunCloudCredentialZadaraExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_cloud_credential_zadara" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-
-			response, _, err := client.Client.ZadaraCloudCredentialAPI.ZadaraList(t.Context()).Id(id).Execute()
-			if err != nil || response.GetTotalCount() != 1 {
-				return fmt.Errorf("zadara cloud credential doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_cloud_credential_zadara" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+
+		response, _, err := client.Client.ZadaraCloudCredentialAPI.ZadaraList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
+			return fmt.Errorf("zadara cloud credential doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunCloudCredentialZadaraDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunCloudCredentialZadaraDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_cloud_credential_zadara" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-
-				response, _, err := client.Client.ZadaraCloudCredentialAPI.ZadaraList(t.Context()).Id(id).Execute()
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-				if response.GetTotalCount() != 0 {
-					return retry.RetryableError(errors.New("zadara cloud credential still exists"))
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("zadara cloud credential still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_cloud_credential_zadara" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+
+			response, _, err := client.Client.ZadaraCloudCredentialAPI.ZadaraList(context.TODO()).Id(id).Execute()
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if response.GetTotalCount() != 0 {
+				return retry.RetryableError(errors.New("zadara cloud credential still exists"))
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("zadara cloud credential still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

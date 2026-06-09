@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -27,12 +28,12 @@ func TestAccResourceTaikunKubernetesProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunKubernetesProfileExists(t),
+					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
@@ -66,12 +67,12 @@ func TestAccResourceTaikunKubernetesProfileNoUniqueClusterName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileNoUniqueClusterNameConfig, firstName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunKubernetesProfileExists(t),
+					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
@@ -102,12 +103,12 @@ func TestAccResourceTaikunKubernetesProfileNvidiaGpuEnable(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(TestAccResourceTaikunKubernetesProfileNvidiaGpuEnableConfig, firstName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunKubernetesProfileExists(t),
+					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
@@ -135,12 +136,12 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunKubernetesProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunKubernetesProfileExists(t),
+					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
@@ -159,7 +160,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunKubernetesProfileExists(t),
+					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
@@ -178,7 +179,7 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunKubernetesProfileConfig, firstName, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunKubernetesProfileExists(t),
+					testAccCheckTaikunKubernetesProfileExists,
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_kubernetes_profile.foo", "load_balancing_solution", "Octavia"),
@@ -198,56 +199,52 @@ func TestAccResourceTaikunKubernetesProfileLock(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunKubernetesProfileExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunKubernetesProfileExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_kubernetes_profile" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-
-			response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(t.Context()).Id(id).Execute()
-			if err != nil || response.GetTotalCount() != 1 {
-				return fmt.Errorf("kubernetes profile doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_kubernetes_profile" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+
+		response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
+			return fmt.Errorf("kubernetes profile doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunKubernetesProfileDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunKubernetesProfileDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_kubernetes_profile" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-
-				response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(t.Context()).Id(id).Execute()
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-				if response.GetTotalCount() != 0 {
-					return retry.RetryableError(errors.New("kubernetes profile still exists"))
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("kubernetes profile still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_kubernetes_profile" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+
+			response, _, err := client.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if response.GetTotalCount() != 0 {
+				return retry.RetryableError(errors.New("kubernetes profile still exists"))
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("kubernetes profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

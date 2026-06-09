@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -31,12 +32,12 @@ func TestAccResourceTaikunAccount(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunAccountDestroy(t),
+		CheckDestroy:      testAccCheckTaikunAccountDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunAccountConfig, name, email),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunAccountExists(t),
+					testAccCheckTaikunAccountExists,
 					resource.TestCheckResourceAttrSet("taikun_account.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_account.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_account.foo", "email", email),
@@ -46,54 +47,50 @@ func TestAccResourceTaikunAccount(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunAccountExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunAccountExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_account" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-			_, _, err := client.Client.AccountsAPI.AccountsDetails(t.Context(), id).Execute()
-			if err != nil {
-				return fmt.Errorf("account doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_account" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+		_, _, err := client.Client.AccountsAPI.AccountsDetails(context.TODO(), id).Execute()
+		if err != nil {
+			return fmt.Errorf("account doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunAccountDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunAccountDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_account" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-				_, res, err := client.Client.AccountsAPI.AccountsDetails(t.Context(), id).Execute()
-				if err != nil {
-					if res != nil && res.StatusCode == 404 {
-						return nil
-					}
-					return retry.NonRetryableError(err)
-				}
-				return retry.RetryableError(errors.New("account still exists"))
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("account still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_account" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+			_, res, err := client.Client.AccountsAPI.AccountsDetails(context.TODO(), id).Execute()
+			if err != nil {
+				if res != nil && res.StatusCode == 404 {
+					return nil
+				}
+				return retry.NonRetryableError(err)
+			}
+			return retry.RetryableError(errors.New("account still exists"))
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("account still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -57,12 +58,12 @@ func TestAccResourceTaikunStandaloneProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -96,12 +97,12 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -123,7 +124,7 @@ func TestAccResourceTaikunStandaloneProfileLock(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, true, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -153,12 +154,12 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -180,7 +181,7 @@ func TestAccResourceTaikunStandaloneProfileRename(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, newName, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", newName),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -210,12 +211,12 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunStandaloneProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, name, false, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", name),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -237,7 +238,7 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunStandaloneProfileConfig, newName, false, testAccResourceTaikunStandaloneProfileExtraSecurityGroup),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunStandaloneProfileExists(t),
+					testAccCheckTaikunStandaloneProfileExists,
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "name", newName),
 					resource.TestCheckResourceAttr("taikun_standalone_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttrSet("taikun_standalone_profile.foo", "public_key"),
@@ -254,56 +255,52 @@ func TestAccResourceTaikunStandaloneProfileAddGroups(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunStandaloneProfileExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunStandaloneProfileExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_standalone_profile" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-
-			response, _, err := client.Client.StandaloneProfileAPI.StandaloneprofileList(t.Context()).Id(id).Execute()
-			if err != nil || response.GetTotalCount() != 1 {
-				return fmt.Errorf("standalone profile doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_standalone_profile" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+
+		response, _, err := client.Client.StandaloneProfileAPI.StandaloneprofileList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
+			return fmt.Errorf("standalone profile doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunStandaloneProfileDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunStandaloneProfileDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_standalone_profile" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-
-				response, _, err := client.Client.StandaloneProfileAPI.StandaloneprofileList(t.Context()).Id(id).Execute()
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-				if response.GetTotalCount() != 0 {
-					return retry.RetryableError(errors.New("standalone profile still exists"))
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("standalone profile still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_standalone_profile" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+
+			response, _, err := client.Client.StandaloneProfileAPI.StandaloneprofileList(context.TODO()).Id(id).Execute()
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if response.GetTotalCount() != 0 {
+				return retry.RetryableError(errors.New("standalone profile still exists"))
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("standalone profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

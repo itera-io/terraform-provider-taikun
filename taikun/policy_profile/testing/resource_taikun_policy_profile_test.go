@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -36,7 +37,7 @@ func TestAccResourceTaikunPolicyProfile(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(
@@ -51,7 +52,7 @@ func TestAccResourceTaikunPolicyProfile(t *testing.T) {
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunPolicyProfileExists(t),
+					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "false"),
@@ -78,7 +79,7 @@ func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(
@@ -93,7 +94,7 @@ func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunPolicyProfileExists(t),
+					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
@@ -117,7 +118,7 @@ func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunPolicyProfileExists(t),
+					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "true"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
@@ -142,7 +143,7 @@ func TestAccResourceTaikunPolicyProfileLock(t *testing.T) {
 					"",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunPolicyProfileExists(t),
+					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
@@ -164,7 +165,7 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy(t),
+		CheckDestroy:      testAccCheckTaikunPolicyProfileDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(
@@ -179,7 +180,7 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 					"forbidden_tags = [\"tag1\", \"tag2\"]",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunPolicyProfileExists(t),
+					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
@@ -206,7 +207,7 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 					"forbidden_tags = [\"tag3\"]",
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunPolicyProfileExists(t),
+					testAccCheckTaikunPolicyProfileExists,
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "name", firstName),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "lock", "false"),
 					resource.TestCheckResourceAttr("taikun_policy_profile.foo", "forbid_node_port", "true"),
@@ -224,54 +225,50 @@ func TestAccResourceTaikunPolicyProfileUpdate(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunPolicyProfileExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunPolicyProfileExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_policy_profile" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-			resource, err := policy_profile.ResourceTaikunPolicyProfileFind(t.Context(), id, client)
-			if err != nil || resource == nil {
-				return fmt.Errorf("policy profile doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_policy_profile" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+		resource, err := policy_profile.ResourceTaikunPolicyProfileFind(context.TODO(), id, client)
+		if err != nil || resource == nil {
+			return fmt.Errorf("policy profile doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunPolicyProfileDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunPolicyProfileDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_policy_profile" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-				policyProfile, err := policy_profile.ResourceTaikunPolicyProfileFind(t.Context(), id, client)
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-				if policyProfile != nil {
-					return retry.RetryableError(errors.New("policy profile still exists"))
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("policy profile still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_policy_profile" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+			policyProfile, err := policy_profile.ResourceTaikunPolicyProfileFind(context.TODO(), id, client)
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if policyProfile != nil {
+				return retry.RetryableError(errors.New("policy profile still exists"))
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("policy profile still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

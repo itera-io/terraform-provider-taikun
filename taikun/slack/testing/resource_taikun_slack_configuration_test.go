@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -34,12 +35,12 @@ func TestAccResourceTaikunSlackConfiguration(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy(t),
+		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, name, url, channel, slackConfigType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunSlackConfigurationExists(t),
+					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", name),
@@ -71,12 +72,12 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy(t),
+		CheckDestroy:      testAccCheckTaikunSlackConfigurationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, name, url, channel, slackConfigType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunSlackConfigurationExists(t),
+					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", channel),
 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", name),
@@ -89,7 +90,7 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunSlackConfigurationConfig, newName, newUrl, newChannel, newSlackConfigType),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunSlackConfigurationExists(t),
+					testAccCheckTaikunSlackConfigurationExists,
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "channel", newChannel),
 					resource.TestCheckResourceAttrSet("taikun_slack_configuration.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_slack_configuration.foo", "name", newName),
@@ -103,56 +104,52 @@ func TestAccResourceTaikunSlackConfigurationModify(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunSlackConfigurationExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunSlackConfigurationExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_slack_configuration" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-
-			response, _, err := client.Client.SlackAPI.SlackList(t.Context()).Id(id).Execute()
-			if err != nil || response.GetTotalCount() != 1 {
-				return fmt.Errorf("slack configuration doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_slack_configuration" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+
+		response, _, err := client.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
+		if err != nil || response.GetTotalCount() != 1 {
+			return fmt.Errorf("slack configuration doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunSlackConfigurationDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunSlackConfigurationDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_slack_configuration" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-
-				response, _, err := client.Client.SlackAPI.SlackList(t.Context()).Id(id).Execute()
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-				if response.GetTotalCount() != 0 {
-					return retry.RetryableError(errors.New("slack configuration still exists"))
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("slack configuration still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_slack_configuration" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+
+			response, _, err := client.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+			if response.GetTotalCount() != 0 {
+				return retry.RetryableError(errors.New("slack configuration still exists"))
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("slack configuration still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }

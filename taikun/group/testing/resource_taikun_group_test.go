@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -34,12 +35,12 @@ func TestAccResourceTaikunGroup(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
-		CheckDestroy:      testAccCheckTaikunGroupDestroy(t),
+		CheckDestroy:      testAccCheckTaikunGroupDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunGroupConfig, accountName, accountName, groupName, claimValue),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckTaikunGroupExists(t),
+					testAccCheckTaikunGroupExists,
 					resource.TestCheckResourceAttrSet("taikun_group.foo", "id"),
 					resource.TestCheckResourceAttr("taikun_group.foo", "name", groupName),
 					resource.TestCheckResourceAttr("taikun_group.foo", "claim_value", claimValue),
@@ -50,68 +51,64 @@ func TestAccResourceTaikunGroup(t *testing.T) {
 	})
 }
 
-func testAccCheckTaikunGroupExists(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunGroupExists(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_group" {
-				continue
-			}
-
-			id, _ := utils.Atoi32(rs.Primary.ID)
-			response, _, err := client.Client.GroupsAPI.GroupsList(t.Context()).Execute()
-			if err != nil {
-				return fmt.Errorf("error listing groups: %s", err)
-			}
-
-			found := false
-			for _, g := range response.GetData() {
-				if g.GetId() == id {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return fmt.Errorf("group doesn't exist (id = %s)", rs.Primary.ID)
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_group" {
+			continue
 		}
 
-		return nil
+		id, _ := utils.Atoi32(rs.Primary.ID)
+		response, _, err := client.Client.GroupsAPI.GroupsList(context.TODO()).Execute()
+		if err != nil {
+			return fmt.Errorf("error listing groups: %s", err)
+		}
+
+		found := false
+		for _, g := range response.GetData() {
+			if g.GetId() == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("group doesn't exist (id = %s)", rs.Primary.ID)
+		}
 	}
+
+	return nil
 }
 
-func testAccCheckTaikunGroupDestroy(t *testing.T) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		client := utils_testing.TestAccProvider.Meta().(*tk.Client)
+func testAccCheckTaikunGroupDestroy(state *terraform.State) error {
+	client := utils_testing.TestAccProvider.Meta().(*tk.Client)
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "taikun_group" {
-				continue
-			}
-
-			retryErr := retry.RetryContext(t.Context(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
-				id, _ := utils.Atoi32(rs.Primary.ID)
-				response, _, err := client.Client.GroupsAPI.GroupsList(t.Context()).Execute()
-				if err != nil {
-					return retry.NonRetryableError(err)
-				}
-
-				for _, g := range response.GetData() {
-					if g.GetId() == id {
-						return retry.RetryableError(errors.New("group still exists"))
-					}
-				}
-				return nil
-			})
-			if utils.TimedOut(retryErr) {
-				return errors.New("group still exists (timed out)")
-			}
-			if retryErr != nil {
-				return retryErr
-			}
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "taikun_group" {
+			continue
 		}
 
-		return nil
+		retryErr := retry.RetryContext(context.Background(), utils.GetReadAfterOpTimeout(false), func() *retry.RetryError {
+			id, _ := utils.Atoi32(rs.Primary.ID)
+			response, _, err := client.Client.GroupsAPI.GroupsList(context.TODO()).Execute()
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+
+			for _, g := range response.GetData() {
+				if g.GetId() == id {
+					return retry.RetryableError(errors.New("group still exists"))
+				}
+			}
+			return nil
+		})
+		if utils.TimedOut(retryErr) {
+			return errors.New("group still exists (timed out)")
+		}
+		if retryErr != nil {
+			return retryErr
+		}
 	}
+
+	return nil
 }
