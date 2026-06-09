@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
@@ -33,11 +34,11 @@ func DataSourceTaikunUsers() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunUsersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
-	var offset int32 = 0
-	params := apiClient.Client.UsersAPI.UsersList(context.TODO())
+
+	var rawUserList []tkcore.UsersSearchResponseData
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
@@ -46,31 +47,48 @@ func dataSourceTaikunUsersRead(_ context.Context, d *schema.ResourceData, meta i
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		params = params.OrganizationId(organizationID)
-	}
 
-	var rawUserList []tkcore.UserForListDto
-	for {
-		response, res, err := params.Offset(offset).Execute()
+		dropdownRes, res, err := apiClient.Client.UsersAPI.UsersDropdown(ctx).OrganizationId(organizationID).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
-		rawUserList = append(rawUserList, response.Data...)
-		if len(rawUserList) == int(response.GetTotalCount()) {
-			break
+
+		for _, u := range dropdownRes.GetData() {
+			searchBody := tkcore.UsersSearchCommand{}
+			searchBody.SetSearchTerm(u.GetId())
+			searchRes, _, err := apiClient.Client.SearchAPI.SearchUsers(ctx).UsersSearchCommand(searchBody).Execute()
+			if err == nil {
+				for _, su := range searchRes.GetData() {
+					if su.GetId() == u.GetId() {
+						rawUserList = append(rawUserList, su)
+						break
+					}
+				}
+			}
 		}
-		offset = int32(len(rawUserList))
+	} else {
+		searchBody := tkcore.UsersSearchCommand{}
+		searchRes, res, err := apiClient.Client.SearchAPI.SearchUsers(ctx).UsersSearchCommand(searchBody).Execute()
+		if err != nil {
+			return diag.FromErr(tk.CreateError(res, err))
+		}
+		rawUserList = searchRes.GetData()
 	}
 
 	userList := make([]map[string]interface{}, len(rawUserList))
 	for i, rawUser := range rawUserList {
-		userList[i] = flattenTaikunUser(rawUser)
+		userList[i] = map[string]interface{}{
+			"id":           rawUser.GetId(),
+			"user_name":    rawUser.GetName(),
+			"email":        rawUser.GetEmail(),
+			"account_id":   utils.I32toa(rawUser.GetAccountId()),
+			"account_name": rawUser.GetAccountName(),
+		}
 	}
 	if err := d.Set("users", userList); err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(dataSourceID)
-
 	return nil
 }

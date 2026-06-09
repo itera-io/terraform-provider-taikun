@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -267,8 +269,24 @@ func getSpecifiedOrDefaultOrganizationId(d *schema.ResourceData, meta interface{
 		if err != nil {
 			return -1, tk.CreateError(response, err)
 		}
-		defaultOrgIdInt32 := data.Data.GetOrganizationId()
-		return defaultOrgIdInt32, nil
+
+		// checking if user belongs to any organization
+		if len(data.Data.GetOrganizations()) == 0 {
+			return -1, fmt.Errorf("user does not belong to any organization")
+		}
+		// user belongs to at least one organization, getting first one in the list
+		// FIXME: Order is not guaranteed. Agree on the correct handling of default organization
+		for key, orgContext := range data.Data.GetOrganizations() {
+			if strings.Contains(orgContext.GetOrganizationName(), "default") {
+				defaultOrgIdInt32, err := strconv.ParseInt(key, 10, 32)
+				if err != nil {
+					return -1, err
+				}
+				return int32(defaultOrgIdInt32), nil // casting to int32 is safe due to bitsize fixed to 32 in strconv.ParseInt()
+			}
+		}
+
+		return -1, fmt.Errorf("default organization not found")
 	}
 
 	orgIdInt32, err := utils.Atoi32(orgIdString.(string))

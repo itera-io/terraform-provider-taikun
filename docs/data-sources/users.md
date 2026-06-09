@@ -37,18 +37,14 @@ data "taikun_users" "foo" {
 
 Read-Only:
 
+- `account_id` (String)
 - `display_name` (String)
 - `email` (String)
 - `email_confirmed` (Boolean)
 - `email_notification_enabled` (Boolean)
+- `global_role` (String)
 - `id` (String)
-- `is_approved_by_partner` (Boolean)
-- `is_csm` (Boolean)
-- `is_disabled` (Boolean)
-- `is_owner` (Boolean)
-- `organization_id` (String)
-- `organization_name` (String)
-- `role` (String)
+- `owner` (Boolean)
 - `user_name` (String)
 
 

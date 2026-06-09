@@ -2,6 +2,7 @@ package virtual_cluster
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	tk "github.com/itera-io/taikungoclient"
@@ -73,7 +74,7 @@ func dataSourceTaikunVirtualClustersRead(ctx context.Context, d *schema.Resource
 			}
 		}
 
-		if offset == response.GetTotalCount() {
+		if int64(offset) == response.GetTotalCount() { // casting offset to int64 is safe, simply extending the range of the values
 			break
 		}
 	}

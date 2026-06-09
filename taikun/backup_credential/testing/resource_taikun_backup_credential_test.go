@@ -16,16 +16,27 @@ import (
 )
 
 const testAccResourceTaikunBackupCredentialConfig = `
+resource "taikun_organization" "foo" {
+  name          = "%s"
+  full_name     = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_backup_credential" "foo" {
   name            = "%s"
-  lock       = %t
+  organization_id = resource.taikun_organization.foo.id
+  lock            = %t
 
   s3_endpoint = "%s"
   s3_region   = "%s"
 }
 `
 
+// TestAccResourceTaikunBackupCredential verifies create/read of an S3 backup credential.
+// Robot API tokens require organization_id on POST /api/v1/s3credentials.
 func TestAccResourceTaikunBackupCredential(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	backupCredentialName := utils.RandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -35,6 +46,8 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					organizationName,
+					organizationFullName,
 					backupCredentialName,
 					false,
 					os.Getenv("S3_ENDPOINT"),
@@ -43,6 +56,7 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunBackupCredentialExists,
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "name", backupCredentialName),
+					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "organization_name", organizationName),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_access_key_id", os.Getenv("S3_ACCESS_KEY_ID")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_secret_access_key", os.Getenv("S3_SECRET_ACCESS_KEY")),
 					resource.TestCheckResourceAttr("taikun_backup_credential.foo", "s3_endpoint", os.Getenv("S3_ENDPOINT")),
@@ -57,7 +71,10 @@ func TestAccResourceTaikunBackupCredential(t *testing.T) {
 	})
 }
 
+// TestAccResourceTaikunBackupCredentialLock verifies lock toggling via POST /api/v1/s3credentials/lockmanager.
 func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	backupCredentialName := utils.RandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -67,6 +84,8 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					organizationName,
+					organizationFullName,
 					backupCredentialName,
 					false,
 					os.Getenv("S3_ENDPOINT"),
@@ -87,6 +106,8 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					organizationName,
+					organizationFullName,
 					backupCredentialName,
 					true,
 					os.Getenv("S3_ENDPOINT"),
@@ -109,7 +130,10 @@ func TestAccResourceTaikunBackupCredentialLock(t *testing.T) {
 	})
 }
 
+// TestAccResourceTaikunBackupCredentialRename verifies in-place rename via PUT /api/v1/s3credentials.
 func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	backupCredentialName := utils.RandomTestName()
 	newBackupCredentialName := utils.RandomTestName()
 
@@ -120,6 +144,8 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					organizationName,
+					organizationFullName,
 					backupCredentialName,
 					false,
 					os.Getenv("S3_ENDPOINT"),
@@ -140,6 +166,8 @@ func TestAccResourceTaikunBackupCredentialRename(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(testAccResourceTaikunBackupCredentialConfig,
+					organizationName,
+					organizationFullName,
 					newBackupCredentialName,
 					false,
 					os.Getenv("S3_ENDPOINT"),

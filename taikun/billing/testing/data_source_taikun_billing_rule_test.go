@@ -11,22 +11,29 @@ import (
 )
 
 const testAccDataSourceTaikunBillingRuleConfig = `
+resource "taikun_organization" "foo" {
+  name          = "%s"
+  full_name     = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_billing_credential" "foo" {
   name            = "%s"
+  organization_id = resource.taikun_organization.foo.id
 
   prometheus_password = "%s"
-  prometheus_url = "%s"
+  prometheus_url      = "%s"
   prometheus_username = "%s"
 }
 
 resource "taikun_billing_rule" "foo" {
-  name            = "%s"
-  metric_name     =  "coredns_forward_request_duration_seconds"
-  price = 1
-  type = "Sum"
+  name                  = "%s"
+  metric_name           = "coredns_forward_request_duration_seconds"
+  price                 = 1
+  type                  = "Sum"
   billing_credential_id = resource.taikun_billing_credential.foo.id
   label {
-    key = "key"
+    key   = "key"
     value = "value"
   }
 }
@@ -36,7 +43,14 @@ data "taikun_billing_rule" "foo" {
 }
 `
 
+// TestAccDataSourceTaikunBillingRule retrieves a single billing rule by ID.
+// Skipped because Managing Operation/Billing Credentials requires a Partner role on the Taikun API,
+// which is not possessed by the standard robot account credentials in dev-env.sh.
 func TestAccDataSourceTaikunBillingRule(t *testing.T) {
+	t.Skip("requires Partner API role privileges; re-enable when Partner credentials are available in dev-env.sh")
+
+	orgName := utils.RandomTestName()
+	orgFullName := utils.RandomTestName()
 	billingCredentialName := utils.RandomTestName()
 	billingRuleName := utils.RandomTestName()
 
@@ -46,6 +60,8 @@ func TestAccDataSourceTaikunBillingRule(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(testAccDataSourceTaikunBillingRuleConfig,
+					orgName,
+					orgFullName,
 					billingCredentialName,
 					os.Getenv("PROMETHEUS_PASSWORD"),
 					os.Getenv("PROMETHEUS_URL"),

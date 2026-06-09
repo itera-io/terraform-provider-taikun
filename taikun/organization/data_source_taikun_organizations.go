@@ -2,6 +2,7 @@ package organization
 
 import (
 	"context"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 
@@ -49,10 +50,6 @@ func dataSourceTaikunOrganizationsRead(_ context.Context, d *schema.ResourceData
 	organizationsList := make([]map[string]interface{}, len(rawOrganizationsList))
 	for i, rawOrganization := range rawOrganizationsList {
 		organizationsList[i] = flattenTaikunOrganization(&rawOrganization)
-		organizationsList[i]["cloud_credentials"] = rawOrganization.GetCloudCredentials()
-		organizationsList[i]["projects"] = rawOrganization.GetProjects()
-		organizationsList[i]["servers"] = rawOrganization.GetServers()
-		organizationsList[i]["users"] = rawOrganization.GetUsers()
 	}
 	if err := d.Set("organizations", organizationsList); err != nil {
 		return diag.FromErr(err)

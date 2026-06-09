@@ -47,9 +47,9 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 		params = params.OrganizationId(organizationID)
 	}
 
-	response, _, err := params.Execute()
+	response, res, err := params.Execute()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	projects := make([]map[string]interface{}, len(response.GetData()))

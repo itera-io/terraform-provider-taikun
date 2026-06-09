@@ -24,6 +24,8 @@ website/node_modules
 *.iml
 *.test
 *.iml
+vendor/
+build/_output/
 
 website/vendor
 
@@ -36,3 +38,7 @@ website/vendor
 
 # Files needed for acceptance tests
 gcp.json
+
+terraform-provider-taikun
+
+dev-env.sh

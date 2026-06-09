@@ -1,4 +1,4 @@
-package testing_test
+package testing
 
 import (
 	"fmt"
@@ -10,7 +10,15 @@ import (
 )
 
 const testAccDataSourceTaikunAccessProfileConfig = `
+resource "taikun_organization" "foo" {
+  name = "%s"
+  full_name = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_access_profile" "foo" {
+  organization_id = resource.taikun_organization.foo.id
+
   name = "%s"
 }
 
@@ -20,6 +28,8 @@ data "taikun_access_profile" "foo" {
 `
 
 func TestAccDataSourceTaikunAccessProfile(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	accessProfileName := utils.RandomTestName()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -27,7 +37,7 @@ func TestAccDataSourceTaikunAccessProfile(t *testing.T) {
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfileConfig, accessProfileName),
+				Config: fmt.Sprintf(testAccDataSourceTaikunAccessProfileConfig, organizationName, organizationFullName, accessProfileName),
 				Check: utils_testing.CheckDataSourceStateMatchesResourceState(
 					"data.taikun_access_profile.foo",
 					"taikun_access_profile.foo",

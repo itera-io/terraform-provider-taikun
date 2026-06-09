@@ -2,10 +2,11 @@ package showback
 
 import (
 	"context"
+	"regexp"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkshowback "github.com/itera-io/taikungoclient/showbackclient"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -261,7 +262,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	_, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
+	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}

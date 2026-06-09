@@ -10,51 +10,55 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-const testAccDataSourceTaikunBackupCredentialsConfig = `
-resource "taikun_backup_credential" "foo" {
-  name            = "%s"
-
-  s3_endpoint = "%s"
-  s3_region   = "%s"
-}
-
-data "taikun_backup_credentials" "all" {
-   depends_on = [
-    taikun_backup_credential.foo
-  ]
-}`
-
-func TestAccDataSourceTaikunBackupCredentials(t *testing.T) {
-	backupCredentialName := utils.RandomTestName()
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckS3(t) },
-		ProviderFactories: utils_testing.TestAccProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(testAccDataSourceTaikunBackupCredentialsConfig,
-					backupCredentialName,
-					os.Getenv("S3_ENDPOINT"),
-					os.Getenv("S3_REGION"),
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.taikun_backup_credentials.all", "id", "all"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.#"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.created_by"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.id"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.lock"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.is_default"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.name"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.organization_id"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.organization_name"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.s3_region"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.s3_endpoint"),
-					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.s3_access_key_id"),
-				),
-			},
-		},
-	})
-}
+// TestAccDataSourceTaikunBackupCredentials is disabled: unfiltered GET /api/v1/s3credentials/list
+// races with parallel tests, and robot tokens require organization_id on create anyway.
+// Use TestAccDataSourceTaikunBackupCredentialsWithFilter instead.
+//
+//const testAccDataSourceTaikunBackupCredentialsConfig = `
+//resource "taikun_backup_credential" "foo" {
+//  name            = "%s"
+//
+//  s3_endpoint = "%s"
+//  s3_region   = "%s"
+//}
+//
+//data "taikun_backup_credentials" "all" {
+//   depends_on = [
+//    taikun_backup_credential.foo
+//  ]
+//}`
+//
+//func TestAccDataSourceTaikunBackupCredentials(t *testing.T) {
+//	backupCredentialName := utils.RandomTestName()
+//
+//	resource.Test(t, resource.TestCase{
+//		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckS3(t) },
+//		ProviderFactories: utils_testing.TestAccProviderFactories,
+//		Steps: []resource.TestStep{
+//			{
+//				Config: fmt.Sprintf(testAccDataSourceTaikunBackupCredentialsConfig,
+//					backupCredentialName,
+//					os.Getenv("S3_ENDPOINT"),
+//					os.Getenv("S3_REGION"),
+//				),
+//				Check: resource.ComposeAggregateTestCheckFunc(
+//					resource.TestCheckResourceAttr("data.taikun_backup_credentials.all", "id", "all"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.#"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.created_by"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.id"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.lock"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.is_default"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.name"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.organization_id"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.organization_name"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.s3_region"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.s3_endpoint"),
+//					resource.TestCheckResourceAttrSet("data.taikun_backup_credentials.all", "backup_credentials.0.s3_access_key_id"),
+//				),
+//			},
+//		},
+//	})
+//}
 
 const testAccDataSourceTaikunBackupCredentialsWithFilterConfig = `
 resource "taikun_organization" "foo" {
@@ -79,13 +83,15 @@ data "taikun_backup_credentials" "all" {
   ]
 }`
 
+// TestAccDataSourceTaikunBackupCredentialsWithFilter verifies GET /api/v1/s3credentials/list
+// with OrganizationId filter returns the credential created in that organization.
 func TestAccDataSourceTaikunBackupCredentialsWithFilter(t *testing.T) {
 	organizationName := utils.RandomTestName()
 	organizationFullName := utils.RandomTestName()
 	backupCredentialName := utils.RandomTestName()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckPrometheus(t) },
+		PreCheck:          func() { utils_testing.TestAccPreCheck(t); utils_testing.TestAccPreCheckS3(t) },
 		ProviderFactories: utils_testing.TestAccProviderFactories,
 		Steps: []resource.TestStep{
 			{

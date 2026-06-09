@@ -16,14 +16,11 @@ Taikun User
 
 ```terraform
 resource "taikun_user" "foo" {
-  user_name = "foo"
-  email     = "email@domain.fr"
-  role      = "User"
-
+  user_name        = "foo"
+  email            = "email@domain.fr"
   display_name     = "Foo"
-  organization_id  = "42"
-  disable          = true
-  partner_approval = true
+  account_id       = "42"
+  is_account_admin = false
 }
 ```
 
@@ -33,24 +30,20 @@ resource "taikun_user" "foo" {
 ### Required
 
 - `email` (String) The email of the user.
-- `role` (String) The role of the user: `Manager` or `User`.
+- `global_role` (String) The role of the user.
 - `user_name` (String) The name of the user.
 
 ### Optional
 
+- `account_id` (String) The ID of the account the user belongs to.
 - `display_name` (String) The user's display name. Defaults to ` `.
-- `organization_id` (String) The ID of the user's organization.
+- `owner` (Boolean) Indicates whether the user is a project owner. Defaults to `false`.
 
 ### Read-Only
 
 - `email_confirmed` (Boolean) Indicates whether the email of the user has been confirmed.
 - `email_notification_enabled` (Boolean) Indicates whether the user has enabled notifications on their email.
 - `id` (String) The UUID of the user.
-- `is_approved_by_partner` (Boolean) Indicates whether the user account is approved by its Partner. If it isn't, the user won't be able to login.
-- `is_csm` (Boolean) Indicates whether the user is a Customer Success Manager.
-- `is_disabled` (Boolean) Indicates whether the user is locked.
-- `is_owner` (Boolean) Indicates whether the user is the Owner of their organization.
-- `organization_name` (String) The name of the user's organization.
 
 ## Import
 

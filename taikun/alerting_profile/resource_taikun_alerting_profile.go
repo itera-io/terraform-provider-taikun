@@ -263,9 +263,9 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, _, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 		if len(response.Data) != 1 {
 			if withRetries {
@@ -276,9 +276,9 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 		}
 		alertingProfileDTO := response.Data[0]
 
-		alertingIntegrationsResponse, _, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
+		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 
 		err = utils.SetResourceDataFromMap(d, flattenTaikunAlertingProfile(&alertingProfileDTO, alertingIntegrationsResponse))
@@ -311,13 +311,6 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 		body.SetId(id)
 		body.SetName(d.Get("name").(string))
 
-		if organizationIDData, organizationIDIsSet := d.GetOk("organization_id"); organizationIDIsSet {
-			organizationID, err := utils.Atoi32(organizationIDData.(string))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			body.SetOrganizationId(organizationID)
-		}
 		if reminderData, reminderIsSet := d.GetOk("reminder"); reminderIsSet {
 			body.SetReminder(tkcore.AlertingReminder(reminderData.(string)))
 		}
@@ -326,7 +319,9 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			body.SetSlackConfigurationId(slackConfigID)
+			if slackConfigID != 0 {
+				body.SetSlackConfigurationId(slackConfigID)
+			}
 		}
 
 		_, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesEdit(ctx).UpdateAlertingProfileCommand(body).Execute()

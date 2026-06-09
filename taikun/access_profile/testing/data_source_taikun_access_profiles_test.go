@@ -1,26 +1,27 @@
-package testing_test
+package testing
 
 import (
 	"fmt"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
+	"github.com/itera-io/terraform-provider-taikun/taikun/utils_testing"
 )
 
 // This test is removed, because we cannot avoid race conditions.
-// This data source lists access profiles from the default itera organization
-// , but they are constantly created and destroyed by other tests run in parallel anyway.
+// This data source lists access profiles from the default itera organization,
+// but they are constantly created and destroyed by other tests run in parallel anyway.
 //
 //const testAccDataSourceTaikunAccessProfilesConfig = `
 //data "taikun_access_profiles" "all" {
-//}`
+//}
+//`
 //
 //func TestAccDataSourceTaikunAccessProfiles(t *testing.T) {
 //	resource.Test(t, resource.TestCase{
-//		PreCheck:          func() { testAccPreCheck(t) },
-//		ProviderFactories: testAccProviderFactories,
+//		PreCheck:          func() { utils_testing.TestAccPreCheck(t) },
+//		ProviderFactories: utils_testing.TestAccProviderFactories,
 //		Steps: []resource.TestStep{
 //			{
 //				Config: testAccDataSourceTaikunAccessProfilesConfig,
@@ -51,7 +52,8 @@ resource "taikun_organization" "foo" {
 
 data "taikun_access_profiles" "all" {
   organization_id = resource.taikun_organization.foo.id
-}`
+}
+`
 
 func TestAccDataSourceTaikunAccessProfilesWithFilter(t *testing.T) {
 	organizationName := utils.RandomTestName()

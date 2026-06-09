@@ -3,6 +3,8 @@ package virtual_cluster
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,7 +12,6 @@ import (
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
-	"time"
 )
 
 func resourceTaikunVirtualClusterSchema() map[string]*schema.Schema {
@@ -112,9 +113,9 @@ func resourceTaikunVirtualClusterUpdate(ctx context.Context, d *schema.ResourceD
 			body.SetDeleteOnExpiration(false)
 		}
 
-		_, err = apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
+		res, err := apiClient.Client.ProjectsAPI.ProjectsExtendLifetime(context.TODO()).ProjectExtendLifeTimeCommand(body).Execute()
 		if err != nil {
-			return diag.FromErr(err)
+			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 

@@ -1,3 +1,5 @@
+GOLANGCI_LINTERS_VERSION := v2.12.2
+
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=itera-io
 NAMESPACE=dev
@@ -6,28 +8,60 @@ BINARY=terraform-provider-${NAME}
 VERSION=0.1.0
 OS_ARCH=linux_amd64
 
-default: install
+## Including environmental variables necessary for running unit tests
+include ./dev-env.sh
 
-build:
-	go build -o ${BINARY}
+default: help
 
-dockerbuild:
+deps: go-linters-install check-terraform ## Installing development prerequisites locally and checking all dependencies (if they're installed)
+
+check-terraform:
+	@command -v terraform >/dev/null 2>&1 || { echo >&2 "Error: Terraform is not installed. Aborting."; exit 1; }
+	@echo "Terraform is installed!"
+
+build: go-vendor ## Builds Golang binary
+	go build -o build/_output/${BINARY}
+
+generate: build ## Generates Terraform's bindings
+	go generate ./...
+
+go-linters-install: ## Installs Golang's linters locally for verification
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(shell go env GOPATH)/bin ${GOLANGCI_LINTERS_VERSION}
+
+go-vet:
+	go vet ./...
+
+lint: go-vet go-linters-install ## Runs golangci-lint against codebase
+	golangci-lint run --timeout 5m
+
+dockerbuild: ## Builds Docker image
 	DOCKER_BUILDKIT=1 docker build --rm --target bin --output . .
 
-commoninstall:
+commoninstall: ## Installs built binary to the host's system
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+	mv build/_output/${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
+install: ## Builds and installs Terraform provider locally
 install: build commoninstall
 
+dockerinstall: ## Builds Docker image and installs binary to the Host system
 dockerinstall: dockerbuild commoninstall
 
-test:
+test: ## Runs unit tests
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
-testacc:
+testacc: ## Runs unit tests with specified arguments
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+
+go-tidy: ## Runs go mod tidy
+	go mod tidy
+
+go-vendor: go-tidy ## Runs go mod tidy && go mod vendor
+	go mod vendor
+
+clean-vendor: ## Removes vendor folder
+	rm -rf vendor
 
 # --- Radek's rigorous testing here ---
 #ACCEPTANCE_TESTS='(TestAccResourceTaikunRepository|TestAccDataSourceTaikunRepository|TestAccDataSourceTaikunCatalog|TestAccResourceTaikunCatalog|TestAccResourceTaikunOrganization|TestAccDataSourceTaikunOrganization|TestAccDataSourceTaikunShowback|TestAccDataSourceTaikunAccessProfile|TestAccResourceTaikunAccessProfile|TestAccDataSourceTaikunAlertingProfile|TestAccResourceTaikunProjectModifyAlertingProfile|TestAccResourceTaikunKubernetesProfile|TestAccResourceTaikunBilling|TestAccResourceTaikunProjectModifyImages|TestAccResourceTaikunProjectD|TestAccResourceTaikunProjectK|TestAccResourceTaikunUser|TestAccResourceTaikunShowback|TestAccResourceTaikunProjectModifyFlavors|TestAccResourceTaikunProjectU|TestAccResourceTaikunProject$$|TestAccDataSourceTaikunCloudCredentialOpenStack|TestAccDataSourceTaikunCloudCredentialsOpenStack|TestAccDataSourceTaikunCloudCredentialAzure|TestAccDataSourceTaikunCloudCredentialsAzure|TestAccDataSourceTaikunCloudCredentialAWS|TestAccDataSourceTaikunCloudCredentialsAWS|TestAccDataSourceTaikunKubernetesProfile|TestAccDataSourceTaikunBillingRule|TestAccDataSourceTaikunBillingCredential|TestAccDataSourceTaikunBackupCredential)' ./scripts/rerun_failed_tests.sh
@@ -38,7 +72,7 @@ testacc:
 # 1C
 #ACCEPTANCE_TESTS='(TestAccResourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialZadara|TestAccDataSourceTaikunCloudCredentialsZadara|TestAccDataSourceTaikunImagesZadara$$|TestAccResourceTaikunCloudCredentialGCP$$|TestAccDataSourceTaikunCloudCredentialsGCP$$|TestAccDataSourceTaikunImagesGCP$$|TestAccDataSourceTaikunCloudCredentialGCP$$)' ./scripts/rerun_failed_tests.sh
 
-ACCEPTANCE_TESTS='(TestAccResourceTaikunAccessProfileTrustedRegistries$$)'
+ACCEPTANCE_TESTS='(TestAcc.*TaikunOrganization.*)'
 
 # --- CI: Not creating resources ---
 # Acklowledgment testing ALPHA
@@ -61,34 +95,33 @@ ACCEPTANCE_TESTS='(TestAccResourceTaikunAccessProfileTrustedRegistries$$)'
 # Part 4b - Azure -- 706 s
 # Part 4c - Azure -- 464 s
 
-
-rtestacc:
+rtestacc: install
 	date
 	go clean -testcache
 	TF_ACC=1 go test . ./taikun/*/testing -v -run ${ACCEPTANCE_TESTS} -timeout 120m
 
-rtestacc1:
+rtestacc1: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 1 <<<<<<<<<<<<<<<<
 	go clean -testcache
 	TF_ACC=1 go test $(TEST) -v -run ${ACCEPTANCE_TESTS} -timeout 120m -parallel=1
 
-rtestacc2:
+rtestacc2: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 2 <<<<<<<<<<<<<<<<
 	go clean -testcache
 	TF_ACC=1 go test $(TEST) -v -run ${ACCEPTANCE_TESTS} -timeout 120m -parallel=2
 
-rtestacc3:
+rtestacc3: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 3 <<<<<<<<<<<<<<<<
 	go clean -testcache
 	TF_ACC=1 go test $(TEST) -v -run ${ACCEPTANCE_TESTS} -timeout 120m -parallel=3
 
-rtestacc4:
+rtestacc4: install
 	date
 	# __________________________________________________________
 	# >>>>>>>>>>>>>>>> TESTACC start Threads: 4 <<<<<<<<<<<<<<<<
@@ -97,70 +130,12 @@ rtestacc4:
 
 rtestaccrigorous: rtestacc1 rtestacc2 rtestacc3 rtestacc4
 
-clean:
-	rm -f ${BINARY}
+clean: clean-vendor ## Removes built binary
+	rm -f build/_output/${BINARY}
 
-.PHONY: build dockerbuild commoninstall install dockerinstall test testacc clean
+test-ci: ## Simulates CI/CD pipeline locally
+test-ci: build dockerbuild commoninstall install dockerinstall test testacc clean
 
-
-#TEST?=$$(go list ./... | grep -v 'vendor')
-#HOSTNAME=itera-io
-#NAMESPACE=dev
-#NAME=taikun
-#BINARY=terraform-provider-${NAME}
-#VERSION=0.1.0
-#OS_ARCH=linux_amd64
-#
-#default: install
-#
-#build:
-#	go build -o ${BINARY}
-#
-#dockerbuild:
-#	DOCKER_BUILDKIT=1 docker build --rm --target bin --output . .
-#
-#commoninstall:
-#	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-#	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-#
-#install: build commoninstall
-#
-#dockerinstall: dockerbuild commoninstall
-#
-#test:
-#	go test -i "$(TEST)" || exit 1
-#	echo "$(TEST)" | xargs -t -n4 go test "$(TESTARGS)" -timeout=30s -parallel=4
-#
-#testacc:
-#	# __________________________________________________________
-#	# ---------------- TESTACC start Threads: 1 ----------------
-#	go clean -testcache
-#	TF_ACC=1 go test $(TEST) -v "$TESTARGS" -timeout 120m
-#
-#testacc2:
-#	clear
-#	# __________________________________________________________
-#	# >>>>>>>>>>>>>>>> TESTACC start Threads: 2 <<<<<<<<<<<<<<<<
-#	go clean -testcache
-#	TF_ACC=1 go test "$(TEST)" -v "$TESTARGS" -timeout 120m -parallel=2
-#
-#testacc3:
-#	#
-#	# __________________________________________________________
-#	# >>>>>>>>>>>>>>>> TESTACC start Threads: 3 <<<<<<<<<<<<<<<<
-#	go clean -testcache
-#	TF_ACC=1 go test "$(TEST)" -v "$TESTARGS" -timeout 120m -parallel=3
-#
-#testacc4:
-#	#
-#	# __________________________________________________________
-#	# >>>>>>>>>>>>>>>> TESTACC start Threads: 4 <<<<<<<<<<<<<<<<
-#	go clean -testcache
-#	TF_ACC=1 go test "$(TEST)" -v "$TESTARGS" -timeout 120m -parallel=4
-#
-#testrigorous: testacc2 testacc3 testacc4
-#
-#clean:
-#	rm -f ${BINARY}
-#
-#.PHONY: build dockerbuild commoninstall install dockerinstall test testacc clean
+.PHONY: help
+help: # Credits to https://gist.github.com/prwhite/8168133 for this handy oneliner
+	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)

@@ -3,6 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+
+	"github.com/itera-io/terraform-provider-taikun/taikun/account"
 	"github.com/itera-io/terraform-provider-taikun/taikun/access_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/alerting_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/app_instance"
@@ -19,19 +23,20 @@ import (
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_vsphere"
 	"github.com/itera-io/terraform-provider-taikun/taikun/cc_zadara"
 	"github.com/itera-io/terraform-provider-taikun/taikun/flavors"
+	"github.com/itera-io/terraform-provider-taikun/taikun/group"
 	"github.com/itera-io/terraform-provider-taikun/taikun/kubeconfig"
 	"github.com/itera-io/terraform-provider-taikun/taikun/kubernetes_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/organization"
 	"github.com/itera-io/terraform-provider-taikun/taikun/policy_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/project"
+	"github.com/itera-io/terraform-provider-taikun/taikun/project_subnets"
 	"github.com/itera-io/terraform-provider-taikun/taikun/repository"
+	"github.com/itera-io/terraform-provider-taikun/taikun/robot"
 	"github.com/itera-io/terraform-provider-taikun/taikun/showback"
 	"github.com/itera-io/terraform-provider-taikun/taikun/slack"
 	"github.com/itera-io/terraform-provider-taikun/taikun/standalone_profile"
 	"github.com/itera-io/terraform-provider-taikun/taikun/user"
 	"github.com/itera-io/terraform-provider-taikun/taikun/virtual_cluster"
-	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -91,6 +96,8 @@ var ApiVersion = "1"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		DataSourcesMap: map[string]*schema.Resource{
+			"taikun_account":                     account.DataSourceTaikunAccount(),
+			"taikun_accounts":                    account.DataSourceTaikunAccounts(),
 			"taikun_access_profile":              access_profile.DataSourceTaikunAccessProfile(),
 			"taikun_access_profiles":             access_profile.DataSourceTaikunAccessProfiles(),
 			"taikun_alerting_profile":            alerting_profile.DataSourceTaikunAlertingProfile(),
@@ -122,6 +129,8 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credentials_vsphere":   cc_vsphere.DataSourceTaikunCloudCredentialsVsphere(),
 			"taikun_cloud_credentials_zadara":    cc_zadara.DataSourceTaikunCloudCredentialsZadara(),
 			"taikun_flavors":                     flavors.DataSourceTaikunFlavors(),
+			"taikun_group":                       group.DataSourceTaikunGroup(),
+			"taikun_groups":                      group.DataSourceTaikunGroups(),
 			"taikun_images_aws":                  cc_aws.DataSourceTaikunImagesAWS(),
 			"taikun_images_azure":                cc_azure.DataSourceTaikunImagesAzure(),
 			"taikun_images_gcp":                  cc_gcp.DataSourceTaikunImagesGCP(),
@@ -138,7 +147,9 @@ func Provider() *schema.Provider {
 			"taikun_policy_profile":              policy_profile.DataSourceTaikunPolicyProfile(),
 			"taikun_policy_profiles":             policy_profile.DataSourceTaikunPolicyProfiles(),
 			"taikun_project":                     project.DataSourceTaikunProject(),
+			"taikun_project_subnets":             project_subnets.DataSourceTaikunProjectSubnets(),
 			"taikun_projects":                    project.DataSourceTaikunProjects(),
+			"taikun_robots":                      robot.DataSourceTaikunRobots(),
 			"taikun_repository":                  repository.DataSourceTaikunRespository(),
 			"taikun_repositories":                repository.DataSourceTaikunRepositories(),
 			"taikun_showback_credential":         showback.DataSourceTaikunShowbackCredential(),
@@ -156,6 +167,7 @@ func Provider() *schema.Provider {
 			//"taikun_images":                      taikun.dataSourceTaikunImages(), // DEPRECATED
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"taikun_account":                              account.ResourceTaikunAccount(),
 			"taikun_access_profile":                       access_profile.ResourceTaikunAccessProfile(),
 			"taikun_alerting_profile":                     alerting_profile.ResourceTaikunAlertingProfile(),
 			"taikun_app_instance":                         app_instance.ResourceTaikunAppInstance(),
@@ -172,13 +184,15 @@ func Provider() *schema.Provider {
 			"taikun_cloud_credential_proxmox":             cc_proxmox.ResourceTaikunCloudCredentialProxmox(),
 			"taikun_cloud_credential_vsphere":             cc_vsphere.ResourceTaikunCloudCredentialVsphere(),
 			"taikun_cloud_credential_zadara":              cc_zadara.ResourceTaikunCloudCredentialZadara(),
+			"taikun_group":                                group.ResourceTaikunGroup(),
 			"taikun_kubeconfig":                           kubeconfig.ResourceTaikunKubeconfig(),
 			"taikun_kubernetes_profile":                   kubernetes_profile.ResourceTaikunKubernetesProfile(),
 			"taikun_organization_billing_rule_attachment": organization.ResourceTaikunOrganizationBillingRuleAttachment(),
 			"taikun_organization":                         organization.ResourceTaikunOrganization(),
 			"taikun_policy_profile":                       policy_profile.ResourceTaikunPolicyProfile(),
 			"taikun_project":                              project.ResourceTaikunProject(),
-			"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(),
+			"taikun_project_user_attachment":              project.ResourceTaikunProjectUserAttachment(), // DEPRECATED
+			"taikun_robot":                                robot.ResourceTaikunRobot(),
 			"taikun_repository":                           repository.ResourceTaikunRepository(),
 			"taikun_showback_credential":                  showback.ResourceTaikunShowbackCredential(),
 			"taikun_showback_rule":                        showback.ResourceTaikunShowbackRule(),
@@ -195,6 +209,13 @@ func Provider() *schema.Provider {
 				Description:  "Custom Taikun API host. Can be set with TAIKUN_API_HOST.",
 				Optional:     true,
 				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_API_HOST", "api.taikun.cloud"),
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"account_name": {
+				Type:         schema.TypeString,
+				Description:  "Custom Taikun account_name. Can be set with TAIKUN_ACCOUNT_NAME.",
+				Required:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("TAIKUN_ACCOUNT_NAME", "taikun"),
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"email": {
@@ -260,38 +281,66 @@ func Provider() *schema.Provider {
 }
 
 func configureContextFunc(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	var (
-		email     string
-		password  string
-		accessKey string
-		secretKey string
-		authMode  string
-	)
-
-	// 1. Try Keycloak
-	if rawEmail, ok := d.GetOk("keycloak_email"); ok {
-		email, _ = rawEmail.(string)
-		rawPassword := d.Get("keycloak_password")
-		password, _ = rawPassword.(string)
-		authMode = "keycloak"
-	} else if rawEmail, ok := d.GetOk("email"); ok {
-		// 2. Try Username/Password
-		email, _ = rawEmail.(string)
-		rawPassword := d.Get("password")
-		password, _ = rawPassword.(string)
-		authMode = ""
-	} else if rawAccessKey, ok := d.GetOk("access_key"); ok {
-		// 3. Try Access Key mode
-		accessKey, _ = rawAccessKey.(string)
-		rawSecretKey := d.Get("secret_key")
-		secretKey, _ = rawSecretKey.(string)
-		authMode = "token"
-	} else {
-		return nil, diag.Errorf("You must define credentials using either keycloak_email, email/password, or access_key/secret_key")
+	// Get account name
+	rawAccountName, ok := d.GetOk("account_name")
+	if !ok {
+		return nil, diag.Errorf("account_name is required")
+	}
+	// Casting account name to string
+	accountName, ok := rawAccountName.(string)
+	if !ok {
+		return nil, diag.Errorf("casting to string failed, account_name must be a string")
 	}
 
-	apiHost, _ := d.Get("api_host").(string)
+	// Get API host
+	apiHost, ok := d.Get("api_host").(string)
+	if !ok {
+		return nil, diag.Errorf("casting failed, api_host must be a string")
+	}
 
-	client := tk.NewClientFromCredentials(email, password, accessKey, secretKey, authMode, apiHost)
-	return client, nil
+	// Try Keycloak
+	if rawEmail, ok := d.GetOk("keycloak_email"); ok {
+		email, ok1 := rawEmail.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, keycloak_email must be a string")
+		}
+		rawPassword := d.Get("keycloak_password")
+		password, ok1 := rawPassword.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, keycloak_password must be a string")
+		}
+		authMode := "keycloak"
+		return tk.NewClientFromCredentials(accountName, email, password, authMode, apiHost), nil
+	}
+
+	// Try Username/Password
+	if rawEmail, ok := d.GetOk("email"); ok {
+		email, ok1 := rawEmail.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, email must be a string")
+		}
+		rawPassword := d.Get("password")
+		password, ok1 := rawPassword.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, password must be a string")
+		}
+		authMode := ""
+		return tk.NewClientFromCredentials(accountName, email, password, authMode, apiHost), nil
+	}
+
+	// Try Access Key mode
+	if rawAccessKey, ok := d.GetOk("access_key"); ok {
+		accessKey, ok1 := rawAccessKey.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, access_key must be a string")
+		}
+		rawSecretKey := d.Get("secret_key")
+		secretKey, ok1 := rawSecretKey.(string)
+		if !ok1 {
+			return nil, diag.Errorf("casting failed, secret_key must be a string")
+		}
+		return tk.NewClientFromAccessKey(accountName, accessKey, secretKey, apiHost), nil
+	}
+
+	return nil, diag.Errorf("You must define credentials using either keycloak_email, email/password, or access_key/secret_key")
 }

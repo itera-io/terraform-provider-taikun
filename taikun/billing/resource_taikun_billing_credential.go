@@ -2,6 +2,7 @@ package billing
 
 import (
 	"context"
+
 	tk "github.com/itera-io/taikungoclient"
 	tkcore "github.com/itera-io/taikungoclient/client"
 	"github.com/itera-io/terraform-provider-taikun/taikun/utils"
@@ -255,7 +256,7 @@ func ResourceTaikunBillingCredentialFind(id int32, apiClient *tk.Client) (*tkcor
 		}
 
 		offset += int32(len(response.Data))
-		if offset == response.GetTotalCount() {
+		if int64(offset) == response.GetTotalCount() { // casting offset to int64 is safe, simply extending the range of the values
 			break
 		}
 	}

@@ -16,7 +16,15 @@ import (
 )
 
 const testAccResourceTaikunAccessProfileConfig = `
+resource "taikun_organization" "foo" {
+  name = "%s"
+  full_name = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_access_profile" "foo" {
+  organization_id = resource.taikun_organization.foo.id
+
   name            = "%s"
   lock       = %t
 
@@ -62,6 +70,8 @@ resource "taikun_access_profile" "foo" {
 `
 
 func TestAccResourceTaikunAccessProfile(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	name := utils.RandomTestName()
 	const unlocked = false
 
@@ -71,7 +81,7 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
@@ -108,6 +118,8 @@ func TestAccResourceTaikunAccessProfile(t *testing.T) {
 }
 
 func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	name := utils.RandomTestName()
 	const locked = true
 	const unlocked = false
@@ -118,7 +130,7 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
@@ -146,7 +158,7 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, locked),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, locked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
@@ -178,7 +190,15 @@ func TestAccResourceTaikunAccessProfileLock(t *testing.T) {
 }
 
 const testAccResourceTaikunAccessProfileConfigUpdate = `
+resource "taikun_organization" "foo" {
+  name = "%s"
+  full_name = "%s"
+  discount_rate = 42
+}
+
 resource "taikun_access_profile" "foo" {
+  organization_id = resource.taikun_organization.foo.id
+
   name            = "%s"
   lock       = %t
 
@@ -210,6 +230,8 @@ resource "taikun_access_profile" "foo" {
 `
 
 func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
+	organizationName := utils.RandomTestName()
+	organizationFullName := utils.RandomTestName()
 	name := utils.RandomTestName()
 	const unlocked = false
 
@@ -219,7 +241,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, name, unlocked),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfig, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
@@ -247,7 +269,7 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, name, unlocked),
+				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileConfigUpdate, organizationName, organizationFullName, name, unlocked),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckTaikunAccessProfileExists,
 					resource.TestCheckResourceAttr("taikun_access_profile.foo", "name", name),
@@ -272,11 +294,23 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 	})
 }
 
-//// TestAccResourceTaikunAccessProfileTrustedRegistries checks the new trusted_registry feature. - enable after hotfix
+// --- Trusted registry tests (disabled) ---
+// TestAccResourceTaikunAccessProfileTrustedRegistries is kept commented out pending
+// platform hotfix / API availability for trusted_registry. Uncomment when re-enabled.
+//
+// TestAccResourceTaikunAccessProfileTrustedRegistries checks the trusted_registry feature.
 //const testAccResourceTaikunAccessProfileTrustedRegistriesConfig = `
+//resource "taikun_organization" "bar" {
+//  name = "%s"
+//  full_name = "%s"
+//  discount_rate = 42
+//}
+//
 //resource "taikun_access_profile" "bar" {
-//  name            = "%s"
-//  lock       = false
+//  organization_id = resource.taikun_organization.bar.id
+//
+//  name = "%s"
+//  lock = false
 //
 //  trusted_registry {
 //    registry = "ghcr.io"
@@ -289,6 +323,8 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 //`
 //
 //func TestAccResourceTaikunAccessProfileTrustedRegistries(t *testing.T) {
+//	organizationName := utils.RandomTestName()
+//	organizationFullName := utils.RandomTestName()
 //	name := utils.RandomTestName()
 //
 //	resource.ParallelTest(t, resource.TestCase{
@@ -297,14 +333,12 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 //		CheckDestroy:      testAccCheckTaikunAccessProfileDestroy,
 //		Steps: []resource.TestStep{
 //			{
-//				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileTrustedRegistriesConfig, name),
+//				Config: fmt.Sprintf(testAccResourceTaikunAccessProfileTrustedRegistriesConfig, organizationName, organizationFullName, name),
 //				Check: resource.ComposeAggregateTestCheckFunc(
 //					testAccCheckTaikunAccessProfileExists,
 //					resource.TestCheckResourceAttr("taikun_access_profile.bar", "name", name),
 //					resource.TestCheckResourceAttr("taikun_access_profile.bar", "lock", "false"),
-//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "trusted_registry.#", "2"),
-//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "trusted_registry.0.registry", "docker.io"),
-//					resource.TestCheckResourceAttr("taikun_access_profile.bar", "trusted_registry.1.registry", "quay.io"),
+//					testAccCheckTaikunAccessProfileTrustedRegistries("taikun_access_profile.bar", "ghcr.io", "quay.io"),
 //					// Assert that other optional lists are empty by default
 //					resource.TestCheckResourceAttr("taikun_access_profile.bar", "dns_server.#", "0"),
 //					resource.TestCheckResourceAttr("taikun_access_profile.bar", "ntp_server.#", "0"),
@@ -320,6 +354,36 @@ func TestAccResourceTaikunAccessProfileUpdate(t *testing.T) {
 //			},
 //		},
 //	})
+//}
+
+// testAccCheckTaikunAccessProfileTrustedRegistries verifies trusted_registry values
+// regardless of list order. Used by TestAccResourceTaikunAccessProfileTrustedRegistries when uncommented.
+//func testAccCheckTaikunAccessProfileTrustedRegistries(resourceName string, expected ...string) resource.TestCheckFunc {
+//	return func(s *terraform.State) error {
+//		rs, ok := s.RootModule().Resources[resourceName]
+//		if !ok {
+//			return fmt.Errorf("resource %s not found in state", resourceName)
+//		}
+//
+//		countAttr := rs.Primary.Attributes["trusted_registry.#"]
+//		if countAttr != fmt.Sprint(len(expected)) {
+//			return fmt.Errorf("%s: trusted_registry.# is %s, want %d", resourceName, countAttr, len(expected))
+//		}
+//
+//		found := make(map[string]struct{}, len(expected))
+//		for i := range expected {
+//			registry := rs.Primary.Attributes[fmt.Sprintf("trusted_registry.%d.registry", i)]
+//			found[registry] = struct{}{}
+//		}
+//
+//		for _, registry := range expected {
+//			if _, ok := found[registry]; !ok {
+//				return fmt.Errorf("%s: trusted_registry missing %q", resourceName, registry)
+//			}
+//		}
+//
+//		return nil
+//	}
 //}
 
 func testAccCheckTaikunAccessProfileExists(state *terraform.State) error {

@@ -11,6 +11,10 @@ func TestAccPreCheck(t *testing.T) {
 	requiredEnvSlice := []string{
 		"TAIKUN_ACCESS_KEY",
 		"TAIKUN_SECRET_KEY",
+		//"TAIKUN_ACCOUNT_NAME",
+		//"TAIKUN_EMAIL",
+		//"TAIKUN_PASSWORD",
+		//"TAIKUN_API_HOST",
 	}
 
 	// Check if all are set
