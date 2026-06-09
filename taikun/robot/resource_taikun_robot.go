@@ -20,9 +20,10 @@ func resourceTaikunRobotSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"account_id": {
-			Description: "Account ID the robot user belongs to.",
+			Description: "Account ID the robot user belongs to. Defaults to the caller's account if omitted.",
 			Type:        schema.TypeInt,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			ForceNew:    true,
 		},
 		"organization_id": {
@@ -96,6 +97,9 @@ func ResourceTaikunRobot() *schema.Resource {
 		UpdateContext: resourceTaikunRobotUpdate,
 		DeleteContext: resourceTaikunRobotDelete,
 		Schema:        resourceTaikunRobotSchema(),
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 	}
 }
 
@@ -103,7 +107,9 @@ func resourceTaikunRobotCreate(ctx context.Context, d *schema.ResourceData, meta
 	apiClient := meta.(*tk.Client)
 
 	body := tkcore.CreateRobotUserCommand{}
-	body.SetAccountId(int32(d.Get("account_id").(int)))
+	if v, ok := d.GetOk("account_id"); ok {
+		body.SetAccountId(int32(v.(int)))
+	}
 	body.SetName(d.Get("name").(string))
 	body.SetDescription(d.Get("description").(string))
 
@@ -141,7 +147,11 @@ func resourceTaikunRobotCreate(ctx context.Context, d *schema.ResourceData, meta
 	_ = d.Set("access_key", response.GetAccessKey())
 	_ = d.Set("secret_key", response.GetSecretKey())
 
-	robot, diags := findRobotByAccessKey(ctx, apiClient, int32(d.Get("account_id").(int)), response.GetAccessKey())
+	var accountId int32
+	if v, ok := d.GetOk("account_id"); ok {
+		accountId = int32(v.(int))
+	}
+	robot, diags := findRobotByAccessKey(ctx, apiClient, accountId, response.GetAccessKey())
 	if diags != nil {
 		return diags
 	}
@@ -290,7 +300,11 @@ func findRobotByUserId(ctx context.Context, apiClient *tk.Client, userId string)
 }
 
 func findRobotByAccessKey(ctx context.Context, apiClient *tk.Client, accountId int32, accessKey string) (*tkcore.RobotUsersListDto, diag.Diagnostics) {
-	response, res, err := apiClient.Client.RobotAPI.RobotList(ctx).AccountId(accountId).Search(accessKey).Execute()
+	request := apiClient.Client.RobotAPI.RobotList(ctx).Search(accessKey)
+	if accountId != 0 {
+		request = request.AccountId(accountId)
+	}
+	response, res, err := request.Execute()
 	if err != nil {
 		return nil, diag.FromErr(tk.CreateError(res, err))
 	}
@@ -313,6 +327,7 @@ func flattenTaikunRobot(robot *tkcore.RobotUsersListDto) map[string]interface{} 
 		"user_id":     robot.GetUserId(),
 		"is_active":   robot.GetIsActive(),
 		"created_at":  robot.GetCreatedAt(),
+		"access_key":  robot.GetAccessKey(),
 		"scopes":      robot.GetScopes(),
 	}
 
