@@ -105,7 +105,7 @@ func ResourceTaikunRepository() *schema.Resource {
 func resourceTaikunRepositoryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if d.Get("private") == true {
 		apiClient := meta.(*tk.Client)
-		err := ensureDesiredState(false, d.Get("enabled").(bool), d, meta)
+		err := ensureDesiredState(ctx, false, d.Get("enabled").(bool), d, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -116,7 +116,7 @@ func resourceTaikunRepositoryDelete(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 		deleteCommand.SetAppRepoId(apprepoId)
-		response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(context.TODO()).DeleteRepositoryCommand(deleteCommand).Execute()
+		response, err2 := apiClient.Client.AppRepositoriesAPI.RepositoryDelete(ctx).DeleteRepositoryCommand(deleteCommand).Execute()
 		if err2 != nil {
 			return diag.FromErr(tk.CreateError(response, err2))
 		}
@@ -127,7 +127,7 @@ func resourceTaikunRepositoryDelete(ctx context.Context, d *schema.ResourceData,
 
 func resourceTaikunRepositoryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	oldEnabled, newEnabled := d.GetChange("enabled")
-	err := ensureDesiredState(newEnabled.(bool), oldEnabled.(bool), d, meta)
+	err := ensureDesiredState(ctx, newEnabled.(bool), oldEnabled.(bool), d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,7 +142,7 @@ func resourceTaikunRepositoryCreate(ctx context.Context, d *schema.ResourceData,
 	should_be_enabled := d.Get("enabled").(bool)
 	name := d.Get("name").(string)
 
-	orgId, err := getSpecifiedOrDefaultOrganizationId(d, meta)
+	orgId, err := getSpecifiedOrDefaultOrganizationId(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,7 +159,7 @@ func resourceTaikunRepositoryCreate(ctx context.Context, d *schema.ResourceData,
 		body_private.SetPassword(password_private)
 		body_private.SetOrganizationId(orgId)
 
-		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(context.TODO()).ImportRepoCommand(*body_private).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryImport(ctx).ImportRepoCommand(*body_private).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -172,7 +172,7 @@ func resourceTaikunRepositoryCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// Ensure the desired state - Use function (desired state, current_state , id, name, org_name)
-	bindUnbindError := ensureDesiredState(should_be_enabled, d.Get("enabled").(bool), d, meta)
+	bindUnbindError := ensureDesiredState(ctx, should_be_enabled, d.Get("enabled").(bool), d, meta)
 	if bindUnbindError != nil {
 		return diag.FromErr(bindUnbindError)
 	}
@@ -200,12 +200,12 @@ func generateResourceTaikunRepositoryRead(withRetries bool) schema.ReadContextFu
 		repositoryName := d.Get("name").(string)
 		organizationName := d.Get("organization_name").(string)
 		private := d.Get("private").(bool)
-		orgId, err := getSpecifiedOrDefaultOrganizationId(d, meta)
+		orgId, err := getSpecifiedOrDefaultOrganizationId(ctx, d, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		data, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(context.TODO()).IsPrivate(private).Search(repositoryName).IsPrivate(private).OrganizationId(orgId).Execute()
+		data, response, err := apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(ctx).IsPrivate(private).Search(repositoryName).IsPrivate(private).OrganizationId(orgId).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(response, err))
 		}
@@ -261,11 +261,11 @@ func flattenTaikunRepository(orgid int32, rawRepository *tkcore.ArtifactReposito
 }
 
 // Get the users default organization
-func getSpecifiedOrDefaultOrganizationId(d *schema.ResourceData, meta interface{}) (int32, error) {
+func getSpecifiedOrDefaultOrganizationId(ctx context.Context, d *schema.ResourceData, meta interface{}) (int32, error) {
 	apiClient := meta.(*tk.Client)
 	orgIdString, orgIdStringDeclared := d.GetOk("organization_id")
 	if !orgIdStringDeclared {
-		data, response, err := apiClient.Client.UsersAPI.UsersUserInfo(context.TODO()).Execute()
+		data, response, err := apiClient.Client.UsersAPI.UsersUserInfo(ctx).Execute()
 		if err != nil {
 			return -1, tk.CreateError(response, err)
 		}
@@ -298,10 +298,10 @@ func getSpecifiedOrDefaultOrganizationId(d *schema.ResourceData, meta interface{
 }
 
 // Ensure the state of this repository matches the desired state provided
-func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.ResourceData, meta interface{}) error {
+func ensureDesiredState(ctx context.Context, enabledNew bool, enabledCurrent bool, d *schema.ResourceData, meta interface{}) error {
 	apiClient := meta.(*tk.Client)
 
-	orgId, orgerr := getSpecifiedOrDefaultOrganizationId(d, meta)
+	orgId, orgerr := getSpecifiedOrDefaultOrganizationId(ctx, d, meta)
 	if orgerr != nil {
 		return orgerr
 	}
@@ -311,7 +311,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 		body := &tkcore.UnbindAppRepositoryCommand{}
 		body.SetIds([]string{d.Get("id").(string)})
 		body.SetOrganizationId(orgId)
-		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryUnbind(context.TODO()).UnbindAppRepositoryCommand(*body).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryUnbind(ctx).UnbindAppRepositoryCommand(*body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -324,7 +324,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 		unbind_filter[0].SetOrganizationName(d.Get("organization_name").(string))
 		body.SetFilteringElements(unbind_filter)
 		body.SetOrganizationId(orgId)
-		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryBind(context.TODO()).BindAppRepositoryCommand(*body).Execute()
+		response, err := apiClient.Client.AppRepositoriesAPI.RepositoryBind(ctx).BindAppRepositoryCommand(*body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -334,7 +334,7 @@ func ensureDesiredState(enabledNew bool, enabledCurrent bool, d *schema.Resource
 	// Disabled -> Disabled
 
 	// Update to latest changes - Download the details of the repository into our resource
-	err := utils.ReadAfterCreateWithRetries(generateResourceTaikunRepositoryReadWithRetries(), context.TODO(), d, meta)
+	err := utils.ReadAfterCreateWithRetries(generateResourceTaikunRepositoryReadWithRetries(), ctx, d, meta)
 	if err != nil {
 		return fmt.Errorf("update after enable/disable failed")
 	}
@@ -353,7 +353,7 @@ func resourceTaikunPrivateRepositoryWaitForApps(repositoryName string, ctx conte
 		Pending: pendingStates,
 		Target:  targetStates,
 		Refresh: func() (interface{}, string, error) {
-			data, response, err := apiClient.Client.PackageAPI.PackageList(context.TODO()).IsPrivate(true).FilterBy(repositoryName).Execute()
+			data, response, err := apiClient.Client.PackageAPI.PackageList(ctx).IsPrivate(true).FilterBy(repositoryName).Execute()
 			if err != nil {
 				return nil, "", tk.CreateError(response, err)
 			}

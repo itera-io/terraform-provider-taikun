@@ -285,7 +285,7 @@ func resourceTaikunCloudCredentialProxmoxCreate(ctx context.Context, d *schema.R
 		body.SetContinent(utils.ContinentShorthand(continentData.(string)))
 	}
 
-	createResult, res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxCreate(context.TODO()).CreateProxmoxCommand(body).Execute()
+	createResult, res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxCreate(ctx).CreateProxmoxCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -297,7 +297,7 @@ func resourceTaikunCloudCredentialProxmoxCreate(ctx context.Context, d *schema.R
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialProxmoxLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialProxmoxLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -311,7 +311,7 @@ func generateResourceTaikunCloudCredentialProxmoxReadWithoutRetries() schema.Rea
 	return generateResourceTaikunCloudCredentialProxmoxRead(false)
 }
 func generateResourceTaikunCloudCredentialProxmoxRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -319,7 +319,7 @@ func generateResourceTaikunCloudCredentialProxmoxRead(withRetries bool) schema.R
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -353,7 +353,7 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunCloudCredentialProxmoxLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialProxmoxLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -365,7 +365,7 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 		updateBody.SetTokenId(d.Get("client_id").(string))
 		updateBody.SetTokenSecret(d.Get("client_secret").(string))
 
-		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdate(context.TODO()).UpdateProxmoxCommand(updateBody).Execute()
+		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdate(ctx).UpdateProxmoxCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -376,14 +376,14 @@ func resourceTaikunCloudCredentialProxmoxUpdate(ctx context.Context, d *schema.R
 		updateBody.SetId(id)
 		updateBody.SetHypervisors(utils.ResourceGetStringList(d.Get("hypervisors")))
 
-		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdateHypervisors(context.TODO()).UpdateHypervisorsCommand(updateBody).Execute()
+		res, err := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxUpdateHypervisors(ctx).UpdateHypervisorsCommand(updateBody).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialProxmoxLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialProxmoxLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -458,11 +458,11 @@ func flattenTaikunCloudCredentialProxmox(rawProxmoxCredential *tkcore.ProxmoxLis
 	}
 }
 
-func resourceTaikunCloudCredentialProxmoxLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialProxmoxLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

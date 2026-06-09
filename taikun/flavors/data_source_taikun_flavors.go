@@ -77,7 +77,7 @@ func DataSourceTaikunFlavors() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunFlavorsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	cloudCredentialID, err := utils.Atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
@@ -98,7 +98,7 @@ func dataSourceTaikunFlavorsRead(_ context.Context, d *schema.ResourceData, meta
 	sortBy := "name"
 	sortDir := "asc"
 
-	prepare := apiClient.Client.CloudCredentialAPI.CloudcredentialsAllFlavors(context.TODO(), cloudCredentialID)
+	prepare := apiClient.Client.CloudCredentialAPI.CloudcredentialsAllFlavors(ctx, cloudCredentialID)
 	prepare = prepare.StartCpu(startCPU).EndCpu(endCPU).StartRam(startRAM).EndRam(endRAM).SortBy(sortBy).SortDirection(sortDir)
 	var offset int32 = 0
 

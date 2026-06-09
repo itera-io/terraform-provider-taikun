@@ -26,11 +26,11 @@ func DataSourceTaikunBillingRules() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunBillingRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunBillingRulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	var offset int32 = 0
 
-	params := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(context.TODO())
+	params := apiClient.Client.PrometheusRulesAPI.PrometheusrulesList(ctx)
 
 	var billingRulesList []tkcore.PrometheusRuleListDto
 	for {

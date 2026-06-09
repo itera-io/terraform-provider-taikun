@@ -33,12 +33,12 @@ func DataSourceTaikunSlackConfigurations() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunSlackConfigurationsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunSlackConfigurationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.SlackAPI.SlackList(context.TODO())
+	params := apiClient.Client.SlackAPI.SlackList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

@@ -76,7 +76,7 @@ func resourceTaikunCatalogProjectBindingCreate(ctx context.Context, d *schema.Re
 	}
 	catalogName := d.Get("catalog_name").(string)
 	shouldBeBound := d.Get("is_bound").(bool)
-	err = reconcileBinding(apiClient, orgId, catalogName, projectId, shouldBeBound)
+	err = reconcileBinding(ctx, apiClient, orgId, catalogName, projectId, shouldBeBound)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -102,7 +102,7 @@ func resourceTaikunCatalogProjectBindingDelete(ctx context.Context, d *schema.Re
 	catalogName := d.Get("catalog_name").(string)
 
 	// Does catalog exist and get what projects it has bound?
-	foundCatalog, err := findCatalogByName(apiClient, orgId, catalogName)
+	foundCatalog, err := findCatalogByName(ctx, apiClient, orgId, catalogName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -117,12 +117,12 @@ func resourceTaikunCatalogProjectBindingDelete(ctx context.Context, d *schema.Re
 	// If not already, unbind the project from the catalog
 	if catalogHasProjectBound {
 		body := []int32{projectId}
-		//response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
+		//response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(ctx, foundCatalog.GetId()).RequestBody(body).Execute()
 		//if err != nil {
 		//	return diag.FromErr(tk.CreateError(response, err))
 		//}
 		// If you destroy the binding, Terraform will try to unbind, but ignores if the unbind fails. This is useful in case there are other apps present in the project, but not in terraform state.
-		_, _ = apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
+		_, _ = apiClient.Client.CatalogAPI.CatalogDeleteProject(ctx, foundCatalog.GetId()).RequestBody(body).Execute()
 	}
 
 	return nil
@@ -136,7 +136,7 @@ func generateResourceTaikunCatalogProjectBindingReadWithoutRetries() schema.Read
 }
 
 func generateResourceTaikunCatalogProjectBindingRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 
 		var orgId int32
@@ -155,7 +155,7 @@ func generateResourceTaikunCatalogProjectBindingRead(withRetries bool) schema.Re
 		catalogName := d.Get("catalog_name").(string)
 
 		// Does catalog exist and get what projects it has bound?
-		foundCatalog, err := findCatalogByName(apiClient, orgId, catalogName)
+		foundCatalog, err := findCatalogByName(ctx, apiClient, orgId, catalogName)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -207,7 +207,7 @@ func resourceTaikunCatalogProjectBindingUpdate(ctx context.Context, d *schema.Re
 	catalogName := d.Get("catalog_name").(string)
 	shouldBeBound := d.Get("is_bound").(bool)
 
-	err = reconcileBinding(apiClient, orgId, catalogName, projectId, shouldBeBound)
+	err = reconcileBinding(ctx, apiClient, orgId, catalogName, projectId, shouldBeBound)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -215,8 +215,8 @@ func resourceTaikunCatalogProjectBindingUpdate(ctx context.Context, d *schema.Re
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunCatalogProjectBindingReadWithRetries(), ctx, d, meta)
 }
 
-func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName string, projectId int32, shouldBeBound bool) error {
-	query := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO()).Id(projectId)
+func reconcileBinding(ctx context.Context, apiClient *tk.Client, organizationId int32, catalogName string, projectId int32, shouldBeBound bool) error {
+	query := apiClient.Client.ProjectsAPI.ProjectsList(ctx).Id(projectId)
 
 	if organizationId != 0 {
 		query = query.OrganizationId(organizationId)
@@ -238,7 +238,7 @@ func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName st
 	}
 
 	// Verify catalog exists and get what projects it has bound
-	foundCatalog, err := findCatalogByName(apiClient, organizationId, catalogName)
+	foundCatalog, err := findCatalogByName(ctx, apiClient, organizationId, catalogName)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName st
 	// If you need, unbind the project from the catalog
 	if catalogHasProjectBound && !shouldBeBound {
 		body := []int32{projectId}
-		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
+		response, err := apiClient.Client.CatalogAPI.CatalogDeleteProject(ctx, foundCatalog.GetId()).RequestBody(body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -262,7 +262,7 @@ func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName st
 	// If you need, bind the project to the catalog
 	if !catalogHasProjectBound && shouldBeBound {
 		body := []int32{projectId}
-		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(context.TODO(), foundCatalog.GetId()).RequestBody(body).Execute()
+		response, err := apiClient.Client.CatalogAPI.CatalogAddProject(ctx, foundCatalog.GetId()).RequestBody(body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -271,8 +271,8 @@ func reconcileBinding(apiClient *tk.Client, organizationId int32, catalogName st
 	return nil
 }
 
-func findCatalogByName(apiClient *tk.Client, organizationId int32, catalogName string) (rawCatalog tkcore.CatalogListDto, err error) {
-	query := apiClient.Client.CatalogAPI.CatalogList(context.TODO()).Search(catalogName)
+func findCatalogByName(ctx context.Context, apiClient *tk.Client, organizationId int32, catalogName string) (rawCatalog tkcore.CatalogListDto, err error) {
+	query := apiClient.Client.CatalogAPI.CatalogList(ctx).Search(catalogName)
 	if organizationId != 0 {
 		query = query.OrganizationId(organizationId)
 	}

@@ -157,7 +157,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.KubeConfigAPI.KubeconfigList(context.TODO()).Id(id32).ProjectId(projectID).Execute()
+		response, res, err := apiClient.Client.KubeConfigAPI.KubeconfigList(ctx).Id(id32).ProjectId(projectID).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -172,6 +172,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 
 		kubeconfigDTO := response.Data[0]
 		kubeconfigContent := resourceTaikunKubeconfigGetContent(
+			ctx,
 			kubeconfigDTO.GetProjectId(),
 			kubeconfigDTO.GetId(),
 			apiClient,
@@ -186,7 +187,7 @@ func generateResourceTaikunKubeconfigRead(withRetries bool) schema.ReadContextFu
 	}
 }
 
-func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunKubeconfigDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	id, err := utils.Atoi32(d.Id())
 	if err != nil {
@@ -196,7 +197,7 @@ func resourceTaikunKubeconfigDelete(_ context.Context, d *schema.ResourceData, m
 	body := tkcore.DeleteKubeConfigCommand{}
 	body.SetId(id)
 
-	res, err := apiClient.Client.KubeConfigAPI.KubeconfigDelete(context.TODO()).DeleteKubeConfigCommand(body).Execute()
+	res, err := apiClient.Client.KubeConfigAPI.KubeconfigDelete(ctx).DeleteKubeConfigCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
@@ -227,12 +228,12 @@ func flattenTaikunKubeconfig(kubeconfigDTO *tkcore.KubeConfigForUserDto, kubecon
 	return kubeconfigMap
 }
 
-func resourceTaikunKubeconfigGetContent(projectID int32, kubeconfigID int32, apiClient *tk.Client) string {
+func resourceTaikunKubeconfigGetContent(ctx context.Context, projectID int32, kubeconfigID int32, apiClient *tk.Client) string {
 
 	body := tkcore.DownloadKubeConfigCommand{}
 	body.SetProjectId(projectID)
 	body.SetId(kubeconfigID)
-	response, _, err := apiClient.Client.KubeConfigAPI.KubeconfigDownload(context.TODO()).DownloadKubeConfigCommand(body).Execute()
+	response, _, err := apiClient.Client.KubeConfigAPI.KubeconfigDownload(ctx).DownloadKubeConfigCommand(body).Execute()
 
 	if err != nil {
 		return "Failed to retrieve content of kubeconfig"

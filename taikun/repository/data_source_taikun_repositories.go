@@ -35,14 +35,14 @@ func DataSourceTaikunRepositories() *schema.Resource {
 func dataSourceTaikunRepositoriesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
-	orgId, err := getSpecifiedOrDefaultOrganizationId(d, meta)
+	orgId, err := getSpecifiedOrDefaultOrganizationId(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	//  Public
 	var offsetPublic int32 = 0
-	params := apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(context.TODO()).OrganizationId(orgId).IsPrivate(false)
+	params := apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(ctx).OrganizationId(orgId).IsPrivate(false)
 	var repositoriesList []tkcore.ArtifactRepositoryDto
 	for {
 		response, res, err := params.Offset(offsetPublic).Execute()
@@ -59,7 +59,7 @@ func dataSourceTaikunRepositoriesRead(ctx context.Context, d *schema.ResourceDat
 
 	// Private
 	var offsetPrivate int32 = 0
-	params = apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(context.TODO()).OrganizationId(orgId).IsPrivate(true)
+	params = apiClient.Client.AppRepositoriesAPI.RepositoryAvailableList(ctx).OrganizationId(orgId).IsPrivate(true)
 	for {
 		response, res, err := params.Offset(offsetPrivate).Execute()
 		if err != nil {

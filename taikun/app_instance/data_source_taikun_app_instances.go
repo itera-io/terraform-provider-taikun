@@ -37,7 +37,7 @@ func dataSourceTaikunAppInstancesRead(ctx context.Context, d *schema.ResourceDat
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.ProjectAppsAPI.ProjectappList(context.TODO())
+	params := apiClient.Client.ProjectAppsAPI.ProjectappList(ctx)
 
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)

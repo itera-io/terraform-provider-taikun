@@ -38,7 +38,7 @@ func dataSourceTaikunVirtualClustersRead(ctx context.Context, d *schema.Resource
 	dataSourceID := "all"
 	var offset int32 = 0
 	var virtualClustersList []tkcore.VClusterListDto
-	params := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO())
+	params := apiClient.Client.ProjectsAPI.ProjectsList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

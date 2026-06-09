@@ -33,12 +33,12 @@ func DataSourceTaikunAlertingProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunAlertingProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO())
+	params := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(ctx)
 
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
@@ -65,7 +65,7 @@ func dataSourceTaikunAlertingProfilesRead(_ context.Context, d *schema.ResourceD
 	alertingProfiles := make([]map[string]interface{}, len(alertingProfileDTOs))
 	for i, alertingProfileDTO := range alertingProfileDTOs {
 
-		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
+		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(ctx, alertingProfileDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}

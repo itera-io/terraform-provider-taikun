@@ -33,11 +33,11 @@ func DataSourceTaikunShowbackCredentials() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunShowbackCredentialsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunShowbackCredentialsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsList(context.TODO())
+	params := apiClient.ShowbackClient.ShowbackCredentialsAPI.ShowbackcredentialsList(ctx)
 	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")

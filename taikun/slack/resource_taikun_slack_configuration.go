@@ -97,7 +97,7 @@ func resourceTaikunSlackConfigurationCreate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationID)
 	}
 
-	response, res, err := apiClient.Client.SlackAPI.SlackCreate(context.TODO()).CreateSlackConfigurationCommand(body).Execute()
+	response, res, err := apiClient.Client.SlackAPI.SlackCreate(ctx).CreateSlackConfigurationCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -122,7 +122,7 @@ func generateResourceTaikunSlackConfigurationRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.SlackAPI.SlackList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.SlackAPI.SlackList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -169,14 +169,14 @@ func resourceTaikunSlackConfigurationUpdate(ctx context.Context, d *schema.Resou
 		body.SetOrganizationId(organizationID)
 	}
 
-	if res, err := apiClient.Client.SlackAPI.SlackUpdate(context.TODO(), id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
+	if res, err := apiClient.Client.SlackAPI.SlackUpdate(ctx, id).UpdateSlackConfigurationDto(body).Execute(); err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunSlackConfigurationReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunSlackConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
 	id, err := utils.Atoi32(d.Id())
@@ -185,7 +185,7 @@ func resourceTaikunSlackConfigurationDelete(_ context.Context, d *schema.Resourc
 	}
 
 	body := tkcore.DeleteSlackConfigCommand{Ids: []int32{id}}
-	res, err := apiClient.Client.SlackAPI.SlackDeleteMultiple(context.TODO()).DeleteSlackConfigCommand(body).Execute()
+	res, err := apiClient.Client.SlackAPI.SlackDeleteMultiple(ctx).DeleteSlackConfigCommand(body).Execute()
 
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))

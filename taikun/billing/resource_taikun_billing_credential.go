@@ -134,7 +134,7 @@ func resourceTaikunBillingCredentialCreate(ctx context.Context, d *schema.Resour
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunBillingCredentialLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunBillingCredentialLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -148,7 +148,7 @@ func generateResourceTaikunBillingCredentialReadWithoutRetries() schema.ReadCont
 	return generateResourceTaikunBillingCredentialRead(false)
 }
 func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -156,7 +156,7 @@ func generateResourceTaikunBillingCredentialRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		rawBillingCredential, err := ResourceTaikunBillingCredentialFind(id, apiClient)
+		rawBillingCredential, err := ResourceTaikunBillingCredentialFind(ctx, id, apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -187,7 +187,7 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("lock") {
-		if err := resourceTaikunBillingCredentialLock(id, d.Get("lock").(bool), apiClient); err != nil {
+		if err := resourceTaikunBillingCredentialLock(ctx, id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -195,14 +195,14 @@ func resourceTaikunBillingCredentialUpdate(ctx context.Context, d *schema.Resour
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunBillingCredentialReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunBillingCredentialDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunBillingCredentialDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	id, err := utils.Atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsDelete(context.TODO(), id).Execute()
+	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -229,18 +229,18 @@ func flattenTaikunBillingCredential(rawOperationCredential *tkcore.OperationCred
 	}
 }
 
-func resourceTaikunBillingCredentialLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunBillingCredentialLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.OperationCredentialLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsLockManager(context.TODO()).OperationCredentialLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.OperationCredentialsAPI.OpscredentialsLockManager(ctx).OperationCredentialLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }
 
 // Returns the Billing Credential with the given ID or nil if it wasn't found
-func ResourceTaikunBillingCredentialFind(id int32, apiClient *tk.Client) (*tkcore.OperationCredentialsListDto, error) {
-	params := apiClient.Client.OperationCredentialsAPI.OpscredentialsList(context.TODO())
+func ResourceTaikunBillingCredentialFind(ctx context.Context, id int32, apiClient *tk.Client) (*tkcore.OperationCredentialsListDto, error) {
+	params := apiClient.Client.OperationCredentialsAPI.OpscredentialsList(ctx)
 	var offset int32 = 0
 
 	for {

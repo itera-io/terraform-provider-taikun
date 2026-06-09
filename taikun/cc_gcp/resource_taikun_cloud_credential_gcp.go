@@ -131,7 +131,7 @@ func ResourceTaikunCloudCredentialGCP() *schema.Resource {
 func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
-	params := apiClient.Client.GoogleAPI.GooglecloudCreate(context.TODO())
+	params := apiClient.Client.GoogleAPI.GooglecloudCreate(ctx)
 
 	configFile, err := os.Open(d.Get("config_file").(string))
 	if err != nil {
@@ -185,7 +185,7 @@ func resourceTaikunCloudCredentialGCPCreate(ctx context.Context, d *schema.Resou
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunCloudCredentialGCPLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialGCPLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -201,7 +201,7 @@ func generateResourceTaikunCloudCredentialGCPReadWithoutRetries() schema.ReadCon
 }
 
 func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -209,7 +209,7 @@ func generateResourceTaikunCloudCredentialGCPRead(withRetries bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.GoogleAPI.GooglecloudList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.GoogleAPI.GooglecloudList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -242,7 +242,7 @@ func resourceTaikunCloudCredentialGCPUpdate(ctx context.Context, d *schema.Resou
 	}
 
 	if d.HasChange("lock") {
-		if err := resourceTaikunCloudCredentialGCPLock(id, d.Get("lock").(bool), apiClient); err != nil {
+		if err := resourceTaikunCloudCredentialGCPLock(ctx, id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -267,11 +267,11 @@ func flattenTaikunCloudCredentialGCP(rawGCPCredential *tkcore.GoogleCredentialsL
 	}
 }
 
-func resourceTaikunCloudCredentialGCPLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunCloudCredentialGCPLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.CloudLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(context.TODO()).CloudLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.CloudCredentialAPI.CloudcredentialsLockManager(ctx).CloudLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

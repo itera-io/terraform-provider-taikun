@@ -186,7 +186,7 @@ func resourceTaikunShowbackRuleCreate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	createResult, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesCreate(context.TODO()).CreateShowbackRuleCommand(body).Execute()
+	createResult, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesCreate(ctx).CreateShowbackRuleCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}
@@ -210,7 +210,7 @@ func generateResourceTaikunShowbackRuleRead(withRetries bool) schema.ReadContext
 			return diag.FromErr(err)
 		}
 
-		response, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(context.TODO()).Id(id).Execute()
+		response, resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(resp, err))
 		}
@@ -262,7 +262,7 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	body.Labels = LabelsList
 
-	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(context.TODO()).UpdateShowbackRuleCommand(body).Execute()
+	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesUpdate(ctx).UpdateShowbackRuleCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}
@@ -270,14 +270,14 @@ func resourceTaikunShowbackRuleUpdate(ctx context.Context, d *schema.ResourceDat
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunShowbackRuleReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunShowbackRuleDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunShowbackRuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	id, err := utils.Atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesDelete(context.TODO(), id).Execute()
+	resp, err := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(resp, err))
 	}

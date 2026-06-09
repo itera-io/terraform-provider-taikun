@@ -111,7 +111,7 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 		body.SetAccountId(accountID)
 	}
 
-	result, res, err := apiClient.Client.UsersAPI.UsersCreate(context.TODO()).CreateUserCommand(body).Execute()
+	result, res, err := apiClient.Client.UsersAPI.UsersCreate(ctx).CreateUserCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}

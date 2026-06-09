@@ -32,11 +32,11 @@ func DataSourceTaikunProjects() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunProjectsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.Client.ProjectsAPI.ProjectsList(context.TODO())
+	params := apiClient.Client.ProjectsAPI.ProjectsList(ctx)
 
 	if organizationIDData, organizationIDProvided := d.GetOk("organization_id"); organizationIDProvided {
 		dataSourceID = organizationIDData.(string)
@@ -54,28 +54,28 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 
 	projects := make([]map[string]interface{}, len(response.GetData()))
 	for i, projectEntityDTO := range response.GetData() {
-		response, res, err := apiClient.Client.ServersAPI.ServersDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
+		response, res, err := apiClient.Client.ServersAPI.ServersDetails(ctx, projectEntityDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 
-		responseVM, res, err := apiClient.Client.StandaloneAPI.StandaloneDetails(context.TODO(), projectEntityDTO.GetId()).Execute()
+		responseVM, res, err := apiClient.Client.StandaloneAPI.StandaloneDetails(ctx, projectEntityDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
 
-		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(projectEntityDTO.GetId(), apiClient)
+		boundFlavorDTOs, err := resourceTaikunProjectGetBoundFlavorDTOs(ctx, projectEntityDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(projectEntityDTO.GetId(), apiClient)
+		boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(ctx, projectEntityDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		project := response.GetProject()
-		quotaResponse, res, err := apiClient.Client.ProjectQuotasAPI.ProjectquotasList(context.TODO()).Id(project.GetId()).Execute()
+		quotaResponse, res, err := apiClient.Client.ProjectQuotasAPI.ProjectquotasList(ctx).Id(project.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -83,7 +83,7 @@ func dataSourceTaikunProjectsRead(_ context.Context, d *schema.ResourceData, met
 			return nil
 		}
 
-		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(projectEntityDTO.GetId(), apiClient)
+		deleteOnExpiration, err := resourceTaikunProjectGetDeleteOnExpiration(ctx, projectEntityDTO.GetId(), apiClient)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -34,12 +34,12 @@ func DataSourceTaikunCloudCredentialsZadara() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsZadaraRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsZadaraRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraList(context.TODO())
+	params := apiClient.Client.ZadaraCloudCredentialAPI.ZadaraList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

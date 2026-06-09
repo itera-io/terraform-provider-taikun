@@ -33,12 +33,12 @@ func DataSourceTaikunCloudCredentialsProxmox() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsProxmoxRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsProxmoxRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(context.TODO())
+	params := apiClient.Client.ProxmoxCloudCredentialAPI.ProxmoxList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

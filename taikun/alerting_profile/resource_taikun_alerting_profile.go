@@ -228,7 +228,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 		body.SetAlertingIntegrations(getIntegrationDTOsFromAlertingProfileResourceData(d))
 	}
 
-	response, bodyResponse, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesCreate(context.TODO()).CreateAlertingProfileCommand(body).Execute()
+	response, bodyResponse, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesCreate(ctx).CreateAlertingProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(bodyResponse, err))
 	}
@@ -240,7 +240,7 @@ func resourceTaikunAlertingProfileCreate(ctx context.Context, d *schema.Resource
 	d.SetId(response.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunAlertingProfileLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -255,7 +255,7 @@ func generateResourceTaikunAlertingProfileReadWithoutRetries() schema.ReadContex
 	return generateResourceTaikunAlertingProfileRead(false)
 }
 func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -263,7 +263,7 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -276,7 +276,7 @@ func generateResourceTaikunAlertingProfileRead(withRetries bool) schema.ReadCont
 		}
 		alertingProfileDTO := response.Data[0]
 
-		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(context.TODO(), alertingProfileDTO.GetId()).Execute()
+		alertingIntegrationsResponse, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsList(ctx, alertingProfileDTO.GetId()).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -301,7 +301,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 	}
 
 	if locked, _ := d.GetChange("lock"); locked.(bool) {
-		if err := resourceTaikunAlertingProfileLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunAlertingProfileLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -346,12 +346,12 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	if err := resourceTaikunAlertingProfileUpdateIntegrations(d, id, apiClient); err != nil {
+	if err := resourceTaikunAlertingProfileUpdateIntegrations(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunAlertingProfileLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunAlertingProfileLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -359,7 +359,7 @@ func resourceTaikunAlertingProfileUpdate(ctx context.Context, d *schema.Resource
 	return utils.ReadAfterUpdateWithRetries(generateResourceTaikunAlertingProfileReadWithRetries(), ctx, d, meta)
 }
 
-func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAlertingProfileUpdateIntegrations(ctx context.Context, d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("integration") {
 		return
 	}
@@ -370,7 +370,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 	for _, oldIntegrationData := range oldIntegrations {
 		oldIntegration := oldIntegrationData.(map[string]interface{})
 		oldIntegrationID, _ := utils.Atoi32(oldIntegration["id"].(string))
-		res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsDelete(context.TODO(), oldIntegrationID).Execute()
+		res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsDelete(ctx, oldIntegrationID).Execute()
 		if err != nil {
 			err = tk.CreateError(res, err)
 			return err
@@ -387,7 +387,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 			alertingIntegrationCreateBody.SetUrl(alertingIntegration.GetUrl())
 			alertingIntegrationCreateBody.SetAlertingProfileId(id)
 
-			_, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsCreate(context.TODO()).CreateAlertingIntegrationCommand(alertingIntegrationCreateBody).Execute()
+			_, res, err := apiClient.Client.AlertingIntegrationsAPI.AlertingintegrationsCreate(ctx).CreateAlertingIntegrationCommand(alertingIntegrationCreateBody).Execute()
 			if err != nil {
 				err = tk.CreateError(res, err)
 				return err
@@ -397,7 +397,7 @@ func resourceTaikunAlertingProfileUpdateIntegrations(d *schema.ResourceData, id 
 	return
 }
 
-func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAlertingProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 
 	id, err := utils.Atoi32(d.Id())
@@ -405,7 +405,7 @@ func resourceTaikunAlertingProfileDelete(_ context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	if res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDelete(context.TODO(), id).Execute(); err != nil {
+	if res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesDelete(ctx, id).Execute(); err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
 
@@ -531,11 +531,11 @@ func flattenTaikunAlertingProfile(alertingProfileDTO *tkcore.AlertingProfilesLis
 	}
 }
 
-func resourceTaikunAlertingProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunAlertingProfileLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.AlertingProfilesLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesLockManager(context.TODO()).AlertingProfilesLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.AlertingProfilesAPI.AlertingprofilesLockManager(ctx).AlertingProfilesLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

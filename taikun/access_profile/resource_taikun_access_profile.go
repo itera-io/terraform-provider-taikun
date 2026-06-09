@@ -228,7 +228,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 	resourceTaikunAccessProfileCreateSshUsers(d, body)
 	resourceTaikunAccessProfileCreateTrustedRegistries(d, body)
 
-	response, res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesCreate(context.TODO()).CreateAccessProfileCommand(*body).Execute()
+	response, res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesCreate(ctx).CreateAccessProfileCommand(*body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -237,7 +237,7 @@ func resourceTaikunAccessProfileCreate(ctx context.Context, d *schema.ResourceDa
 
 	utils.SetResourceDataId(d, id)
 
-	err = resourceTaikunAccessProfileCreateLock(d, id, apiClient)
+	err = resourceTaikunAccessProfileCreateLock(ctx, d, id, apiClient)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -314,9 +314,9 @@ func resourceTaikunAccessProfileCreateTrustedRegistries(d *schema.ResourceData, 
 }
 
 // lock access profile after creation
-func resourceTaikunAccessProfileCreateLock(d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileCreateLock(ctx context.Context, d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
 	if d.Get("lock").(bool) {
-		err = resourceTaikunAccessProfileLock(id, true, apiClient)
+		err = resourceTaikunAccessProfileLock(ctx, id, true, apiClient)
 	}
 	return
 }
@@ -328,7 +328,7 @@ func generateResourceTaikunAccessProfileReadWithoutRetries() schema.ReadContextF
 	return generateResourceTaikunAccessProfileRead(false)
 }
 func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -336,7 +336,7 @@ func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -349,7 +349,7 @@ func generateResourceTaikunAccessProfileRead(withRetries bool) schema.ReadContex
 			return nil
 		}
 
-		sshResponse, res, err := apiClient.Client.SshUsersAPI.SshusersList(context.TODO(), id).Execute()
+		sshResponse, res, err := apiClient.Client.SshUsersAPI.SshusersList(ctx, id).Execute()
 		if err != nil {
 			/*
 				if _, ok := err.(*ssh_users.SSHUsersListNotFound); ok && withRetries {
@@ -386,37 +386,37 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if isLocked, _ := d.GetChange("lock"); isLocked.(bool) {
-		if err := resourceTaikunAccessProfileLock(id, false, apiClient); err != nil {
+		if err := resourceTaikunAccessProfileLock(ctx, id, false, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if err := resourceTaikunAccessProfileUpdateHttpProxy(d, id, apiClient); err != nil {
+	if err := resourceTaikunAccessProfileUpdateHttpProxy(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunAccessProfileUpdateAllowedHosts(d, id, apiClient); err != nil {
+	if err := resourceTaikunAccessProfileUpdateAllowedHosts(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunAccessProfileUpdateDnsServers(d, id, apiClient); err != nil {
+	if err := resourceTaikunAccessProfileUpdateDnsServers(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunAccessProfileUpdateNtpServers(d, id, apiClient); err != nil {
+	if err := resourceTaikunAccessProfileUpdateNtpServers(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunAccessProfileUpdateSshUsers(d, id, apiClient); err != nil {
+	if err := resourceTaikunAccessProfileUpdateSshUsers(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := resourceTaikunAccessProfileUpdateTrustedRegistries(d, id, apiClient); err != nil {
+	if err := resourceTaikunAccessProfileUpdateTrustedRegistries(ctx, d, id, apiClient); err != nil {
 		return diag.FromErr(err)
 	}
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunAccessProfileLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunAccessProfileLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -425,7 +425,7 @@ func resourceTaikunAccessProfileUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 // Update the access profile's HTTP proxy
-func resourceTaikunAccessProfileUpdateHttpProxy(d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileUpdateHttpProxy(ctx context.Context, d *schema.ResourceData, id int32, apiClient *tk.Client) (err error) {
 	if d.HasChange("http_proxy") {
 
 		body := tkcore.UpdateAccessProfileDto{}
@@ -436,7 +436,7 @@ func resourceTaikunAccessProfileUpdateHttpProxy(d *schema.ResourceData, id int32
 		} else {
 			body.SetHttpProxy("")
 		}
-		res, newErr := apiClient.Client.AccessProfilesAPI.AccessprofilesUpdate(context.TODO(), id).UpdateAccessProfileDto(body).Execute()
+		res, newErr := apiClient.Client.AccessProfilesAPI.AccessprofilesUpdate(ctx, id).UpdateAccessProfileDto(body).Execute()
 		if newErr != nil {
 			return tk.CreateError(res, newErr)
 		}
@@ -445,7 +445,7 @@ func resourceTaikunAccessProfileUpdateHttpProxy(d *schema.ResourceData, id int32
 }
 
 // Update the access profile's allowed hosts
-func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileUpdateAllowedHosts(ctx context.Context, d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("allowed_host") {
 		return
 	}
@@ -456,7 +456,7 @@ func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, acces
 	for _, rawOldAllowedHost := range oldAllowedHosts {
 		oldAllowedHost := rawOldAllowedHost.(map[string]interface{})
 		id, _ := utils.Atoi32(oldAllowedHost["id"].(string))
-		if res, err := apiClient.Client.AllowedHostAPI.AllowedhostDelete(context.TODO(), id).Execute(); err != nil {
+		if res, err := apiClient.Client.AllowedHostAPI.AllowedhostDelete(ctx, id).Execute(); err != nil {
 			err = tk.CreateError(res, err)
 			return err
 		}
@@ -472,7 +472,7 @@ func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, acces
 		body.SetIpAddress(newAllowedHost["address"].(string))
 		body.SetMaskBits(int32(newAllowedHost["mask_bits"].(int)))
 
-		if _, res, err := apiClient.Client.AllowedHostAPI.AllowedhostCreate(context.TODO()).CreateAllowedHostCommand(body).Execute(); err != nil {
+		if _, res, err := apiClient.Client.AllowedHostAPI.AllowedhostCreate(ctx).CreateAllowedHostCommand(body).Execute(); err != nil {
 			err = tk.CreateError(res, err)
 			return err
 		}
@@ -482,7 +482,7 @@ func resourceTaikunAccessProfileUpdateAllowedHosts(d *schema.ResourceData, acces
 }
 
 // Update the access profile's DNS servers
-func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileUpdateDnsServers(ctx context.Context, d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("dns_server") {
 		return
 	}
@@ -493,7 +493,7 @@ func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessP
 	for _, rawOldDnsServer := range oldDnsServers {
 		oldDnsServer := rawOldDnsServer.(map[string]interface{})
 		id, _ := utils.Atoi32(oldDnsServer["id"].(string))
-		if res, err2 := apiClient.Client.DnsServersAPI.DnsserversDelete(context.TODO(), id).Execute(); err2 != nil {
+		if res, err2 := apiClient.Client.DnsServersAPI.DnsserversDelete(ctx, id).Execute(); err2 != nil {
 			err = tk.CreateError(res, err2)
 			return err
 		}
@@ -506,7 +506,7 @@ func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessP
 		body := tkcore.CreateDnsServerCommand{}
 		body.SetAccessProfileId(accessProfileId)
 		body.SetAddress(newDnsServer["address"].(string))
-		if _, _, err = apiClient.Client.DnsServersAPI.DnsserversCreate(context.TODO()).CreateDnsServerCommand(body).Execute(); err != nil {
+		if _, _, err = apiClient.Client.DnsServersAPI.DnsserversCreate(ctx).CreateDnsServerCommand(body).Execute(); err != nil {
 			return
 		}
 	}
@@ -515,7 +515,7 @@ func resourceTaikunAccessProfileUpdateDnsServers(d *schema.ResourceData, accessP
 }
 
 // Update the access profile's NTP servers
-func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileUpdateNtpServers(ctx context.Context, d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("ntp_server") {
 		return
 	}
@@ -526,7 +526,7 @@ func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, accessP
 	for _, rawOldNtpServer := range oldNtpServers {
 		oldNtpServer := rawOldNtpServer.(map[string]interface{})
 		id, _ := utils.Atoi32(oldNtpServer["id"].(string))
-		if res, err := apiClient.Client.NtpServersAPI.NtpserversDelete(context.TODO(), id).Execute(); err != nil {
+		if res, err := apiClient.Client.NtpServersAPI.NtpserversDelete(ctx, id).Execute(); err != nil {
 			err = tk.CreateError(res, err)
 			return err
 		}
@@ -539,7 +539,7 @@ func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, accessP
 		body := tkcore.CreateNtpServerCommand{}
 		body.SetAccessProfileId(accessProfileId)
 		body.SetAddress(newNtpServer["address"].(string))
-		if _, res, err := apiClient.Client.NtpServersAPI.NtpserversCreate(context.TODO()).CreateNtpServerCommand(body).Execute(); err != nil {
+		if _, res, err := apiClient.Client.NtpServersAPI.NtpserversCreate(ctx).CreateNtpServerCommand(body).Execute(); err != nil {
 			err = tk.CreateError(res, err)
 			return err
 		}
@@ -549,7 +549,7 @@ func resourceTaikunAccessProfileUpdateNtpServers(d *schema.ResourceData, accessP
 }
 
 // Update the access profile's SSH users
-func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileUpdateSshUsers(ctx context.Context, d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("ssh_user") {
 		return
 	}
@@ -562,7 +562,7 @@ func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessPro
 		id, _ := utils.Atoi32(oldSshUser["id"].(string))
 		body := tkcore.DeleteSshUserCommand{}
 		body.SetId(id)
-		if res, err := apiClient.Client.SshUsersAPI.SshusersDelete(context.TODO()).DeleteSshUserCommand(body).Execute(); err != nil {
+		if res, err := apiClient.Client.SshUsersAPI.SshusersDelete(ctx).DeleteSshUserCommand(body).Execute(); err != nil {
 			err = tk.CreateError(res, err)
 			return err
 		}
@@ -577,7 +577,7 @@ func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessPro
 		body.SetName(newSshUser["name"].(string))
 		body.SetSshPublicKey(newSshUser["public_key"].(string))
 
-		if _, res, err := apiClient.Client.SshUsersAPI.SshusersCreate(context.TODO()).CreateSshUserCommand(body).Execute(); err != nil {
+		if _, res, err := apiClient.Client.SshUsersAPI.SshusersCreate(ctx).CreateSshUserCommand(body).Execute(); err != nil {
 			err = tk.CreateError(res, err)
 			return err
 		}
@@ -587,7 +587,7 @@ func resourceTaikunAccessProfileUpdateSshUsers(d *schema.ResourceData, accessPro
 }
 
 // Update the access profile's trusted registries
-func resourceTaikunAccessProfileUpdateTrustedRegistries(d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
+func resourceTaikunAccessProfileUpdateTrustedRegistries(ctx context.Context, d *schema.ResourceData, accessProfileId int32, apiClient *tk.Client) (err error) {
 	if !d.HasChange("trusted_registry") {
 		return
 	}
@@ -598,7 +598,7 @@ func resourceTaikunAccessProfileUpdateTrustedRegistries(d *schema.ResourceData, 
 	for _, rawOldTrustedRegistry := range oldTrustedRegistries {
 		oldTrustedRegistry := rawOldTrustedRegistry.(map[string]interface{})
 		id, _ := utils.Atoi32(oldTrustedRegistry["id"].(string))
-		if res, err2 := apiClient.Client.TrustedRegistriesAPI.TrustedregistriesDelete(context.TODO(), id).Execute(); err2 != nil {
+		if res, err2 := apiClient.Client.TrustedRegistriesAPI.TrustedregistriesDelete(ctx, id).Execute(); err2 != nil {
 			err = tk.CreateError(res, err2)
 			return err
 		}
@@ -611,7 +611,7 @@ func resourceTaikunAccessProfileUpdateTrustedRegistries(d *schema.ResourceData, 
 		body := tkcore.CreateTrustedRegistriesCommand{}
 		body.SetAccessProfileId(accessProfileId)
 		body.SetRegistry(newTrustedRegistry["registry"].(string))
-		if _, res, err2 := apiClient.Client.TrustedRegistriesAPI.TrustedregistriesCreate(context.TODO()).CreateTrustedRegistriesCommand(body).Execute(); err2 != nil {
+		if _, res, err2 := apiClient.Client.TrustedRegistriesAPI.TrustedregistriesCreate(ctx).CreateTrustedRegistriesCommand(body).Execute(); err2 != nil {
 			err = tk.CreateError(res, err2)
 			return err
 		}
@@ -620,14 +620,14 @@ func resourceTaikunAccessProfileUpdateTrustedRegistries(d *schema.ResourceData, 
 	return
 }
 
-func resourceTaikunAccessProfileDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaikunAccessProfileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	id, err := utils.Atoi32(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesDelete(context.TODO(), id).Execute()
+	res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesDelete(ctx, id).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -700,11 +700,11 @@ func flattenTaikunAccessProfile(rawAccessProfile *tkcore.AccessProfilesListDto, 
 	}
 }
 
-func resourceTaikunAccessProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunAccessProfileLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.AccessProfilesLockManagementCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesLockManager(context.TODO()).AccessProfilesLockManagementCommand(body).Execute()
+	res, err := apiClient.Client.AccessProfilesAPI.AccessprofilesLockManager(ctx).AccessProfilesLockManagementCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

@@ -227,7 +227,7 @@ func taikunVMSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
+func resourceTaikunProjectSetVMs(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client, projectID int32) error {
 
 	vms := d.Get("vm")
 
@@ -235,7 +235,7 @@ func resourceTaikunProjectSetVMs(d *schema.ResourceData, apiClient *tk.Client, p
 	for _, vm := range vmsList {
 		vmMap := vm.(map[string]interface{})
 
-		vmId, unreadableProperties, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
+		vmId, unreadableProperties, err := resourceTaikunProjectAddVM(ctx, vmMap, apiClient, projectID)
 		if err != nil {
 			return err
 		}
@@ -358,7 +358,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 	}
 
 	cloudCredentialID, _ := utils.Atoi32(d.Get("cloud_credential_id").(string))
-	cloudType, err := ResourceTaikunProjectGetCloudType(cloudCredentialID, apiClient)
+	cloudType, err := ResourceTaikunProjectGetCloudType(ctx, cloudCredentialID, apiClient)
 	if err != nil {
 		return err
 	}
@@ -394,7 +394,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 
 		for _, vmMap := range toAdd {
 
-			vmId, unreadableProperties, err := resourceTaikunProjectAddVM(vmMap, apiClient, projectID)
+			vmId, unreadableProperties, err := resourceTaikunProjectAddVM(ctx, vmMap, apiClient, projectID)
 			if err != nil {
 				return err
 			}
@@ -411,7 +411,7 @@ func resourceTaikunProjectUpdateVMs(ctx context.Context, d *schema.ResourceData,
 			return err
 		}
 
-		if err := resourceTaikunProjectStandaloneCommit(apiClient, projectID); err != nil {
+		if err := resourceTaikunProjectStandaloneCommit(ctx, apiClient, projectID); err != nil {
 			return err
 		}
 		if err := resourceTaikunProjectWaitForStatus(ctx, []string{"Ready"}, []string{"Updating", "Pending"}, apiClient, projectID); err != nil {
@@ -506,7 +506,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 			StandaloneVmId: &vmID,
 			VmDiskIds:      diskIds,
 		}
-		response, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVmDisks(context.TODO()).DeleteVmDiskCommand(body).Execute()
+		response, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVmDisks(ctx).DeleteVmDiskCommand(body).Execute()
 		if err != nil {
 			return tk.CreateError(response, err)
 		}
@@ -516,7 +516,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	}
 
 	for _, diskMap := range toAdd {
-		err := resourceTaikunProjectAddDisk(diskMap, apiClient, vmID)
+		err := resourceTaikunProjectAddDisk(ctx, diskMap, apiClient, vmID)
 		if err != nil {
 			return err
 		}
@@ -543,7 +543,7 @@ func resourceTaikunProjectUpdateVMDisks(ctx context.Context, oldDisks interface{
 	return nil
 }
 
-func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Client, projectID int32) (string, map[string]interface{}, error) {
+func resourceTaikunProjectAddVM(ctx context.Context, vmMap map[string]interface{}, apiClient *tk.Client, projectID int32) (string, map[string]interface{}, error) {
 
 	standaloneProfileId, _ := utils.Atoi32(vmMap["standalone_profile_id"].(string))
 	unreadableProperties := map[string]interface{}{}
@@ -624,7 +624,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 		}
 	}
 
-	vmCreateResponse, res, err := apiClient.Client.StandaloneAPI.StandaloneCreate(context.TODO()).CreateStandAloneVmCommand(vmCreateBody).Execute()
+	vmCreateResponse, res, err := apiClient.Client.StandaloneAPI.StandaloneCreate(ctx).CreateStandAloneVmCommand(vmCreateBody).Execute()
 	if err != nil {
 		return "", nil, tk.CreateError(res, err)
 	}
@@ -632,7 +632,7 @@ func resourceTaikunProjectAddVM(vmMap map[string]interface{}, apiClient *tk.Clie
 	return vmCreateResponse.GetId(), unreadableProperties, nil
 }
 
-func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.Client, vmId int32) error {
+func resourceTaikunProjectAddDisk(ctx context.Context, diskMap map[string]interface{}, apiClient *tk.Client, vmId int32) error {
 
 	diskCreateBody := tkcore.CreateStandAloneDiskCommand{}
 	// diskCreateBody.SetDeviceName(diskMap["device_name"].(string)) // Removed from API at 27.11.2023 by Arzu. Method forever in our hearts.
@@ -641,7 +641,7 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 	diskCreateBody.SetVolumeType(diskMap["volume_type"].(string))
 	diskCreateBody.SetStandaloneVmId(vmId)
 
-	_, res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksCreate(context.TODO()).CreateStandAloneDiskCommand(diskCreateBody).Execute()
+	_, res, err := apiClient.Client.StandaloneVMDisksAPI.StandalonevmdisksCreate(ctx).CreateStandAloneDiskCommand(diskCreateBody).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
@@ -649,23 +649,23 @@ func resourceTaikunProjectAddDisk(diskMap map[string]interface{}, apiClient *tk.
 	return nil
 }
 
-func resourceTaikunProjectStandaloneCommit(apiClient *tk.Client, projectID int32) error {
+func resourceTaikunProjectStandaloneCommit(ctx context.Context, apiClient *tk.Client, projectID int32) error {
 	body := tkcore.DeploymentCommitVmCommand{}
 	body.SetProjectId(projectID)
-	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommitVm(context.TODO()).DeploymentCommitVmCommand(body).Execute()
+	res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentCommitVm(ctx).DeploymentCommitVmCommand(body).Execute()
 	if err != nil {
 		return tk.CreateError(res, err)
 	}
 	return nil
 }
 
-func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Client, id int32) error {
+func resourceTaikunProjectEditImages(ctx context.Context, d *schema.ResourceData, apiClient *tk.Client, id int32) error {
 	// Get cloud type (because not all cloud types use image.id, some use image.name instead)
 	ccID, err := utils.Atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return err
 	}
-	cloudType, err := ResourceTaikunProjectGetCloudType(ccID, apiClient)
+	cloudType, err := ResourceTaikunProjectGetCloudType(ctx, ccID, apiClient)
 	if err != nil {
 		return err
 	}
@@ -676,7 +676,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 	newImages := newImageData.(*schema.Set)
 	imagesToUnbind := oldImages.Difference(newImages)
 	imagesToBind := newImages.Difference(oldImages).List()
-	boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(id, apiClient)
+	boundImageDTOs, err := resourceTaikunProjectGetBoundImageDTOs(ctx, id, apiClient)
 	if err != nil {
 		return err
 	}
@@ -697,7 +697,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 		}
 		unbindBody := tkcore.DeleteImageFromProjectCommand{}
 		unbindBody.SetIds(imageBindingsToUndo)
-		res, err := apiClient.Client.ImagesAPI.ImagesUnbindImagesFromProject(context.TODO()).DeleteImageFromProjectCommand(unbindBody).Execute()
+		res, err := apiClient.Client.ImagesAPI.ImagesUnbindImagesFromProject(ctx).DeleteImageFromProjectCommand(unbindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -710,7 +710,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 		bindBody := tkcore.BindImageToProjectCommand{}
 		bindBody.SetProjectId(id)
 		bindBody.SetImages(imagesToBindNames)
-		res, err := apiClient.Client.ImagesAPI.ImagesBindImagesToProject(context.TODO()).BindImageToProjectCommand(bindBody).Execute()
+		res, err := apiClient.Client.ImagesAPI.ImagesBindImagesToProject(ctx).BindImageToProjectCommand(bindBody).Execute()
 		if err != nil {
 			return tk.CreateError(res, err)
 		}
@@ -718,7 +718,7 @@ func resourceTaikunProjectEditImages(d *schema.ResourceData, apiClient *tk.Clien
 	return nil
 }
 
-func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Client, projectID int32) error {
+func resourceTaikunProjectPurgeVMs(ctx context.Context, vmsToPurge []interface{}, apiClient *tk.Client, projectID int32) error {
 	vmIds := make([]int32, 0)
 
 	for _, vm := range vmsToPurge {
@@ -736,7 +736,7 @@ func resourceTaikunProjectPurgeVMs(vmsToPurge []interface{}, apiClient *tk.Clien
 		deleteServerBody.SetProjectId(projectID)
 		deleteServerBody.SetVmIds(vmIds)
 
-		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVms(context.TODO()).ProjectDeploymentDeleteVmsCommand(deleteServerBody).Execute()
+		res, err := apiClient.Client.ProjectDeploymentAPI.ProjectDeploymentDeleteVms(ctx).ProjectDeploymentDeleteVmsCommand(deleteServerBody).Execute()
 
 		if err != nil {
 			return tk.CreateError(res, err)

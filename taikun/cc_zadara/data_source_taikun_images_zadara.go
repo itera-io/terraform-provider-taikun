@@ -50,7 +50,7 @@ func DataSourceTaikunImagesZadara() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunImagesZadaraRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunImagesZadaraRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudCredentialID, err := utils.Atoi32(d.Get("cloud_credential_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -58,7 +58,7 @@ func dataSourceTaikunImagesZadaraRead(_ context.Context, d *schema.ResourceData,
 
 	apiClient := meta.(*tk.Client)
 
-	params := apiClient.Client.ImagesAPI.ImagesZadaraImagesList(context.TODO(), cloudCredentialID).Latest(d.Get("latest").(bool))
+	params := apiClient.Client.ImagesAPI.ImagesZadaraImagesList(ctx, cloudCredentialID).Latest(d.Get("latest").(bool))
 
 	var offset int32 = 0
 	var imageList []map[string]interface{}

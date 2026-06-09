@@ -161,7 +161,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 		body.SetOrganizationId(organizationId)
 	}
 
-	createResult, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesCreate(context.TODO()).CreateKubernetesProfileCommand(body).Execute()
+	createResult, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesCreate(ctx).CreateKubernetesProfileCommand(body).Execute()
 	if err != nil {
 		return diag.FromErr(tk.CreateError(res, err))
 	}
@@ -173,7 +173,7 @@ func resourceTaikunKubernetesProfileCreate(ctx context.Context, d *schema.Resour
 	d.SetId(createResult.GetId())
 
 	if d.Get("lock").(bool) {
-		if err := resourceTaikunKubernetesProfileLock(id, true, apiClient); err != nil {
+		if err := resourceTaikunKubernetesProfileLock(ctx, id, true, apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -187,7 +187,7 @@ func GenerateResourceTaikunKubernetesProfileReadWithoutRetries() schema.ReadCont
 	return generateResourceTaikunKubernetesProfileRead(false)
 }
 func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadContextFunc {
-	return func(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		apiClient := meta.(*tk.Client)
 		id, err := utils.Atoi32(d.Id())
 		d.SetId("")
@@ -195,7 +195,7 @@ func generateResourceTaikunKubernetesProfileRead(withRetries bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		response, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesList(context.TODO()).Id(id).Execute()
+		response, res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesList(ctx).Id(id).Execute()
 		if err != nil {
 			return diag.FromErr(tk.CreateError(res, err))
 		}
@@ -229,7 +229,7 @@ func resourceTaikunKubernetesProfileUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if d.HasChange("lock") {
-		if err := resourceTaikunKubernetesProfileLock(id, d.Get("lock").(bool), apiClient); err != nil {
+		if err := resourceTaikunKubernetesProfileLock(ctx, id, d.Get("lock").(bool), apiClient); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -275,11 +275,11 @@ func FlattenTaikunKubernetesProfile(rawKubernetesProfile *tkcore.KubernetesProfi
 	}
 }
 
-func resourceTaikunKubernetesProfileLock(id int32, lock bool, apiClient *tk.Client) error {
+func resourceTaikunKubernetesProfileLock(ctx context.Context, id int32, lock bool, apiClient *tk.Client) error {
 	body := tkcore.KubernetesProfilesLockManagerCommand{}
 	body.SetId(id)
 	body.SetMode(utils.GetLockMode(lock))
 
-	res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesLockManager(context.TODO()).KubernetesProfilesLockManagerCommand(body).Execute()
+	res, err := apiClient.Client.KubernetesProfilesAPI.KubernetesprofilesLockManager(ctx).KubernetesProfilesLockManagerCommand(body).Execute()
 	return tk.CreateError(res, err)
 }

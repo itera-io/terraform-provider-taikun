@@ -33,12 +33,12 @@ func DataSourceTaikunCloudCredentialsAWS() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsAWSRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsAWSRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.AWSCloudCredentialAPI.AwsList(context.TODO())
+	params := apiClient.Client.AWSCloudCredentialAPI.AwsList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {

@@ -50,7 +50,7 @@ func dataSourceTaikunCatalogProjectBindingsRead(ctx context.Context, d *schema.R
 		orgId = organizationIDDataConverted
 	}
 
-	rawCatalog, err := findCatalogByName(apiClient, orgId, catalogName)
+	rawCatalog, err := findCatalogByName(ctx, apiClient, orgId, catalogName)
 	if err != nil {
 		return diag.FromErr(err)
 	}

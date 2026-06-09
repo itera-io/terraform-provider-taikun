@@ -33,11 +33,11 @@ func DataSourceTaikunShowbackRules() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunShowbackRulesRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunShowbackRulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 
-	params := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(context.TODO())
+	params := apiClient.ShowbackClient.ShowbackRulesAPI.ShowbackrulesList(ctx)
 	var offset int32 = 0
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")

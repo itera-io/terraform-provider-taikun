@@ -33,12 +33,12 @@ func DataSourceTaikunCloudCredentialsOpenStack() *schema.Resource {
 	}
 }
 
-func dataSourceTaikunCloudCredentialsOpenStackRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceTaikunCloudCredentialsOpenStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiClient := meta.(*tk.Client)
 	dataSourceID := "all"
 	var offset int32 = 0
 
-	params := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(context.TODO())
+	params := apiClient.Client.OpenstackCloudCredentialAPI.OpenstackList(ctx)
 
 	organizationIDData, organizationIDProvided := d.GetOk("organization_id")
 	if organizationIDProvided {
