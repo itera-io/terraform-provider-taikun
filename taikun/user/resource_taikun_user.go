@@ -97,7 +97,6 @@ func resourceTaikunUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 	apiClient := meta.(*tk.Client)
 
 	body := tkcore.CreateUserCommand{}
-	body.SetUsername(d.Get("user_name").(string))
 	body.SetDisplayName(d.Get("display_name").(string))
 	body.SetEmail(d.Get("email").(string))
 	body.SetIsAccountAdmin(d.Get("owner").(bool))
@@ -181,7 +180,6 @@ func resourceTaikunUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	body := tkcore.UpdateUserCommand{}
 	body.SetId(d.Id())
 	body.SetDisplayName(d.Get("display_name").(string))
-	body.SetUsername(d.Get("user_name").(string))
 	body.SetEmail(d.Get("email").(string))
 	body.SetForceToResetPassword(d.Get("force_to_reset_password").(bool))
 	body.SetDisable(d.Get("disable").(bool))
