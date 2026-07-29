@@ -10,7 +10,7 @@ updates:
       interval: "weekly"
       day: "thursday"
       time: "03:00"
-    target-branch: "dev"
+    target-branch: "main"
 
   # Maintain dependencies for Go modules
   - package-ecosystem: "gomod"
@@ -20,4 +20,4 @@ updates:
       interval: "weekly"
       day: "thursday"
       time: "03:00"
-    target-branch: "dev"
+    target-branch: "main"
